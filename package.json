@@ -1,17 +1,20 @@
 {
   "name": "llm-company",
-  "module": "index.ts",
+  "scripts": {
+    "test": "bun test",
+    "test:coverage": "bun test --coverage",
+    "typecheck": "tsc --noEmit",
+    "check": "bun run typecheck && bun run test"
+  },
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest",
-    "@types/figlet": "^1.7.0"
+    "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^7"
   },
   "dependencies": {
-    "figlet": "^1.11.4",
     "zod": "^4.5.4"
   }
 }
