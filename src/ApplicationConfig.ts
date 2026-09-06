@@ -1,4 +1,3 @@
-export default interface ApplicationConfig
-{
+export default interface ApplicationConfig {
     readonly companyRootDir: string
 }

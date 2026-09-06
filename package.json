@@ -1,20 +1,21 @@
 {
-  "name": "llm-company",
-  "scripts": {
-    "test": "bun test",
-    "test:coverage": "bun test --coverage",
-    "typecheck": "tsc --noEmit",
-    "check": "bun run typecheck && bun run test"
-  },
-  "type": "module",
-  "private": true,
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^7"
-  },
-  "dependencies": {
-    "zod": "^4.5.4"
-  }
+    "name": "llm-company",
+    "dependencies": {
+        "zod": "^4.5.4"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^2.5.12",
+        "@types/bun": "latest",
+        "typescript": "^7.0.2"
+    },
+    "private": true,
+    "scripts": {
+        "test": "bun test",
+        "test:coverage": "bun test --coverage",
+        "typecheck": "tsc --noEmit",
+        "format": "biome format --write",
+        "lint": "biome lint",
+        "check": "biome check && bun run typecheck && bun run test"
+    },
+    "type": "module"
 }
