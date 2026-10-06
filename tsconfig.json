@@ -25,6 +25,14 @@
         // Some stricter flags (disabled by default)
         "noUnusedLocals": false,
         "noUnusedParameters": false,
-        "noPropertyAccessFromIndexSignature": false
-    }
+        "noPropertyAccessFromIndexSignature": false,
+
+        "paths": {
+            "@/tool": ["./src/tool.ts"]
+        },
+    },
+    "include": [
+        "src/**/*",
+        "example-project/.llmco/**/*"
+    ]
 }

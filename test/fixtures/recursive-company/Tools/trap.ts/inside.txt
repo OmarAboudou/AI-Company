@@ -1,1 +1,0 @@
-This file lives in a DIRECTORY named trap.ts, which must be ignored by the loader.
