@@ -9,6 +9,10 @@ function companyPaths(projectRoot: string) {
     }
 }
 
+export function companyExists(projectRoot: string): Promise<boolean> {
+    return Bun.file(companyPaths(projectRoot).config).exists()
+}
+
 export async function loadCompany(projectRoot: string): Promise<Company> {
     const paths = companyPaths(projectRoot)
     const config = CompanyConfigSchema.parse(
@@ -16,4 +20,14 @@ export async function loadCompany(projectRoot: string): Promise<Company> {
     )
     const description = await Bun.file(paths.description).text()
     return { ...config, description }
+}
+
+export async function saveCompany(
+    projectRoot: string,
+    company: Company,
+): Promise<void> {
+    const paths = companyPaths(projectRoot)
+    const { description, ...config } = company
+    await Bun.write(paths.config, `${JSON.stringify(config, null, 4)}\n`)
+    await Bun.write(paths.description, description)
 }
