@@ -9,7 +9,7 @@ function companyPaths(projectRoot: string) {
     }
 }
 
-export function companyExists(projectRoot: string): Promise<boolean> {
+export async function companyExists(projectRoot: string): Promise<boolean> {
     return Bun.file(companyPaths(projectRoot).config).exists()
 }
 
