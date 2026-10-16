@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { loadCompany } from "./storage.ts"
+import { companyExists, loadCompany, saveCompany } from "./storage.ts"
 
 let projectRoot: string
 
@@ -38,5 +38,40 @@ describe("loadCompany", () => {
 
     test("fails when there is no company", async () => {
         await expect(loadCompany(projectRoot)).rejects.toThrow()
+    })
+})
+
+describe("saveCompany", () => {
+    test("writes config.json and description.md", async () => {
+        await saveCompany(projectRoot, {
+            name: "Acme",
+            description: "We build things.",
+        })
+
+        const dir = join(projectRoot, ".llmco", "company")
+        expect(await Bun.file(join(dir, "config.json")).text()).toBe(
+            '{\n    "name": "Acme"\n}\n',
+        )
+        expect(await Bun.file(join(dir, "description.md")).text()).toBe(
+            "We build things.",
+        )
+    })
+
+    test("writes what loadCompany reads back", async () => {
+        const company = { name: "Acme", description: "We build things." }
+
+        await saveCompany(projectRoot, company)
+
+        expect(await loadCompany(projectRoot)).toEqual(company)
+    })
+})
+
+describe("companyExists", () => {
+    test("is false before saving and true after", async () => {
+        expect(await companyExists(projectRoot)).toBe(false)
+
+        await saveCompany(projectRoot, { name: "Acme", description: "" })
+
+        expect(await companyExists(projectRoot)).toBe(true)
     })
 })
