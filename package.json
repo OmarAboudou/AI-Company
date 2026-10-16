@@ -2,6 +2,9 @@
     "name": "llmco",
     "private": true,
     "type": "module",
+    "bin": {
+        "llmco": "./src/cli.ts"
+    },
     "scripts": {
         "test": "bun test",
         "typecheck": "tsc --noEmit",
