@@ -2,30 +2,30 @@ import { describe, expect, test } from "bun:test"
 import { CompanyConfigSchema } from "./company.ts"
 
 describe("CompanyConfigSchema", () => {
-    test("accepte une config avec un nom", () => {
+    test("accepts a config with a name", () => {
         expect(CompanyConfigSchema.parse({ name: "Acme" })).toEqual({
             name: "Acme",
         })
     })
 
-    test("retire les espaces autour du nom", () => {
+    test("trims whitespace around the name", () => {
         expect(CompanyConfigSchema.parse({ name: "  Acme  " }).name).toBe(
             "Acme",
         )
     })
 
-    test("refuse une config sans nom", () => {
+    test("rejects a config without a name", () => {
         expect(CompanyConfigSchema.safeParse({}).success).toBe(false)
     })
 
-    test("refuse un nom vide ou fait d'espaces", () => {
+    test("rejects an empty or whitespace-only name", () => {
         expect(CompanyConfigSchema.safeParse({ name: "" }).success).toBe(false)
         expect(CompanyConfigSchema.safeParse({ name: "   " }).success).toBe(
             false,
         )
     })
 
-    test("refuse une clé inconnue", () => {
+    test("rejects an unknown key", () => {
         expect(CompanyConfigSchema.safeParse({ nmae: "Acme" }).success).toBe(
             false,
         )
