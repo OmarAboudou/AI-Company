@@ -16,8 +16,13 @@ afterEach(async () => {
 })
 
 function runCli(...args: string[]) {
+    return runCliWithStdin("", ...args)
+}
+
+function runCliWithStdin(stdin: string, ...args: string[]) {
     const result = Bun.spawnSync([process.execPath, cliPath, ...args], {
         cwd: projectRoot,
+        stdin: new TextEncoder().encode(stdin),
     })
     return {
         exitCode: result.exitCode,
@@ -132,6 +137,66 @@ describe("llmco position", () => {
 
     test("show fails for an unknown position", () => {
         expect(runCli("position", "show", "developer").exitCode).toBe(1)
+    })
+})
+
+describe("--description-file", () => {
+    const markdown = "## Mission\n\nYou build the API.\n"
+
+    test("init reads the description from a file", async () => {
+        await Bun.write(join(projectRoot, "company.md"), markdown)
+
+        runCli("init", "--name", "Acme", "--description-file", "company.md")
+
+        expect(runCli("company", "show").stdout).toBe(`# Acme\n\n${markdown}\n`)
+    })
+
+    test("position create reads the description from stdin with -", () => {
+        runCli("init", "--name", "Acme")
+
+        const create = runCliWithStdin(
+            markdown,
+            "position",
+            "create",
+            "developer",
+            "--title",
+            "Developer",
+            "--description-file",
+            "-",
+        )
+
+        expect(create.exitCode).toBe(0)
+        expect(runCli("position", "show", "developer").stdout).toBe(
+            `# Developer\n\n${markdown}\n`,
+        )
+    })
+
+    test("cannot be combined with --description", () => {
+        const init = runCli(
+            "init",
+            "--name",
+            "Acme",
+            "--description",
+            "Text",
+            "--description-file",
+            "company.md",
+        )
+
+        expect(init.exitCode).toBe(1)
+        expect(init.stderr).toContain("cannot be used with option")
+    })
+
+    test("names a missing file", () => {
+        const init = runCli(
+            "init",
+            "--name",
+            "Acme",
+            "--description-file",
+            "nope.md",
+        )
+
+        expect(init.exitCode).toBe(1)
+        expect(init.stderr).toStartWith("Missing file: nope.md")
     })
 })
 
