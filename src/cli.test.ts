@@ -168,7 +168,7 @@ describe("llmco employee", () => {
         const show = runCli("employee", "show", "claude-senior")
         expect(show.exitCode).toBe(0)
         expect(show.stdout).toBe(
-            "# Claude Senior\n\nkind: llm\nprovider: anthropic\nmodel: claude-opus-5-5\n",
+            "# Claude Senior\n\nkind: llm\nprovider: anthropic\nmodel: claude-opus-5-5\npositions: (none)\n",
         )
     })
 
@@ -177,17 +177,17 @@ describe("llmco employee", () => {
         expect(hire.exitCode).toBe(0)
 
         expect(runCli("employee", "show", "omar").stdout).toBe(
-            "# Omar\n\nkind: human\n",
+            "# Omar\n\nkind: human\npositions: (none)\n",
         )
     })
 
-    test("list aligns names and models after the ids, sorted by id", () => {
+    test("list aligns names, models and positions after the ids, sorted by id", () => {
         runCli("employee", "create", "human", "omar", "-n", "Omar Aboudou")
         createClaude()
 
         expect(runCli("employee", "list").stdout).toBe(
-            "claude-senior  Claude Senior  anthropic/claude-opus-5-5\n" +
-                "omar           Omar Aboudou   human\n",
+            "claude-senior  Claude Senior  anthropic/claude-opus-5-5  (none)\n" +
+                "omar           Omar Aboudou   human                      (none)\n",
         )
     })
 
@@ -415,6 +415,19 @@ describe("llmco position assign and unassign", () => {
         )
         expect(runCli("position", "show", "qa-tester").stdout).toBe(
             "# QA Tester\n\nemployee: claude-senior\n\n\n",
+        )
+    })
+
+    test("employee list and show display the positions filled", () => {
+        runCli("position", "assign", "developer", "claude-senior")
+        runCli("position", "assign", "qa-tester", "claude-senior")
+
+        expect(runCli("employee", "list").stdout).toBe(
+            "claude-senior  Claude Senior  anthropic/claude-opus-5-5  developer, qa-tester\n" +
+                "omar           Omar           human                      (none)\n",
+        )
+        expect(runCli("employee", "show", "claude-senior").stdout).toEndWith(
+            "positions: developer, qa-tester\n",
         )
     })
 
