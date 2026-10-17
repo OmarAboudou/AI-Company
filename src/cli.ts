@@ -3,7 +3,7 @@ import { Command, Option } from "@commander-js/extra-typings"
 import { z } from "zod"
 import { CompanyConfigSchema } from "./company/company.ts"
 import { companyExists, loadCompany, saveCompany } from "./company/storage.ts"
-import { EmployeeConfigSchema } from "./employee/employee.ts"
+import { type Employee, EmployeeConfigSchema } from "./employee/employee.ts"
 import {
     employeeExists,
     listEmployees,
@@ -13,7 +13,7 @@ import {
 import { UserError } from "./errors.ts"
 import { readText } from "./files.ts"
 import { IdSchema } from "./id.ts"
-import { PositionConfigSchema } from "./position/position.ts"
+import { type Position, PositionConfigSchema } from "./position/position.ts"
 import {
     listPositions,
     loadPosition,
@@ -86,6 +86,22 @@ function printColumns(rows: string[][]): void {
         )
         console.log(cells.join("  "))
     }
+}
+
+async function loadExistingPosition(rawId: string): Promise<Position> {
+    const id = parseId("position", rawId)
+    if (!(await positionExists(projectRoot, id))) {
+        throw new UserError(`No position "${id}". Run \`llmco position list\`.`)
+    }
+    return loadPosition(projectRoot, id)
+}
+
+async function loadExistingEmployee(rawId: string): Promise<Employee> {
+    const id = parseId("employee", rawId)
+    if (!(await employeeExists(projectRoot, id))) {
+        throw new UserError(`No employee "${id}". Run \`llmco employee list\`.`)
+    }
+    return loadEmployee(projectRoot, id)
 }
 
 async function createEmployee(rawId: string, config: unknown): Promise<void> {
@@ -193,13 +209,7 @@ positionCommand
     .argument("<position-id>", idDescription("position", "backend-developer"))
     .action(async (rawId) => {
         await requireCompany()
-        const id = parseId("position", rawId)
-        if (!(await positionExists(projectRoot, id))) {
-            throw new UserError(
-                `No position "${id}". Run \`llmco position list\`.`,
-            )
-        }
-        const position = await loadPosition(projectRoot, id)
+        const position = await loadExistingPosition(rawId)
         console.log(`# ${position.title}\n\n${position.description}`)
     })
 
@@ -265,13 +275,7 @@ employeeCommand
     .argument("<employee-id>", idDescription("employee", "claude-senior"))
     .action(async (rawId) => {
         await requireCompany()
-        const id = parseId("employee", rawId)
-        if (!(await employeeExists(projectRoot, id))) {
-            throw new UserError(
-                `No employee "${id}". Run \`llmco employee list\`.`,
-            )
-        }
-        const employee = await loadEmployee(projectRoot, id)
+        const employee = await loadExistingEmployee(rawId)
         const lines = [`# ${employee.name}`, "", `kind: ${employee.kind}`]
         if (employee.kind === "llm") {
             lines.push(
