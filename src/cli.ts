@@ -101,9 +101,11 @@ positionCommand
             console.log("No positions yet. Run `llmco position create`.")
             return
         }
-        const idWidth = Math.max(...positions.map(({ id }) => id.length))
+        const longestIdLength = Math.max(
+            ...positions.map(({ id }) => id.length),
+        )
         for (const { id, title } of positions) {
-            console.log(`${id.padEnd(idWidth)}  ${title}`)
+            console.log(`${id.padEnd(longestIdLength)}  ${title}`)
         }
     })
 
