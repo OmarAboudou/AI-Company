@@ -76,12 +76,8 @@ positionCommand
     .description("Create a position.")
     .argument("<id>", "position id in kebab-case, e.g. backend-developer")
     .requiredOption("--title <title>", "position title")
-    .option(
-        "--job-description <text>",
-        "what the position is responsible for",
-        "",
-    )
-    .action(async (rawId, { title, jobDescription }) => {
+    .option("--description <text>", "what the position is responsible for", "")
+    .action(async (rawId, { title, description }) => {
         await requireCompany()
         const id = parsePositionId(rawId)
         if (await positionExists(projectRoot, id)) {
@@ -91,7 +87,7 @@ positionCommand
         if (!config.success) {
             fail(z.prettifyError(config.error))
         }
-        await savePosition(projectRoot, { id, ...config.data, jobDescription })
+        await savePosition(projectRoot, { id, ...config.data, description })
         console.log(`Created position "${id}".`)
     })
 
@@ -113,7 +109,7 @@ positionCommand
 
 positionCommand
     .command("show")
-    .description("Display a position title and job description.")
+    .description("Display a position title and description.")
     .argument("<id>", "position id")
     .action(async (rawId) => {
         await requireCompany()
@@ -122,7 +118,7 @@ positionCommand
             fail(`No position "${id}". Run \`llmco position list\`.`)
         }
         const position = await loadPosition(projectRoot, id)
-        console.log(`# ${position.title}\n\n${position.jobDescription}`)
+        console.log(`# ${position.title}\n\n${position.description}`)
     })
 
 await program.parseAsync()

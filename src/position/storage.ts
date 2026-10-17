@@ -11,7 +11,7 @@ function positionPaths(projectRoot: string, id: string) {
     const dir = join(positionsDir(projectRoot), id)
     return {
         config: join(dir, "config.json"),
-        jobDescription: join(dir, "job-description.md"),
+        description: join(dir, "description.md"),
     }
 }
 
@@ -27,11 +27,11 @@ export async function loadPosition(
     id: string,
 ): Promise<Position> {
     const paths = positionPaths(projectRoot, id)
-    const [rawConfig, jobDescription] = await Promise.all([
+    const [rawConfig, description] = await Promise.all([
         Bun.file(paths.config).json(),
-        Bun.file(paths.jobDescription).text(),
+        Bun.file(paths.description).text(),
     ])
-    return { id, ...PositionConfigSchema.parse(rawConfig), jobDescription }
+    return { id, ...PositionConfigSchema.parse(rawConfig), description }
 }
 
 export async function listPositions(projectRoot: string): Promise<Position[]> {
@@ -54,10 +54,10 @@ export async function savePosition(
     projectRoot: string,
     position: Position,
 ): Promise<void> {
-    const { id, jobDescription, ...config } = position
+    const { id, description, ...config } = position
     const paths = positionPaths(projectRoot, id)
     await Promise.all([
         Bun.write(paths.config, `${JSON.stringify(config, null, 4)}\n`),
-        Bun.write(paths.jobDescription, jobDescription),
+        Bun.write(paths.description, description),
     ])
 }

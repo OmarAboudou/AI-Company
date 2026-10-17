@@ -67,14 +67,14 @@ describe("llmco position", () => {
         runCli("init", "--name", "Acme")
     })
 
-    test("create then show displays the title and job description", () => {
+    test("create then show displays the title and description", () => {
         const create = runCli(
             "position",
             "create",
             "backend-developer",
             "--title",
             "Backend Developer",
-            "--job-description",
+            "--description",
             "You build the API.",
         )
         expect(create.exitCode).toBe(0)
