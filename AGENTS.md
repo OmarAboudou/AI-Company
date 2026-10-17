@@ -9,7 +9,7 @@ Everything written into the repository or on GitHub is in English: code, comment
 - GitHub Flow: never commit to `main`. One branch per coherent change (`feat/…`, `fix/…`, `chore/…`, `docs/…`), opened as a pull request against `main`.
 - The maintainer reviews line by line: keep pull requests small, split into small commits that each make sense on their own.
 - Answer review comments in their GitHub thread. Merge only when the maintainer asks.
-- Before pushing, run `bun run lint`, `bun run typecheck` and `bun test`. CI runs the same three. `bun run lint:fix` applies formatting.
+- A pre-push hook runs lint, typecheck and tests: never bypass it with `--no-verify`.
 
 ## Comments
 
