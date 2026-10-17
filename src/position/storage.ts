@@ -1,6 +1,5 @@
-import { readdir } from "node:fs/promises"
 import { join } from "node:path"
-import { readConfig, readText } from "../files.ts"
+import { listSubdirectories, readConfig, readText } from "../files.ts"
 import { llmcoDir } from "../project.ts"
 import { type Position, PositionConfigSchema } from "./position.ts"
 
@@ -36,18 +35,7 @@ export async function loadPosition(
 }
 
 export async function listPositions(projectRoot: string): Promise<Position[]> {
-    const entries = await readdir(positionsDir(projectRoot), {
-        withFileTypes: true,
-    }).catch((error: NodeJS.ErrnoException) => {
-        if (error.code === "ENOENT") {
-            return []
-        }
-        throw error
-    })
-    const ids = entries
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => entry.name)
-        .sort()
+    const ids = await listSubdirectories(positionsDir(projectRoot))
     return Promise.all(ids.map((id) => loadPosition(projectRoot, id)))
 }
 

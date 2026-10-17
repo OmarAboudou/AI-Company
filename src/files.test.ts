@@ -4,7 +4,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { z } from "zod"
 import { UserError } from "./errors.ts"
-import { readConfig, readText } from "./files.ts"
+import { listSubdirectories, readConfig, readText } from "./files.ts"
 
 let projectRoot: string
 
@@ -59,5 +59,22 @@ describe("readConfig", () => {
         await expect(read).rejects.toThrow(
             /Invalid \.llmco\/config\.json:\n.*\n.*at title/,
         )
+    })
+})
+
+describe("listSubdirectories", () => {
+    test("returns the subdirectory names sorted, without the files", async () => {
+        await Bun.write(join(projectRoot, "qa", "config.json"), "")
+        await Bun.write(join(projectRoot, "developer", "config.json"), "")
+        await Bun.write(join(projectRoot, "notes.md"), "")
+
+        expect(await listSubdirectories(projectRoot)).toEqual([
+            "developer",
+            "qa",
+        ])
+    })
+
+    test("is empty when the directory does not exist", async () => {
+        expect(await listSubdirectories(join(projectRoot, "nope"))).toEqual([])
     })
 })

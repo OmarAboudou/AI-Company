@@ -1,3 +1,4 @@
+import { readdir } from "node:fs/promises"
 import { relative } from "node:path"
 import { z } from "zod"
 import { UserError } from "./errors.ts"
@@ -40,4 +41,19 @@ function parseJson(text: string, displayPath: string): unknown {
         }
         throw error
     }
+}
+
+export async function listSubdirectories(dir: string): Promise<string[]> {
+    const entries = await readdir(dir, { withFileTypes: true }).catch(
+        (error: NodeJS.ErrnoException) => {
+            if (error.code === "ENOENT") {
+                return []
+            }
+            throw error
+        },
+    )
+    return entries
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name)
+        .sort()
 }
