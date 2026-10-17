@@ -62,9 +62,11 @@ describe("llmco company show", () => {
     })
 })
 
-test("prints usage for an unknown command", () => {
+test("prints the --help output for an unknown command", () => {
+    const help = runCli("--help")
     const result = runCli("unknown")
 
+    expect(help.exitCode).toBe(0)
     expect(result.exitCode).toBe(1)
-    expect(result.stderr).toContain("Usage:")
+    expect(result.stderr).toContain(help.stdout)
 })
