@@ -432,6 +432,16 @@ test("employee commands require a company", () => {
     expect(runCli("employee", "list").exitCode).toBe(1)
 })
 
+test.each([
+    ["position", "create", ".llmco/positions"],
+    ["employee", "show", ".llmco/employees"],
+])("%s %s --help says the id names a folder in %s", (group, command, dir) => {
+    const help = runCli(group, command, "--help").stdout
+    const unwrapped = help.replace(/\s+/g, " ")
+
+    expect(unwrapped).toContain(`the name of its folder in ${dir}`)
+})
+
 test("prints the --help output for an unknown command", () => {
     const help = runCli("--help")
     const result = runCli("unknown")
