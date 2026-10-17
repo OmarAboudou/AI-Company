@@ -54,6 +54,26 @@ function parseId(entity: string, id: string): string {
     return result.data
 }
 
+function printColumns(rows: string[][]): void {
+    const columnWidths: number[] = []
+    for (const row of rows) {
+        row.forEach((cell, column) => {
+            columnWidths[column] = Math.max(
+                columnWidths[column] ?? 0,
+                cell.length,
+            )
+        })
+    }
+    for (const row of rows) {
+        const cells = row.map((cell, column) =>
+            column < row.length - 1
+                ? cell.padEnd(columnWidths[column] ?? 0)
+                : cell,
+        )
+        console.log(cells.join("  "))
+    }
+}
+
 const program = new Command()
     .name("llmco")
     .description("Run a virtual company staffed by LLM agents.")
@@ -136,12 +156,7 @@ positionCommand
             console.log("No positions yet. Run `llmco position create`.")
             return
         }
-        const longestIdLength = Math.max(
-            ...positions.map(({ id }) => id.length),
-        )
-        for (const { id, title } of positions) {
-            console.log(`${id.padEnd(longestIdLength)}  ${title}`)
-        }
+        printColumns(positions.map(({ id, title }) => [id, title]))
     })
 
 positionCommand
