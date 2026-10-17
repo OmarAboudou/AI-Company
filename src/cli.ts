@@ -1,108 +1,32 @@
 #!/usr/bin/env bun
-import { Command, Option } from "@commander-js/extra-typings"
+import { Command } from "@commander-js/extra-typings"
 import { z } from "zod"
+import {
+    descriptionFileOption,
+    idDescription,
+    loadExistingEmployee,
+    loadExistingPosition,
+    parseId,
+    printColumns,
+    projectRoot,
+    readDescription,
+    requireCompany,
+} from "./cli-helpers.ts"
 import { CompanyConfigSchema } from "./company/company.ts"
 import { companyExists, loadCompany, saveCompany } from "./company/storage.ts"
-import { type Employee, EmployeeConfigSchema } from "./employee/employee.ts"
+import { EmployeeConfigSchema } from "./employee/employee.ts"
 import {
     employeeExists,
     listEmployees,
-    loadEmployee,
     saveEmployee,
 } from "./employee/storage.ts"
 import { UserError } from "./errors.ts"
-import { readText } from "./files.ts"
-import { IdSchema } from "./id.ts"
 import { type Position, PositionConfigSchema } from "./position/position.ts"
 import {
     listPositions,
-    loadPosition,
     positionExists,
     savePosition,
 } from "./position/storage.ts"
-
-const projectRoot = process.cwd()
-
-async function requireCompany(): Promise<void> {
-    if (!(await companyExists(projectRoot))) {
-        throw new UserError(
-            "No company in this directory. Run `llmco init` first.",
-        )
-    }
-}
-
-function descriptionFileOption() {
-    return new Option(
-        "-F, --description-file <path>",
-        "read the description from a file, or from stdin with -",
-    ).conflicts("description")
-}
-
-async function readDescription(
-    description: string,
-    descriptionFile: string | undefined,
-): Promise<string> {
-    if (descriptionFile === undefined) {
-        return description
-    }
-    if (descriptionFile === "-") {
-        return Bun.stdin.text()
-    }
-    return readText(projectRoot, descriptionFile)
-}
-
-function idDescription(
-    entity: "position" | "employee",
-    example: string,
-): string {
-    return `${entity} id, which is also the name of its folder in .llmco/${entity}s (kebab-case, e.g. ${example})`
-}
-
-function parseId(entity: string, id: string): string {
-    const result = IdSchema.safeParse(id)
-    if (!result.success) {
-        throw new UserError(
-            `Invalid ${entity} id "${id}".\n${z.prettifyError(result.error)}`,
-        )
-    }
-    return result.data
-}
-
-function printColumns(rows: string[][]): void {
-    const columnWidths: number[] = []
-    for (const row of rows) {
-        row.forEach((cell, column) => {
-            columnWidths[column] = Math.max(
-                columnWidths[column] ?? 0,
-                cell.length,
-            )
-        })
-    }
-    for (const row of rows) {
-        const cells = row.map((cell, column) =>
-            column < row.length - 1
-                ? cell.padEnd(columnWidths[column] ?? 0)
-                : cell,
-        )
-        console.log(cells.join("  "))
-    }
-}
-
-async function loadExistingPosition(rawId: string): Promise<Position> {
-    const id = parseId("position", rawId)
-    if (!(await positionExists(projectRoot, id))) {
-        throw new UserError(`No position "${id}". Run \`llmco position list\`.`)
-    }
-    return loadPosition(projectRoot, id)
-}
-
-async function loadExistingEmployee(rawId: string): Promise<Employee> {
-    const id = parseId("employee", rawId)
-    if (!(await employeeExists(projectRoot, id))) {
-        throw new UserError(`No employee "${id}". Run \`llmco employee list\`.`)
-    }
-    return loadEmployee(projectRoot, id)
-}
 
 function positionsFilledBy(positions: Position[], employeeId: string): string {
     const ids = positions
