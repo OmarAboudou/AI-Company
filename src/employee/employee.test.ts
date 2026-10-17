@@ -10,6 +10,10 @@ const llm = {
 
 const human = { name: "Omar Aboudou", kind: "human" } as const
 
+function accepts(config: unknown): boolean {
+    return EmployeeConfigSchema.safeParse(config).success
+}
+
 describe("EmployeeConfigSchema", () => {
     test("accepts an LLM employee with a provider and a model", () => {
         expect(EmployeeConfigSchema.parse(llm)).toEqual(llm)
@@ -20,63 +24,39 @@ describe("EmployeeConfigSchema", () => {
     })
 
     test("trims whitespace around the name", () => {
-        expect(
-            EmployeeConfigSchema.parse({ ...human, name: "  Omar  " }).name,
-        ).toBe("Omar")
+        const config = EmployeeConfigSchema.parse({ ...human, name: " Omar " })
+
+        expect(config.name).toBe("Omar")
     })
 
     test("rejects an empty or whitespace-only name", () => {
-        expect(
-            EmployeeConfigSchema.safeParse({ ...human, name: "" }).success,
-        ).toBe(false)
-        expect(
-            EmployeeConfigSchema.safeParse({ ...human, name: "   " }).success,
-        ).toBe(false)
+        expect(accepts({ ...human, name: "" })).toBe(false)
+        expect(accepts({ ...human, name: "   " })).toBe(false)
     })
 
     test("rejects an unknown kind", () => {
-        expect(
-            EmployeeConfigSchema.safeParse({ ...human, kind: "robot" }).success,
-        ).toBe(false)
+        expect(accepts({ ...human, kind: "robot" })).toBe(false)
     })
 
     test("requires a provider and a model for an LLM employee", () => {
         const { provider, ...withoutProvider } = llm
         const { model, ...withoutModel } = llm
 
-        expect(EmployeeConfigSchema.safeParse(withoutProvider).success).toBe(
-            false,
-        )
-        expect(EmployeeConfigSchema.safeParse(withoutModel).success).toBe(false)
+        expect(accepts(withoutProvider)).toBe(false)
+        expect(accepts(withoutModel)).toBe(false)
     })
 
     test("requires kebab-case provider and model ids", () => {
-        expect(
-            EmployeeConfigSchema.safeParse({ ...llm, provider: "Anthropic" })
-                .success,
-        ).toBe(false)
-        expect(
-            EmployeeConfigSchema.safeParse({ ...llm, model: "llama3.1:8b" })
-                .success,
-        ).toBe(false)
+        expect(accepts({ ...llm, provider: "Anthropic" })).toBe(false)
+        expect(accepts({ ...llm, model: "llama3.1:8b" })).toBe(false)
     })
 
     test("rejects a provider or a model on a human employee", () => {
-        expect(
-            EmployeeConfigSchema.safeParse({ ...human, provider: "anthropic" })
-                .success,
-        ).toBe(false)
-        expect(
-            EmployeeConfigSchema.safeParse({
-                ...human,
-                model: "claude-opus-5-5",
-            }).success,
-        ).toBe(false)
+        expect(accepts({ ...human, provider: "anthropic" })).toBe(false)
+        expect(accepts({ ...human, model: "claude-opus-5-5" })).toBe(false)
     })
 
     test("rejects an unknown key", () => {
-        expect(
-            EmployeeConfigSchema.safeParse({ ...human, id: "omar" }).success,
-        ).toBe(false)
+        expect(accepts({ ...human, id: "omar" })).toBe(false)
     })
 })
