@@ -231,8 +231,8 @@ positionCommand
 positionCommand
     .command("assign")
     .description("Fill a position with an employee.")
-    .argument("<position-id>", "position id")
-    .argument("<employee-id>", "employee id")
+    .argument("<position-id>", idDescription("position", "backend-developer"))
+    .argument("<employee-id>", idDescription("employee", "claude-senior"))
     .option(
         "-r, --replace",
         "replace the employee already filling the position",
@@ -266,7 +266,7 @@ positionCommand
 positionCommand
     .command("unassign")
     .description("Make a position vacant.")
-    .argument("<position-id>", "position id")
+    .argument("<position-id>", idDescription("position", "backend-developer"))
     .action(async (rawId) => {
         await requireCompany()
         const { employee, ...position } = await loadExistingPosition(rawId)
