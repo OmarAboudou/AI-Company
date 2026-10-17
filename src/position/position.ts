@@ -1,7 +1,9 @@
 import { z } from "zod"
+import { IdSchema } from "../id.ts"
 
 export const PositionConfigSchema = z.strictObject({
     title: z.string().trim().min(1),
+    employee: IdSchema.optional(),
 })
 
 export type PositionConfig = z.infer<typeof PositionConfigSchema>
