@@ -1,0 +1,16 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/company.json",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Name of the company, e.g. Acme."
+        }
+    },
+    "required": ["name"],
+    "additionalProperties": false,
+    "title": "llmco company",
+    "description": "Configuration of the company, in .llmco/company/config.json. Its description lives next to it, in description.md."
+}

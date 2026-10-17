@@ -11,7 +11,8 @@
         "test": "bun test",
         "typecheck": "tsc --noEmit",
         "lint": "biome check",
-        "lint:fix": "biome check --write"
+        "lint:fix": "biome check --write",
+        "schemas": "bun scripts/generate-schemas.ts"
     },
     "devDependencies": {
         "@biomejs/biome": "2.5.15",
