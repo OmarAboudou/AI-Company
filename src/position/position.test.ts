@@ -24,13 +24,13 @@ describe("PositionConfigSchema", () => {
     })
 
     test("accepts the id of the default employee", () => {
-        const filled = { ...developer, defaultEmployee: "claude-senior" }
+        const filled = { ...developer, defaultEmployeeId: "claude-senior" }
 
         expect(PositionConfigSchema.parse(filled)).toEqual(filled)
     })
 
     test("rejects a default employee id that is not kebab-case", () => {
-        const config = { ...developer, defaultEmployee: "Claude Senior" }
+        const config = { ...developer, defaultEmployeeId: "Claude Senior" }
 
         expect(accepts(config)).toBe(false)
     })

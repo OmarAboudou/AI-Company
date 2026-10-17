@@ -123,7 +123,7 @@ describe("llmco position assign and unassign", () => {
         )
         expect(await positionConfig("developer")).toEqual({
             title: "Developer",
-            defaultEmployee: "omar",
+            defaultEmployeeId: "omar",
         })
     })
 
@@ -139,7 +139,7 @@ describe("llmco position assign and unassign", () => {
         expect(assign.stderr).toContain("--replace")
         expect(await positionConfig("developer")).toEqual({
             title: "Developer",
-            defaultEmployee: "claude-senior",
+            defaultEmployeeId: "claude-senior",
         })
     })
 
@@ -162,7 +162,7 @@ describe("llmco position assign and unassign", () => {
             )
             expect(await positionConfig("developer")).toEqual({
                 title: "Developer",
-                defaultEmployee: "omar",
+                defaultEmployeeId: "omar",
             })
         },
     )
@@ -181,10 +181,10 @@ describe("llmco position assign and unassign", () => {
         runCli("position", "assign", "qa-tester", "claude-senior")
 
         expect(await positionConfig("developer")).toMatchObject({
-            defaultEmployee: "claude-senior",
+            defaultEmployeeId: "claude-senior",
         })
         expect(await positionConfig("qa-tester")).toMatchObject({
-            defaultEmployee: "claude-senior",
+            defaultEmployeeId: "claude-senior",
         })
     })
 

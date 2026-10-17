@@ -17,7 +17,7 @@ import { employeeExists, listEmployees, saveEmployee } from "./storage.ts"
 
 function positionsFilledBy(positions: Position[], employeeId: string): string {
     const ids = positions
-        .filter(({ defaultEmployee }) => defaultEmployee === employeeId)
+        .filter(({ defaultEmployeeId }) => defaultEmployeeId === employeeId)
         .map(({ id }) => id)
     return ids.length > 0 ? ids.join(", ") : "(none)"
 }
