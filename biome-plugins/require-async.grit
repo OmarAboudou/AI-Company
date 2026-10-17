@@ -1,0 +1,13 @@
+language js
+
+or {
+    JsFunctionDeclaration(return_type_annotation=$returnType),
+    JsFunctionExpression(return_type_annotation=$returnType),
+    JsArrowFunctionExpression(return_type_annotation=$returnType),
+    JsMethodClassMember(return_type_annotation=$returnType),
+    JsMethodObjectMember(return_type_annotation=$returnType)
+} as $function where {
+    $returnType <: r"(?s):\s*Promise<.*",
+    not $function <: r"(?s)^(?:[a-z]+\s+)*async\s.*",
+    register_diagnostic(span=$returnType, message="A function that returns a Promise must be declared async.")
+}
