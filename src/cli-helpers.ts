@@ -115,14 +115,14 @@ export async function loadExistingLlmProvider(
 
 export async function loadExistingLlmModel(
     rawProviderId: string,
-    rawId: string,
+    rawModelId: string,
 ): Promise<LlmModel> {
     const provider = await loadExistingLlmProvider(rawProviderId)
-    const id = parseId("model", rawId)
-    if (!(await llmModelExists(projectRoot, provider.id, id))) {
+    const modelId = parseId("model", rawModelId)
+    if (!(await llmModelExists(projectRoot, provider.id, modelId))) {
         throw new UserError(
-            `Provider "${provider.id}" has no model "${id}". Run \`llmco model list\`.`,
+            `Provider "${provider.id}" has no model "${modelId}". Run \`llmco model list\`.`,
         )
     }
-    return loadLlmModel(projectRoot, provider.id, id)
+    return loadLlmModel(projectRoot, provider.id, modelId)
 }

@@ -29,13 +29,13 @@ export function registerLlmModelCommands(program: Command): void {
             "-a, --api-id <api-id>",
             "id of the model on the provider's side, as its API expects it, e.g. claude-opus-5-5 or llama3.1:8b",
         )
-        .action(async (rawProviderId, rawId, { name, apiId }) => {
+        .action(async (rawProviderId, rawModelId, { name, apiId }) => {
             await requireCompany()
             const provider = await loadExistingLlmProvider(rawProviderId)
-            const id = parseId("model", rawId)
-            if (await llmModelExists(projectRoot, provider.id, id)) {
+            const modelId = parseId("model", rawModelId)
+            if (await llmModelExists(projectRoot, provider.id, modelId)) {
                 throw new UserError(
-                    `Provider "${provider.id}" already has a model "${id}".`,
+                    `Provider "${provider.id}" already has a model "${modelId}".`,
                 )
             }
             const config = LlmModelConfigSchema.safeParse({ name, apiId })
@@ -44,10 +44,12 @@ export function registerLlmModelCommands(program: Command): void {
             }
             await saveLlmModel(projectRoot, {
                 provider: provider.id,
-                id,
+                id: modelId,
                 ...config.data,
             })
-            console.log(`Created model "${id}" of provider "${provider.id}".`)
+            console.log(
+                `Created model "${modelId}" of provider "${provider.id}".`,
+            )
         })
 
     modelCommand
@@ -77,9 +79,9 @@ export function registerLlmModelCommands(program: Command): void {
         .description("Display a model and its id on the provider's side.")
         .argument("<provider-id>", idDescription("provider", "anthropic"))
         .argument("<model-id>", idDescription("model", "claude-opus-5-5"))
-        .action(async (rawProviderId, rawId) => {
+        .action(async (rawProviderId, rawModelId) => {
             await requireCompany()
-            const model = await loadExistingLlmModel(rawProviderId, rawId)
+            const model = await loadExistingLlmModel(rawProviderId, rawModelId)
             console.log(
                 `# ${model.name}\n\nprovider: ${model.provider}\napi id: ${model.apiId}`,
             )
