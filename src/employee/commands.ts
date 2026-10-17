@@ -63,11 +63,11 @@ export function registerEmployeeCommands(program: Command): void {
         .requiredOption("-n, --name <name>", "employee name")
         .requiredOption(
             "-p, --provider <provider-id>",
-            "LLM provider id in kebab-case, e.g. anthropic",
+            "LLM provider id, e.g. anthropic (see llmco provider list)",
         )
         .requiredOption(
             "-m, --model <model-id>",
-            "model id in llmco, in kebab-case, e.g. claude-opus-5-5 (not necessarily the model name the provider expects)",
+            "id of one of the provider's models in llmco, e.g. claude-opus-5-5 (see llmco model list), not its api id",
         )
         .action(async (rawId, { name, provider, model }) => {
             await createEmployee(rawId, { name, kind: "llm", provider, model })
