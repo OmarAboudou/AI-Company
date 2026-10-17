@@ -7,6 +7,7 @@
         "llmco": "./src/cli.ts"
     },
     "scripts": {
+        "prepare": "git config core.hooksPath .githooks",
         "test": "bun test",
         "typecheck": "tsc --noEmit",
         "lint": "biome check",
