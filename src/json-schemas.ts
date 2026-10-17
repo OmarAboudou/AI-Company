@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { CompanyConfigSchema } from "./company/company.ts"
 import { EmployeeConfigSchema } from "./employee/employee.ts"
+import { LlmProviderConfigSchema } from "./llm-provider/llm-provider.ts"
 import { PositionConfigSchema } from "./position/position.ts"
 
 const publishedAt =
@@ -10,6 +11,7 @@ const configSchemas = {
     company: CompanyConfigSchema,
     position: PositionConfigSchema,
     employee: EmployeeConfigSchema,
+    "llm-provider": LlmProviderConfigSchema,
 }
 
 export const jsonSchemas = Object.fromEntries(

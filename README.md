@@ -44,6 +44,10 @@ Every `config.json` under `.llmco/` has a JSON Schema in [`schemas/`](schemas/),
         {
             "fileMatch": ["**/.llmco/employees/*/config.json"],
             "url": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/employee.json"
+        },
+        {
+            "fileMatch": ["**/.llmco/llm-providers/*/config.json"],
+            "url": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/llm-provider.json"
         }
     ]
 }

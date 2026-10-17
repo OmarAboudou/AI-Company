@@ -1,0 +1,16 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/llm-provider.json",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name of the LLM provider, e.g. Anthropic."
+        }
+    },
+    "required": ["name"],
+    "additionalProperties": false,
+    "title": "llmco LLM provider",
+    "description": "Configuration of an LLM provider, in .llmco/llm-providers/<provider-id>/config.json."
+}
