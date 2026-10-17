@@ -1,8 +1,9 @@
 import { join } from "node:path"
+import { llmcoDir } from "../project.ts"
 import { type Company, CompanyConfigSchema } from "./company.ts"
 
 function companyPaths(projectRoot: string) {
-    const dir = join(projectRoot, ".llmco", "company")
+    const dir = join(llmcoDir(projectRoot), "company")
     return {
         config: join(dir, "config.json"),
         description: join(dir, "description.md"),
