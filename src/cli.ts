@@ -3,6 +3,7 @@ import { Command } from "@commander-js/extra-typings"
 import { z } from "zod"
 import { CompanyConfigSchema } from "./company/company.ts"
 import { companyExists, loadCompany, saveCompany } from "./company/storage.ts"
+import { UserError } from "./errors.ts"
 import { PositionConfigSchema, PositionIdSchema } from "./position/position.ts"
 import {
     listPositions,
@@ -13,21 +14,20 @@ import {
 
 const projectRoot = process.cwd()
 
-function fail(message: string): never {
-    console.error(message)
-    process.exit(1)
-}
-
 async function requireCompany(): Promise<void> {
     if (!(await companyExists(projectRoot))) {
-        fail("No company in this directory. Run `llmco init` first.")
+        throw new UserError(
+            "No company in this directory. Run `llmco init` first.",
+        )
     }
 }
 
 function parsePositionId(id: string): string {
     const result = PositionIdSchema.safeParse(id)
     if (!result.success) {
-        fail(`Invalid position id "${id}".\n${z.prettifyError(result.error)}`)
+        throw new UserError(
+            `Invalid position id "${id}".\n${z.prettifyError(result.error)}`,
+        )
     }
     return result.data
 }
@@ -44,11 +44,11 @@ program
     .option("--description <text>", "company description", "")
     .action(async ({ name, description }) => {
         if (await companyExists(projectRoot)) {
-            fail("A company already exists in this directory.")
+            throw new UserError("A company already exists in this directory.")
         }
         const config = CompanyConfigSchema.safeParse({ name })
         if (!config.success) {
-            fail(z.prettifyError(config.error))
+            throw new UserError(z.prettifyError(config.error))
         }
         await saveCompany(projectRoot, { ...config.data, description })
         console.log(`Created company "${config.data.name}".`)
@@ -81,11 +81,11 @@ positionCommand
         await requireCompany()
         const id = parsePositionId(rawId)
         if (await positionExists(projectRoot, id)) {
-            fail(`Position "${id}" already exists.`)
+            throw new UserError(`Position "${id}" already exists.`)
         }
         const config = PositionConfigSchema.safeParse({ title })
         if (!config.success) {
-            fail(z.prettifyError(config.error))
+            throw new UserError(z.prettifyError(config.error))
         }
         await savePosition(projectRoot, { id, ...config.data, description })
         console.log(`Created position "${id}".`)
@@ -117,10 +117,20 @@ positionCommand
         await requireCompany()
         const id = parsePositionId(rawId)
         if (!(await positionExists(projectRoot, id))) {
-            fail(`No position "${id}". Run \`llmco position list\`.`)
+            throw new UserError(
+                `No position "${id}". Run \`llmco position list\`.`,
+            )
         }
         const position = await loadPosition(projectRoot, id)
         console.log(`# ${position.title}\n\n${position.description}`)
     })
 
-await program.parseAsync()
+try {
+    await program.parseAsync()
+} catch (error) {
+    if (!(error instanceof UserError)) {
+        throw error
+    }
+    console.error(error.message)
+    process.exitCode = 1
+}
