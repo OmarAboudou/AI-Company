@@ -5,6 +5,7 @@
         "clientKind": "git",
         "useIgnoreFile": true
     },
+    "plugins": ["./biome-plugins/require-async.grit"],
     "formatter": {
         "indentStyle": "space",
         "indentWidth": 4
