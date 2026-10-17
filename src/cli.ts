@@ -104,6 +104,13 @@ async function loadExistingEmployee(rawId: string): Promise<Employee> {
     return loadEmployee(projectRoot, id)
 }
 
+function positionsFilledBy(positions: Position[], employeeId: string): string {
+    const ids = positions
+        .filter(({ employee }) => employee === employeeId)
+        .map(({ id }) => id)
+    return ids.length > 0 ? ids.join(", ") : "(none)"
+}
+
 async function createEmployee(rawId: string, config: unknown): Promise<void> {
     await requireCompany()
     const id = parseId("employee", rawId)
@@ -308,10 +315,13 @@ createEmployeeCommand
 
 employeeCommand
     .command("list")
-    .description("List the employees.")
+    .description("List the employees and the positions they fill.")
     .action(async () => {
         await requireCompany()
-        const employees = await listEmployees(projectRoot)
+        const [employees, positions] = await Promise.all([
+            listEmployees(projectRoot),
+            listPositions(projectRoot),
+        ])
         if (employees.length === 0) {
             console.log("No employees yet. Run `llmco employee create`.")
             return
@@ -323,6 +333,7 @@ employeeCommand
                 employee.kind === "llm"
                     ? `${employee.provider}/${employee.model}`
                     : "human",
+                positionsFilledBy(positions, employee.id),
             ]),
         )
     })
@@ -333,7 +344,10 @@ employeeCommand
     .argument("<employee-id>", idDescription("employee", "claude-senior"))
     .action(async (rawId) => {
         await requireCompany()
-        const employee = await loadExistingEmployee(rawId)
+        const [employee, positions] = await Promise.all([
+            loadExistingEmployee(rawId),
+            listPositions(projectRoot),
+        ])
         const lines = [`# ${employee.name}`, "", `kind: ${employee.kind}`]
         if (employee.kind === "llm") {
             lines.push(
@@ -341,6 +355,7 @@ employeeCommand
                 `model: ${employee.model}`,
             )
         }
+        lines.push(`positions: ${positionsFilledBy(positions, employee.id)}`)
         console.log(lines.join("\n"))
     })
 
