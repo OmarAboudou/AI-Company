@@ -192,7 +192,7 @@ positionCommand
 
 positionCommand
     .command("list")
-    .description("List the positions.")
+    .description("List the positions and the employees filling them.")
     .action(async () => {
         await requireCompany()
         const positions = await listPositions(projectRoot)
@@ -200,17 +200,25 @@ positionCommand
             console.log("No positions yet. Run `llmco position create`.")
             return
         }
-        printColumns(positions.map(({ id, title }) => [id, title]))
+        printColumns(
+            positions.map(({ id, title, employee }) => [
+                id,
+                title,
+                employee ?? "(vacant)",
+            ]),
+        )
     })
 
 positionCommand
     .command("show")
-    .description("Display a position title and description.")
+    .description("Display a position: title, employee and description.")
     .argument("<position-id>", idDescription("position", "backend-developer"))
     .action(async (rawId) => {
         await requireCompany()
         const position = await loadExistingPosition(rawId)
-        console.log(`# ${position.title}\n\n${position.description}`)
+        console.log(
+            `# ${position.title}\n\nemployee: ${position.employee ?? "(vacant)"}\n\n${position.description}`,
+        )
     })
 
 positionCommand
