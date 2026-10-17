@@ -181,13 +181,13 @@ describe("llmco employee", () => {
         )
     })
 
-    test("list aligns names, models and positions after the ids, sorted by id", () => {
+    test("list aligns names and models after the ids, sorted by id", () => {
         runCli("employee", "create", "human", "omar", "-n", "Omar Aboudou")
         createClaude()
 
         expect(runCli("employee", "list").stdout).toBe(
-            "claude-senior  Claude Senior  anthropic/claude-opus-5-5  (none)\n" +
-                "omar           Omar Aboudou   human                      (none)\n",
+            "claude-senior  Claude Senior  anthropic/claude-opus-5-5\n" +
+                "omar           Omar Aboudou   human\n",
         )
     })
 
@@ -418,14 +418,23 @@ describe("llmco position assign and unassign", () => {
         )
     })
 
-    test("employee list and show display the positions filled", () => {
+    test.each(["--positions", "-p"])(
+        "employee list %s shows the positions filled",
+        (flag) => {
+            runCli("position", "assign", "developer", "claude-senior")
+            runCli("position", "assign", "qa-tester", "claude-senior")
+
+            expect(runCli("employee", "list", flag).stdout).toBe(
+                "claude-senior  Claude Senior  anthropic/claude-opus-5-5  developer, qa-tester\n" +
+                    "omar           Omar           human                      (none)\n",
+            )
+        },
+    )
+
+    test("employee show displays the positions filled", () => {
         runCli("position", "assign", "developer", "claude-senior")
         runCli("position", "assign", "qa-tester", "claude-senior")
 
-        expect(runCli("employee", "list").stdout).toBe(
-            "claude-senior  Claude Senior  anthropic/claude-opus-5-5  developer, qa-tester\n" +
-                "omar           Omar           human                      (none)\n",
-        )
         expect(runCli("employee", "show", "claude-senior").stdout).toEndWith(
             "positions: developer, qa-tester\n",
         )
