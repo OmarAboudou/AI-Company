@@ -317,26 +317,31 @@ createEmployeeCommand
 
 employeeCommand
     .command("list")
-    .description("List the employees and the positions they fill.")
-    .action(async () => {
+    .description("List the employees.")
+    .option("-p, --positions", "also list the positions each employee fills")
+    .action(async ({ positions: withPositions }) => {
         await requireCompany()
         const [employees, positions] = await Promise.all([
             listEmployees(projectRoot),
-            listPositions(projectRoot),
+            withPositions ? listPositions(projectRoot) : [],
         ])
         if (employees.length === 0) {
             console.log("No employees yet. Run `llmco employee create`.")
             return
         }
         printColumns(
-            employees.map((employee) => [
-                employee.id,
-                employee.name,
-                employee.kind === "llm"
-                    ? `${employee.provider}/${employee.model}`
-                    : "human",
-                positionsFilledBy(positions, employee.id),
-            ]),
+            employees.map((employee) => {
+                const row = [
+                    employee.id,
+                    employee.name,
+                    employee.kind === "llm"
+                        ? `${employee.provider}/${employee.model}`
+                        : "human",
+                ]
+                return withPositions
+                    ? [...row, positionsFilledBy(positions, employee.id)]
+                    : row
+            }),
         )
     })
 
