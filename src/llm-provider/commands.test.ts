@@ -17,7 +17,18 @@ describe("llmco provider", () => {
 
         const show = runCli("provider", "show", "anthropic")
         expect(show.exitCode).toBe(0)
-        expect(show.stdout).toBe("# Anthropic\n")
+        expect(show.stdout).toBe("# Anthropic\n\nmodels: (none)\n")
+    })
+
+    test("show lists the provider's models, sorted by id", () => {
+        createAnthropic()
+        const create = ["model", "create", "anthropic"]
+        runCli(...create, "claude-opus-5-5", "-n", "Opus", "-a", "opus")
+        runCli(...create, "claude-haiku-4-5", "-n", "Haiku", "-a", "haiku")
+
+        const show = runCli("provider", "show", "anthropic").stdout
+
+        expect(show).toContain("models: claude-haiku-4-5, claude-opus-5-5\n")
     })
 
     test("list aligns names after the ids, sorted by id", () => {
@@ -43,7 +54,7 @@ describe("llmco provider", () => {
         const show = runCli("provider", "show", "anthropic").stdout
 
         expect(second.exitCode).toBe(1)
-        expect(show).toBe("# Anthropic\n")
+        expect(show).toContain("# Anthropic\n")
     })
 
     test("create rejects an id that is not kebab-case", () => {
