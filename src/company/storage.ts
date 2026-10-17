@@ -1,4 +1,5 @@
 import { join } from "node:path"
+import { readConfig, readText } from "../files.ts"
 import { llmcoDir } from "../project.ts"
 import { type Company, CompanyConfigSchema } from "./company.ts"
 
@@ -16,11 +17,11 @@ export async function companyExists(projectRoot: string): Promise<boolean> {
 
 export async function loadCompany(projectRoot: string): Promise<Company> {
     const paths = companyPaths(projectRoot)
-    const [rawConfig, description] = await Promise.all([
-        Bun.file(paths.config).json(),
-        Bun.file(paths.description).text(),
+    const [config, description] = await Promise.all([
+        readConfig(projectRoot, paths.config, CompanyConfigSchema),
+        readText(projectRoot, paths.description),
     ])
-    return { ...CompanyConfigSchema.parse(rawConfig), description }
+    return { ...config, description }
 }
 
 export async function saveCompany(

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { UserError } from "../errors.ts"
 import {
     listPositions,
     loadPosition,
@@ -58,11 +59,15 @@ describe("loadPosition", () => {
         await Bun.write(join(dir, "config.json"), JSON.stringify({ title: "" }))
         await Bun.write(join(dir, "description.md"), "")
 
-        await expect(loadPosition(projectRoot, "developer")).rejects.toThrow()
+        await expect(loadPosition(projectRoot, "developer")).rejects.toThrow(
+            UserError,
+        )
     })
 
     test("fails when the position does not exist", async () => {
-        await expect(loadPosition(projectRoot, "developer")).rejects.toThrow()
+        await expect(loadPosition(projectRoot, "developer")).rejects.toThrow(
+            UserError,
+        )
     })
 })
 
