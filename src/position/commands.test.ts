@@ -84,6 +84,17 @@ describe("llmco position assign and unassign", () => {
         runCli("position", "create", "developer", "-t", "Developer")
         runCli("position", "create", "qa-tester", "-t", "QA Tester")
         runCli("employee", "create", "human", "omar", "-n", "Omar")
+        runCli("provider", "create", "anthropic", "-n", "Anthropic")
+        runCli(
+            "model",
+            "create",
+            "anthropic",
+            "claude-opus-5-5",
+            "-n",
+            "Claude Opus 5.5",
+            "-a",
+            "claude-opus-5-5",
+        )
         runCli(
             "employee",
             "create",
