@@ -6,6 +6,8 @@ import { employeeExists, loadEmployee } from "./employee/storage.ts"
 import { UserError } from "./errors.ts"
 import { readText } from "./files.ts"
 import { IdSchema } from "./id.ts"
+import type { LlmModel } from "./llm-model/llm-model.ts"
+import { llmModelExists, loadLlmModel } from "./llm-model/storage.ts"
 import type { LlmProvider } from "./llm-provider/llm-provider.ts"
 import { llmProviderExists, loadLlmProvider } from "./llm-provider/storage.ts"
 import type { Position } from "./position/position.ts"
@@ -45,6 +47,7 @@ const entityFolders = {
     position: ".llmco/positions",
     employee: ".llmco/employees",
     provider: ".llmco/llm-providers",
+    model: ".llmco/llm-providers/<provider-id>/models",
 }
 
 export function idDescription(
@@ -108,4 +111,18 @@ export async function loadExistingLlmProvider(
         throw new UserError(`No provider "${id}". Run \`llmco provider list\`.`)
     }
     return loadLlmProvider(projectRoot, id)
+}
+
+export async function loadExistingLlmModel(
+    rawProviderId: string,
+    rawId: string,
+): Promise<LlmModel> {
+    const provider = await loadExistingLlmProvider(rawProviderId)
+    const id = parseId("model", rawId)
+    if (!(await llmModelExists(projectRoot, provider.id, id))) {
+        throw new UserError(
+            `Provider "${provider.id}" has no model "${id}". Run \`llmco model list\`.`,
+        )
+    }
+    return loadLlmModel(projectRoot, provider.id, id)
 }

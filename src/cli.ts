@@ -3,6 +3,7 @@ import { Command } from "@commander-js/extra-typings"
 import { registerCompanyCommands } from "./company/commands.ts"
 import { registerEmployeeCommands } from "./employee/commands.ts"
 import { UserError } from "./errors.ts"
+import { registerLlmModelCommands } from "./llm-model/commands.ts"
 import { registerLlmProviderCommands } from "./llm-provider/commands.ts"
 import { registerPositionCommands } from "./position/commands.ts"
 
@@ -15,6 +16,7 @@ registerCompanyCommands(program)
 registerPositionCommands(program)
 registerEmployeeCommands(program)
 registerLlmProviderCommands(program)
+registerLlmModelCommands(program)
 
 try {
     await program.parseAsync()
