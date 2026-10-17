@@ -1,35 +1,7 @@
-import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { beforeEach, describe, expect, test } from "bun:test"
+import { useTemporaryProject } from "./cli-test-helpers.ts"
 
-const cliPath = join(import.meta.dir, "cli.ts")
-
-let projectRoot: string
-
-beforeEach(async () => {
-    projectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
-})
-
-afterEach(async () => {
-    await rm(projectRoot, { recursive: true, force: true })
-})
-
-function runCli(...args: string[]) {
-    return runCliWithStdin("", ...args)
-}
-
-function runCliWithStdin(stdin: string, ...args: string[]) {
-    const result = Bun.spawnSync([process.execPath, cliPath, ...args], {
-        cwd: projectRoot,
-        stdin: new TextEncoder().encode(stdin),
-    })
-    return {
-        exitCode: result.exitCode,
-        stdout: result.stdout.toString(),
-        stderr: result.stderr.toString(),
-    }
-}
+const { runCli, runCliWithStdin, projectPath } = useTemporaryProject()
 
 describe("llmco init", () => {
     test("creates a company that company show displays", () => {
@@ -311,7 +283,7 @@ describe("llmco position assign and unassign", () => {
     })
 
     async function positionConfig(id: string): Promise<unknown> {
-        const path = join(projectRoot, ".llmco", "positions", id, "config.json")
+        const path = projectPath(".llmco", "positions", id, "config.json")
         return Bun.file(path).json()
     }
 
@@ -458,7 +430,7 @@ describe("--description-file", () => {
     const markdown = "## Mission\n\nYou build the API.\n"
 
     test("init reads the description from a file", async () => {
-        await Bun.write(join(projectRoot, "company.md"), markdown)
+        await Bun.write(projectPath("company.md"), markdown)
 
         runCli("init", "--name", "Acme", "--description-file", "company.md")
 
@@ -542,7 +514,7 @@ describe("short options", () => {
     })
 
     test("-F reads the description from a file", async () => {
-        await Bun.write(join(projectRoot, "company.md"), "We build things.")
+        await Bun.write(projectPath("company.md"), "We build things.")
 
         runCli("init", "-n", "Acme", "-F", "company.md")
 
@@ -556,7 +528,7 @@ describe("corrupted files", () => {
     test("company show names the invalid file and field", async () => {
         runCli("init", "--name", "Acme")
         await Bun.write(
-            join(projectRoot, ".llmco", "company", "config.json"),
+            projectPath(".llmco", "company", "config.json"),
             '{ "name": "" }',
         )
 
@@ -571,13 +543,7 @@ describe("corrupted files", () => {
         runCli("init", "--name", "Acme")
         runCli("position", "create", "developer", "--title", "Developer")
         await Bun.write(
-            join(
-                projectRoot,
-                ".llmco",
-                "positions",
-                "developer",
-                "config.json",
-            ),
+            projectPath(".llmco", "positions", "developer", "config.json"),
             "{ not json",
         )
 
