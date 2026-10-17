@@ -51,6 +51,13 @@ async function readDescription(
     return readText(projectRoot, descriptionFile)
 }
 
+function idDescription(
+    entity: "position" | "employee",
+    example: string,
+): string {
+    return `${entity} id, which is also the name of its folder in .llmco/${entity}s (kebab-case, e.g. ${example})`
+}
+
 function parseId(entity: string, id: string): string {
     const result = IdSchema.safeParse(id)
     if (!result.success) {
@@ -141,7 +148,7 @@ const positionCommand = program
 positionCommand
     .command("create")
     .description("Create a position.")
-    .argument("<id>", "position id in kebab-case, e.g. backend-developer")
+    .argument("<position-id>", idDescription("position", "backend-developer"))
     .requiredOption("-t, --title <title>", "position title")
     .option(
         "-d, --description <text>",
@@ -183,7 +190,7 @@ positionCommand
 positionCommand
     .command("show")
     .description("Display a position title and description.")
-    .argument("<id>", "position id")
+    .argument("<position-id>", idDescription("position", "backend-developer"))
     .action(async (rawId) => {
         await requireCompany()
         const id = parseId("position", rawId)
@@ -208,7 +215,7 @@ const createEmployeeCommand = employeeCommand
 createEmployeeCommand
     .command("llm")
     .description("Create an employee run by an LLM.")
-    .argument("<employee-id>", "employee id in kebab-case, e.g. claude-senior")
+    .argument("<employee-id>", idDescription("employee", "claude-senior"))
     .requiredOption("-n, --name <name>", "employee name")
     .requiredOption(
         "-p, --provider <provider-id>",
@@ -225,7 +232,7 @@ createEmployeeCommand
 createEmployeeCommand
     .command("human")
     .description("Create an employee who is a human.")
-    .argument("<employee-id>", "employee id in kebab-case, e.g. omar")
+    .argument("<employee-id>", idDescription("employee", "omar"))
     .requiredOption("-n, --name <name>", "employee name")
     .action(async (rawId, { name }) => {
         await createEmployee(rawId, { name, kind: "human" })
@@ -255,7 +262,7 @@ employeeCommand
 employeeCommand
     .command("show")
     .description("Display an employee.")
-    .argument("<employee-id>", "employee id")
+    .argument("<employee-id>", idDescription("employee", "claude-senior"))
     .action(async (rawId) => {
         await requireCompany()
         const id = parseId("employee", rawId)
