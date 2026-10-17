@@ -9,6 +9,7 @@ import {
     requireCompany,
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
+import { listLlmModels } from "../llm-model/storage.ts"
 import { LlmProviderConfigSchema } from "./llm-provider.ts"
 import {
     listLlmProviders,
@@ -55,11 +56,16 @@ export function registerLlmProviderCommands(program: Command): void {
 
     providerCommand
         .command("show")
-        .description("Display an LLM provider.")
+        .description("Display an LLM provider and its models.")
         .argument("<provider-id>", idDescription("provider", "anthropic"))
         .action(async (rawId) => {
             await requireCompany()
             const provider = await loadExistingLlmProvider(rawId)
-            console.log(`# ${provider.name}`)
+            const models = await listLlmModels(projectRoot, provider.id)
+            const modelIds =
+                models.length > 0
+                    ? models.map(({ id }) => id).join(", ")
+                    : "(none)"
+            console.log(`# ${provider.name}\n\nmodels: ${modelIds}`)
         })
 }
