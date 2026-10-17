@@ -7,8 +7,12 @@ function llmProvidersDir(projectRoot: string): string {
     return join(llmcoDir(projectRoot), "llm-providers")
 }
 
+export function llmProviderDir(projectRoot: string, id: string): string {
+    return join(llmProvidersDir(projectRoot), id)
+}
+
 function llmProviderConfigPath(projectRoot: string, id: string): string {
-    return join(llmProvidersDir(projectRoot), id, "config.json")
+    return join(llmProviderDir(projectRoot, id), "config.json")
 }
 
 export async function llmProviderExists(
