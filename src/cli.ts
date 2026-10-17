@@ -25,7 +25,7 @@ async function requireCompany(): Promise<void> {
 
 function descriptionFileOption() {
     return new Option(
-        "--description-file <path>",
+        "-F, --description-file <path>",
         "read the description from a file, or from stdin with -",
     ).conflicts("description")
 }
@@ -61,8 +61,8 @@ const program = new Command()
 program
     .command("init")
     .description("Create a company in the current directory.")
-    .requiredOption("--name <name>", "company name")
-    .option("--description <text>", "company description", "")
+    .requiredOption("-n, --name <name>", "company name")
+    .option("-d, --description <text>", "company description", "")
     .addOption(descriptionFileOption())
     .action(async ({ name, description, descriptionFile }) => {
         if (await companyExists(projectRoot)) {
@@ -100,8 +100,12 @@ positionCommand
     .command("create")
     .description("Create a position.")
     .argument("<id>", "position id in kebab-case, e.g. backend-developer")
-    .requiredOption("--title <title>", "position title")
-    .option("--description <text>", "what the position is responsible for", "")
+    .requiredOption("-t, --title <title>", "position title")
+    .option(
+        "-d, --description <text>",
+        "what the position is responsible for",
+        "",
+    )
     .addOption(descriptionFileOption())
     .action(async (rawId, { title, description, descriptionFile }) => {
         await requireCompany()

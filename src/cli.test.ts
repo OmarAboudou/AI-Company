@@ -200,6 +200,44 @@ describe("--description-file", () => {
     })
 })
 
+describe("short options", () => {
+    test("init accepts -n and -d", () => {
+        runCli("init", "-n", "Acme", "-d", "We build things.")
+
+        expect(runCli("company", "show").stdout).toBe(
+            "# Acme\n\nWe build things.\n",
+        )
+    })
+
+    test("position create accepts -t and -d", () => {
+        runCli("init", "-n", "Acme")
+
+        runCli(
+            "position",
+            "create",
+            "developer",
+            "-t",
+            "Developer",
+            "-d",
+            "You build the API.",
+        )
+
+        expect(runCli("position", "show", "developer").stdout).toBe(
+            "# Developer\n\nYou build the API.\n",
+        )
+    })
+
+    test("-F reads the description from a file", async () => {
+        await Bun.write(join(projectRoot, "company.md"), "We build things.")
+
+        runCli("init", "-n", "Acme", "-F", "company.md")
+
+        expect(runCli("company", "show").stdout).toBe(
+            "# Acme\n\nWe build things.\n",
+        )
+    })
+})
+
 describe("corrupted files", () => {
     test("company show names the invalid file and field", async () => {
         runCli("init", "--name", "Acme")
