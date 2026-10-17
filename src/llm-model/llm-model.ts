@@ -19,6 +19,6 @@ export const LlmModelConfigSchema = z
 export type LlmModelConfig = z.infer<typeof LlmModelConfigSchema>
 
 export type LlmModel = LlmModelConfig & {
-    provider: string
+    providerId: string
     id: string
 }

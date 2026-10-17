@@ -22,21 +22,21 @@ afterEach(async () => {
 })
 
 const opus: LlmModel = {
-    provider: "anthropic",
+    providerId: "anthropic",
     id: "claude-opus-5-5",
     name: "Claude Opus 5.5",
     apiId: "claude-opus-5-5",
 }
 
 const haiku: LlmModel = {
-    provider: "anthropic",
+    providerId: "anthropic",
     id: "claude-haiku-4-5",
     name: "Claude Haiku 4.5",
     apiId: "claude-haiku-4-5-20251001",
 }
 
 const llama: LlmModel = {
-    provider: "ollama",
+    providerId: "ollama",
     id: "llama-3-1-8b",
     name: "Llama 3.1 8B",
     apiId: "llama3.1:8b",

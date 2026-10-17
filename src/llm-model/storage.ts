@@ -3,54 +3,56 @@ import { listSubdirectories, readConfig } from "../files.ts"
 import { llmProviderDir } from "../llm-provider/storage.ts"
 import { type LlmModel, LlmModelConfigSchema } from "./llm-model.ts"
 
-function llmModelsDir(projectRoot: string, provider: string): string {
-    return join(llmProviderDir(projectRoot, provider), "models")
+function llmModelsDir(projectRoot: string, providerId: string): string {
+    return join(llmProviderDir(projectRoot, providerId), "models")
 }
 
 function llmModelConfigPath(
     projectRoot: string,
-    provider: string,
+    providerId: string,
     id: string,
 ): string {
-    return join(llmModelsDir(projectRoot, provider), id, "config.json")
+    return join(llmModelsDir(projectRoot, providerId), id, "config.json")
 }
 
 export async function llmModelExists(
     projectRoot: string,
-    provider: string,
+    providerId: string,
     id: string,
 ): Promise<boolean> {
-    return Bun.file(llmModelConfigPath(projectRoot, provider, id)).exists()
+    return Bun.file(llmModelConfigPath(projectRoot, providerId, id)).exists()
 }
 
 export async function loadLlmModel(
     projectRoot: string,
-    provider: string,
+    providerId: string,
     id: string,
 ): Promise<LlmModel> {
     const config = await readConfig(
         projectRoot,
-        llmModelConfigPath(projectRoot, provider, id),
+        llmModelConfigPath(projectRoot, providerId, id),
         LlmModelConfigSchema,
     )
-    return { provider, id, ...config }
+    return { providerId, id, ...config }
 }
 
 export async function listLlmModels(
     projectRoot: string,
-    provider: string,
+    providerId: string,
 ): Promise<LlmModel[]> {
-    const ids = await listSubdirectories(llmModelsDir(projectRoot, provider))
-    return Promise.all(ids.map((id) => loadLlmModel(projectRoot, provider, id)))
+    const ids = await listSubdirectories(llmModelsDir(projectRoot, providerId))
+    return Promise.all(
+        ids.map((id) => loadLlmModel(projectRoot, providerId, id)),
+    )
 }
 
 export async function saveLlmModel(
     projectRoot: string,
     model: LlmModel,
 ): Promise<void> {
-    const { provider, id, ...config } = model
+    const { providerId, id, ...config } = model
     await Bun.write(
-        llmModelConfigPath(projectRoot, provider, id),
+        llmModelConfigPath(projectRoot, providerId, id),
         `${JSON.stringify(config, null, 4)}\n`,
     )
 }

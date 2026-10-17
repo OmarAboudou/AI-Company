@@ -34,6 +34,6 @@ describe("LlmModelConfigSchema", () => {
     })
 
     test("rejects an unknown key", () => {
-        expect(accepts({ ...llama, provider: "ollama" })).toBe(false)
+        expect(accepts({ ...llama, providerId: "ollama" })).toBe(false)
     })
 })
