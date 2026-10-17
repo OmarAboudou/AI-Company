@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { UserError } from "../errors.ts"
 import { companyExists, loadCompany, saveCompany } from "./storage.ts"
 
 let projectRoot: string
@@ -33,11 +34,11 @@ describe("loadCompany", () => {
     test("rejects an invalid config.json", async () => {
         await writeCompanyFiles({ name: "" }, "")
 
-        await expect(loadCompany(projectRoot)).rejects.toThrow()
+        await expect(loadCompany(projectRoot)).rejects.toThrow(UserError)
     })
 
     test("fails when there is no company", async () => {
-        await expect(loadCompany(projectRoot)).rejects.toThrow()
+        await expect(loadCompany(projectRoot)).rejects.toThrow(UserError)
     })
 })
 

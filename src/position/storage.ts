@@ -1,5 +1,6 @@
 import { readdir } from "node:fs/promises"
 import { join } from "node:path"
+import { readConfig, readText } from "../files.ts"
 import { llmcoDir } from "../project.ts"
 import { type Position, PositionConfigSchema } from "./position.ts"
 
@@ -27,11 +28,11 @@ export async function loadPosition(
     id: string,
 ): Promise<Position> {
     const paths = positionPaths(projectRoot, id)
-    const [rawConfig, description] = await Promise.all([
-        Bun.file(paths.config).json(),
-        Bun.file(paths.description).text(),
+    const [config, description] = await Promise.all([
+        readConfig(projectRoot, paths.config, PositionConfigSchema),
+        readText(projectRoot, paths.description),
     ])
-    return { id, ...PositionConfigSchema.parse(rawConfig), description }
+    return { id, ...config, description }
 }
 
 export async function listPositions(projectRoot: string): Promise<Position[]> {
