@@ -239,8 +239,10 @@ positionCommand
     )
     .action(async (rawPositionId, rawEmployeeId, { replace }) => {
         await requireCompany()
-        const position = await loadExistingPosition(rawPositionId)
-        const employee = await loadExistingEmployee(rawEmployeeId)
+        const [position, employee] = await Promise.all([
+            loadExistingPosition(rawPositionId),
+            loadExistingEmployee(rawEmployeeId),
+        ])
         const previous = position.employee
         if (previous === employee.id) {
             console.log(
