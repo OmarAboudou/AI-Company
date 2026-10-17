@@ -39,11 +39,16 @@ export async function readDescription(
     return readText(projectRoot, descriptionFile)
 }
 
+const entityFolders = {
+    position: ".llmco/positions",
+    employee: ".llmco/employees",
+}
+
 export function idDescription(
-    entity: "position" | "employee",
+    entity: keyof typeof entityFolders,
     example: string,
 ): string {
-    return `${entity} id, which is also the name of its folder in .llmco/${entity}s (kebab-case, e.g. ${example})`
+    return `${entity} id, which is also the name of its folder in ${entityFolders[entity]} (kebab-case, e.g. ${example})`
 }
 
 export function parseId(entity: string, id: string): string {
