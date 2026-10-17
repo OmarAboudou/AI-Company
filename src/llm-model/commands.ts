@@ -43,7 +43,7 @@ export function registerLlmModelCommands(program: Command): void {
                 throw new UserError(z.prettifyError(config.error))
             }
             await saveLlmModel(projectRoot, {
-                provider: provider.id,
+                providerId: provider.id,
                 id: modelId,
                 ...config.data,
             })
@@ -67,8 +67,8 @@ export function registerLlmModelCommands(program: Command): void {
                 return
             }
             printColumns(
-                models.map(({ provider, id, name }) => [
-                    `${provider}/${id}`,
+                models.map(({ providerId, id, name }) => [
+                    `${providerId}/${id}`,
                     name,
                 ]),
             )
@@ -83,7 +83,7 @@ export function registerLlmModelCommands(program: Command): void {
             await requireCompany()
             const model = await loadExistingLlmModel(rawProviderId, rawModelId)
             console.log(
-                `# ${model.name}\n\nprovider: ${model.provider}\napi id: ${model.apiId}`,
+                `# ${model.name}\n\nprovider: ${model.providerId}\napi id: ${model.apiId}`,
             )
         })
 }

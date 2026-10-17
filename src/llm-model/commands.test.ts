@@ -9,11 +9,11 @@ describe("llmco model", () => {
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
     })
 
-    function createOpus(provider = "anthropic") {
+    function createOpus(providerId = "anthropic") {
         return runCli(
             "model",
             "create",
-            provider,
+            providerId,
             "claude-opus-5-5",
             "--name",
             "Claude Opus 5.5",
