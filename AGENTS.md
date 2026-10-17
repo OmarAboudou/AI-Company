@@ -23,6 +23,8 @@ Only for a non-obvious *why* that no test can carry (a workaround, an external c
 
 ## Posting on GitHub
 
+Every commit and every GitHub message written by an agent names the model that wrote it: a `Co-Authored-By: <model> <email>` trailer in commits, a `— <model> (<tool>)` signature line at the end of messages.
+
 Claude posts from its own collaborator account, `omar-aboudou-claude`. Any agent posting from the maintainer's account instead must start every comment, reply or issue with a line identifying itself, e.g.:
 
 > 🤖 **Codex** — *written by Codex, posted from Omar's account.*
