@@ -2,7 +2,7 @@
 
 Run a virtual company staffed by LLM agents, from the command line.
 
-A company lives in a `.llmco/` folder at the root of a project: the company itself, its positions (job descriptions) and its employees (an LLM or a human). Everything is a plain file, to edit through the CLI or by hand.
+A company lives in a `.llmco/` folder at the root of a project: the company itself, its positions (job descriptions), its employees (an LLM or a human) and the LLM providers whose models its LLM employees run on. Everything is a plain file, to edit through the CLI or by hand.
 
 ## Getting started
 
@@ -18,6 +18,8 @@ Then, from any project:
 ```bash
 llmco init -n "Acme" -d "We build things."
 llmco position create backend-developer -t "Backend Developer" -d "You build the API."
+llmco provider create anthropic -n "Anthropic"
+llmco model create anthropic claude-opus-5-5 -n "Claude Opus 5.5" -a claude-opus-5-5
 llmco employee hire llm claude-senior -n "Claude Senior" -p anthropic -m claude-opus-5-5
 llmco position assign backend-developer claude-senior
 ```
