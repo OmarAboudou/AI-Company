@@ -288,6 +288,130 @@ describe("llmco employee", () => {
     })
 })
 
+describe("llmco position assign and unassign", () => {
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+        runCli("position", "create", "developer", "-t", "Developer")
+        runCli("position", "create", "qa-tester", "-t", "QA Tester")
+        runCli("employee", "create", "human", "omar", "-n", "Omar")
+        runCli(
+            "employee",
+            "create",
+            "llm",
+            "claude-senior",
+            "-n",
+            "Claude Senior",
+            "-p",
+            "anthropic",
+            "-m",
+            "claude-opus-5-5",
+        )
+    })
+
+    async function positionConfig(id: string): Promise<unknown> {
+        const path = join(projectRoot, ".llmco", "positions", id, "config.json")
+        return Bun.file(path).json()
+    }
+
+    test("assign fills a vacant position", async () => {
+        const assign = runCli("position", "assign", "developer", "omar")
+
+        expect(assign.exitCode).toBe(0)
+        expect(assign.stdout).toBe('Assigned "omar" to position "developer".\n')
+        expect(await positionConfig("developer")).toEqual({
+            title: "Developer",
+            employee: "omar",
+        })
+    })
+
+    test("assign refuses a filled position without --replace", async () => {
+        runCli("position", "assign", "developer", "claude-senior")
+
+        const assign = runCli("position", "assign", "developer", "omar")
+
+        expect(assign.exitCode).toBe(1)
+        expect(assign.stderr).toContain('already filled by "claude-senior"')
+        expect(assign.stderr).toContain("--replace")
+        expect(await positionConfig("developer")).toEqual({
+            title: "Developer",
+            employee: "claude-senior",
+        })
+    })
+
+    test.each(["--replace", "-r"])(
+        "assign %s replaces the employee",
+        async (flag) => {
+            runCli("position", "assign", "developer", "claude-senior")
+
+            const assign = runCli(
+                "position",
+                "assign",
+                "developer",
+                "omar",
+                flag,
+            )
+
+            expect(assign.exitCode).toBe(0)
+            expect(assign.stdout).toBe(
+                'Replaced "claude-senior" with "omar" on position "developer".\n',
+            )
+            expect(await positionConfig("developer")).toEqual({
+                title: "Developer",
+                employee: "omar",
+            })
+        },
+    )
+
+    test("assign accepts the employee already filling the position", () => {
+        runCli("position", "assign", "developer", "omar")
+
+        const again = runCli("position", "assign", "developer", "omar")
+
+        expect(again.exitCode).toBe(0)
+        expect(again.stdout).toContain("already fills")
+    })
+
+    test("one employee can fill several positions", async () => {
+        runCli("position", "assign", "developer", "claude-senior")
+        runCli("position", "assign", "qa-tester", "claude-senior")
+
+        expect(await positionConfig("developer")).toMatchObject({
+            employee: "claude-senior",
+        })
+        expect(await positionConfig("qa-tester")).toMatchObject({
+            employee: "claude-senior",
+        })
+    })
+
+    test("assign fails for an unknown position or employee", () => {
+        expect(runCli("position", "assign", "designer", "omar").exitCode).toBe(
+            1,
+        )
+        expect(runCli("position", "assign", "developer", "bob").exitCode).toBe(
+            1,
+        )
+    })
+
+    test("unassign makes the position vacant", async () => {
+        runCli("position", "assign", "developer", "omar")
+
+        const unassign = runCli("position", "unassign", "developer")
+
+        expect(unassign.exitCode).toBe(0)
+        expect(unassign.stdout).toContain('"omar" no longer fills it')
+        expect(await positionConfig("developer")).toEqual({
+            title: "Developer",
+        })
+    })
+
+    test("unassign says so when the position is already vacant", () => {
+        const unassign = runCli("position", "unassign", "developer")
+
+        expect(unassign.exitCode).toBe(0)
+        expect(unassign.stdout).toContain("already vacant")
+    })
+})
+
 describe("--description-file", () => {
     const markdown = "## Mission\n\nYou build the API.\n"
 

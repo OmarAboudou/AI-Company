@@ -213,6 +213,56 @@ positionCommand
         console.log(`# ${position.title}\n\n${position.description}`)
     })
 
+positionCommand
+    .command("assign")
+    .description("Fill a position with an employee.")
+    .argument("<position-id>", "position id")
+    .argument("<employee-id>", "employee id")
+    .option(
+        "-r, --replace",
+        "replace the employee already filling the position",
+    )
+    .action(async (rawPositionId, rawEmployeeId, { replace }) => {
+        await requireCompany()
+        const position = await loadExistingPosition(rawPositionId)
+        const employee = await loadExistingEmployee(rawEmployeeId)
+        const previous = position.employee
+        if (previous === employee.id) {
+            console.log(
+                `"${employee.id}" already fills position "${position.id}".`,
+            )
+            return
+        }
+        if (previous !== undefined && !replace) {
+            throw new UserError(
+                `Position "${position.id}" is already filled by "${previous}". Add --replace to replace that employee.`,
+            )
+        }
+        await savePosition(projectRoot, { ...position, employee: employee.id })
+        console.log(
+            previous === undefined
+                ? `Assigned "${employee.id}" to position "${position.id}".`
+                : `Replaced "${previous}" with "${employee.id}" on position "${position.id}".`,
+        )
+    })
+
+positionCommand
+    .command("unassign")
+    .description("Make a position vacant.")
+    .argument("<position-id>", "position id")
+    .action(async (rawId) => {
+        await requireCompany()
+        const { employee, ...position } = await loadExistingPosition(rawId)
+        if (employee === undefined) {
+            console.log(`Position "${position.id}" is already vacant.`)
+            return
+        }
+        await savePosition(projectRoot, position)
+        console.log(
+            `Position "${position.id}" is now vacant: "${employee}" no longer fills it.`,
+        )
+    })
+
 const employeeCommand = program
     .command("employee")
     .description("Manage the employees of the company.")
