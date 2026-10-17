@@ -15,20 +15,20 @@
                     "const": "llm",
                     "description": "llm: run by an LLM, which needs a provider and a model."
                 },
-                "provider": {
+                "providerId": {
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
                     "description": "Id of the LLM provider, i.e. the name of its folder in .llmco/llm-providers, e.g. anthropic."
                 },
-                "model": {
+                "modelId": {
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
                     "description": "Id of one of the provider's models in llmco, i.e. the name of its folder in .llmco/llm-providers/<provider-id>/models, e.g. claude-opus-5-5. Not its apiId, the id the provider's API expects."
                 }
             },
-            "required": ["name", "kind", "provider", "model"],
+            "required": ["name", "kind", "providerId", "modelId"],
             "additionalProperties": false,
             "description": "An employee run by an LLM."
         },

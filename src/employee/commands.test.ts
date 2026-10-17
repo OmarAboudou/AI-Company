@@ -133,7 +133,7 @@ describe("llmco employee", () => {
 
         expect(create.exitCode).toBe(1)
         expect(create.stderr).toContain("kebab-case")
-        expect(create.stderr).toContain("at model")
+        expect(create.stderr).toContain("at modelId")
     })
 
     test("create human rejects a model", () => {

@@ -25,8 +25,8 @@ const claude: Employee = {
     id: "claude-senior",
     name: "Claude Senior",
     kind: "llm",
-    provider: "anthropic",
-    model: "claude-opus-5-5",
+    providerId: "anthropic",
+    modelId: "claude-opus-5-5",
 }
 
 const omar: Employee = { id: "omar", name: "Omar Aboudou", kind: "human" }
@@ -43,7 +43,7 @@ describe("saveEmployee", () => {
             "config.json",
         )
         expect(await Bun.file(path).text()).toBe(
-            '{\n    "name": "Claude Senior",\n    "kind": "llm",\n    "provider": "anthropic",\n    "model": "claude-opus-5-5"\n}\n',
+            '{\n    "name": "Claude Senior",\n    "kind": "llm",\n    "providerId": "anthropic",\n    "modelId": "claude-opus-5-5"\n}\n',
         )
     })
 })
@@ -63,7 +63,7 @@ describe("loadEmployee", () => {
     test("rejects an invalid config.json", async () => {
         await Bun.write(
             join(projectRoot, ".llmco", "employees", "omar", "config.json"),
-            JSON.stringify({ name: "Omar", kind: "human", model: "x" }),
+            JSON.stringify({ name: "Omar", kind: "human", modelId: "x" }),
         )
 
         await expect(loadEmployee(projectRoot, "omar")).rejects.toThrow(
