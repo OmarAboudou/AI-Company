@@ -23,20 +23,20 @@ describe("PositionConfigSchema", () => {
         )
     })
 
-    test("accepts the id of the employee filling the position", () => {
+    test("accepts the id of the default employee", () => {
         expect(
             PositionConfigSchema.parse({
                 title: "Developer",
-                employee: "claude-senior",
+                defaultEmployee: "claude-senior",
             }),
-        ).toEqual({ title: "Developer", employee: "claude-senior" })
+        ).toEqual({ title: "Developer", defaultEmployee: "claude-senior" })
     })
 
-    test("rejects an employee id that is not kebab-case", () => {
+    test("rejects a default employee id that is not kebab-case", () => {
         expect(
             PositionConfigSchema.safeParse({
                 title: "Developer",
-                employee: "Claude Senior",
+                defaultEmployee: "Claude Senior",
             }).success,
         ).toBe(false)
     })

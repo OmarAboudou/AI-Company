@@ -87,7 +87,7 @@ describe("llmco position", () => {
         const show = runCli("position", "show", "backend-developer")
         expect(show.exitCode).toBe(0)
         expect(show.stdout).toBe(
-            "# Backend Developer\n\nemployee: (vacant)\n\nYou build the API.\n",
+            "# Backend Developer\n\ndefault employee: (vacant)\n\nYou build the API.\n",
         )
     })
 
@@ -315,33 +315,37 @@ describe("llmco position assign and unassign", () => {
         return Bun.file(path).json()
     }
 
-    test("assign fills a vacant position", async () => {
+    test("assign sets the default employee of a vacant position", async () => {
         const assign = runCli("position", "assign", "developer", "omar")
 
         expect(assign.exitCode).toBe(0)
-        expect(assign.stdout).toBe('Assigned "omar" to position "developer".\n')
+        expect(assign.stdout).toBe(
+            '"omar" is now the default employee of position "developer".\n',
+        )
         expect(await positionConfig("developer")).toEqual({
             title: "Developer",
-            employee: "omar",
+            defaultEmployee: "omar",
         })
     })
 
-    test("assign refuses a filled position without --replace", async () => {
+    test("assign refuses to replace a default employee without --replace", async () => {
         runCli("position", "assign", "developer", "claude-senior")
 
         const assign = runCli("position", "assign", "developer", "omar")
 
         expect(assign.exitCode).toBe(1)
-        expect(assign.stderr).toContain('already filled by "claude-senior"')
+        expect(assign.stderr).toContain(
+            'already has "claude-senior" as default employee',
+        )
         expect(assign.stderr).toContain("--replace")
         expect(await positionConfig("developer")).toEqual({
             title: "Developer",
-            employee: "claude-senior",
+            defaultEmployee: "claude-senior",
         })
     })
 
     test.each(["--replace", "-r"])(
-        "assign %s replaces the employee",
+        "assign %s replaces the default employee",
         async (flag) => {
             runCli("position", "assign", "developer", "claude-senior")
 
@@ -355,33 +359,33 @@ describe("llmco position assign and unassign", () => {
 
             expect(assign.exitCode).toBe(0)
             expect(assign.stdout).toBe(
-                'Replaced "claude-senior" with "omar" on position "developer".\n',
+                '"omar" replaces "claude-senior" as the default employee of position "developer".\n',
             )
             expect(await positionConfig("developer")).toEqual({
                 title: "Developer",
-                employee: "omar",
+                defaultEmployee: "omar",
             })
         },
     )
 
-    test("assign accepts the employee already filling the position", () => {
+    test("assign accepts the current default employee again", () => {
         runCli("position", "assign", "developer", "omar")
 
         const again = runCli("position", "assign", "developer", "omar")
 
         expect(again.exitCode).toBe(0)
-        expect(again.stdout).toContain("already fills")
+        expect(again.stdout).toContain("is already the default employee")
     })
 
-    test("one employee can fill several positions", async () => {
+    test("one employee can be the default employee of several positions", async () => {
         runCli("position", "assign", "developer", "claude-senior")
         runCli("position", "assign", "qa-tester", "claude-senior")
 
         expect(await positionConfig("developer")).toMatchObject({
-            employee: "claude-senior",
+            defaultEmployee: "claude-senior",
         })
         expect(await positionConfig("qa-tester")).toMatchObject({
-            employee: "claude-senior",
+            defaultEmployee: "claude-senior",
         })
     })
 
@@ -400,13 +404,15 @@ describe("llmco position assign and unassign", () => {
         const unassign = runCli("position", "unassign", "developer")
 
         expect(unassign.exitCode).toBe(0)
-        expect(unassign.stdout).toContain('"omar" no longer fills it')
+        expect(unassign.stdout).toContain(
+            '"omar" is no longer its default employee',
+        )
         expect(await positionConfig("developer")).toEqual({
             title: "Developer",
         })
     })
 
-    test("list and show display the employee filling the position", () => {
+    test("list and show display the default employee", () => {
         runCli("position", "assign", "qa-tester", "claude-senior")
 
         expect(runCli("position", "list").stdout).toBe(
@@ -414,7 +420,7 @@ describe("llmco position assign and unassign", () => {
                 "qa-tester  QA Tester  claude-senior\n",
         )
         expect(runCli("position", "show", "qa-tester").stdout).toBe(
-            "# QA Tester\n\nemployee: claude-senior\n\n\n",
+            "# QA Tester\n\ndefault employee: claude-senior\n\n\n",
         )
     })
 
@@ -475,7 +481,7 @@ describe("--description-file", () => {
 
         expect(create.exitCode).toBe(0)
         expect(runCli("position", "show", "developer").stdout).toBe(
-            `# Developer\n\nemployee: (vacant)\n\n${markdown}\n`,
+            `# Developer\n\ndefault employee: (vacant)\n\n${markdown}\n`,
         )
     })
 
@@ -531,7 +537,7 @@ describe("short options", () => {
         )
 
         expect(runCli("position", "show", "developer").stdout).toBe(
-            "# Developer\n\nemployee: (vacant)\n\nYou build the API.\n",
+            "# Developer\n\ndefault employee: (vacant)\n\nYou build the API.\n",
         )
     })
 
