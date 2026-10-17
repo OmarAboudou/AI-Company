@@ -3,6 +3,7 @@ import { z } from "zod"
 import {
     idDescription,
     loadExistingEmployee,
+    loadExistingLlmModel,
     parseId,
     printColumns,
     projectRoot,
@@ -11,7 +12,7 @@ import {
 import { UserError } from "../errors.ts"
 import type { Position } from "../position/position.ts"
 import { listPositions } from "../position/storage.ts"
-import { EmployeeConfigSchema } from "./employee.ts"
+import { type EmployeeConfig, EmployeeConfigSchema } from "./employee.ts"
 import { employeeExists, listEmployees, saveEmployee } from "./storage.ts"
 
 function positionsFilledBy(positions: Position[], employeeId: string): string {
@@ -21,15 +22,25 @@ function positionsFilledBy(positions: Position[], employeeId: string): string {
     return ids.length > 0 ? ids.join(", ") : "(none)"
 }
 
+async function requireLlmModel(config: EmployeeConfig): Promise<void> {
+    if (config.kind === "llm") {
+        await loadExistingLlmModel(config.provider, config.model)
+    }
+}
+
 async function createEmployee(rawId: string, config: unknown): Promise<void> {
     await requireCompany()
     const id = parseId("employee", rawId)
-    if (await employeeExists(projectRoot, id)) {
-        throw new UserError(`Employee "${id}" already exists.`)
-    }
     const result = EmployeeConfigSchema.safeParse(config)
     if (!result.success) {
         throw new UserError(z.prettifyError(result.error))
+    }
+    const [exists] = await Promise.all([
+        employeeExists(projectRoot, id),
+        requireLlmModel(result.data),
+    ])
+    if (exists) {
+        throw new UserError(`Employee "${id}" already exists.`)
     }
     await saveEmployee(projectRoot, { id, ...result.data })
     console.log(`Created employee "${id}".`)

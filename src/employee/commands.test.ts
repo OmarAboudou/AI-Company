@@ -6,6 +6,17 @@ const { runCli } = useTemporaryProject()
 describe("llmco employee", () => {
     beforeEach(() => {
         runCli("init", "--name", "Acme")
+        runCli("provider", "create", "anthropic", "-n", "Anthropic")
+        runCli(
+            "model",
+            "create",
+            "anthropic",
+            "claude-opus-5-5",
+            "-n",
+            "Claude Opus 5.5",
+            "-a",
+            "claude-opus-5-5",
+        )
     })
 
     function createClaude() {
@@ -85,6 +96,25 @@ describe("llmco employee", () => {
 
         expect(withoutModel.exitCode).toBe(1)
         expect(withoutProvider.exitCode).toBe(1)
+    })
+
+    test("create llm requires an existing provider", () => {
+        const create = ["employee", "create", "llm", "x", "-n", "X"]
+
+        const hire = runCli(...create, "-p", "bedrock", "-m", "claude-opus-5-5")
+
+        expect(hire.exitCode).toBe(1)
+        expect(hire.stderr).toContain('No provider "bedrock".')
+    })
+
+    test("create llm requires a model of that provider", () => {
+        const create = ["employee", "create", "llm", "x", "-n", "X"]
+
+        const hire = runCli(...create, "-p", "anthropic", "-m", "gpt-5")
+
+        expect(hire.exitCode).toBe(1)
+        expect(hire.stderr).toContain('"anthropic" has no model "gpt-5"')
+        expect(runCli("employee", "show", "x").exitCode).toBe(1)
     })
 
     test("create llm rejects a model id that is not kebab-case", () => {
