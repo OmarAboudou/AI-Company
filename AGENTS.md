@@ -23,6 +23,6 @@ Only for a non-obvious *why* that no test can carry (a workaround, an external c
 
 ## Posting on GitHub
 
-Messages are posted from the maintainer's account. Start every comment, reply or issue you write with a line identifying you, e.g.:
+Claude posts from its own collaborator account, `omar-aboudou-claude`. Any agent posting from the maintainer's account instead must start every comment, reply or issue with a line identifying itself, e.g.:
 
-> 🤖 **Claude** — *written by Claude (Claude Code), posted from Omar's account.*
+> 🤖 **Codex** — *written by Codex, posted from Omar's account.*
