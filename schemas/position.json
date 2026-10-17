@@ -1,0 +1,22 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/position.json",
+    "type": "object",
+    "properties": {
+        "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Title of the position, e.g. Backend Developer."
+        },
+        "defaultEmployee": {
+            "description": "Id of the employee working this position by default, i.e. the name of its folder in .llmco/employees. Absent when the position is vacant.",
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+        }
+    },
+    "required": ["title"],
+    "additionalProperties": false,
+    "title": "llmco position",
+    "description": "Configuration of a position, in .llmco/positions/<position-id>/config.json. Its job description lives next to it, in description.md."
+}
