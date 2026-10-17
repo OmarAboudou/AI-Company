@@ -22,11 +22,11 @@ afterEach(async () => {
 const developer = {
     id: "backend-developer",
     title: "Backend Developer",
-    jobDescription: "You build the API.",
+    description: "You build the API.",
 }
 
 describe("savePosition", () => {
-    test("writes config.json and job-description.md in a folder named after the id", async () => {
+    test("writes config.json and description.md in a folder named after the id", async () => {
         await savePosition(projectRoot, developer)
 
         const dir = join(
@@ -38,7 +38,7 @@ describe("savePosition", () => {
         expect(await Bun.file(join(dir, "config.json")).text()).toBe(
             '{\n    "title": "Backend Developer"\n}\n',
         )
-        expect(await Bun.file(join(dir, "job-description.md")).text()).toBe(
+        expect(await Bun.file(join(dir, "description.md")).text()).toBe(
             "You build the API.",
         )
     })
@@ -56,7 +56,7 @@ describe("loadPosition", () => {
     test("rejects an invalid config.json", async () => {
         const dir = join(projectRoot, ".llmco", "positions", "developer")
         await Bun.write(join(dir, "config.json"), JSON.stringify({ title: "" }))
-        await Bun.write(join(dir, "job-description.md"), "")
+        await Bun.write(join(dir, "description.md"), "")
 
         await expect(loadPosition(projectRoot, "developer")).rejects.toThrow()
     })
@@ -89,7 +89,7 @@ describe("listPositions", () => {
         const tester = {
             id: "qa-tester",
             title: "QA Tester",
-            jobDescription: "",
+            description: "",
         }
         await savePosition(projectRoot, tester)
         await savePosition(projectRoot, developer)

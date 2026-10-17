@@ -15,5 +15,5 @@ export type PositionConfig = z.infer<typeof PositionConfigSchema>
 
 export type Position = PositionConfig & {
     id: string
-    jobDescription: string
+    description: string
 }
