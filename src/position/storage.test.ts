@@ -82,15 +82,11 @@ describe("loadPosition", () => {
 
 describe("positionExists", () => {
     test("is false before saving and true after", async () => {
-        expect(await positionExists(projectRoot, "backend-developer")).toBe(
-            false,
-        )
+        expect(await positionExists(projectRoot, developer.id)).toBe(false)
 
         await savePosition(projectRoot, developer)
 
-        expect(await positionExists(projectRoot, "backend-developer")).toBe(
-            true,
-        )
+        expect(await positionExists(projectRoot, developer.id)).toBe(true)
     })
 })
 

@@ -78,30 +78,13 @@ describe("llmco employee", () => {
     })
 
     test("create llm requires a provider and a model", () => {
-        expect(
-            runCli(
-                "employee",
-                "create",
-                "llm",
-                "x",
-                "-n",
-                "X",
-                "-p",
-                "anthropic",
-            ).exitCode,
-        ).toBe(1)
-        expect(
-            runCli(
-                "employee",
-                "create",
-                "llm",
-                "x",
-                "-n",
-                "X",
-                "-m",
-                "claude-opus-5-5",
-            ).exitCode,
-        ).toBe(1)
+        const create = ["employee", "create", "llm", "x", "-n", "X"]
+
+        const withoutModel = runCli(...create, "-p", "anthropic")
+        const withoutProvider = runCli(...create, "-m", "claude-opus-5-5")
+
+        expect(withoutModel.exitCode).toBe(1)
+        expect(withoutProvider.exitCode).toBe(1)
     })
 
     test("create llm rejects a model id that is not kebab-case", () => {

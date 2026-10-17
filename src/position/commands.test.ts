@@ -178,12 +178,11 @@ describe("llmco position assign and unassign", () => {
     })
 
     test("assign fails for an unknown position or employee", () => {
-        expect(runCli("position", "assign", "designer", "omar").exitCode).toBe(
-            1,
-        )
-        expect(runCli("position", "assign", "developer", "bob").exitCode).toBe(
-            1,
-        )
+        const unknownPosition = runCli("position", "assign", "designer", "omar")
+        const unknownEmployee = runCli("position", "assign", "developer", "bob")
+
+        expect(unknownPosition.exitCode).toBe(1)
+        expect(unknownEmployee.exitCode).toBe(1)
     })
 
     test("unassign makes the position vacant", async () => {
