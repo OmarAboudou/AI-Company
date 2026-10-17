@@ -6,6 +6,7 @@ const { runCli } = useTemporaryProject()
 test.each([
     ["position", "create", ".llmco/positions"],
     ["employee", "show", ".llmco/employees"],
+    ["provider", "show", ".llmco/llm-providers"],
 ])("%s %s --help says the id names a folder in %s", (group, command, dir) => {
     const help = runCli(group, command, "--help").stdout
     const unwrapped = help.replace(/\s+/g, " ")
