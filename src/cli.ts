@@ -3,6 +3,13 @@ import { Command, Option } from "@commander-js/extra-typings"
 import { z } from "zod"
 import { CompanyConfigSchema } from "./company/company.ts"
 import { companyExists, loadCompany, saveCompany } from "./company/storage.ts"
+import { EmployeeConfigSchema } from "./employee/employee.ts"
+import {
+    employeeExists,
+    listEmployees,
+    loadEmployee,
+    saveEmployee,
+} from "./employee/storage.ts"
 import { UserError } from "./errors.ts"
 import { readText } from "./files.ts"
 import { IdSchema } from "./id.ts"
@@ -72,6 +79,20 @@ function printColumns(rows: string[][]): void {
         )
         console.log(cells.join("  "))
     }
+}
+
+async function createEmployee(rawId: string, config: unknown): Promise<void> {
+    await requireCompany()
+    const id = parseId("employee", rawId)
+    if (await employeeExists(projectRoot, id)) {
+        throw new UserError(`Employee "${id}" already exists.`)
+    }
+    const result = EmployeeConfigSchema.safeParse(config)
+    if (!result.success) {
+        throw new UserError(z.prettifyError(result.error))
+    }
+    await saveEmployee(projectRoot, { id, ...result.data })
+    console.log(`Created employee "${id}".`)
 }
 
 const program = new Command()
@@ -173,6 +194,85 @@ positionCommand
         }
         const position = await loadPosition(projectRoot, id)
         console.log(`# ${position.title}\n\n${position.description}`)
+    })
+
+const employeeCommand = program
+    .command("employee")
+    .description("Manage the employees of the company.")
+
+const createEmployeeCommand = employeeCommand
+    .command("create")
+    .alias("hire")
+    .description("Create (hire) an employee: an LLM or a human.")
+
+createEmployeeCommand
+    .command("llm")
+    .description("Create an employee run by an LLM.")
+    .argument("<employee-id>", "employee id in kebab-case, e.g. claude-senior")
+    .requiredOption("-n, --name <name>", "employee name")
+    .requiredOption(
+        "-p, --provider <provider-id>",
+        "LLM provider id in kebab-case, e.g. anthropic",
+    )
+    .requiredOption(
+        "-m, --model <model-id>",
+        "model id in llmco, in kebab-case, e.g. claude-opus-5-5 (not necessarily the model name the provider expects)",
+    )
+    .action(async (rawId, { name, provider, model }) => {
+        await createEmployee(rawId, { name, kind: "llm", provider, model })
+    })
+
+createEmployeeCommand
+    .command("human")
+    .description("Create an employee who is a human.")
+    .argument("<employee-id>", "employee id in kebab-case, e.g. omar")
+    .requiredOption("-n, --name <name>", "employee name")
+    .action(async (rawId, { name }) => {
+        await createEmployee(rawId, { name, kind: "human" })
+    })
+
+employeeCommand
+    .command("list")
+    .description("List the employees.")
+    .action(async () => {
+        await requireCompany()
+        const employees = await listEmployees(projectRoot)
+        if (employees.length === 0) {
+            console.log("No employees yet. Run `llmco employee create`.")
+            return
+        }
+        printColumns(
+            employees.map((employee) => [
+                employee.id,
+                employee.name,
+                employee.kind === "llm"
+                    ? `${employee.provider}/${employee.model}`
+                    : "human",
+            ]),
+        )
+    })
+
+employeeCommand
+    .command("show")
+    .description("Display an employee.")
+    .argument("<employee-id>", "employee id")
+    .action(async (rawId) => {
+        await requireCompany()
+        const id = parseId("employee", rawId)
+        if (!(await employeeExists(projectRoot, id))) {
+            throw new UserError(
+                `No employee "${id}". Run \`llmco employee list\`.`,
+            )
+        }
+        const employee = await loadEmployee(projectRoot, id)
+        const lines = [`# ${employee.name}`, "", `kind: ${employee.kind}`]
+        if (employee.kind === "llm") {
+            lines.push(
+                `provider: ${employee.provider}`,
+                `model: ${employee.model}`,
+            )
+        }
+        console.log(lines.join("\n"))
     })
 
 try {
