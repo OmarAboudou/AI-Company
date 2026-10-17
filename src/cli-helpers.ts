@@ -6,6 +6,8 @@ import { employeeExists, loadEmployee } from "./employee/storage.ts"
 import { UserError } from "./errors.ts"
 import { readText } from "./files.ts"
 import { IdSchema } from "./id.ts"
+import type { LlmProvider } from "./llm-provider/llm-provider.ts"
+import { llmProviderExists, loadLlmProvider } from "./llm-provider/storage.ts"
 import type { Position } from "./position/position.ts"
 import { loadPosition, positionExists } from "./position/storage.ts"
 
@@ -42,6 +44,7 @@ export async function readDescription(
 const entityFolders = {
     position: ".llmco/positions",
     employee: ".llmco/employees",
+    provider: ".llmco/llm-providers",
 }
 
 export function idDescription(
@@ -95,4 +98,14 @@ export async function loadExistingEmployee(rawId: string): Promise<Employee> {
         throw new UserError(`No employee "${id}". Run \`llmco employee list\`.`)
     }
     return loadEmployee(projectRoot, id)
+}
+
+export async function loadExistingLlmProvider(
+    rawId: string,
+): Promise<LlmProvider> {
+    const id = parseId("provider", rawId)
+    if (!(await llmProviderExists(projectRoot, id))) {
+        throw new UserError(`No provider "${id}". Run \`llmco provider list\`.`)
+    }
+    return loadLlmProvider(projectRoot, id)
 }
