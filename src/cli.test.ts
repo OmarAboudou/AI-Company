@@ -135,6 +135,44 @@ describe("llmco position", () => {
     })
 })
 
+describe("corrupted files", () => {
+    test("company show names the invalid file and field", async () => {
+        runCli("init", "--name", "Acme")
+        await Bun.write(
+            join(projectRoot, ".llmco", "company", "config.json"),
+            '{ "name": "" }',
+        )
+
+        const show = runCli("company", "show")
+
+        expect(show.exitCode).toBe(1)
+        expect(show.stderr).toStartWith("Invalid .llmco/company/config.json:")
+        expect(show.stderr).toContain("at name")
+    })
+
+    test("position list names the broken position file", async () => {
+        runCli("init", "--name", "Acme")
+        runCli("position", "create", "developer", "--title", "Developer")
+        await Bun.write(
+            join(
+                projectRoot,
+                ".llmco",
+                "positions",
+                "developer",
+                "config.json",
+            ),
+            "{ not json",
+        )
+
+        const list = runCli("position", "list")
+
+        expect(list.exitCode).toBe(1)
+        expect(list.stderr).toStartWith(
+            "Invalid JSON in .llmco/positions/developer/config.json",
+        )
+    })
+})
+
 test("position commands require a company", () => {
     expect(runCli("position", "list").exitCode).toBe(1)
 })
