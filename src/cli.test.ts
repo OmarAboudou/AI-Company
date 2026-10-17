@@ -86,15 +86,17 @@ describe("llmco position", () => {
 
         const show = runCli("position", "show", "backend-developer")
         expect(show.exitCode).toBe(0)
-        expect(show.stdout).toBe("# Backend Developer\n\nYou build the API.\n")
+        expect(show.stdout).toBe(
+            "# Backend Developer\n\nemployee: (vacant)\n\nYou build the API.\n",
+        )
     })
 
-    test("list aligns titles after the ids, sorted by id", () => {
+    test("list aligns titles and employees after the ids, sorted by id", () => {
         runCli("position", "create", "qa-tester", "--title", "QA Tester")
         runCli("position", "create", "developer", "--title", "Developer")
 
         expect(runCli("position", "list").stdout).toBe(
-            "developer  Developer\nqa-tester  QA Tester\n",
+            "developer  Developer  (vacant)\nqa-tester  QA Tester  (vacant)\n",
         )
     })
 
@@ -404,6 +406,18 @@ describe("llmco position assign and unassign", () => {
         })
     })
 
+    test("list and show display the employee filling the position", () => {
+        runCli("position", "assign", "qa-tester", "claude-senior")
+
+        expect(runCli("position", "list").stdout).toBe(
+            "developer  Developer  (vacant)\n" +
+                "qa-tester  QA Tester  claude-senior\n",
+        )
+        expect(runCli("position", "show", "qa-tester").stdout).toBe(
+            "# QA Tester\n\nemployee: claude-senior\n\n\n",
+        )
+    })
+
     test("unassign says so when the position is already vacant", () => {
         const unassign = runCli("position", "unassign", "developer")
 
@@ -439,7 +453,7 @@ describe("--description-file", () => {
 
         expect(create.exitCode).toBe(0)
         expect(runCli("position", "show", "developer").stdout).toBe(
-            `# Developer\n\n${markdown}\n`,
+            `# Developer\n\nemployee: (vacant)\n\n${markdown}\n`,
         )
     })
 
@@ -495,7 +509,7 @@ describe("short options", () => {
         )
 
         expect(runCli("position", "show", "developer").stdout).toBe(
-            "# Developer\n\nYou build the API.\n",
+            "# Developer\n\nemployee: (vacant)\n\nYou build the API.\n",
         )
     })
 
