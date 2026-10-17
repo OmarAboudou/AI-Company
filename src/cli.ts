@@ -106,7 +106,7 @@ async function loadExistingEmployee(rawId: string): Promise<Employee> {
 
 function positionsFilledBy(positions: Position[], employeeId: string): string {
     const ids = positions
-        .filter(({ employee }) => employee === employeeId)
+        .filter(({ defaultEmployee }) => defaultEmployee === employeeId)
         .map(({ id }) => id)
     return ids.length > 0 ? ids.join(", ") : "(none)"
 }
@@ -208,75 +208,78 @@ positionCommand
             return
         }
         printColumns(
-            positions.map(({ id, title, employee }) => [
+            positions.map(({ id, title, defaultEmployee }) => [
                 id,
                 title,
-                employee ?? "(vacant)",
+                defaultEmployee ?? "(vacant)",
             ]),
         )
     })
 
 positionCommand
     .command("show")
-    .description("Display a position: title, employee and description.")
+    .description("Display a position: title, default employee and description.")
     .argument("<position-id>", idDescription("position", "backend-developer"))
     .action(async (rawId) => {
         await requireCompany()
         const position = await loadExistingPosition(rawId)
         console.log(
-            `# ${position.title}\n\nemployee: ${position.employee ?? "(vacant)"}\n\n${position.description}`,
+            `# ${position.title}\n\ndefault employee: ${position.defaultEmployee ?? "(vacant)"}\n\n${position.description}`,
         )
     })
 
 positionCommand
     .command("assign")
-    .description("Fill a position with an employee.")
+    .description("Set the default employee of a position.")
     .argument("<position-id>", idDescription("position", "backend-developer"))
     .argument("<employee-id>", idDescription("employee", "claude-senior"))
-    .option(
-        "-r, --replace",
-        "replace the employee already filling the position",
-    )
+    .option("-r, --replace", "replace the current default employee")
     .action(async (rawPositionId, rawEmployeeId, { replace }) => {
         await requireCompany()
         const [position, employee] = await Promise.all([
             loadExistingPosition(rawPositionId),
             loadExistingEmployee(rawEmployeeId),
         ])
-        const previous = position.employee
+        const previous = position.defaultEmployee
         if (previous === employee.id) {
             console.log(
-                `"${employee.id}" already fills position "${position.id}".`,
+                `"${employee.id}" is already the default employee of position "${position.id}".`,
             )
             return
         }
         if (previous !== undefined && !replace) {
             throw new UserError(
-                `Position "${position.id}" is already filled by "${previous}". Add --replace to replace that employee.`,
+                `Position "${position.id}" already has "${previous}" as default employee. Add --replace to replace it.`,
             )
         }
-        await savePosition(projectRoot, { ...position, employee: employee.id })
+        await savePosition(projectRoot, {
+            ...position,
+            defaultEmployee: employee.id,
+        })
         console.log(
             previous === undefined
-                ? `Assigned "${employee.id}" to position "${position.id}".`
-                : `Replaced "${previous}" with "${employee.id}" on position "${position.id}".`,
+                ? `"${employee.id}" is now the default employee of position "${position.id}".`
+                : `"${employee.id}" replaces "${previous}" as the default employee of position "${position.id}".`,
         )
     })
 
 positionCommand
     .command("unassign")
-    .description("Make a position vacant.")
+    .description(
+        "Remove the default employee of a position, leaving it vacant.",
+    )
     .argument("<position-id>", idDescription("position", "backend-developer"))
     .action(async (rawId) => {
         await requireCompany()
-        const { employee, ...position } = await loadExistingPosition(rawId)
-        if (employee === undefined) {
+        const { defaultEmployee, ...position } =
+            await loadExistingPosition(rawId)
+        if (defaultEmployee === undefined) {
             console.log(`Position "${position.id}" is already vacant.`)
             return
         }
         await savePosition(projectRoot, position)
         console.log(
-            `Position "${position.id}" is now vacant: "${employee}" no longer fills it.`,
+            `Position "${position.id}" is now vacant: "${defaultEmployee}" is no longer its default employee.`,
         )
     })
 
