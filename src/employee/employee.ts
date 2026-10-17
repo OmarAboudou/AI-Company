@@ -16,11 +16,11 @@ export const EmployeeConfigSchema = z
                     description:
                         "llm: run by an LLM, which needs a provider and a model.",
                 }),
-                provider: IdSchema.meta({
+                providerId: IdSchema.meta({
                     description:
                         "Id of the LLM provider, i.e. the name of its folder in .llmco/llm-providers, e.g. anthropic.",
                 }),
-                model: IdSchema.meta({
+                modelId: IdSchema.meta({
                     description:
                         "Id of one of the provider's models in llmco, i.e. the name of its folder in .llmco/llm-providers/<provider-id>/models, e.g. claude-opus-5-5. Not its apiId, the id the provider's API expects.",
                 }),

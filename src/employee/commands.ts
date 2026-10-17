@@ -24,7 +24,7 @@ function positionsFilledBy(positions: Position[], employeeId: string): string {
 
 async function requireLlmModel(config: EmployeeConfig): Promise<void> {
     if (config.kind === "llm") {
-        await loadExistingLlmModel(config.provider, config.model)
+        await loadExistingLlmModel(config.providerId, config.modelId)
     }
 }
 
@@ -70,7 +70,12 @@ export function registerEmployeeCommands(program: Command): void {
             "id of one of the provider's models in llmco, e.g. claude-opus-5-5 (see llmco model list), not its api id",
         )
         .action(async (rawId, { name, provider, model }) => {
-            await createEmployee(rawId, { name, kind: "llm", provider, model })
+            await createEmployee(rawId, {
+                name,
+                kind: "llm",
+                providerId: provider,
+                modelId: model,
+            })
         })
 
     createEmployeeCommand
@@ -105,7 +110,7 @@ export function registerEmployeeCommands(program: Command): void {
                         employee.id,
                         employee.name,
                         employee.kind === "llm"
-                            ? `${employee.provider}/${employee.model}`
+                            ? `${employee.providerId}/${employee.modelId}`
                             : "human",
                     ]
                     return withPositions
@@ -128,8 +133,8 @@ export function registerEmployeeCommands(program: Command): void {
             const lines = [`# ${employee.name}`, "", `kind: ${employee.kind}`]
             if (employee.kind === "llm") {
                 lines.push(
-                    `provider: ${employee.provider}`,
-                    `model: ${employee.model}`,
+                    `provider: ${employee.providerId}`,
+                    `model: ${employee.modelId}`,
                 )
             }
             lines.push(
