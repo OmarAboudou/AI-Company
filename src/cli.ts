@@ -5,7 +5,8 @@ import { CompanyConfigSchema } from "./company/company.ts"
 import { companyExists, loadCompany, saveCompany } from "./company/storage.ts"
 import { UserError } from "./errors.ts"
 import { readText } from "./files.ts"
-import { PositionConfigSchema, PositionIdSchema } from "./position/position.ts"
+import { IdSchema } from "./id.ts"
+import { PositionConfigSchema } from "./position/position.ts"
 import {
     listPositions,
     loadPosition,
@@ -43,11 +44,11 @@ async function readDescription(
     return readText(projectRoot, descriptionFile)
 }
 
-function parsePositionId(id: string): string {
-    const result = PositionIdSchema.safeParse(id)
+function parseId(entity: string, id: string): string {
+    const result = IdSchema.safeParse(id)
     if (!result.success) {
         throw new UserError(
-            `Invalid position id "${id}".\n${z.prettifyError(result.error)}`,
+            `Invalid ${entity} id "${id}".\n${z.prettifyError(result.error)}`,
         )
     }
     return result.data
@@ -109,7 +110,7 @@ positionCommand
     .addOption(descriptionFileOption())
     .action(async (rawId, { title, description, descriptionFile }) => {
         await requireCompany()
-        const id = parsePositionId(rawId)
+        const id = parseId("position", rawId)
         if (await positionExists(projectRoot, id)) {
             throw new UserError(`Position "${id}" already exists.`)
         }
@@ -149,7 +150,7 @@ positionCommand
     .argument("<id>", "position id")
     .action(async (rawId) => {
         await requireCompany()
-        const id = parsePositionId(rawId)
+        const id = parseId("position", rawId)
         if (!(await positionExists(projectRoot, id))) {
             throw new UserError(
                 `No position "${id}". Run \`llmco position list\`.`,
