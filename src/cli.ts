@@ -12,8 +12,7 @@ import {
     readDescription,
     requireCompany,
 } from "./cli-helpers.ts"
-import { CompanyConfigSchema } from "./company/company.ts"
-import { companyExists, loadCompany, saveCompany } from "./company/storage.ts"
+import { registerCompanyCommands } from "./company/commands.ts"
 import { EmployeeConfigSchema } from "./employee/employee.ts"
 import {
     employeeExists,
@@ -54,39 +53,7 @@ const program = new Command()
     .description("Run a virtual company staffed by LLM agents.")
     .showHelpAfterError()
 
-program
-    .command("init")
-    .description("Create a company in the current directory.")
-    .requiredOption("-n, --name <name>", "company name")
-    .option("-d, --description <text>", "company description", "")
-    .addOption(descriptionFileOption())
-    .action(async ({ name, description, descriptionFile }) => {
-        if (await companyExists(projectRoot)) {
-            throw new UserError("A company already exists in this directory.")
-        }
-        const config = CompanyConfigSchema.safeParse({ name })
-        if (!config.success) {
-            throw new UserError(z.prettifyError(config.error))
-        }
-        await saveCompany(projectRoot, {
-            ...config.data,
-            description: await readDescription(description, descriptionFile),
-        })
-        console.log(`Created company "${config.data.name}".`)
-    })
-
-const companyCommand = program
-    .command("company")
-    .description("Inspect the company.")
-
-companyCommand
-    .command("show")
-    .description("Display the company name and description.")
-    .action(async () => {
-        await requireCompany()
-        const company = await loadCompany(projectRoot)
-        console.log(`# ${company.name}\n\n${company.description}`)
-    })
+registerCompanyCommands(program)
 
 const positionCommand = program
     .command("position")
