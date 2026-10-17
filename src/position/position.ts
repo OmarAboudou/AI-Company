@@ -6,7 +6,7 @@ export const PositionConfigSchema = z
         title: z.string().trim().min(1).meta({
             description: "Title of the position, e.g. Backend Developer.",
         }),
-        defaultEmployee: IdSchema.optional().meta({
+        defaultEmployeeId: IdSchema.optional().meta({
             description:
                 "Id of the employee working this position by default, i.e. the name of its folder in .llmco/employees. Absent when the position is vacant.",
         }),

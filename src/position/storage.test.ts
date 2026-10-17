@@ -55,7 +55,7 @@ describe("loadPosition", () => {
     })
 
     test("reads back the default employee", async () => {
-        const filled = { ...developer, defaultEmployee: "claude-senior" }
+        const filled = { ...developer, defaultEmployeeId: "claude-senior" }
         await savePosition(projectRoot, filled)
 
         expect(await loadPosition(projectRoot, "backend-developer")).toEqual(

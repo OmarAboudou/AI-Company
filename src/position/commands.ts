@@ -66,10 +66,10 @@ export function registerPositionCommands(program: Command): void {
                 return
             }
             printColumns(
-                positions.map(({ id, title, defaultEmployee }) => [
+                positions.map(({ id, title, defaultEmployeeId }) => [
                     id,
                     title,
-                    defaultEmployee ?? "(vacant)",
+                    defaultEmployeeId ?? "(vacant)",
                 ]),
             )
         })
@@ -87,7 +87,7 @@ export function registerPositionCommands(program: Command): void {
             await requireCompany()
             const position = await loadExistingPosition(rawId)
             console.log(
-                `# ${position.title}\n\ndefault employee: ${position.defaultEmployee ?? "(vacant)"}\n\n${position.description}`,
+                `# ${position.title}\n\ndefault employee: ${position.defaultEmployeeId ?? "(vacant)"}\n\n${position.description}`,
             )
         })
 
@@ -106,7 +106,7 @@ export function registerPositionCommands(program: Command): void {
                 loadExistingPosition(rawPositionId),
                 loadExistingEmployee(rawEmployeeId),
             ])
-            const previous = position.defaultEmployee
+            const previous = position.defaultEmployeeId
             if (previous === employee.id) {
                 console.log(
                     `"${employee.id}" is already the default employee of position "${position.id}".`,
@@ -120,7 +120,7 @@ export function registerPositionCommands(program: Command): void {
             }
             await savePosition(projectRoot, {
                 ...position,
-                defaultEmployee: employee.id,
+                defaultEmployeeId: employee.id,
             })
             console.log(
                 previous === undefined
@@ -140,15 +140,15 @@ export function registerPositionCommands(program: Command): void {
         )
         .action(async (rawId) => {
             await requireCompany()
-            const { defaultEmployee, ...position } =
+            const { defaultEmployeeId, ...position } =
                 await loadExistingPosition(rawId)
-            if (defaultEmployee === undefined) {
+            if (defaultEmployeeId === undefined) {
                 console.log(`Position "${position.id}" is already vacant.`)
                 return
             }
             await savePosition(projectRoot, position)
             console.log(
-                `Position "${position.id}" is now vacant: "${defaultEmployee}" is no longer its default employee.`,
+                `Position "${position.id}" is now vacant: "${defaultEmployeeId}" is no longer its default employee.`,
             )
         })
 }
