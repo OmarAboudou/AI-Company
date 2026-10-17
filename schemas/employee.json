@@ -19,13 +19,13 @@
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the LLM provider, e.g. anthropic."
+                    "description": "Id of the LLM provider, i.e. the name of its folder in .llmco/llm-providers, e.g. anthropic."
                 },
                 "model": {
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the model in llmco, e.g. claude-opus-5-5. Not necessarily the model name the provider expects."
+                    "description": "Id of one of the provider's models in llmco, i.e. the name of its folder in .llmco/llm-providers/<provider-id>/models, e.g. claude-opus-5-5. Not its apiId, the id the provider's API expects."
                 }
             },
             "required": ["name", "kind", "provider", "model"],
