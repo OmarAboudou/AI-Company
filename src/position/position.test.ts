@@ -23,6 +23,24 @@ describe("PositionConfigSchema", () => {
         )
     })
 
+    test("accepts the id of the employee filling the position", () => {
+        expect(
+            PositionConfigSchema.parse({
+                title: "Developer",
+                employee: "claude-senior",
+            }),
+        ).toEqual({ title: "Developer", employee: "claude-senior" })
+    })
+
+    test("rejects an employee id that is not kebab-case", () => {
+        expect(
+            PositionConfigSchema.safeParse({
+                title: "Developer",
+                employee: "Claude Senior",
+            }).success,
+        ).toBe(false)
+    })
+
     test("rejects an unknown key", () => {
         expect(
             PositionConfigSchema.safeParse({ title: "Developer", id: "dev" })

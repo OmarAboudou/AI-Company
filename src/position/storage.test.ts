@@ -54,6 +54,15 @@ describe("loadPosition", () => {
         )
     })
 
+    test("reads back the employee filling the position", async () => {
+        const filled = { ...developer, employee: "claude-senior" }
+        await savePosition(projectRoot, filled)
+
+        expect(await loadPosition(projectRoot, "backend-developer")).toEqual(
+            filled,
+        )
+    })
+
     test("rejects an invalid config.json", async () => {
         const dir = join(projectRoot, ".llmco", "positions", "developer")
         await Bun.write(join(dir, "config.json"), JSON.stringify({ title: "" }))
