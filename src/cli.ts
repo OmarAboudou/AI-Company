@@ -1,9 +1,10 @@
 #!/usr/bin/env bun
-import { Command } from "@commander-js/extra-typings"
+import { Command, Option } from "@commander-js/extra-typings"
 import { z } from "zod"
 import { CompanyConfigSchema } from "./company/company.ts"
 import { companyExists, loadCompany, saveCompany } from "./company/storage.ts"
 import { UserError } from "./errors.ts"
+import { readText } from "./files.ts"
 import { PositionConfigSchema, PositionIdSchema } from "./position/position.ts"
 import {
     listPositions,
@@ -20,6 +21,26 @@ async function requireCompany(): Promise<void> {
             "No company in this directory. Run `llmco init` first.",
         )
     }
+}
+
+function descriptionFileOption() {
+    return new Option(
+        "--description-file <path>",
+        "read the description from a file, or from stdin with -",
+    ).conflicts("description")
+}
+
+async function readDescription(
+    description: string,
+    descriptionFile: string | undefined,
+): Promise<string> {
+    if (descriptionFile === undefined) {
+        return description
+    }
+    if (descriptionFile === "-") {
+        return Bun.stdin.text()
+    }
+    return readText(projectRoot, descriptionFile)
 }
 
 function parsePositionId(id: string): string {
@@ -42,7 +63,8 @@ program
     .description("Create a company in the current directory.")
     .requiredOption("--name <name>", "company name")
     .option("--description <text>", "company description", "")
-    .action(async ({ name, description }) => {
+    .addOption(descriptionFileOption())
+    .action(async ({ name, description, descriptionFile }) => {
         if (await companyExists(projectRoot)) {
             throw new UserError("A company already exists in this directory.")
         }
@@ -50,7 +72,10 @@ program
         if (!config.success) {
             throw new UserError(z.prettifyError(config.error))
         }
-        await saveCompany(projectRoot, { ...config.data, description })
+        await saveCompany(projectRoot, {
+            ...config.data,
+            description: await readDescription(description, descriptionFile),
+        })
         console.log(`Created company "${config.data.name}".`)
     })
 
@@ -77,7 +102,8 @@ positionCommand
     .argument("<id>", "position id in kebab-case, e.g. backend-developer")
     .requiredOption("--title <title>", "position title")
     .option("--description <text>", "what the position is responsible for", "")
-    .action(async (rawId, { title, description }) => {
+    .addOption(descriptionFileOption())
+    .action(async (rawId, { title, description, descriptionFile }) => {
         await requireCompany()
         const id = parsePositionId(rawId)
         if (await positionExists(projectRoot, id)) {
@@ -87,7 +113,11 @@ positionCommand
         if (!config.success) {
             throw new UserError(z.prettifyError(config.error))
         }
-        await savePosition(projectRoot, { id, ...config.data, description })
+        await savePosition(projectRoot, {
+            id,
+            ...config.data,
+            description: await readDescription(description, descriptionFile),
+        })
         console.log(`Created position "${id}".`)
     })
 
