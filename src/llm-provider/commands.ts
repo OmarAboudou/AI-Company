@@ -8,10 +8,12 @@ import {
     projectRoot,
     requireCompany,
 } from "../cli-helpers.ts"
+import { listEmployees } from "../employee/storage.ts"
 import { UserError } from "../errors.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import { LlmProviderConfigSchema } from "./llm-provider.ts"
 import {
+    deleteLlmProvider,
     listLlmProviders,
     llmProviderExists,
     saveLlmProvider,
@@ -67,5 +69,43 @@ export function registerLlmProviderCommands(program: Command): void {
                     ? models.map(({ id }) => id).join(", ")
                     : "(none)"
             console.log(`# ${provider.name}\n\nmodels: ${modelIds}`)
+        })
+
+    providerCommand
+        .command("delete")
+        .description(
+            "Delete an LLM provider no employee runs on, and with --force its models.",
+        )
+        .argument("<provider-id>", idDescription("provider", "anthropic"))
+        .option("-f, --force", "delete it even if it has models, deleting them")
+        .action(async (rawId, { force }) => {
+            await requireCompany()
+            const provider = await loadExistingLlmProvider(rawId)
+            const [models, employees] = await Promise.all([
+                listLlmModels(projectRoot, provider.id),
+                listEmployees(projectRoot),
+            ])
+            const users = employees.filter(
+                (employee) =>
+                    employee.kind === "llm" &&
+                    employee.providerId === provider.id,
+            )
+            if (users.length > 0) {
+                throw new UserError(
+                    `Provider "${provider.id}" is used by ${users.map(({ id }) => id).join(", ")}. Delete these employees first, even with --force.`,
+                )
+            }
+            const modelIds = models.map(({ id }) => id).join(", ")
+            if (models.length > 0 && !force) {
+                throw new UserError(
+                    `Provider "${provider.id}" has models ${modelIds}. Add --force to delete them with it.`,
+                )
+            }
+            await deleteLlmProvider(projectRoot, provider.id)
+            console.log(
+                models.length === 0
+                    ? `Deleted provider "${provider.id}".`
+                    : `Deleted provider "${provider.id}" and its models ${modelIds}.`,
+            )
         })
 }
