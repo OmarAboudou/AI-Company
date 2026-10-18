@@ -158,6 +158,7 @@ describe("llmco model protocol", () => {
 
         expect(create.exitCode).toBe(1)
         expect(create.stderr).toContain('"anthropic" has no connection yet')
+        expect(create.stderr).toContain("`llmco provider connection create`")
     })
 
     test("create requires --protocol when the provider has several", () => {

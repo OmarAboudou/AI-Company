@@ -29,14 +29,14 @@ import {
 function protocolOption() {
     return new Option(
         "-p, --protocol <protocol>",
-        "API protocol the model is called with, one of its provider's connections (see llmco connection list)",
+        "API protocol the model is called with, one of its provider's connections (see llmco provider connection list)",
     ).choices(protocols)
 }
 
 function requireConnection(provider: LlmProvider, protocol: Protocol): void {
     if (provider.connections?.[protocol] === undefined) {
         throw new UserError(
-            `Provider "${provider.id}" has no ${protocol} connection. Run \`llmco connection create\` first.`,
+            `Provider "${provider.id}" has no ${protocol} connection. Run \`llmco provider connection create\` first.`,
         )
     }
 }
@@ -55,7 +55,7 @@ function chooseProtocol(
     const [only, ...others] = available
     if (only === undefined) {
         throw new UserError(
-            `Provider "${provider.id}" has no connection yet. Run \`llmco connection create\` first.`,
+            `Provider "${provider.id}" has no connection yet. Run \`llmco provider connection create\` first.`,
         )
     }
     if (others.length > 0) {
