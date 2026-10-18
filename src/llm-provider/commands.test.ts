@@ -72,6 +72,35 @@ describe("llmco provider", () => {
     })
 })
 
+describe("llmco provider update", () => {
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+        runCli("provider", "create", "anthropic", "-n", "Anthropic")
+    })
+
+    test("update -n changes the name", () => {
+        const update = runCli("provider", "update", "anthropic", "-n", "A.")
+        const list = runCli("provider", "list").stdout
+
+        expect(update.stdout).toBe('Updated provider "anthropic".\n')
+        expect(list).toBe("anthropic  A.\n")
+    })
+
+    test("update requires at least one option", () => {
+        const update = runCli("provider", "update", "anthropic")
+
+        expect(update.exitCode).toBe(1)
+        expect(update.stderr).toContain("Nothing to update")
+    })
+
+    test("update fails for an unknown provider", () => {
+        const update = runCli("provider", "update", "ollama", "-n", "Ollama")
+
+        expect(update.exitCode).toBe(1)
+        expect(update.stderr).toContain('No provider "ollama".')
+    })
+})
+
 describe("llmco provider delete", () => {
     beforeEach(() => {
         runCli("init", "-n", "Acme")

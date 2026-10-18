@@ -6,7 +6,9 @@ import {
     parseId,
     printColumns,
     projectRoot,
+    requireAnOption,
     requireCompany,
+    withoutUndefined,
 } from "../cli-helpers.ts"
 import { listEmployees } from "../employee/storage.ts"
 import { UserError } from "../errors.ts"
@@ -69,6 +71,26 @@ export function registerLlmProviderCommands(program: Command): void {
                     ? models.map(({ id }) => id).join(", ")
                     : "(none)"
             console.log(`# ${provider.name}\n\nmodels: ${modelIds}`)
+        })
+
+    providerCommand
+        .command("update")
+        .description("Update an LLM provider: only the options given change.")
+        .argument("<provider-id>", idDescription("provider", "anthropic"))
+        .option("-n, --name <name>", "provider name")
+        .action(async (rawId, options) => {
+            requireAnOption(options)
+            await requireCompany()
+            const { id, ...current } = await loadExistingLlmProvider(rawId)
+            const config = LlmProviderConfigSchema.safeParse({
+                ...current,
+                ...withoutUndefined({ name: options.name }),
+            })
+            if (!config.success) {
+                throw new UserError(z.prettifyError(config.error))
+            }
+            await saveLlmProvider(projectRoot, { id, ...config.data })
+            console.log(`Updated provider "${id}".`)
         })
 
     providerCommand
