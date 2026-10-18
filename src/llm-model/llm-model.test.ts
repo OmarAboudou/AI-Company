@@ -1,7 +1,11 @@
 import { describe, expect, test } from "bun:test"
-import { LlmModelConfigSchema } from "./llm-model.ts"
+import { type LlmModelConfig, LlmModelConfigSchema } from "./llm-model.ts"
 
-const llama = { name: "Llama 3.1 8B", apiId: "llama3.1:8b" }
+const llama: LlmModelConfig = {
+    name: "Llama 3.1 8B",
+    apiId: "llama3.1:8b",
+    protocol: "anthropic-messages",
+}
 
 function accepts(config: unknown): boolean {
     return LlmModelConfigSchema.safeParse(config).success
@@ -14,6 +18,7 @@ describe("LlmModelConfigSchema", () => {
 
     test("trims whitespace around the name and the api id", () => {
         const config = LlmModelConfigSchema.parse({
+            ...llama,
             name: " Llama 3.1 8B ",
             apiId: " llama3.1:8b ",
         })
@@ -31,6 +36,13 @@ describe("LlmModelConfigSchema", () => {
 
         expect(accepts(withoutApiId)).toBe(false)
         expect(accepts({ ...llama, apiId: " " })).toBe(false)
+    })
+
+    test("requires a known protocol", () => {
+        const { protocol, ...withoutProtocol } = llama
+
+        expect(accepts(withoutProtocol)).toBe(false)
+        expect(accepts({ ...llama, protocol: "ollama-chat" })).toBe(false)
     })
 
     test("rejects an unknown key", () => {

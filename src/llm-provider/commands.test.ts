@@ -24,6 +24,15 @@ describe("llmco provider", () => {
 
     test("show lists the provider's models, sorted by id", () => {
         createAnthropic()
+        runCli(
+            "provider",
+            "connection",
+            "create",
+            "anthropic",
+            "anthropic-messages",
+            "-u",
+            "https://api.anthropic.com",
+        )
         const create = ["model", "create", "anthropic"]
         runCli(...create, "claude-opus-5-5", "-n", "Opus", "-a", "opus")
         runCli(...create, "claude-haiku-4-5", "-n", "Haiku", "-a", "haiku")
@@ -177,6 +186,15 @@ describe("llmco provider update-id", () => {
     beforeEach(() => {
         runCli("init", "-n", "Acme")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
+        runCli(
+            "provider",
+            "connection",
+            "create",
+            "anthropic",
+            "anthropic-messages",
+            "-u",
+            "https://api.anthropic.com",
+        )
         runCli("provider", "create", "ollama", "-n", "Ollama")
         runCli("model", "create", "anthropic", "opus", "-n", "Opus", "-a", "o")
     })
@@ -221,6 +239,15 @@ describe("llmco provider delete", () => {
     beforeEach(() => {
         runCli("init", "-n", "Acme")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
+        runCli(
+            "provider",
+            "connection",
+            "create",
+            "anthropic",
+            "anthropic-messages",
+            "-u",
+            "https://api.anthropic.com",
+        )
     })
 
     function createModel(id: string) {

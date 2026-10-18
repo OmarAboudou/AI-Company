@@ -8,6 +8,15 @@ describe("llmco employee", () => {
         runCli("init", "--name", "Acme")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
         runCli(
+            "provider",
+            "connection",
+            "create",
+            "anthropic",
+            "anthropic-messages",
+            "-u",
+            "https://api.anthropic.com",
+        )
+        runCli(
             "model",
             "create",
             "anthropic",
@@ -176,7 +185,25 @@ describe("llmco employee update", () => {
     beforeEach(() => {
         runCli("init", "-n", "Acme")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
+        runCli(
+            "provider",
+            "connection",
+            "create",
+            "anthropic",
+            "anthropic-messages",
+            "-u",
+            "https://api.anthropic.com",
+        )
         runCli("provider", "create", "ollama", "-n", "Ollama")
+        runCli(
+            "provider",
+            "connection",
+            "create",
+            "ollama",
+            "anthropic-messages",
+            "-u",
+            "http://localhost:11434",
+        )
         createModel("anthropic", "claude-opus-5-5")
         createModel("anthropic", "claude-haiku-4-5")
         createModel("ollama", "llama-3-1-8b")

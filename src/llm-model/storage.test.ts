@@ -28,6 +28,7 @@ const opus: LlmModel = {
     id: "claude-opus-5-5",
     name: "Claude Opus 5.5",
     apiId: "claude-opus-5-5",
+    protocol: "anthropic-messages",
 }
 
 const haiku: LlmModel = {
@@ -35,6 +36,7 @@ const haiku: LlmModel = {
     id: "claude-haiku-4-5",
     name: "Claude Haiku 4.5",
     apiId: "claude-haiku-4-5-20251001",
+    protocol: "anthropic-messages",
 }
 
 const llama: LlmModel = {
@@ -42,6 +44,7 @@ const llama: LlmModel = {
     id: "llama-3-1-8b",
     name: "Llama 3.1 8B",
     apiId: "llama3.1:8b",
+    protocol: "anthropic-messages",
 }
 
 describe("saveLlmModel", () => {
@@ -60,7 +63,7 @@ describe("saveLlmModel", () => {
         const config = await Bun.file(path).text()
 
         expect(config).toBe(
-            '{\n    "name": "Llama 3.1 8B",\n    "apiId": "llama3.1:8b"\n}\n',
+            '{\n    "name": "Llama 3.1 8B",\n    "apiId": "llama3.1:8b",\n    "protocol": "anthropic-messages"\n}\n',
         )
     })
 })

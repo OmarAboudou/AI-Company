@@ -3,6 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { UserError } from "../errors.ts"
+import type { LlmModel } from "../llm-model/llm-model.ts"
 import { listLlmModels, saveLlmModel } from "../llm-model/storage.ts"
 import type { LlmProvider } from "./llm-provider.ts"
 import {
@@ -97,11 +98,12 @@ describe("listLlmProviders", () => {
 
 describe("deleteLlmProvider", () => {
     test("removes the provider's folder, models included", async () => {
-        const opus = {
+        const opus: LlmModel = {
             providerId: "anthropic",
             id: "claude-opus-5-5",
             name: "Claude Opus 5.5",
             apiId: "claude-opus-5-5",
+            protocol: "anthropic-messages",
         }
         await Promise.all([
             saveLlmProvider(projectRoot, anthropic),
@@ -125,11 +127,12 @@ describe("deleteLlmProvider", () => {
 
 describe("copyLlmProvider", () => {
     test("copies the provider's folder, models included", async () => {
-        const opus = {
+        const opus: LlmModel = {
             providerId: "anthropic",
             id: "claude-opus-5-5",
             name: "Claude Opus 5.5",
             apiId: "claude-opus-5-5",
+            protocol: "anthropic-messages",
         }
         await Promise.all([
             saveLlmProvider(projectRoot, anthropic),
