@@ -5,6 +5,7 @@ import { join } from "node:path"
 import { UserError } from "../errors.ts"
 import type { Employee } from "./employee.ts"
 import {
+    copyEmployee,
     deleteEmployee,
     employeeExists,
     listEmployees,
@@ -112,5 +113,18 @@ describe("deleteEmployee", () => {
 
         expect(before).toEqual([omar])
         expect(after).toEqual([])
+    })
+})
+
+describe("copyEmployee", () => {
+    test("copies the employee's folder under its new id", async () => {
+        await saveEmployee(projectRoot, omar)
+        const before = await listEmployees(projectRoot)
+
+        await copyEmployee(projectRoot, omar.id, "omar-aboudou")
+        const after = await listEmployees(projectRoot)
+
+        expect(before).toEqual([omar])
+        expect(after).toEqual([omar, { ...omar, id: "omar-aboudou" }])
     })
 })
