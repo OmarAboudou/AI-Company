@@ -49,6 +49,57 @@
                     "description": "Read the API key from a file."
                 }
             ]
+        },
+        "connections": {
+            "description": "How the provider is reached: one connection per API protocol it speaks, all sharing its API key.",
+            "type": "object",
+            "properties": {
+                "anthropic-messages": {
+                    "type": "object",
+                    "properties": {
+                        "baseUrl": {
+                            "type": "string",
+                            "format": "uri",
+                            "description": "URL the protocol's paths are appended to, e.g. https://api.anthropic.com, or http://localhost:11434/v1 for Ollama's OpenAI-compatible API."
+                        },
+                        "auth": {
+                            "description": "How the API key is sent: an x-api-key header (the default), or an Authorization: Bearer header, as OpenRouter expects.",
+                            "type": "string",
+                            "enum": ["x-api-key", "bearer"]
+                        }
+                    },
+                    "required": ["baseUrl"],
+                    "additionalProperties": false,
+                    "description": "Connection through Anthropic's Messages API."
+                },
+                "openai-chat-completions": {
+                    "description": "Connection through OpenAI's Chat Completions API, which sends the API key as a bearer token.",
+                    "type": "object",
+                    "properties": {
+                        "baseUrl": {
+                            "type": "string",
+                            "format": "uri",
+                            "description": "URL the protocol's paths are appended to, e.g. https://api.anthropic.com, or http://localhost:11434/v1 for Ollama's OpenAI-compatible API."
+                        }
+                    },
+                    "required": ["baseUrl"],
+                    "additionalProperties": false
+                },
+                "openai-responses": {
+                    "description": "Connection through OpenAI's Responses API, which sends the API key as a bearer token.",
+                    "type": "object",
+                    "properties": {
+                        "baseUrl": {
+                            "type": "string",
+                            "format": "uri",
+                            "description": "URL the protocol's paths are appended to, e.g. https://api.anthropic.com, or http://localhost:11434/v1 for Ollama's OpenAI-compatible API."
+                        }
+                    },
+                    "required": ["baseUrl"],
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
         }
     },
     "required": ["name"],
