@@ -35,6 +35,15 @@ describe("PositionConfigSchema", () => {
         expect(accepts(config)).toBe(false)
     })
 
+    test("accepts the position's id history", () => {
+        const history = {
+            createdAt: "2026-10-18T14:00:00.000Z",
+            formerIds: [{ id: "dev", until: "2026-10-19T09:00:00.000Z" }],
+        }
+
+        expect(accepts({ ...developer, ...history })).toBe(true)
+    })
+
     test("rejects an unknown key", () => {
         expect(accepts({ ...developer, id: "dev" })).toBe(false)
     })

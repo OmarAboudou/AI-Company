@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { IdSchema } from "../id.ts"
+import { idHistoryShape } from "../id-history.ts"
 
 const NameSchema = z
     .string()
@@ -24,6 +25,7 @@ export const EmployeeConfigSchema = z
                     description:
                         "Id of one of the provider's models in llmco, i.e. the name of its folder in .llmco/llm-providers/<provider-id>/models, e.g. claude-opus-5-5. Not its apiId, the id the provider's API expects.",
                 }),
+                ...idHistoryShape,
             })
             .meta({ description: "An employee run by an LLM." }),
         z
@@ -33,6 +35,7 @@ export const EmployeeConfigSchema = z
                     description:
                         "human: a person, e.g. taking over a position.",
                 }),
+                ...idHistoryShape,
             })
             .meta({ description: "An employee who is a human." }),
     ])
