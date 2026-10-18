@@ -3,10 +3,14 @@ import { z } from "zod"
 const environmentVariableName =
     "must be an environment variable's name, without $: letters, digits and underscores, not starting with a digit"
 
-const ApiKeySourceSchema = z.union([
+const ApiKeySourceSchema = z.discriminatedUnion("kind", [
     z
         .strictObject({
-            env: z
+            kind: z.literal("env").meta({
+                description:
+                    "env: read the API key from an environment variable.",
+            }),
+            variable: z
                 .string()
                 .regex(/^[A-Za-z_][A-Za-z0-9_]*$/, environmentVariableName)
                 .meta({
@@ -20,7 +24,10 @@ const ApiKeySourceSchema = z.union([
         }),
     z
         .strictObject({
-            file: z.string().trim().min(1).meta({
+            kind: z.literal("file").meta({
+                description: "file: read the API key from a file.",
+            }),
+            path: z.string().trim().min(1).meta({
                 description:
                     "Path of the file holding the API key: absolute, starting with ~, or relative to the project's root.",
             }),

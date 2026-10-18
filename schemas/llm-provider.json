@@ -10,31 +10,41 @@
         },
         "apiKey": {
             "description": "Where llmco reads the provider's API key, never the key itself. Absent for servers without authentication, such as a local Ollama.",
-            "anyOf": [
+            "oneOf": [
                 {
                     "type": "object",
                     "properties": {
-                        "env": {
+                        "kind": {
+                            "type": "string",
+                            "const": "env",
+                            "description": "env: read the API key from an environment variable."
+                        },
+                        "variable": {
                             "type": "string",
                             "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
                             "description": "Name of the environment variable holding the API key, without $, e.g. ANTHROPIC_API_KEY.",
                             "patternErrorMessage": "must be an environment variable's name, without $: letters, digits and underscores, not starting with a digit"
                         }
                     },
-                    "required": ["env"],
+                    "required": ["kind", "variable"],
                     "additionalProperties": false,
                     "description": "Read the API key from an environment variable."
                 },
                 {
                     "type": "object",
                     "properties": {
-                        "file": {
+                        "kind": {
+                            "type": "string",
+                            "const": "file",
+                            "description": "file: read the API key from a file."
+                        },
+                        "path": {
                             "type": "string",
                             "minLength": 1,
                             "description": "Path of the file holding the API key: absolute, starting with ~, or relative to the project's root."
                         }
                     },
-                    "required": ["file"],
+                    "required": ["kind", "path"],
                     "additionalProperties": false,
                     "description": "Read the API key from a file."
                 }

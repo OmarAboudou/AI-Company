@@ -42,10 +42,10 @@ function apiKeySource(options: {
     apiKeyFile?: string
 }): ApiKeySource | undefined {
     if (options.apiKeyEnv !== undefined) {
-        return { env: options.apiKeyEnv }
+        return { kind: "env", variable: options.apiKeyEnv }
     }
     if (options.apiKeyFile !== undefined) {
-        return { file: options.apiKeyFile }
+        return { kind: "file", path: options.apiKeyFile }
     }
     return undefined
 }
@@ -54,9 +54,9 @@ function describeApiKey(apiKey: ApiKeySource | undefined): string {
     if (apiKey === undefined) {
         return "(none)"
     }
-    return "env" in apiKey
-        ? `environment variable ${apiKey.env}`
-        : `file ${apiKey.file}`
+    return apiKey.kind === "env"
+        ? `environment variable ${apiKey.variable}`
+        : `file ${apiKey.path}`
 }
 
 export function registerLlmProviderCommands(program: Command): void {
