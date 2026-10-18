@@ -16,27 +16,14 @@ import {
     readBody,
     sendDraft,
 } from "../message/commands.ts"
-import type { Message } from "../message/message.ts"
+import { minutes, signature } from "../message/signature.ts"
 import { listMessages } from "../message/storage.ts"
 import { awaitedIds, memberIds } from "./members.ts"
 import { listThreads, newThreadId, saveThread } from "./storage.ts"
 import { ThreadConfigSchema } from "./thread.ts"
 
-function signature({
-    position,
-    employee,
-    committer,
-}: Pick<Message, "position" | "employee" | "committer">): string {
-    const name = employee?.name ?? committer.name
-    return `${name}, ${position.title} (@${position.id})`
-}
-
 function mentionsOf(positionIds: string[]): string {
     return positionIds.map((id) => `@${id}`).join(", ")
-}
-
-function minutes(timestamp: string): string {
-    return `${timestamp.slice(0, 10)} ${timestamp.slice(11, 16)} UTC`
 }
 
 export function registerThreadCommands(program: Command): void {
