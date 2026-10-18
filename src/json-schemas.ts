@@ -3,7 +3,10 @@ import { CompanyConfigSchema } from "./company/company.ts"
 import { EmployeeConfigSchema } from "./employee/employee.ts"
 import { LlmModelConfigSchema } from "./llm-model/llm-model.ts"
 import { LlmProviderConfigSchema } from "./llm-provider/llm-provider.ts"
-import { MessageConfigSchema } from "./message/message.ts"
+import {
+    MessageConfigSchema,
+    ProviderResponseSchema,
+} from "./message/message.ts"
 import { PositionConfigSchema } from "./position/position.ts"
 import { ThreadConfigSchema } from "./thread/thread.ts"
 
@@ -18,6 +21,7 @@ const configSchemas = {
     "llm-model": LlmModelConfigSchema,
     thread: ThreadConfigSchema,
     message: MessageConfigSchema,
+    "provider-response": ProviderResponseSchema,
 }
 
 export const jsonSchemas = Object.fromEntries(

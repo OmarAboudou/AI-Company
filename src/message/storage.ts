@@ -2,7 +2,12 @@ import { randomBytes } from "node:crypto"
 import { join } from "node:path"
 import { listSubdirectories, readConfig, readText } from "../files.ts"
 import { threadDir } from "../thread/storage.ts"
-import { type Message, MessageConfigSchema } from "./message.ts"
+import {
+    type Message,
+    MessageConfigSchema,
+    type ProviderResponse,
+    ProviderResponseSchema,
+} from "./message.ts"
 
 function messagesDir(projectRoot: string, threadId: string): string {
     return join(threadDir(projectRoot, threadId), "messages")
@@ -13,6 +18,7 @@ function messagePaths(projectRoot: string, threadId: string, id: string) {
     return {
         config: join(dir, "message.json"),
         body: join(dir, "body.md"),
+        response: join(dir, "response.json"),
     }
 }
 
@@ -47,6 +53,28 @@ export async function saveMessage(
         Bun.write(paths.config, `${JSON.stringify(config, null, 4)}\n`),
         Bun.write(paths.body, body),
     ])
+}
+
+export async function saveResponse(
+    projectRoot: string,
+    { threadId, id }: Pick<Message, "threadId" | "id">,
+    response: ProviderResponse,
+): Promise<void> {
+    await Bun.write(
+        messagePaths(projectRoot, threadId, id).response,
+        `${JSON.stringify(response, null, 4)}\n`,
+    )
+}
+
+export async function loadResponse(
+    projectRoot: string,
+    { threadId, id }: Pick<Message, "threadId" | "id">,
+): Promise<ProviderResponse | undefined> {
+    const path = messagePaths(projectRoot, threadId, id).response
+    if (!(await Bun.file(path).exists())) {
+        return undefined
+    }
+    return readConfig(projectRoot, path, ProviderResponseSchema)
 }
 
 export function newMessageId(sentAt: string): string {
