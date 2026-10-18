@@ -9,17 +9,19 @@ import {
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
+import { requireGitRepository } from "../git.ts"
 import { CompanyConfigSchema } from "./company.ts"
 import { companyExists, loadCompany, saveCompany } from "./storage.ts"
 
 export function registerCompanyCommands(program: Command): void {
     program
         .command("init")
-        .description("Create a company in the current directory.")
+        .description("Create a company in the current git repository.")
         .requiredOption("-n, --name <name>", "company name")
         .option("-d, --description <text>", "company description", "")
         .addOption(descriptionFileOption())
         .action(async ({ name, description, descriptionFile }) => {
+            requireGitRepository(projectRoot)
             if (await companyExists(projectRoot)) {
                 throw new UserError(
                     "A company already exists in this directory.",

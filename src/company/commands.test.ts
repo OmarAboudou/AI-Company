@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { rm } from "node:fs/promises"
 import { useTemporaryProject } from "../cli-test-helpers.ts"
 
 const { runCli, projectPath } = useTemporaryProject()
@@ -30,6 +31,16 @@ describe("llmco init", () => {
 
     test("requires a name", () => {
         expect(runCli("init").exitCode).toBe(1)
+    })
+
+    test("refuses a directory outside any git repository", async () => {
+        await rm(projectPath(".git"), { recursive: true })
+
+        const init = runCli("init", "-n", "Acme")
+
+        expect(init.exitCode).toBe(1)
+        expect(init.stderr).toContain("Run `git init` first.")
+        expect(runCli("company", "show").exitCode).toBe(1)
     })
 })
 

@@ -10,6 +10,13 @@ export function useTemporaryProject() {
 
     beforeEach(async () => {
         projectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
+        for (const args of [
+            ["init", "-q"],
+            ["config", "user.name", "Test User"],
+            ["config", "user.email", "test@example.com"],
+        ]) {
+            Bun.spawnSync(["git", ...args], { cwd: projectRoot })
+        }
     })
 
     afterEach(async () => {
