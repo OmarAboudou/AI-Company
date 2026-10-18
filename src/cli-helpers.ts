@@ -73,6 +73,13 @@ export function idDescription(
     return `${entity} id, which is also the name of its folder in ${entityFolders[entity]} (kebab-case, e.g. ${example})`
 }
 
+export function newIdDescription(
+    entity: keyof typeof entityFolders,
+    example: string,
+): string {
+    return `new ${entity} id, which becomes the name of its folder in ${entityFolders[entity]} (kebab-case, e.g. ${example})`
+}
+
 export function parseId(entity: string, id: string): string {
     const result = IdSchema.safeParse(id)
     if (!result.success) {
