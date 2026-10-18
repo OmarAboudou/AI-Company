@@ -107,9 +107,17 @@ describe("deleteLlmProvider", () => {
             saveLlmModel(projectRoot, opus),
         ])
 
-        await deleteLlmProvider(projectRoot, "anthropic")
+        const listProvidersAndModels = () =>
+            Promise.all([
+                listLlmProviders(projectRoot),
+                listLlmModels(projectRoot, "anthropic"),
+            ])
+        const before = await listProvidersAndModels()
 
-        expect(await listLlmProviders(projectRoot)).toEqual([])
-        expect(await listLlmModels(projectRoot, "anthropic")).toEqual([])
+        await deleteLlmProvider(projectRoot, "anthropic")
+        const after = await listProvidersAndModels()
+
+        expect(before).toEqual([[anthropic], [opus]])
+        expect(after).toEqual([[], []])
     })
 })
