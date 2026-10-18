@@ -41,7 +41,7 @@ describe("llmco position", () => {
 
         expect(runCli("position", "list").stdout).toBe(
             "developer  Developer  (vacant)\n" +
-                "director   Director   (vacant)\n" +
+                "director   Director   (git users)\n" +
                 "qa-tester  QA Tester  (vacant)\n",
         )
     })
@@ -227,7 +227,7 @@ describe("llmco position assign and unassign", () => {
 
         expect(runCli("position", "list").stdout).toBe(
             "developer  Developer  (vacant)\n" +
-                "director   Director   (vacant)\n" +
+                "director   Director   (git users)\n" +
                 "qa-tester  QA Tester  claude-senior\n",
         )
         expect(runCli("position", "show", "qa-tester").stdout).toBe(
