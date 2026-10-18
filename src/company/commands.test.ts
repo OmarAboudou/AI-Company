@@ -40,7 +40,9 @@ describe("llmco init", () => {
         expect(init.stdout).toBe(
             'Created company "Acme" and its director\'s position "director".\n',
         )
-        expect(position).toBe("# Director\n\ndefault employee: (vacant)\n\n\n")
+        expect(position).toBe(
+            "# Director\n\nheld by: the repository's git users\n\n\n",
+        )
         expect(runCli("employee", "list").stdout).toContain("No employees")
     })
 
@@ -67,6 +69,16 @@ describe("llmco init", () => {
 describe("the director's position", () => {
     beforeEach(() => {
         runCli("init", "-n", "Acme")
+    })
+
+    test("can't be assigned an employee", () => {
+        runCli("employee", "create", "human", "omar", "-n", "Omar")
+
+        const assignment = runCli("position", "assign", "director", "omar")
+
+        expect(assignment.exitCode).toBe(1)
+        expect(assignment.stderr).toContain("not an employee")
+        expect(runCli("position", "list").stdout).toContain("(git users)")
     })
 
     test("can't be deleted", () => {

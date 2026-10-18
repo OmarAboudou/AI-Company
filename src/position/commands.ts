@@ -68,12 +68,17 @@ export function registerPositionCommands(program: Command): void {
         .description("List the positions and the employees filling them.")
         .action(async () => {
             await requireCompany()
-            const positions = await listPositions(projectRoot)
+            const [positions, company] = await Promise.all([
+                listPositions(projectRoot),
+                loadCompany(projectRoot),
+            ])
             printColumns(
                 positions.map(({ id, title, defaultEmployeeId }) => [
                     id,
                     title,
-                    defaultEmployeeId ?? "(vacant)",
+                    id === company.directorPositionId
+                        ? "(git users)"
+                        : (defaultEmployeeId ?? "(vacant)"),
                 ]),
             )
         })
@@ -89,9 +94,16 @@ export function registerPositionCommands(program: Command): void {
         )
         .action(async (rawId) => {
             await requireCompany()
-            const position = await loadExistingPosition(rawId)
+            const [position, company] = await Promise.all([
+                loadExistingPosition(rawId),
+                loadCompany(projectRoot),
+            ])
+            const holder =
+                position.id === company.directorPositionId
+                    ? "held by: the repository's git users"
+                    : `default employee: ${position.defaultEmployeeId ?? "(vacant)"}`
             console.log(
-                `# ${position.title}\n\ndefault employee: ${position.defaultEmployeeId ?? "(vacant)"}\n\n${position.description}`,
+                `# ${position.title}\n\n${holder}\n\n${position.description}`,
             )
         })
 
@@ -173,7 +185,9 @@ export function registerPositionCommands(program: Command): void {
 
     positionCommand
         .command("assign")
-        .description("Set the default employee of a position.")
+        .description(
+            "Set the default employee of a position, except the director's.",
+        )
         .argument(
             "<position-id>",
             idDescription("position", "backend-developer"),
@@ -182,10 +196,16 @@ export function registerPositionCommands(program: Command): void {
         .option("-r, --replace", "replace the current default employee")
         .action(async (rawPositionId, rawEmployeeId, { replace }) => {
             await requireCompany()
-            const [position, employee] = await Promise.all([
+            const [position, employee, company] = await Promise.all([
                 loadExistingPosition(rawPositionId),
                 loadExistingEmployee(rawEmployeeId),
+                loadCompany(projectRoot),
             ])
+            if (position.id === company.directorPositionId) {
+                throw new UserError(
+                    `Position "${position.id}" is the director's position: the people working on this repository hold it, identified by git, not an employee.`,
+                )
+            }
             const previous = position.defaultEmployeeId
             if (previous === employee.id) {
                 console.log(
