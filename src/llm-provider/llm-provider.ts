@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 const environmentVariableName =
-    "must be an environment variable name: letters, digits and underscores, not starting with a digit"
+    "must be an environment variable's name, without $: letters, digits and underscores, not starting with a digit"
 
 const ApiKeySourceSchema = z.union([
     z
@@ -11,7 +11,7 @@ const ApiKeySourceSchema = z.union([
                 .regex(/^[A-Za-z_][A-Za-z0-9_]*$/, environmentVariableName)
                 .meta({
                     description:
-                        "Name of the environment variable holding the API key, e.g. ANTHROPIC_API_KEY.",
+                        "Name of the environment variable holding the API key, without $, e.g. ANTHROPIC_API_KEY.",
                     patternErrorMessage: environmentVariableName,
                 }),
         })

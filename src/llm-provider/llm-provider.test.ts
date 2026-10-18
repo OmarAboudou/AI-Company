@@ -56,6 +56,12 @@ describe("LlmProviderConfigSchema apiKey", () => {
         expect(accepts({ ...anthropic, apiKey: { env: "MY-KEY" } })).toBe(false)
     })
 
+    test("rejects a variable written with $, as a shell reads it", () => {
+        const apiKey = { env: "$ANTHROPIC_API_KEY" }
+
+        expect(accepts({ ...anthropic, apiKey })).toBe(false)
+    })
+
     test("rejects an empty file path", () => {
         expect(accepts({ ...anthropic, apiKey: { file: " " } })).toBe(false)
     })
