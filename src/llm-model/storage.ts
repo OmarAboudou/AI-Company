@@ -1,3 +1,4 @@
+import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { listSubdirectories, readConfig } from "../files.ts"
 import { llmProviderDir } from "../llm-provider/storage.ts"
@@ -7,12 +8,20 @@ function llmModelsDir(projectRoot: string, providerId: string): string {
     return join(llmProviderDir(projectRoot, providerId), "models")
 }
 
+function llmModelDir(
+    projectRoot: string,
+    providerId: string,
+    id: string,
+): string {
+    return join(llmModelsDir(projectRoot, providerId), id)
+}
+
 function llmModelConfigPath(
     projectRoot: string,
     providerId: string,
     id: string,
 ): string {
-    return join(llmModelsDir(projectRoot, providerId), id, "config.json")
+    return join(llmModelDir(projectRoot, providerId, id), "config.json")
 }
 
 export async function llmModelExists(
@@ -55,4 +64,12 @@ export async function saveLlmModel(
         llmModelConfigPath(projectRoot, providerId, id),
         `${JSON.stringify(config, null, 4)}\n`,
     )
+}
+
+export async function deleteLlmModel(
+    projectRoot: string,
+    providerId: string,
+    id: string,
+): Promise<void> {
+    await rm(llmModelDir(projectRoot, providerId, id), { recursive: true })
 }
