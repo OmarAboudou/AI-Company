@@ -119,6 +119,8 @@ export function registerLlmProviderCommands(program: Command): void {
             const users = employees
                 .filter((employee) => employee.kind === "llm")
                 .filter((employee) => employee.providerId === provider.id)
+            // Copy, repoint, then delete rather than move, as for employees:
+            // an employee must never run on a missing provider.
             await copyLlmProvider(projectRoot, provider.id, newId)
             await Promise.all(
                 users.map((employee) =>
