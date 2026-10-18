@@ -3,8 +3,10 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { UserError } from "../errors.ts"
+import { listLlmModels, saveLlmModel } from "../llm-model/storage.ts"
 import type { LlmProvider } from "./llm-provider.ts"
 import {
+    deleteLlmProvider,
     listLlmProviders,
     llmProviderExists,
     loadLlmProvider,
@@ -89,5 +91,25 @@ describe("listLlmProviders", () => {
         await saveLlmProvider(projectRoot, anthropic)
 
         expect(await listLlmProviders(projectRoot)).toEqual([anthropic, ollama])
+    })
+})
+
+describe("deleteLlmProvider", () => {
+    test("removes the provider's folder, models included", async () => {
+        const opus = {
+            providerId: "anthropic",
+            id: "claude-opus-5-5",
+            name: "Claude Opus 5.5",
+            apiId: "claude-opus-5-5",
+        }
+        await Promise.all([
+            saveLlmProvider(projectRoot, anthropic),
+            saveLlmModel(projectRoot, opus),
+        ])
+
+        await deleteLlmProvider(projectRoot, "anthropic")
+
+        expect(await listLlmProviders(projectRoot)).toEqual([])
+        expect(await listLlmModels(projectRoot, "anthropic")).toEqual([])
     })
 })

@@ -5,6 +5,7 @@ import { join } from "node:path"
 import { UserError } from "../errors.ts"
 import type { LlmModel } from "./llm-model.ts"
 import {
+    deleteLlmModel,
     listLlmModels,
     llmModelExists,
     loadLlmModel,
@@ -123,5 +124,18 @@ describe("listLlmModels", () => {
         const models = await listLlmModels(projectRoot, "anthropic")
 
         expect(models).toEqual([haiku, opus])
+    })
+})
+
+describe("deleteLlmModel", () => {
+    test("removes the model's folder, not its provider's other models", async () => {
+        await Promise.all([
+            saveLlmModel(projectRoot, opus),
+            saveLlmModel(projectRoot, haiku),
+        ])
+
+        await deleteLlmModel(projectRoot, "anthropic", opus.id)
+
+        expect(await listLlmModels(projectRoot, "anthropic")).toEqual([haiku])
     })
 })

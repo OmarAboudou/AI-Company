@@ -1,3 +1,4 @@
+import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { listSubdirectories, readConfig } from "../files.ts"
 import { llmcoDir } from "../project.ts"
@@ -50,4 +51,11 @@ export async function saveLlmProvider(
         llmProviderConfigPath(projectRoot, id),
         `${JSON.stringify(config, null, 4)}\n`,
     )
+}
+
+export async function deleteLlmProvider(
+    projectRoot: string,
+    id: string,
+): Promise<void> {
+    await rm(llmProviderDir(projectRoot, id), { recursive: true })
 }
