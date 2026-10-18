@@ -75,17 +75,17 @@ async function loadProviderWithConnection(
     const provider = await loadExistingLlmProvider(rawProviderId)
     if (provider.connections?.[protocol] === undefined) {
         throw new UserError(
-            `Provider "${provider.id}" has no ${protocol} connection. Run \`llmco connection list\`.`,
+            `Provider "${provider.id}" has no ${protocol} connection. Run \`llmco provider connection list\`.`,
         )
     }
     return provider
 }
 
-export function registerLlmConnectionCommands(program: Command): void {
-    const connectionCommand = program
+export function registerLlmConnectionCommands(providerCommand: Command): void {
+    const connectionCommand = providerCommand
         .command("connection")
         .description(
-            "Manage how LLM providers are reached: one connection per API protocol.",
+            "Manage how providers are reached: one connection per API protocol.",
         )
 
     connectionCommand
@@ -139,7 +139,7 @@ export function registerLlmConnectionCommands(program: Command): void {
             )
             if (rows.length === 0) {
                 console.log(
-                    "No connections yet. Run `llmco connection create`.",
+                    "No connections yet. Run `llmco provider connection create`.",
                 )
                 return
             }

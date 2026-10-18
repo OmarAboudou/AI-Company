@@ -13,6 +13,7 @@ import {
 } from "../cli-helpers.ts"
 import { listEmployees, saveEmployee } from "../employee/storage.ts"
 import { UserError } from "../errors.ts"
+import { registerLlmConnectionCommands } from "../llm-connection/commands.ts"
 import { protocols } from "../llm-connection/llm-connection.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import { type ApiKeySource, LlmProviderConfigSchema } from "./llm-provider.ts"
@@ -235,4 +236,6 @@ export function registerLlmProviderCommands(program: Command): void {
                     : `Deleted provider "${provider.id}" and its models ${modelIds}.`,
             )
         })
+
+    registerLlmConnectionCommands(providerCommand)
 }

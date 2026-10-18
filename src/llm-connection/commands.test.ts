@@ -12,10 +12,10 @@ beforeEach(() => {
 })
 
 function createConnection(...args: string[]) {
-    return runCli("connection", "create", ...args)
+    return runCli("provider", "connection", "create", ...args)
 }
 
-describe("llmco connection create", () => {
+describe("llmco provider connection create", () => {
     test("create then list shows the URL and how the key is sent", () => {
         const create = createConnection(
             "anthropic",
@@ -23,7 +23,7 @@ describe("llmco connection create", () => {
             "-u",
             anthropicUrl,
         )
-        const list = runCli("connection", "list").stdout
+        const list = runCli("provider", "connection", "list").stdout
 
         expect(create.stdout).toBe(
             'Created the anthropic-messages connection of provider "anthropic".\n',
@@ -44,7 +44,7 @@ describe("llmco connection create", () => {
             "bearer",
         )
 
-        const list = runCli("connection", "list").stdout
+        const list = runCli("provider", "connection", "list").stdout
 
         expect(list).toBe(`openrouter/anthropic-messages  ${url}  bearer\n`)
     })
@@ -55,7 +55,7 @@ describe("llmco connection create", () => {
         createConnection("openrouter", "openai-chat-completions", "-u", url)
         createConnection("anthropic", "anthropic-messages", "-u", anthropicUrl)
 
-        const list = runCli("connection", "list").stdout
+        const list = runCli("provider", "connection", "list").stdout
         const names = list
             .trimEnd()
             .split("\n")
@@ -69,7 +69,7 @@ describe("llmco connection create", () => {
     })
 
     test("list says so when there is no connection", () => {
-        const list = runCli("connection", "list")
+        const list = runCli("provider", "connection", "list")
 
         expect(list.exitCode).toBe(0)
         expect(list.stdout).toContain("No connections yet.")
@@ -96,7 +96,7 @@ describe("llmco connection create", () => {
             "-u",
             "https://example.com",
         )
-        const list = runCli("connection", "list").stdout
+        const list = runCli("provider", "connection", "list").stdout
 
         expect(second.exitCode).toBe(1)
         expect(second.stderr).toContain(
@@ -156,7 +156,7 @@ describe("llmco connection create", () => {
     })
 })
 
-describe("llmco connection update", () => {
+describe("llmco provider connection update", () => {
     beforeEach(() => {
         createConnection(
             "openrouter",
@@ -171,6 +171,7 @@ describe("llmco connection update", () => {
     test("update -u changes the URL and keeps the auth", () => {
         const url = "https://eu.openrouter.ai/api"
         const update = runCli(
+            "provider",
             "connection",
             "update",
             "openrouter",
@@ -178,7 +179,7 @@ describe("llmco connection update", () => {
             "-u",
             url,
         )
-        const list = runCli("connection", "list").stdout
+        const list = runCli("provider", "connection", "list").stdout
 
         expect(update.stdout).toBe(
             'Updated the anthropic-messages connection of provider "openrouter".\n',
@@ -188,6 +189,7 @@ describe("llmco connection update", () => {
 
     test("update requires at least one option", () => {
         const update = runCli(
+            "provider",
             "connection",
             "update",
             "openrouter",
@@ -200,6 +202,7 @@ describe("llmco connection update", () => {
 
     test("update fails for a connection the provider doesn't have", () => {
         const update = runCli(
+            "provider",
             "connection",
             "update",
             "openrouter",
@@ -213,7 +216,7 @@ describe("llmco connection update", () => {
     })
 })
 
-describe("llmco connection delete", () => {
+describe("llmco provider connection delete", () => {
     test("delete removes only that connection", () => {
         const url = "https://openrouter.ai/api"
         createConnection("openrouter", "anthropic-messages", "-u", url)
@@ -221,6 +224,7 @@ describe("llmco connection delete", () => {
         const before = runCli("provider", "show", "openrouter").stdout
 
         const deletion = runCli(
+            "provider",
             "connection",
             "delete",
             "openrouter",
@@ -237,6 +241,7 @@ describe("llmco connection delete", () => {
 
     test("delete fails for a connection the provider doesn't have", () => {
         const deletion = runCli(
+            "provider",
             "connection",
             "delete",
             "anthropic",
