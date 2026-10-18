@@ -155,6 +155,8 @@ export function registerLlmModelCommands(program: Command): void {
                         employee.providerId === model.providerId &&
                         employee.modelId === model.id,
                 )
+            // Copy, repoint, then delete rather than move, as for employees:
+            // an employee must never run on a missing model.
             await copyLlmModel(projectRoot, model.providerId, model.id, newId)
             await Promise.all(
                 users.map((employee) =>
