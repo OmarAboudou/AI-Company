@@ -134,8 +134,12 @@ describe("deleteLlmModel", () => {
             saveLlmModel(projectRoot, haiku),
         ])
 
-        await deleteLlmModel(projectRoot, "anthropic", opus.id)
+        const before = await listLlmModels(projectRoot, "anthropic")
 
-        expect(await listLlmModels(projectRoot, "anthropic")).toEqual([haiku])
+        await deleteLlmModel(projectRoot, "anthropic", opus.id)
+        const after = await listLlmModels(projectRoot, "anthropic")
+
+        expect(before).toEqual([haiku, opus])
+        expect(after).toEqual([haiku])
     })
 })
