@@ -290,6 +290,64 @@ describe("llmco employee update-id", () => {
     })
 })
 
+describe("llmco employee hand-over", () => {
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+        runCli("employee", "create", "human", "omar", "-n", "Omar")
+        runCli("employee", "create", "human", "alice", "-n", "Alice")
+        for (const id of ["developer", "qa-tester", "designer"]) {
+            runCli("position", "create", id, "-t", id)
+        }
+        runCli("position", "assign", "developer", "omar")
+        runCli("position", "assign", "qa-tester", "omar")
+        runCli("position", "assign", "designer", "alice")
+    })
+
+    test("hand-over gives every position of an employee to another", () => {
+        const handOver = runCli("employee", "hand-over", "omar", "alice")
+        const list = runCli("position", "list").stdout
+
+        expect(handOver.stdout).toContain("takes over developer, qa-tester")
+        expect(handOver.stdout).toContain('from "omar", who stays hired.')
+        expect(list).toContain("developer  developer  alice\n")
+        expect(list).toContain("qa-tester  qa-tester  alice\n")
+    })
+
+    test("hand-over keeps both employees and the successor's positions", () => {
+        runCli("employee", "hand-over", "omar", "alice")
+
+        const list = runCli("employee", "list", "--positions").stdout
+
+        expect(list).toContain("alice  Alice  human  designer, developer, qa-")
+        expect(list).toContain("omar   Omar   human  (none)\n")
+    })
+
+    test("hand-over says so when the employee fills no position", () => {
+        runCli("employee", "create", "human", "bob", "-n", "Bob")
+
+        const handOver = runCli("employee", "hand-over", "bob", "alice")
+
+        expect(handOver.exitCode).toBe(0)
+        expect(handOver.stdout).toContain("nothing to hand over")
+    })
+
+    test("hand-over refuses an employee handing over to itself", () => {
+        const handOver = runCli("employee", "hand-over", "omar", "omar")
+
+        expect(handOver.exitCode).toBe(1)
+        expect(handOver.stderr).toContain("to itself")
+    })
+
+    test("hand-over fails for an unknown successor", () => {
+        const handOver = runCli("employee", "hand-over", "omar", "bob")
+        const list = runCli("position", "list").stdout
+
+        expect(handOver.exitCode).toBe(1)
+        expect(handOver.stderr).toContain('No employee "bob".')
+        expect(list).toContain("developer  developer  omar\n")
+    })
+})
+
 describe("llmco employee delete", () => {
     beforeEach(() => {
         runCli("init", "-n", "Acme")
