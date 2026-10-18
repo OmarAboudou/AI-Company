@@ -17,6 +17,9 @@ describe("findMentions", () => {
         ["after a parenthesis", "(cc @qa-tester)"],
         ["before punctuation", "Thanks @qa-tester!"],
         ["before an apostrophe", "@qa-tester's report"],
+        ["in a heading", "# Review by @qa-tester"],
+        ["in a quote", "> @qa-tester said so"],
+        ["between backticks that close nothing", "`@qa-tester`` is no code"],
     ])("finds a mention %s", (_, body) => {
         expect(positionIds(body)).toEqual(["qa-tester"])
     })
@@ -29,6 +32,8 @@ describe("findMentions", () => {
         ["a fenced code block", "```ts\nimport x from '@qa-tester'\n```"],
         ["a tilde code block", "~~~\n@qa-tester\n~~~"],
         ["an unclosed code block", "```\n@qa-tester"],
+        ["an indented code block", "    @qa-tester"],
+        ["a code block in a list item", "- see:\n\n  ```\n  @qa-tester\n  ```"],
     ])("ignores %s", (_, body) => {
         expect(positionIds(body)).toEqual([])
     })
@@ -37,6 +42,14 @@ describe("findMentions", () => {
         const body = "```\n@ignored\n```\n\n@qa-tester, see above."
 
         expect(positionIds(body)).toEqual(["qa-tester"])
+    })
+
+    test.each([
+        ["list items", "- @qa-tester\n- @designer"],
+        ["nested list items", "- @qa-tester\n  - @designer"],
+        ["table cells", "| @qa-tester | @designer |\n| --- | --- |"],
+    ])("finds mentions in consecutive %s", (_, body) => {
+        expect(positionIds(body)).toEqual(["qa-tester", "designer"])
     })
 
     test("sets apart mentions of a specific employee", () => {
