@@ -1,4 +1,4 @@
-import type { Command } from "@commander-js/extra-typings"
+import { type Command, Option } from "@commander-js/extra-typings"
 import { z } from "zod"
 import {
     idDescription,
@@ -13,10 +13,15 @@ import {
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
-import { withNewId } from "../id-history.ts"
+import { withNewId, wrote } from "../id-history.ts"
 import type { Position } from "../position/position.ts"
 import { listPositions, savePosition } from "../position/storage.ts"
-import { type EmployeeConfig, EmployeeConfigSchema } from "./employee.ts"
+import { readArchives } from "../thread/archives.ts"
+import {
+    type Employee,
+    type EmployeeConfig,
+    EmployeeConfigSchema,
+} from "./employee.ts"
 import {
     copyEmployee,
     deleteEmployee,
@@ -45,7 +50,59 @@ async function requireLlmModel(config: EmployeeConfig): Promise<void> {
     }
 }
 
-async function createEmployee(rawId: string, config: unknown): Promise<void> {
+async function earlierUses(id: string, renamed?: Employee): Promise<string[]> {
+    const [employees, archives] = await Promise.all([
+        listEmployees(projectRoot),
+        readArchives(projectRoot),
+    ])
+    const formerIdOf = employees
+        .filter(
+            (employee) =>
+                employee.id !== renamed?.id &&
+                employee.formerIds?.some((former) => former.id === id),
+        )
+        .map((employee) => `as a former id of employee "${employee.id}"`)
+    const threads = archives
+        .filter(({ thread, messages }) => {
+            const creator = {
+                employee: thread.createdBy.employee,
+                sentAt: thread.createdAt,
+            }
+            return [creator, ...messages].some(
+                (author) =>
+                    author.employee?.id === id &&
+                    !(renamed !== undefined && wrote(renamed, author)),
+            )
+        })
+        .map(({ thread }) => `in thread "${thread.id}"`)
+    return [...formerIdOf, ...threads]
+}
+
+async function requireUnusedId(
+    id: string,
+    reuseId: boolean | undefined,
+    renamed?: Employee,
+): Promise<void> {
+    const uses = reuseId ? [] : await earlierUses(id, renamed)
+    if (uses.length > 0) {
+        throw new UserError(
+            `Employee id "${id}" was used before: ${uses.join(", ")}. An employee is a person, and the archives would name two people the same way: add --reuse-id to reuse it anyway.`,
+        )
+    }
+}
+
+function reuseIdOption() {
+    return new Option(
+        "-r, --reuse-id",
+        "give the id even if an earlier employee had it, in threads or as a former id",
+    )
+}
+
+async function createEmployee(
+    rawId: string,
+    config: unknown,
+    reuseId: boolean | undefined,
+): Promise<void> {
     await requireCompany()
     const id = parseId("employee", rawId)
     const result = EmployeeConfigSchema.safeParse(config)
@@ -59,6 +116,7 @@ async function createEmployee(rawId: string, config: unknown): Promise<void> {
     if (exists) {
         throw new UserError(`Employee "${id}" already exists.`)
     }
+    await requireUnusedId(id, reuseId)
     await saveEmployee(projectRoot, {
         id,
         ...result.data,
@@ -90,13 +148,13 @@ export function registerEmployeeCommands(program: Command): void {
             "-m, --model <model-id>",
             "id of one of the provider's models in llmco, e.g. claude-opus-5-5 (see llmco model list), not its api id",
         )
-        .action(async (rawId, { name, provider, model }) => {
-            await createEmployee(rawId, {
-                name,
-                kind: "llm",
-                providerId: provider,
-                modelId: model,
-            })
+        .addOption(reuseIdOption())
+        .action(async (rawId, { name, provider, model, reuseId }) => {
+            await createEmployee(
+                rawId,
+                { name, kind: "llm", providerId: provider, modelId: model },
+                reuseId,
+            )
         })
 
     createEmployeeCommand
@@ -104,8 +162,9 @@ export function registerEmployeeCommands(program: Command): void {
         .description("Create an employee who is a human.")
         .argument("<employee-id>", idDescription("employee", "omar"))
         .requiredOption("-n, --name <name>", "employee name")
-        .action(async (rawId, { name }) => {
-            await createEmployee(rawId, { name, kind: "human" })
+        .addOption(reuseIdOption())
+        .action(async (rawId, { name, reuseId }) => {
+            await createEmployee(rawId, { name, kind: "human" }, reuseId)
         })
 
     employeeCommand
@@ -224,7 +283,8 @@ export function registerEmployeeCommands(program: Command): void {
             "<new-employee-id>",
             newIdDescription("employee", "claude-lead"),
         )
-        .action(async (rawId, rawNewId) => {
+        .addOption(reuseIdOption())
+        .action(async (rawId, rawNewId, { reuseId }) => {
             await requireCompany()
             const newId = parseId("employee", rawNewId)
             const [employee, taken, positions] = await Promise.all([
@@ -235,6 +295,7 @@ export function registerEmployeeCommands(program: Command): void {
             if (taken) {
                 throw new UserError(`Employee "${newId}" already exists.`)
             }
+            await requireUnusedId(newId, reuseId, employee)
             const filled = filledPositions(positions, employee.id)
             // Copy, repoint, then delete rather than move, so that an
             // interrupted command never leaves a position naming a missing
