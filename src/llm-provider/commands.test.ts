@@ -114,10 +114,10 @@ describe("llmco provider API key", () => {
     test("create rejects an invalid environment variable name", () => {
         const create = ["provider", "create", "anthropic", "-n", "Anthropic"]
 
-        const result = runCli(...create, "-e", "ANTHROPIC-KEY")
+        const result = runCli(...create, "-e", "$ANTHROPIC_API_KEY")
 
         expect(result.exitCode).toBe(1)
-        expect(result.stderr).toContain("environment variable name")
+        expect(result.stderr).toContain("variable's name, without $")
     })
 
     test("update -e replaces a file with an environment variable", () => {

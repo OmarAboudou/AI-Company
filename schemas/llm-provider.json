@@ -17,8 +17,8 @@
                         "env": {
                             "type": "string",
                             "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
-                            "description": "Name of the environment variable holding the API key, e.g. ANTHROPIC_API_KEY.",
-                            "patternErrorMessage": "must be an environment variable name: letters, digits and underscores, not starting with a digit"
+                            "description": "Name of the environment variable holding the API key, without $, e.g. ANTHROPIC_API_KEY.",
+                            "patternErrorMessage": "must be an environment variable's name, without $: letters, digits and underscores, not starting with a digit"
                         }
                     },
                     "required": ["env"],
