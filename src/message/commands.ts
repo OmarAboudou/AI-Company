@@ -7,6 +7,7 @@ import {
     requireCompany,
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
+import { answerMentions } from "../llm/reply.ts"
 import { listPositions } from "../position/storage.ts"
 import { type Author, currentAuthor } from "./author.ts"
 import { findMentions } from "./mentions.ts"
@@ -45,25 +46,35 @@ export type Draft = Author & {
     unknownMentions: string[]
 }
 
+export async function readMentions(
+    body: string,
+    authorPositionId: string,
+): Promise<Pick<Draft, "mentions" | "unknownMentions">> {
+    const { positionIds } = findMentions(body)
+    const positions = await listPositions(projectRoot)
+    const known = new Set(positions.map(({ id }) => id))
+    return {
+        mentions: positionIds.filter(
+            (id) => known.has(id) && id !== authorPositionId,
+        ),
+        unknownMentions: positionIds.filter((id) => !known.has(id)),
+    }
+}
+
 export async function draftMessage(
     author: Author,
     body: string,
 ): Promise<Draft> {
-    const { positionIds, employeeMentions } = findMentions(body)
+    const { employeeMentions } = findMentions(body)
     if (employeeMentions.length > 0) {
         throw new UserError(
             `Mentioning a specific employee (${employeeMentions.join(", ")}) isn't possible yet: mention the position.`,
         )
     }
-    const positions = await listPositions(projectRoot)
-    const known = new Set(positions.map(({ id }) => id))
     return {
         ...author,
         body,
-        mentions: positionIds.filter(
-            (id) => known.has(id) && id !== author.position.id,
-        ),
-        unknownMentions: positionIds.filter((id) => !known.has(id)),
+        ...(await readMentions(body, author.position.id)),
     }
 }
 
@@ -91,7 +102,7 @@ export function registerMessageCommands(program: Command): void {
     messageCommand
         .command("send")
         .description(
-            "Send a message in a thread, from the director's position.",
+            "Send a message in a thread, from the director's position, and print the answers of the LLM employees it mentions.",
         )
         .argument(
             "<thread-id>",
@@ -110,6 +121,7 @@ export function registerMessageCommands(program: Command): void {
             }
             const draft = await draftMessage(await currentAuthor(), body)
             const id = await sendDraft(thread.id, draft)
-            console.log(`Sent message "${id}" in thread "${thread.id}".`)
+            console.error(`Sent message "${id}" in thread "${thread.id}".`)
+            await answerMentions(thread.id, draft.mentions)
         })
 }

@@ -8,6 +8,7 @@ import {
     requireCompany,
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
+import { answerMentions } from "../llm/reply.ts"
 import { currentAuthor } from "../message/author.ts"
 import {
     bodyFileOption,
@@ -64,10 +65,11 @@ export function registerThreadCommands(program: Command): void {
                 createdAt,
             )
             await saveThread(projectRoot, { id, ...config.data })
+            console.log(id)
             if (draft !== undefined) {
                 await sendDraft(id, draft)
+                await answerMentions(id, draft.mentions)
             }
-            console.log(id)
         })
 
     threadCommand
