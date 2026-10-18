@@ -23,19 +23,11 @@ describe("EmployeeConfigSchema", () => {
         expect(EmployeeConfigSchema.parse(human)).toEqual(human)
     })
 
-    test.each([llm, human])(
-        "accepts the id history of a $kind employee",
-        (employee) => {
-            const history = {
-                createdAt: "2026-10-18T14:00:00.000Z",
-                formerIds: [
-                    { id: "claude", until: "2026-10-19T09:00:00.000Z" },
-                ],
-            }
+    test("rejects the id history, kept in history.json", () => {
+        const createdAt = "2026-10-18T14:00:00.000Z"
 
-            expect(accepts({ ...employee, ...history })).toBe(true)
-        },
-    )
+        expect(accepts({ ...human, createdAt })).toBe(false)
+    })
 
     test("trims whitespace around the name", () => {
         const config = EmployeeConfigSchema.parse({ ...human, name: " Omar " })

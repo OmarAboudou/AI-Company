@@ -452,7 +452,7 @@ describe("an employee's id history", () => {
     })
 
     async function history(id: string): Promise<History> {
-        const path = projectPath(".llmco", "employees", id, "config.json")
+        const path = projectPath(".llmco", "employees", id, "history.json")
         const { createdAt, formerIds } = await Bun.file(path).json()
         return { createdAt, formerIds }
     }
@@ -466,6 +466,21 @@ describe("an employee's id history", () => {
 
         expect(created).toBeGreaterThanOrEqual(before)
         expect(created).toBeLessThanOrEqual(after)
+    })
+
+    test("leaves the history out of config.json", async () => {
+        runCli("employee", "create", "human", "developer", "-n", "Dev")
+        runCli("employee", "update-id", "developer", "api-developer")
+
+        const path = projectPath(
+            ".llmco",
+            "employees",
+            "api-developer",
+            "config.json",
+        )
+        const config = { name: "Dev", kind: "human" }
+
+        expect(await Bun.file(path).json()).toEqual(config)
     })
 
     test("update-id records each former id and when it stopped", async () => {

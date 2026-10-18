@@ -1,6 +1,7 @@
 import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
 import { listSubdirectories, readConfig } from "../files.ts"
+import { loadIdHistory, saveIdHistory } from "../id-history.ts"
 import { llmcoDir } from "../project.ts"
 import { type Employee, EmployeeConfigSchema } from "./employee.ts"
 
@@ -16,6 +17,10 @@ function employeeConfigPath(projectRoot: string, id: string): string {
     return join(employeeDir(projectRoot, id), "config.json")
 }
 
+function employeeHistoryPath(projectRoot: string, id: string): string {
+    return join(employeeDir(projectRoot, id), "history.json")
+}
+
 export async function employeeExists(
     projectRoot: string,
     id: string,
@@ -27,12 +32,15 @@ export async function loadEmployee(
     projectRoot: string,
     id: string,
 ): Promise<Employee> {
-    const config = await readConfig(
-        projectRoot,
-        employeeConfigPath(projectRoot, id),
-        EmployeeConfigSchema,
-    )
-    return { id, ...config }
+    const [config, history] = await Promise.all([
+        readConfig(
+            projectRoot,
+            employeeConfigPath(projectRoot, id),
+            EmployeeConfigSchema,
+        ),
+        loadIdHistory(projectRoot, employeeHistoryPath(projectRoot, id)),
+    ])
+    return { id, ...config, ...history }
 }
 
 export async function listEmployees(projectRoot: string): Promise<Employee[]> {
@@ -44,11 +52,17 @@ export async function saveEmployee(
     projectRoot: string,
     employee: Employee,
 ): Promise<void> {
-    const { id, ...config } = employee
-    await Bun.write(
-        employeeConfigPath(projectRoot, id),
-        `${JSON.stringify(config, null, 4)}\n`,
-    )
+    const { id, createdAt, formerIds, ...config } = employee
+    await Promise.all([
+        Bun.write(
+            employeeConfigPath(projectRoot, id),
+            `${JSON.stringify(config, null, 4)}\n`,
+        ),
+        saveIdHistory(employeeHistoryPath(projectRoot, id), {
+            createdAt,
+            formerIds,
+        }),
+    ])
 }
 
 export async function deleteEmployee(

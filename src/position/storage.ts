@@ -1,6 +1,7 @@
 import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
 import { listSubdirectories, readConfig, readText } from "../files.ts"
+import { loadIdHistory, saveIdHistory } from "../id-history.ts"
 import { llmcoDir } from "../project.ts"
 import { type Position, PositionConfigSchema } from "./position.ts"
 
@@ -17,6 +18,7 @@ function positionPaths(projectRoot: string, id: string) {
     return {
         config: join(dir, "config.json"),
         description: join(dir, "description.md"),
+        history: join(dir, "history.json"),
     }
 }
 
@@ -32,11 +34,12 @@ export async function loadPosition(
     id: string,
 ): Promise<Position> {
     const paths = positionPaths(projectRoot, id)
-    const [config, description] = await Promise.all([
+    const [config, description, history] = await Promise.all([
         readConfig(projectRoot, paths.config, PositionConfigSchema),
         readText(projectRoot, paths.description),
+        loadIdHistory(projectRoot, paths.history),
     ])
-    return { id, ...config, description }
+    return { id, ...config, ...history, description }
 }
 
 export async function listPositions(projectRoot: string): Promise<Position[]> {
@@ -48,11 +51,12 @@ export async function savePosition(
     projectRoot: string,
     position: Position,
 ): Promise<void> {
-    const { id, description, ...config } = position
+    const { id, description, createdAt, formerIds, ...config } = position
     const paths = positionPaths(projectRoot, id)
     await Promise.all([
         Bun.write(paths.config, `${JSON.stringify(config, null, 4)}\n`),
         Bun.write(paths.description, description),
+        saveIdHistory(paths.history, { createdAt, formerIds }),
     ])
 }
 

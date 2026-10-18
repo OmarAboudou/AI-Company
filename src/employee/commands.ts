@@ -45,13 +45,10 @@ async function requireLlmModel(config: EmployeeConfig): Promise<void> {
     }
 }
 
-async function createEmployee(rawId: string, config: object): Promise<void> {
+async function createEmployee(rawId: string, config: unknown): Promise<void> {
     await requireCompany()
     const id = parseId("employee", rawId)
-    const result = EmployeeConfigSchema.safeParse({
-        ...config,
-        createdAt: new Date().toISOString(),
-    })
+    const result = EmployeeConfigSchema.safeParse(config)
     if (!result.success) {
         throw new UserError(z.prettifyError(result.error))
     }
@@ -62,7 +59,11 @@ async function createEmployee(rawId: string, config: object): Promise<void> {
     if (exists) {
         throw new UserError(`Employee "${id}" already exists.`)
     }
-    await saveEmployee(projectRoot, { id, ...result.data })
+    await saveEmployee(projectRoot, {
+        id,
+        ...result.data,
+        createdAt: new Date().toISOString(),
+    })
     console.log(`Created employee "${id}".`)
 }
 
@@ -181,7 +182,8 @@ export function registerEmployeeCommands(program: Command): void {
         .action(async (rawId, options) => {
             requireAnOption(options)
             await requireCompany()
-            const { id, ...current } = await loadExistingEmployee(rawId)
+            const { id, createdAt, formerIds, ...current } =
+                await loadExistingEmployee(rawId)
             const llmOptions = [options.provider, options.model]
             if (
                 current.kind === "human" &&
@@ -203,7 +205,12 @@ export function registerEmployeeCommands(program: Command): void {
                 throw new UserError(z.prettifyError(result.error))
             }
             await requireLlmModel(result.data)
-            await saveEmployee(projectRoot, { id, ...result.data })
+            await saveEmployee(projectRoot, {
+                id,
+                ...result.data,
+                createdAt,
+                formerIds,
+            })
             console.log(`Updated employee "${id}".`)
         })
 

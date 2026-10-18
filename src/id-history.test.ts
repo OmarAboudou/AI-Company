@@ -1,8 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { z } from "zod"
-import { type IdHistory, idHistoryShape, withNewId } from "./id-history.ts"
-
-const IdHistorySchema = z.strictObject(idHistoryShape)
+import { type IdHistory, IdHistorySchema, withNewId } from "./id-history.ts"
 
 function accepts(config: unknown): boolean {
     return IdHistorySchema.safeParse(config).success
@@ -13,7 +10,7 @@ const developer: IdHistory = {
     createdAt: "2026-10-18T14:00:00.000Z",
 }
 
-describe("idHistoryShape", () => {
+describe("IdHistorySchema", () => {
     test("accepts no history: created before llmco recorded it", () => {
         expect(accepts({})).toBe(true)
     })
