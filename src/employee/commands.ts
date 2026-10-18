@@ -11,14 +11,26 @@ import {
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
 import type { Position } from "../position/position.ts"
-import { listPositions } from "../position/storage.ts"
+import { listPositions, savePosition } from "../position/storage.ts"
 import { type EmployeeConfig, EmployeeConfigSchema } from "./employee.ts"
-import { employeeExists, listEmployees, saveEmployee } from "./storage.ts"
+import {
+    deleteEmployee,
+    employeeExists,
+    listEmployees,
+    saveEmployee,
+} from "./storage.ts"
+
+function filledPositions(
+    positions: Position[],
+    employeeId: string,
+): Position[] {
+    return positions.filter(
+        ({ defaultEmployeeId }) => defaultEmployeeId === employeeId,
+    )
+}
 
 function positionsFilledBy(positions: Position[], employeeId: string): string {
-    const ids = positions
-        .filter(({ defaultEmployeeId }) => defaultEmployeeId === employeeId)
-        .map(({ id }) => id)
+    const ids = filledPositions(positions, employeeId).map(({ id }) => id)
     return ids.length > 0 ? ids.join(", ") : "(none)"
 }
 
@@ -141,5 +153,40 @@ export function registerEmployeeCommands(program: Command): void {
                 `positions: ${positionsFilledBy(positions, employee.id)}`,
             )
             console.log(lines.join("\n"))
+        })
+
+    employeeCommand
+        .command("delete")
+        .alias("fire")
+        .description("Delete (fire) an employee.")
+        .argument("<employee-id>", idDescription("employee", "claude-senior"))
+        .option(
+            "-f, --force",
+            "delete it even if it fills positions, leaving them vacant",
+        )
+        .action(async (rawId, { force }) => {
+            await requireCompany()
+            const [employee, positions] = await Promise.all([
+                loadExistingEmployee(rawId),
+                listPositions(projectRoot),
+            ])
+            const filled = filledPositions(positions, employee.id)
+            const filledIds = filled.map(({ id }) => id).join(", ")
+            if (filled.length > 0 && !force) {
+                throw new UserError(
+                    `Employee "${employee.id}" is the default employee of ${filledIds}. Add --force to delete it anyway and leave these positions vacant.`,
+                )
+            }
+            await Promise.all(
+                filled.map(({ defaultEmployeeId, ...position }) =>
+                    savePosition(projectRoot, position),
+                ),
+            )
+            await deleteEmployee(projectRoot, employee.id)
+            console.log(
+                filled.length === 0
+                    ? `Deleted employee "${employee.id}".`
+                    : `Deleted employee "${employee.id}"; now vacant: ${filledIds}.`,
+            )
         })
 }
