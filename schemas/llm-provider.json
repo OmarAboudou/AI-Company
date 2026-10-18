@@ -7,6 +7,38 @@
             "type": "string",
             "minLength": 1,
             "description": "Display name of the LLM provider, e.g. Anthropic."
+        },
+        "apiKey": {
+            "description": "Where llmco reads the provider's API key, never the key itself. Absent for servers without authentication, such as a local Ollama.",
+            "anyOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "env": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                            "description": "Name of the environment variable holding the API key, e.g. ANTHROPIC_API_KEY.",
+                            "patternErrorMessage": "must be an environment variable name: letters, digits and underscores, not starting with a digit"
+                        }
+                    },
+                    "required": ["env"],
+                    "additionalProperties": false,
+                    "description": "Read the API key from an environment variable."
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "file": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file holding the API key: absolute, starting with ~, or relative to the project's root."
+                        }
+                    },
+                    "required": ["file"],
+                    "additionalProperties": false,
+                    "description": "Read the API key from a file."
+                }
+            ]
         }
     },
     "required": ["name"],
