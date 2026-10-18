@@ -5,6 +5,7 @@ import { join } from "node:path"
 import { UserError } from "../errors.ts"
 import type { Employee } from "./employee.ts"
 import {
+    deleteEmployee,
     employeeExists,
     listEmployees,
     loadEmployee,
@@ -98,5 +99,15 @@ describe("listEmployees", () => {
         await saveEmployee(projectRoot, claude)
 
         expect(await listEmployees(projectRoot)).toEqual([claude, omar])
+    })
+})
+
+describe("deleteEmployee", () => {
+    test("removes the employee's folder", async () => {
+        await saveEmployee(projectRoot, omar)
+
+        await deleteEmployee(projectRoot, omar.id)
+
+        expect(await listEmployees(projectRoot)).toEqual([])
     })
 })

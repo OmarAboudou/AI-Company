@@ -1,3 +1,4 @@
+import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { listSubdirectories, readConfig } from "../files.ts"
 import { llmcoDir } from "../project.ts"
@@ -7,8 +8,12 @@ function employeesDir(projectRoot: string): string {
     return join(llmcoDir(projectRoot), "employees")
 }
 
+function employeeDir(projectRoot: string, id: string): string {
+    return join(employeesDir(projectRoot), id)
+}
+
 function employeeConfigPath(projectRoot: string, id: string): string {
-    return join(employeesDir(projectRoot), id, "config.json")
+    return join(employeeDir(projectRoot, id), "config.json")
 }
 
 export async function employeeExists(
@@ -44,4 +49,11 @@ export async function saveEmployee(
         employeeConfigPath(projectRoot, id),
         `${JSON.stringify(config, null, 4)}\n`,
     )
+}
+
+export async function deleteEmployee(
+    projectRoot: string,
+    id: string,
+): Promise<void> {
+    await rm(employeeDir(projectRoot, id), { recursive: true })
 }
