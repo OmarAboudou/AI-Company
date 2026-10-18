@@ -4,6 +4,7 @@ import { MessageConfigSchema } from "./message.ts"
 const question = {
     position: { id: "director", title: "Director" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
+    mentions: ["backend-developer"],
     sentAt: "2026-10-18T14:03:22.123Z",
 }
 
@@ -12,7 +13,7 @@ function accepts(config: unknown): boolean {
 }
 
 describe("MessageConfigSchema", () => {
-    test("accepts a position, a committer and a date", () => {
+    test("accepts a position, committer, mentions and date", () => {
         expect(MessageConfigSchema.parse(question)).toEqual(question)
     })
 
@@ -26,6 +27,12 @@ describe("MessageConfigSchema", () => {
         const committer = { name: "Omar Aboudou" }
 
         expect(accepts({ ...question, committer })).toBe(false)
+    })
+
+    test("rejects a mention that isn't a position id", () => {
+        const mentions = ["Backend Developer"]
+
+        expect(accepts({ ...question, mentions })).toBe(false)
     })
 
     test("rejects a position id that isn't kebab-case", () => {

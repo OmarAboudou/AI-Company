@@ -41,6 +41,15 @@
             "additionalProperties": false,
             "description": "The person at the keyboard according to git config user.name and user.email, as in a commit."
         },
+        "mentions": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+            },
+            "description": "Ids of the positions the message mentions with @<position-id>, asked to act: whoever works them answers. Read from the body when the message is written."
+        },
         "sentAt": {
             "type": "string",
             "format": "date-time",
@@ -48,7 +57,7 @@
             "description": "When the message was written, in UTC."
         }
     },
-    "required": ["position", "committer", "sentAt"],
+    "required": ["position", "committer", "mentions", "sentAt"],
     "additionalProperties": false,
     "title": "llmco message",
     "description": "A message of a thread, in .llmco/threads/<thread-id>/messages/<message-id>/message.json. Its body lives next to it, in body.md. Never modified once written."

@@ -26,6 +26,7 @@ const question: Message = {
     id: "20261018-140322-123-3f9a",
     position: { id: "director", title: "Director" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
+    mentions: ["backend-developer"],
     sentAt: "2026-10-18T14:03:22.123Z",
     body: "@backend-developer Hono or Express?",
 }
@@ -35,6 +36,7 @@ const answer: Message = {
     id: "20261018-140351-000-b27c",
     position: { id: "backend-developer", title: "Backend Developer" },
     employee: { id: "claude-senior", name: "Claude Senior" },
+    mentions: [],
     sentAt: "2026-10-18T14:03:51.000Z",
     body: "Hono: it runs on Bun.",
 }
