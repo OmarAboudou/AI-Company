@@ -7,7 +7,9 @@ import {
     requireCompany,
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
-import { currentAuthor } from "./author.ts"
+import { listPositions } from "../position/storage.ts"
+import { type Author, currentAuthor } from "./author.ts"
+import { findMentions } from "./mentions.ts"
 import {
     listMessages,
     newMessageId,
@@ -37,17 +39,47 @@ export async function readBody(options: {
     return body
 }
 
-export async function sendMessage(
-    threadId: string,
+export type Draft = Author & {
+    body: string
+    mentions: string[]
+    unknownMentions: string[]
+}
+
+export async function draftMessage(
+    author: Author,
     body: string,
+): Promise<Draft> {
+    const { positionIds, employeeMentions } = findMentions(body)
+    if (employeeMentions.length > 0) {
+        throw new UserError(
+            `Mentioning a specific employee (${employeeMentions.join(", ")}) isn't possible yet: mention the position.`,
+        )
+    }
+    const positions = await listPositions(projectRoot)
+    const known = new Set(positions.map(({ id }) => id))
+    return {
+        ...author,
+        body,
+        mentions: positionIds.filter(
+            (id) => known.has(id) && id !== author.position.id,
+        ),
+        unknownMentions: positionIds.filter((id) => !known.has(id)),
+    }
+}
+
+export async function sendDraft(
+    threadId: string,
+    { unknownMentions, ...draft }: Draft,
 ): Promise<string> {
-    const [author, messages] = await Promise.all([
-        currentAuthor(),
-        listMessages(projectRoot, threadId),
-    ])
+    const messages = await listMessages(projectRoot, threadId)
     const sentAt = nextSentAt(messages, new Date())
     const id = newMessageId(sentAt)
-    await saveMessage(projectRoot, { threadId, id, ...author, sentAt, body })
+    await saveMessage(projectRoot, { threadId, id, ...draft, sentAt })
+    for (const positionId of unknownMentions) {
+        console.error(
+            `"@${positionId}" names no position, so it mentions nobody.`,
+        )
+    }
     return id
 }
 
@@ -76,7 +108,8 @@ export function registerMessageCommands(program: Command): void {
                     "Give the message with -b, --body or -F, --body-file.",
                 )
             }
-            const id = await sendMessage(thread.id, body)
+            const draft = await draftMessage(await currentAuthor(), body)
+            const id = await sendDraft(thread.id, draft)
             console.log(`Sent message "${id}" in thread "${thread.id}".`)
         })
 }

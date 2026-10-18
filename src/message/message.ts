@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { IdSchema } from "../id.ts"
 import {
     CommitterSchema,
     EmployeeSnapshotSchema,
@@ -15,6 +16,10 @@ export const MessageConfigSchema = z
                 "The employee who wrote the message, working that position. Absent when a director wrote it: a person working on the repository, whom the committer names.",
         }),
         committer: CommitterSchema,
+        mentions: z.array(IdSchema).meta({
+            description:
+                "Ids of the positions the message mentions with @<position-id>, asked to act: whoever works them answers. Read from the body when the message is written.",
+        }),
         sentAt: z.iso.datetime().meta({
             description: "When the message was written, in UTC.",
         }),

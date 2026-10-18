@@ -82,3 +82,67 @@ describe("llmco message send", () => {
         expect(send.stderr).toContain('No thread "2026-10-18-nothing".')
     })
 })
+
+describe("mentions", () => {
+    beforeEach(() => {
+        runCli("position", "create", "backend-developer", "-t", "Backend")
+        runCli("position", "create", "qa-tester", "-t", "QA Tester")
+    })
+
+    function mentions(): string[][] {
+        const lines = runCli("thread", "show", threadId, "--json").stdout
+        return lines
+            .trimEnd()
+            .split("\n")
+            .map((line) => JSON.parse(line).mentions)
+    }
+
+    test("a message records the positions it mentions", () => {
+        const body = "@backend-developer and @qa-tester, thoughts?"
+
+        runCli("message", "send", threadId, "-b", body)
+
+        expect(mentions()).toEqual([["backend-developer", "qa-tester"]])
+    })
+
+    test("a mention of no position is reported and ignored", () => {
+        const body = "@qa-testers, a test plan?"
+
+        const send = runCli("message", "send", threadId, "-b", body)
+
+        expect(send.exitCode).toBe(0)
+        expect(send.stderr).toContain('"@qa-testers" names no position')
+        expect(mentions()).toEqual([[]])
+    })
+
+    test("the author's own position isn't mentioned", () => {
+        runCli("message", "send", threadId, "-b", "Note to @director: done.")
+
+        expect(mentions()).toEqual([[]])
+    })
+
+    test("a mention of a specific employee is refused for now", () => {
+        const body = "@backend-developer:claude-senior, a review?"
+
+        const send = runCli("message", "send", threadId, "-b", body)
+
+        expect(send.exitCode).toBe(1)
+        expect(send.stderr).toContain("Mentioning a specific employee")
+        expect(bodies()).toEqual([])
+    })
+
+    test("thread create refuses it before creating the thread", () => {
+        const create = runCli(
+            "thread",
+            "create",
+            "-s",
+            "Review",
+            "-b",
+            "@backend-developer:claude-senior?",
+        )
+        const list = runCli("thread", "list").stdout
+
+        expect(create.exitCode).toBe(1)
+        expect(list).not.toContain("Review")
+    })
+})

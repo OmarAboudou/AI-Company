@@ -12,8 +12,9 @@ import { currentAuthor } from "../message/author.ts"
 import {
     bodyFileOption,
     bodyOption,
+    draftMessage,
     readBody,
-    sendMessage,
+    sendDraft,
 } from "../message/commands.ts"
 import type { Message } from "../message/message.ts"
 import { listMessages } from "../message/storage.ts"
@@ -52,6 +53,10 @@ export function registerThreadCommands(program: Command): void {
             await requireCompany()
             const author = await currentAuthor()
             const body = await readBody(options)
+            const draft =
+                body === undefined
+                    ? undefined
+                    : await draftMessage(author, body)
             const createdAt = new Date().toISOString()
             const config = ThreadConfigSchema.safeParse({
                 subject: options.subject,
@@ -67,8 +72,8 @@ export function registerThreadCommands(program: Command): void {
                 createdAt,
             )
             await saveThread(projectRoot, { id, ...config.data })
-            if (body !== undefined) {
-                await sendMessage(id, body)
+            if (draft !== undefined) {
+                await sendDraft(id, draft)
             }
             console.log(id)
         })
