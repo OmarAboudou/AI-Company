@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk"
 import { UserError } from "../errors.ts"
+import { type IdHistory, wrote } from "../id-history.ts"
 import type { Connections } from "../llm-connection/llm-connection.ts"
 import type { Message } from "../message/message.ts"
 import { authorName, minutes } from "../message/signature.ts"
@@ -27,7 +28,7 @@ function delimited(message: Message): string {
 
 export function anthropicTurns(
     messages: Message[],
-    employeeId: string,
+    employee: IdHistory,
     replays: Replays,
 ): Anthropic.MessageParam[] {
     const turns: {
@@ -35,7 +36,7 @@ export function anthropicTurns(
         content: Anthropic.ContentBlockParam[]
     }[] = []
     for (const message of messages) {
-        const own = message.employee?.id === employeeId
+        const own = wrote(employee, message)
         const role = own ? "assistant" : "user"
         const content: Anthropic.ContentBlockParam[] = own
             ? (replays.get(message.id) ?? [

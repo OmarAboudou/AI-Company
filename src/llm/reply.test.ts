@@ -176,6 +176,23 @@ describe("an LLM employee answers when its position is mentioned", () => {
         expect(types).toEqual(["thinking", "text"])
     })
 
+    test("a renamed employee still gets its own answer back", async () => {
+        fake.respondWith({ text: "Hono.", signature: "sig-1" })
+        await send(question)
+        runCli("employee", "update-id", "claude", "claude-lead")
+
+        await send("@backend-developer Why?")
+        const turns = fake.requests[1]?.body.messages ?? []
+        const types = turns[1]?.content.map(({ type }) => type)
+
+        expect(turns.map(({ role }) => role)).toEqual([
+            "user",
+            "assistant",
+            "user",
+        ])
+        expect(types).toEqual(["thinking", "text"])
+    })
+
     test("an answer mentioning the director makes it awaited", async () => {
         fake.respondWith({ text: "Hono. @director, do you agree?" })
         const before = runCli("thread", "list").stdout

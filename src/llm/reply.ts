@@ -4,6 +4,7 @@ import { loadCompany } from "../company/storage.ts"
 import type { Employee } from "../employee/employee.ts"
 import { loadEmployee } from "../employee/storage.ts"
 import { UserError } from "../errors.ts"
+import { wrote } from "../id-history.ts"
 import type { LlmModel } from "../llm-model/llm-model.ts"
 import { loadLlmModel } from "../llm-model/storage.ts"
 import { loadLlmProvider } from "../llm-provider/storage.ts"
@@ -29,9 +30,7 @@ async function replays(
     employee: LlmEmployee,
     model: LlmModel,
 ): Promise<Replays> {
-    const own = messages.filter(
-        (message) => message.employee?.id === employee.id,
-    )
+    const own = messages.filter((message) => wrote(employee, message))
     const entries = await Promise.all(
         own.map(async (message) => {
             const response = await loadResponse(projectRoot, message)
@@ -85,7 +84,7 @@ async function answerAs(
         apiKey,
         apiId: model.apiId,
         system: systemPrompt({ company, position, employee, thread }),
-        messages: anthropicTurns(messages, employee.id, ownReplays),
+        messages: anthropicTurns(messages, employee, ownReplays),
         onText: (text) => process.stdout.write(text),
     })
     process.stdout.write("\n")
