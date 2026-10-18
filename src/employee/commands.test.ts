@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../cli-test-helpers.ts"
+import { saveMessage } from "../message/storage.ts"
+import { saveThread } from "../thread/storage.ts"
 
 type History = {
     createdAt: string
@@ -514,5 +516,126 @@ describe("an employee's id history", () => {
 
         expect(before.formerIds).toHaveLength(1)
         expect(after).toEqual(before)
+    })
+})
+
+describe("--reuse-id", () => {
+    const committer = { name: "Omar Aboudou", email: "omar@example.com" }
+    const threadId = "2026-10-18-budget"
+
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+    })
+
+    async function archiveMessageBy(employeeId: string, sentAt: string) {
+        await saveThread(projectPath(), {
+            id: threadId,
+            subject: "Budget",
+            createdAt: "2026-10-18T14:00:00.000Z",
+            createdBy: {
+                position: { id: "director", title: "Director" },
+                committer,
+            },
+        })
+        await saveMessage(projectPath(), {
+            threadId,
+            id: "20261018-140100-000-0000",
+            position: { id: "developer", title: "Developer" },
+            employee: { id: employeeId, name: "Earlier" },
+            committer,
+            mentions: [],
+            sentAt,
+            body: "Done.",
+        })
+    }
+
+    const longAgo = "2026-10-18T14:01:00.000Z"
+
+    test("create refuses an id an earlier employee wrote under", async () => {
+        await archiveMessageBy("claude", longAgo)
+        const hire = ["employee", "create", "human", "claude", "-n", "C"]
+        const usedIn = `was used before: in thread "${threadId}".`
+
+        const create = runCli(...hire)
+
+        expect(create.exitCode).toBe(1)
+        expect(create.stderr).toContain(usedIn)
+        expect(create.stderr).toContain("add --reuse-id")
+        expect(runCli("employee", "show", "claude").exitCode).toBe(1)
+    })
+
+    test.each(["--reuse-id", "-r"])(
+        "create %s reuses it anyway",
+        async (flag) => {
+            await archiveMessageBy("claude", longAgo)
+            const hire = ["employee", "create", "human", "claude", "-n", "C"]
+
+            const create = runCli(...hire, flag)
+
+            expect(create.exitCode).toBe(0)
+            expect(runCli("employee", "show", "claude").exitCode).toBe(0)
+        },
+    )
+
+    test("create llm takes --reuse-id too", async () => {
+        await archiveMessageBy("claude", longAgo)
+        runCli("provider", "create", "anthropic", "-n", "Anthropic")
+        const url = "https://api.anthropic.com"
+        const connect = ["provider", "connection", "create", "anthropic"]
+        runCli(...connect, "anthropic-messages", "-u", url)
+        runCli("model", "create", "anthropic", "opus", "-n", "Opus", "-a", "o")
+        const hire = ["employee", "create", "llm", "claude", "-n", "Claude"]
+        const onOpus = [...hire, "-p", "anthropic", "-m", "opus"]
+
+        const refused = runCli(...onOpus)
+        const reused = runCli(...onOpus, "-r")
+
+        expect(refused.exitCode).toBe(1)
+        expect(reused.exitCode).toBe(0)
+    })
+
+    test("create names an existing employee before any earlier use", async () => {
+        const hire = ["employee", "create", "human", "claude", "-n", "C"]
+        runCli(...hire)
+        await archiveMessageBy("claude", new Date().toISOString())
+
+        const create = runCli(...hire)
+
+        expect(create.stderr).toContain('Employee "claude" already exists.')
+    })
+
+    test("create refuses another employee's former id", () => {
+        runCli("employee", "create", "human", "omar", "-n", "Omar")
+        runCli("employee", "update-id", "omar", "omar-a")
+
+        const create = runCli("employee", "create", "human", "omar", "-n", "O")
+
+        expect(create.exitCode).toBe(1)
+        expect(create.stderr).toContain('as a former id of employee "omar-a"')
+    })
+
+    test("update-id refuses an id an earlier employee wrote under", async () => {
+        await archiveMessageBy("claude", longAgo)
+        runCli("employee", "create", "human", "claudia", "-n", "Claudia")
+
+        const rename = ["employee", "update-id", "claudia", "claude"]
+
+        const refused = runCli(...rename)
+        const reused = runCli(...rename, "-r")
+
+        expect(refused.exitCode).toBe(1)
+        expect(refused.stderr).toContain("add --reuse-id")
+        expect(reused.exitCode).toBe(0)
+    })
+
+    test("update-id gives an employee back its own former id", async () => {
+        runCli("employee", "create", "human", "omar", "-n", "Omar")
+        await archiveMessageBy("omar", new Date().toISOString())
+        runCli("employee", "update-id", "omar", "omar-a")
+
+        const update = runCli("employee", "update-id", "omar-a", "omar")
+
+        expect(update.exitCode).toBe(0)
+        expect(runCli("employee", "show", "omar").exitCode).toBe(0)
     })
 })
