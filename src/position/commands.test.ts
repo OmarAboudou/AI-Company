@@ -128,8 +128,7 @@ describe("llmco position assign and unassign", () => {
 
     async function positionConfig(id: string): Promise<unknown> {
         const path = projectPath(".llmco", "positions", id, "config.json")
-        const { createdAt, ...config } = await Bun.file(path).json()
-        return config
+        return Bun.file(path).json()
     }
 
     test("assign sets the default employee of a vacant position", async () => {
@@ -489,7 +488,7 @@ describe("a position's id history", () => {
     })
 
     async function history(id: string): Promise<History> {
-        const path = projectPath(".llmco", "positions", id, "config.json")
+        const path = projectPath(".llmco", "positions", id, "history.json")
         const { createdAt, formerIds } = await Bun.file(path).json()
         return { createdAt, formerIds }
     }
@@ -503,6 +502,34 @@ describe("a position's id history", () => {
 
         expect(created).toBeGreaterThanOrEqual(before)
         expect(created).toBeLessThanOrEqual(after)
+    })
+
+    test("leaves the history out of config.json", async () => {
+        runCli("position", "create", "developer", "-t", "Developer")
+        runCli("position", "update-id", "developer", "api-developer")
+
+        const path = projectPath(
+            ".llmco",
+            "positions",
+            "api-developer",
+            "config.json",
+        )
+
+        expect(await Bun.file(path).json()).toEqual({ title: "Developer" })
+    })
+
+    test("update-id starts a history for a position without one", async () => {
+        const dir = projectPath(".llmco", "positions", "developer")
+        await Bun.write(`${dir}/config.json`, '{ "title": "Developer" }')
+        await Bun.write(`${dir}/description.md`, "")
+        const before = await Bun.file(`${dir}/history.json`).exists()
+
+        runCli("position", "update-id", "developer", "api-developer")
+        const renamed = await history("api-developer")
+
+        expect(before).toBe(false)
+        expect(renamed.createdAt).toBeUndefined()
+        expect(renamed.formerIds?.map(({ id }) => id)).toEqual(["developer"])
     })
 
     test("update-id records each former id and when it stopped", async () => {

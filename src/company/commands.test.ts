@@ -60,7 +60,7 @@ describe("llmco init", () => {
             ".llmco",
             "positions",
             "director",
-            "config.json",
+            "history.json",
         )
         const before = Date.now()
 

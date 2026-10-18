@@ -52,16 +52,14 @@ export function registerPositionCommands(program: Command): void {
             if (await positionExists(projectRoot, id)) {
                 throw new UserError(`Position "${id}" already exists.`)
             }
-            const config = PositionConfigSchema.safeParse({
-                title,
-                createdAt: new Date().toISOString(),
-            })
+            const config = PositionConfigSchema.safeParse({ title })
             if (!config.success) {
                 throw new UserError(z.prettifyError(config.error))
             }
             await savePosition(projectRoot, {
                 id,
                 ...config.data,
+                createdAt: new Date().toISOString(),
                 description: await readTextOrFile(description, descriptionFile),
             })
             console.log(`Created position "${id}".`)
@@ -129,7 +127,7 @@ export function registerPositionCommands(program: Command): void {
         .action(async (rawId, options) => {
             requireAnOption(options)
             await requireCompany()
-            const { id, description, ...current } =
+            const { id, description, createdAt, formerIds, ...current } =
                 await loadExistingPosition(rawId)
             const newDescription = await readTextOrFile(
                 options.description,
@@ -145,6 +143,8 @@ export function registerPositionCommands(program: Command): void {
             await savePosition(projectRoot, {
                 id,
                 ...config.data,
+                createdAt,
+                formerIds,
                 description: newDescription ?? description,
             })
             console.log(`Updated position "${id}".`)

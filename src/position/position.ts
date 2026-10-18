@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { IdSchema } from "../id.ts"
-import { idHistoryShape } from "../id-history.ts"
+import type { IdHistoryRecord } from "../id-history.ts"
 
 export const PositionConfigSchema = z
     .strictObject({
@@ -11,7 +11,6 @@ export const PositionConfigSchema = z
             description:
                 "Id of the employee working this position by default, i.e. the name of its folder in .llmco/employees. Absent when the position is vacant.",
         }),
-        ...idHistoryShape,
     })
     .meta({
         title: "llmco position",
@@ -21,7 +20,8 @@ export const PositionConfigSchema = z
 
 export type PositionConfig = z.infer<typeof PositionConfigSchema>
 
-export type Position = PositionConfig & {
-    id: string
-    description: string
-}
+export type Position = PositionConfig &
+    IdHistoryRecord & {
+        id: string
+        description: string
+    }

@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { CompanyConfigSchema } from "./company/company.ts"
 import { EmployeeConfigSchema } from "./employee/employee.ts"
+import { IdHistorySchema } from "./id-history.ts"
 import { LlmModelConfigSchema } from "./llm-model/llm-model.ts"
 import { LlmProviderConfigSchema } from "./llm-provider/llm-provider.ts"
 import {
@@ -22,6 +23,7 @@ const configSchemas = {
     thread: ThreadConfigSchema,
     message: MessageConfigSchema,
     "provider-response": ProviderResponseSchema,
+    "id-history": IdHistorySchema,
 }
 
 export const jsonSchemas = Object.fromEntries(
