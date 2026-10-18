@@ -5,6 +5,7 @@ import {
     idDescription,
     loadExistingEmployee,
     loadExistingPosition,
+    newIdDescription,
     parseId,
     printColumns,
     projectRoot,
@@ -19,6 +20,7 @@ import {
     deletePosition,
     listPositions,
     positionExists,
+    renamePosition,
     savePosition,
 } from "./storage.ts"
 
@@ -136,6 +138,31 @@ export function registerPositionCommands(program: Command): void {
                 description: newDescription ?? description,
             })
             console.log(`Updated position "${id}".`)
+        })
+
+    positionCommand
+        .command("update-id")
+        .description("Change the id of a position, which renames its folder.")
+        .argument(
+            "<position-id>",
+            idDescription("position", "backend-developer"),
+        )
+        .argument(
+            "<new-position-id>",
+            newIdDescription("position", "api-developer"),
+        )
+        .action(async (rawId, rawNewId) => {
+            await requireCompany()
+            const newId = parseId("position", rawNewId)
+            const [position, taken] = await Promise.all([
+                loadExistingPosition(rawId),
+                positionExists(projectRoot, newId),
+            ])
+            if (taken) {
+                throw new UserError(`Position "${newId}" already exists.`)
+            }
+            await renamePosition(projectRoot, position.id, newId)
+            console.log(`Position "${position.id}" is now "${newId}".`)
         })
 
     positionCommand

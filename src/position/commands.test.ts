@@ -383,6 +383,56 @@ describe("llmco position update", () => {
     })
 })
 
+describe("llmco position update-id", () => {
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+        runCli("position", "create", "developer", "-t", "Dev", "-d", "Code.")
+        runCli("position", "create", "qa-tester", "-t", "QA")
+    })
+
+    test("update-id moves the position to its new id", () => {
+        const update = runCli("position", "update-id", "developer", "api-dev")
+        const show = runCli("position", "show", "api-dev").stdout
+
+        expect(update.stdout).toBe('Position "developer" is now "api-dev".\n')
+        expect(show).toBe("# Dev\n\ndefault employee: (vacant)\n\nCode.\n")
+        expect(runCli("position", "show", "developer").exitCode).toBe(1)
+    })
+
+    test("update-id keeps the default employee", () => {
+        runCli("employee", "create", "human", "omar", "-n", "Omar")
+        runCli("position", "assign", "developer", "omar")
+
+        runCli("position", "update-id", "developer", "api-dev")
+
+        const show = runCli("employee", "show", "omar").stdout
+        expect(show).toContain("positions: api-dev\n")
+    })
+
+    test("update-id refuses an id another position has", () => {
+        const update = runCli("position", "update-id", "developer", "qa-tester")
+        const show = runCli("position", "show", "qa-tester").stdout
+
+        expect(update.exitCode).toBe(1)
+        expect(update.stderr).toContain('Position "qa-tester" already exists.')
+        expect(show).toStartWith("# QA\n")
+    })
+
+    test("update-id rejects a new id that is not kebab-case", () => {
+        const update = runCli("position", "update-id", "developer", "Dev")
+
+        expect(update.exitCode).toBe(1)
+        expect(update.stderr).toContain("kebab-case")
+    })
+
+    test("update-id fails for an unknown position", () => {
+        const update = runCli("position", "update-id", "designer", "ux")
+
+        expect(update.exitCode).toBe(1)
+        expect(update.stderr).toContain('No position "designer".')
+    })
+})
+
 describe("llmco position delete", () => {
     beforeEach(() => {
         runCli("init", "-n", "Acme")
