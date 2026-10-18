@@ -2,18 +2,14 @@ import type { Command } from "@commander-js/extra-typings"
 import { z } from "zod"
 import {
     descriptionFileOption,
-    idDescription,
-    parseId,
     projectRoot,
     readDescription,
     requireAnOption,
     requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
-import { EmployeeConfigSchema } from "../employee/employee.ts"
-import { saveEmployee } from "../employee/storage.ts"
 import { UserError } from "../errors.ts"
-import { gitConfig, requireGitRepository } from "../git.ts"
+import { requireGitRepository } from "../git.ts"
 import { savePosition } from "../position/storage.ts"
 import { CompanyConfigSchema } from "./company.ts"
 import { companyExists, loadCompany, saveCompany } from "./storage.ts"
@@ -24,32 +20,16 @@ export function registerCompanyCommands(program: Command): void {
     program
         .command("init")
         .description(
-            "Create a company in the current git repository, with its director's position and the human holding it.",
+            "Create a company in the current git repository, with its director's position.",
         )
         .requiredOption("-n, --name <name>", "company name")
         .option("-d, --description <text>", "company description", "")
         .addOption(descriptionFileOption())
-        .requiredOption(
-            "-D, --director <employee-id>",
-            idDescription("employee", "omar"),
-        )
-        .option(
-            "-N, --director-name <name>",
-            "the director's name (default: git config user.name)",
-        )
         .action(async (options) => {
             requireGitRepository(projectRoot)
             if (await companyExists(projectRoot)) {
                 throw new UserError(
                     "A company already exists in this directory.",
-                )
-            }
-            const directorId = parseId("employee", options.director)
-            const directorName =
-                options.directorName ?? gitConfig(projectRoot, "user.name")
-            if (directorName === undefined) {
-                throw new UserError(
-                    "No name for the director: set `git config user.name` or pass --director-name.",
                 )
             }
             const config = CompanyConfigSchema.safeParse({
@@ -59,31 +39,20 @@ export function registerCompanyCommands(program: Command): void {
             if (!config.success) {
                 throw new UserError(z.prettifyError(config.error))
             }
-            const director = EmployeeConfigSchema.safeParse({
-                name: directorName,
-                kind: "human",
-            })
-            if (!director.success) {
-                throw new UserError(z.prettifyError(director.error))
-            }
             const description = await readDescription(
                 options.description,
                 options.descriptionFile,
             )
-            await Promise.all([
-                saveEmployee(projectRoot, { id: directorId, ...director.data }),
-                savePosition(projectRoot, {
-                    id: directorPositionId,
-                    title: "Director",
-                    defaultEmployeeId: directorId,
-                    description: "",
-                }),
-            ])
+            await savePosition(projectRoot, {
+                id: directorPositionId,
+                title: "Director",
+                description: "",
+            })
             // The company comes last: until its config.json exists, llmco
             // sees no company, so an interrupted init can be run again.
             await saveCompany(projectRoot, { ...config.data, description })
             console.log(
-                `Created company "${config.data.name}", directed by "${directorId}" (${director.data.name}).`,
+                `Created company "${config.data.name}" and its director's position "${directorPositionId}".`,
             )
         })
 
