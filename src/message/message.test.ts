@@ -3,7 +3,6 @@ import { MessageConfigSchema } from "./message.ts"
 
 const question = {
     position: { id: "director", title: "Director" },
-    employee: { id: "omar", name: "Omar Aboudou" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
     sentAt: "2026-10-18T14:03:22.123Z",
 }
@@ -13,8 +12,14 @@ function accepts(config: unknown): boolean {
 }
 
 describe("MessageConfigSchema", () => {
-    test("accepts a position, an employee, a committer and a date", () => {
+    test("accepts a position, a committer and a date", () => {
         expect(MessageConfigSchema.parse(question)).toEqual(question)
+    })
+
+    test("accepts the employee who wrote it", () => {
+        const employee = { id: "julie", name: "Julie" }
+
+        expect(accepts({ ...question, employee })).toBe(true)
     })
 
     test("requires the committer's name and email", () => {

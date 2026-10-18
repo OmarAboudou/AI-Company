@@ -28,7 +28,7 @@ const framework: Thread = {
     createdAt: "2026-10-18T14:03:22.123Z",
     createdBy: {
         position: { id: "director", title: "Director" },
-        employee: { id: "omar", name: "Omar Aboudou" },
+        committer: { name: "Omar Aboudou", email: "omar@example.com" },
     },
 }
 

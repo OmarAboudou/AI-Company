@@ -25,7 +25,6 @@ const question: Message = {
     threadId: "2026-10-18-choice-of-framework",
     id: "20261018-140322-123-3f9a",
     position: { id: "director", title: "Director" },
-    employee: { id: "omar", name: "Omar Aboudou" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
     sentAt: "2026-10-18T14:03:22.123Z",
     body: "@backend-developer Hono or Express?",

@@ -21,6 +21,16 @@ export const EmployeeSnapshotSchema = z
             "An employee as it was when this was written: its id and name. Never rewritten afterwards.",
     })
 
+export const CommitterSchema = z
+    .strictObject({
+        name: z.string().trim().min(1),
+        email: z.string().trim().min(1),
+    })
+    .meta({
+        description:
+            "The person at the keyboard according to git config user.name and user.email, as in a commit.",
+    })
+
 export const ThreadConfigSchema = z
     .strictObject({
         subject: z.string().trim().min(1).meta({
@@ -32,11 +42,12 @@ export const ThreadConfigSchema = z
         createdBy: z
             .strictObject({
                 position: PositionSnapshotSchema,
-                employee: EmployeeSnapshotSchema,
+                employee: EmployeeSnapshotSchema.optional(),
+                committer: CommitterSchema,
             })
             .meta({
                 description:
-                    "Who created the thread: the position it was created from, and the employee working it.",
+                    "Who created the thread: the position it was created from, the employee working it, absent when a director created it, and the committer.",
             }),
     })
     .meta({

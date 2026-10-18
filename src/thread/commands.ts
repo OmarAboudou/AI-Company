@@ -20,8 +20,13 @@ import { listMessages } from "../message/storage.ts"
 import { listThreads, newThreadId, saveThread } from "./storage.ts"
 import { ThreadConfigSchema } from "./thread.ts"
 
-function signature({ position, employee }: Message): string {
-    return `${employee.name}, ${position.title} (@${position.id})`
+function signature({
+    position,
+    employee,
+    committer,
+}: Pick<Message, "position" | "employee" | "committer">): string {
+    const name = employee?.name ?? committer.name
+    return `${name}, ${position.title} (@${position.id})`
 }
 
 function minutes(timestamp: string): string {
@@ -51,10 +56,7 @@ export function registerThreadCommands(program: Command): void {
             const config = ThreadConfigSchema.safeParse({
                 subject: options.subject,
                 createdAt,
-                createdBy: {
-                    position: author.position,
-                    employee: author.employee,
-                },
+                createdBy: author,
             })
             if (!config.success) {
                 throw new UserError(z.prettifyError(config.error))
@@ -104,11 +106,10 @@ export function registerThreadCommands(program: Command): void {
                 }
                 return
             }
-            const { position, employee } = thread.createdBy
             const lines = [
                 `# ${thread.subject}`,
                 "",
-                `Created by ${employee.name}, ${position.title} (@${position.id}), ${minutes(thread.createdAt)}.`,
+                `Created by ${signature(thread.createdBy)}, ${minutes(thread.createdAt)}.`,
             ]
             for (const message of messages) {
                 lines.push(
