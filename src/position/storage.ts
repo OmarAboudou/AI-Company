@@ -1,3 +1,4 @@
+import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { listSubdirectories, readConfig, readText } from "../files.ts"
 import { llmcoDir } from "../project.ts"
@@ -7,8 +8,12 @@ function positionsDir(projectRoot: string): string {
     return join(llmcoDir(projectRoot), "positions")
 }
 
+function positionDir(projectRoot: string, id: string): string {
+    return join(positionsDir(projectRoot), id)
+}
+
 function positionPaths(projectRoot: string, id: string) {
-    const dir = join(positionsDir(projectRoot), id)
+    const dir = positionDir(projectRoot, id)
     return {
         config: join(dir, "config.json"),
         description: join(dir, "description.md"),
@@ -49,4 +54,11 @@ export async function savePosition(
         Bun.write(paths.config, `${JSON.stringify(config, null, 4)}\n`),
         Bun.write(paths.description, description),
     ])
+}
+
+export async function deletePosition(
+    projectRoot: string,
+    id: string,
+): Promise<void> {
+    await rm(positionDir(projectRoot, id), { recursive: true })
 }

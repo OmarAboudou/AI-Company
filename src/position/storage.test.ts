@@ -4,6 +4,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { UserError } from "../errors.ts"
 import {
+    deletePosition,
     listPositions,
     loadPosition,
     positionExists,
@@ -105,5 +106,15 @@ describe("listPositions", () => {
         await savePosition(projectRoot, developer)
 
         expect(await listPositions(projectRoot)).toEqual([developer, tester])
+    })
+})
+
+describe("deletePosition", () => {
+    test("removes the position's folder", async () => {
+        await savePosition(projectRoot, developer)
+
+        await deletePosition(projectRoot, developer.id)
+
+        expect(await listPositions(projectRoot)).toEqual([])
     })
 })
