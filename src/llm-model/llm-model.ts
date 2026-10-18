@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { ProtocolSchema } from "../llm-connection/llm-connection.ts"
 
 export const LlmModelConfigSchema = z
     .strictObject({
@@ -8,6 +9,10 @@ export const LlmModelConfigSchema = z
         apiId: z.string().trim().min(1).meta({
             description:
                 "Id of the model on the provider's side, as its API expects it, e.g. claude-opus-5-5 or llama3.1:8b.",
+        }),
+        protocol: ProtocolSchema.meta({
+            description:
+                "API protocol the model is called with, one of its provider's connections: anthropic-messages, openai-chat-completions or openai-responses. Its settings are written in that protocol's vocabulary.",
         }),
     })
     .meta({

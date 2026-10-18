@@ -1,4 +1,4 @@
-import type { Command } from "@commander-js/extra-typings"
+import { type Command, Option } from "@commander-js/extra-typings"
 import { z } from "zod"
 import {
     idDescription,
@@ -14,7 +14,9 @@ import {
 } from "../cli-helpers.ts"
 import { listEmployees, saveEmployee } from "../employee/storage.ts"
 import { UserError } from "../errors.ts"
-import { listLlmProviders } from "../llm-provider/storage.ts"
+import { type Protocol, protocols } from "../llm-connection/llm-connection.ts"
+import type { LlmProvider } from "../llm-provider/llm-provider.ts"
+import { listLlmProviders, loadLlmProvider } from "../llm-provider/storage.ts"
 import { LlmModelConfigSchema } from "./llm-model.ts"
 import {
     copyLlmModel,
@@ -23,6 +25,46 @@ import {
     llmModelExists,
     saveLlmModel,
 } from "./storage.ts"
+
+function protocolOption() {
+    return new Option(
+        "-p, --protocol <protocol>",
+        "API protocol the model is called with, one of its provider's connections (see llmco connection list)",
+    ).choices(protocols)
+}
+
+function requireConnection(provider: LlmProvider, protocol: Protocol): void {
+    if (provider.connections?.[protocol] === undefined) {
+        throw new UserError(
+            `Provider "${provider.id}" has no ${protocol} connection. Run \`llmco connection create\` first.`,
+        )
+    }
+}
+
+function chooseProtocol(
+    provider: LlmProvider,
+    requested: Protocol | undefined,
+): Protocol {
+    if (requested !== undefined) {
+        requireConnection(provider, requested)
+        return requested
+    }
+    const available = protocols.filter(
+        (protocol) => provider.connections?.[protocol] !== undefined,
+    )
+    const [only, ...others] = available
+    if (only === undefined) {
+        throw new UserError(
+            `Provider "${provider.id}" has no connection yet. Run \`llmco connection create\` first.`,
+        )
+    }
+    if (others.length > 0) {
+        throw new UserError(
+            `Provider "${provider.id}" has several connections (${available.join(", ")}): choose one with --protocol.`,
+        )
+    }
+    return only
+}
 
 export function registerLlmModelCommands(program: Command): void {
     const modelCommand = program
@@ -39,7 +81,8 @@ export function registerLlmModelCommands(program: Command): void {
             "-a, --api-id <api-id>",
             "id of the model on the provider's side, as its API expects it, e.g. claude-opus-5-5 or llama3.1:8b",
         )
-        .action(async (rawProviderId, rawModelId, { name, apiId }) => {
+        .addOption(protocolOption())
+        .action(async (rawProviderId, rawModelId, options) => {
             await requireCompany()
             const provider = await loadExistingLlmProvider(rawProviderId)
             const modelId = parseId("model", rawModelId)
@@ -48,7 +91,11 @@ export function registerLlmModelCommands(program: Command): void {
                     `Provider "${provider.id}" already has a model "${modelId}".`,
                 )
             }
-            const config = LlmModelConfigSchema.safeParse({ name, apiId })
+            const config = LlmModelConfigSchema.safeParse({
+                name: options.name,
+                apiId: options.apiId,
+                protocol: chooseProtocol(provider, options.protocol),
+            })
             if (!config.success) {
                 throw new UserError(z.prettifyError(config.error))
             }
@@ -86,14 +133,16 @@ export function registerLlmModelCommands(program: Command): void {
 
     modelCommand
         .command("show")
-        .description("Display a model and its id on the provider's side.")
+        .description(
+            "Display a model, its id on the provider's side and its protocol.",
+        )
         .argument("<provider-id>", idDescription("provider", "anthropic"))
         .argument("<model-id>", idDescription("model", "claude-opus-5-5"))
         .action(async (rawProviderId, rawModelId) => {
             await requireCompany()
             const model = await loadExistingLlmModel(rawProviderId, rawModelId)
             console.log(
-                `# ${model.name}\n\nprovider: ${model.providerId}\napi id: ${model.apiId}`,
+                `# ${model.name}\n\nprovider: ${model.providerId}\napi id: ${model.apiId}\nprotocol: ${model.protocol}`,
             )
         })
 
@@ -107,6 +156,7 @@ export function registerLlmModelCommands(program: Command): void {
             "-a, --api-id <api-id>",
             "id of the model on the provider's side, as its API expects it, e.g. claude-opus-5-5 or llama3.1:8b",
         )
+        .addOption(protocolOption())
         .action(async (rawProviderId, rawModelId, options) => {
             requireAnOption(options)
             await requireCompany()
@@ -114,12 +164,13 @@ export function registerLlmModelCommands(program: Command): void {
                 rawProviderId,
                 rawModelId,
             )
+            if (options.protocol !== undefined) {
+                const provider = await loadLlmProvider(projectRoot, providerId)
+                requireConnection(provider, options.protocol)
+            }
             const config = LlmModelConfigSchema.safeParse({
                 ...current,
-                ...withoutUndefined({
-                    name: options.name,
-                    apiId: options.apiId,
-                }),
+                ...withoutUndefined(options),
             })
             if (!config.success) {
                 throw new UserError(z.prettifyError(config.error))

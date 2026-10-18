@@ -12,9 +12,18 @@
             "type": "string",
             "minLength": 1,
             "description": "Id of the model on the provider's side, as its API expects it, e.g. claude-opus-5-5 or llama3.1:8b."
+        },
+        "protocol": {
+            "type": "string",
+            "enum": [
+                "anthropic-messages",
+                "openai-chat-completions",
+                "openai-responses"
+            ],
+            "description": "API protocol the model is called with, one of its provider's connections: anthropic-messages, openai-chat-completions or openai-responses. Its settings are written in that protocol's vocabulary."
         }
     },
-    "required": ["name", "apiId"],
+    "required": ["name", "apiId", "protocol"],
     "additionalProperties": false,
     "title": "llmco LLM model",
     "description": "Configuration of a model served by an LLM provider, in .llmco/llm-providers/<provider-id>/models/<model-id>/config.json."

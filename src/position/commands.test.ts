@@ -94,6 +94,15 @@ describe("llmco position assign and unassign", () => {
         runCli("employee", "create", "human", "omar", "-n", "Omar")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
         runCli(
+            "provider",
+            "connection",
+            "create",
+            "anthropic",
+            "anthropic-messages",
+            "-u",
+            "https://api.anthropic.com",
+        )
+        runCli(
             "model",
             "create",
             "anthropic",
