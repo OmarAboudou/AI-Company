@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { ConnectionsSchema } from "../llm-connection/llm-connection.ts"
 
 const environmentVariableName =
     "must be an environment variable's name, without $: letters, digits and underscores, not starting with a digit"
@@ -43,6 +44,10 @@ export const LlmProviderConfigSchema = z
         apiKey: ApiKeySourceSchema.optional().meta({
             description:
                 "Where llmco reads the provider's API key, never the key itself. Absent for servers without authentication, such as a local Ollama.",
+        }),
+        connections: ConnectionsSchema.optional().meta({
+            description:
+                "How the provider is reached: one connection per API protocol it speaks, all sharing its API key.",
         }),
     })
     .meta({
