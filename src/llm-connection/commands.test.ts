@@ -6,7 +6,7 @@ const { runCli } = useTemporaryProject()
 const anthropicUrl = "https://api.anthropic.com"
 
 beforeEach(() => {
-    runCli("init", "-n", "Acme", "-D", "founder")
+    runCli("init", "-n", "Acme")
     runCli("provider", "create", "anthropic", "-n", "Anthropic")
     runCli("provider", "create", "openrouter", "-n", "OpenRouter")
 })

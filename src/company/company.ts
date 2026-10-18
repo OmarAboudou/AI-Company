@@ -10,7 +10,7 @@ export const CompanyConfigSchema = z
             .meta({ description: "Name of the company, e.g. Acme." }),
         directorPositionId: IdSchema.meta({
             description:
-                "Id of the director's position, i.e. the name of its folder in .llmco/positions: the company's management, from which the human at the keyboard acts by default. It can't be deleted.",
+                "Id of the director's position, i.e. the name of its folder in .llmco/positions: the company's management. It can't be deleted.",
         }),
     })
     .meta({

@@ -5,7 +5,7 @@ const { runCli } = useTemporaryProject()
 
 describe("llmco provider", () => {
     beforeEach(() => {
-        runCli("init", "--name", "Acme", "-D", "founder")
+        runCli("init", "--name", "Acme")
     })
 
     function createAnthropic() {
@@ -85,7 +85,7 @@ describe("llmco provider", () => {
 
 describe("llmco provider API key", () => {
     beforeEach(() => {
-        runCli("init", "-n", "Acme", "-D", "founder")
+        runCli("init", "-n", "Acme")
     })
 
     test.each([
@@ -155,7 +155,7 @@ describe("llmco provider API key", () => {
 
 describe("llmco provider update", () => {
     beforeEach(() => {
-        runCli("init", "-n", "Acme", "-D", "founder")
+        runCli("init", "-n", "Acme")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
     })
 
@@ -184,7 +184,7 @@ describe("llmco provider update", () => {
 
 describe("llmco provider update-id", () => {
     beforeEach(() => {
-        runCli("init", "-n", "Acme", "-D", "founder")
+        runCli("init", "-n", "Acme")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
         runCli(
             "provider",
@@ -237,7 +237,7 @@ describe("llmco provider update-id", () => {
 
 describe("llmco provider delete", () => {
     beforeEach(() => {
-        runCli("init", "-n", "Acme", "-D", "founder")
+        runCli("init", "-n", "Acme")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
         runCli(
             "provider",

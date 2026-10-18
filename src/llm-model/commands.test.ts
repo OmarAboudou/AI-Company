@@ -5,7 +5,7 @@ const { runCli } = useTemporaryProject()
 
 describe("llmco model", () => {
     beforeEach(() => {
-        runCli("init", "--name", "Acme", "-D", "founder")
+        runCli("init", "--name", "Acme")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
         runCli(
             "provider",
@@ -137,7 +137,7 @@ describe("llmco model protocol", () => {
     const openRouterUrl = "https://openrouter.ai/api"
 
     beforeEach(() => {
-        runCli("init", "-n", "Acme", "-D", "founder")
+        runCli("init", "-n", "Acme")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
     })
 
@@ -232,7 +232,7 @@ describe("llmco model update", () => {
     const opus = ["anthropic", "claude-opus-5-5"]
 
     beforeEach(() => {
-        runCli("init", "-n", "Acme", "-D", "founder")
+        runCli("init", "-n", "Acme")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
         runCli(
             "provider",
@@ -284,7 +284,7 @@ describe("llmco model update-id", () => {
     const opus = ["anthropic", "claude-opus-5-5"]
 
     beforeEach(() => {
-        runCli("init", "-n", "Acme", "-D", "founder")
+        runCli("init", "-n", "Acme")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
         runCli(
             "provider",
@@ -339,7 +339,7 @@ describe("llmco model delete", () => {
     const opus = ["anthropic", "claude-opus-5-5"]
 
     beforeEach(() => {
-        runCli("init", "-n", "Acme", "-D", "founder")
+        runCli("init", "-n", "Acme")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
         runCli(
             "provider",
