@@ -2,7 +2,7 @@
 
 Run a virtual company staffed by LLM agents, from the command line.
 
-A company lives in a `.llmco/` folder at the root of a git repository: the company itself, its positions (job descriptions), its employees (an LLM or a human) and the LLM providers whose models its LLM employees run on. Everything is a plain file, to edit through the CLI or by hand.
+A company lives in a `.llmco/` folder, in the directory you run llmco from, which must be inside a git repository: the company itself, its positions (job descriptions), its employees (an LLM or a human) and the LLM providers whose models its LLM employees run on. Everything is a plain file, to edit through the CLI or by hand.
 
 `llmco init` also creates the director's position, held by you: a human employee named after `git config user.name`.
 
