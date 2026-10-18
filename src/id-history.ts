@@ -68,3 +68,27 @@ export function withNewId<Entity extends IdHistory>(
     const formerIds = [...(entity.formerIds ?? []), { id: entity.id, until }]
     return { ...entity, id: newId, formerIds }
 }
+
+export function hadId(entity: IdHistory, id: string, at: string): boolean {
+    const moment = Date.parse(at)
+    let since =
+        entity.createdAt === undefined
+            ? Number.NEGATIVE_INFINITY
+            : Date.parse(entity.createdAt)
+    for (const former of entity.formerIds ?? []) {
+        const until = Date.parse(former.until)
+        if (former.id === id && since <= moment && moment < until) {
+            return true
+        }
+        since = until
+    }
+    return entity.id === id && since <= moment
+}
+
+export function currentId(
+    entities: IdHistory[],
+    id: string,
+    at: string,
+): string {
+    return entities.find((entity) => hadId(entity, id, at))?.id ?? id
+}
