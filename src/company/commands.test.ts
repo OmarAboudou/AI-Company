@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { useTemporaryProject } from "../cli-test-helpers.ts"
 
-const { runCli, projectPath } = useTemporaryProject()
+const { runCli, runCliWithEnv, projectPath } = useTemporaryProject()
+
+function runGit(...args: string[]) {
+    Bun.spawnSync(["git", ...args], { cwd: projectPath() })
+}
 
 describe("llmco init", () => {
     test("creates a company that company show displays", () => {
@@ -12,6 +16,8 @@ describe("llmco init", () => {
             "Acme",
             "--description",
             "We build things.",
+            "-D",
+            "founder",
         )
         expect(init.exitCode).toBe(0)
 
@@ -21,22 +27,86 @@ describe("llmco init", () => {
     })
 
     test("refuses to overwrite an existing company", () => {
-        runCli("init", "--name", "Acme")
+        runCli("init", "--name", "Acme", "-D", "founder")
 
-        const second = runCli("init", "--name", "Other")
+        const second = runCli("init", "--name", "Other", "-D", "founder")
 
         expect(second.exitCode).toBe(1)
         expect(runCli("company", "show").stdout).toContain("# Acme")
     })
 
     test("requires a name", () => {
-        expect(runCli("init").exitCode).toBe(1)
+        const init = runCli("init", "-D", "founder")
+
+        expect(init.exitCode).toBe(1)
+        expect(init.stderr).toContain("--name")
+    })
+
+    test("creates the director's position, held by the director", () => {
+        const init = runCli("init", "-n", "Acme", "--director", "founder")
+        const position = runCli("position", "show", "director").stdout
+        const director = runCli("employee", "show", "founder").stdout
+
+        expect(init.stdout).toBe(
+            'Created company "Acme", directed by "founder" (Test User).\n',
+        )
+        expect(position).toBe("# Director\n\ndefault employee: founder\n\n\n")
+        expect(director).toBe(
+            "# Test User\n\nkind: human\npositions: director\n",
+        )
+    })
+
+    test("names the company's director's position in its config", async () => {
+        runCli("init", "-n", "Acme", "-D", "founder")
+
+        const path = projectPath(".llmco", "company", "config.json")
+        const config = await Bun.file(path).json()
+
+        expect(config).toEqual({ name: "Acme", directorPositionId: "director" })
+    })
+
+    test.each(["--director-name", "-N"])(
+        "%s names the director instead of git",
+        (flag) => {
+            runCli("init", "-n", "Acme", "-D", "omar", flag, "Omar Aboudou")
+
+            const director = runCli("employee", "show", "omar").stdout
+
+            expect(director).toContain("# Omar Aboudou\n")
+        },
+    )
+
+    test("requires a director", () => {
+        const init = runCli("init", "-n", "Acme")
+
+        expect(init.exitCode).toBe(1)
+        expect(init.stderr).toContain("--director")
+    })
+
+    test("refuses a director without a name", () => {
+        runGit("config", "--unset", "user.name")
+        const withoutGlobalConfig = {
+            GIT_CONFIG_GLOBAL: "/dev/null",
+            GIT_CONFIG_NOSYSTEM: "1",
+        }
+
+        const init = runCliWithEnv(
+            withoutGlobalConfig,
+            "init",
+            "-n",
+            "Acme",
+            "-D",
+            "founder",
+        )
+
+        expect(init.exitCode).toBe(1)
+        expect(init.stderr).toContain("pass --director-name")
     })
 
     test("refuses a directory outside any git repository", async () => {
         await rm(projectPath(".git"), { recursive: true })
 
-        const init = runCli("init", "-n", "Acme")
+        const init = runCli("init", "-n", "Acme", "-D", "founder")
 
         expect(init.exitCode).toBe(1)
         expect(init.stderr).toContain("Run `git init` first.")
@@ -52,7 +122,7 @@ describe("llmco company show", () => {
 
 describe("llmco company update", () => {
     beforeEach(() => {
-        runCli("init", "-n", "Acme", "-d", "We build things.")
+        runCli("init", "-n", "Acme", "-d", "We build things.", "-D", "founder")
     })
 
     test("update -n changes the name and keeps the description", () => {
@@ -102,7 +172,15 @@ describe("--description-file", () => {
     test("init reads the description from a file", async () => {
         await Bun.write(projectPath("company.md"), markdown)
 
-        runCli("init", "--name", "Acme", "--description-file", "company.md")
+        runCli(
+            "init",
+            "--name",
+            "Acme",
+            "--description-file",
+            "company.md",
+            "-D",
+            "founder",
+        )
 
         expect(runCli("company", "show").stdout).toBe(`# Acme\n\n${markdown}\n`)
     })
@@ -116,6 +194,8 @@ describe("--description-file", () => {
             "Text",
             "--description-file",
             "company.md",
+            "-D",
+            "founder",
         )
 
         expect(init.exitCode).toBe(1)
@@ -129,6 +209,8 @@ describe("--description-file", () => {
             "Acme",
             "--description-file",
             "nope.md",
+            "-D",
+            "founder",
         )
 
         expect(init.exitCode).toBe(1)
@@ -138,7 +220,7 @@ describe("--description-file", () => {
 
 describe("short options", () => {
     test("init accepts -n and -d", () => {
-        runCli("init", "-n", "Acme", "-d", "We build things.")
+        runCli("init", "-n", "Acme", "-d", "We build things.", "-D", "founder")
 
         expect(runCli("company", "show").stdout).toBe(
             "# Acme\n\nWe build things.\n",
@@ -148,7 +230,7 @@ describe("short options", () => {
     test("-F reads the description from a file", async () => {
         await Bun.write(projectPath("company.md"), "We build things.")
 
-        runCli("init", "-n", "Acme", "-F", "company.md")
+        runCli("init", "-n", "Acme", "-F", "company.md", "-D", "founder")
 
         expect(runCli("company", "show").stdout).toBe(
             "# Acme\n\nWe build things.\n",
@@ -158,7 +240,7 @@ describe("short options", () => {
 
 describe("corrupted files", () => {
     test("company show names the invalid file and field", async () => {
-        runCli("init", "--name", "Acme")
+        runCli("init", "--name", "Acme", "-D", "founder")
         await Bun.write(
             projectPath(".llmco", "company", "config.json"),
             '{ "name": "" }',

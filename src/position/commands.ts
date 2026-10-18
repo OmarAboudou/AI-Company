@@ -71,10 +71,6 @@ export function registerPositionCommands(program: Command): void {
         .action(async () => {
             await requireCompany()
             const positions = await listPositions(projectRoot)
-            if (positions.length === 0) {
-                console.log("No positions yet. Run `llmco position create`.")
-                return
-            }
             printColumns(
                 positions.map(({ id, title, defaultEmployeeId }) => [
                     id,
