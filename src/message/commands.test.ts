@@ -27,7 +27,7 @@ describe("llmco message send", () => {
 
         const sent = /^Sent message "\d{8}-\d{6}-\d{3}-[0-9a-f]{4}" in thread/
 
-        expect(send.stdout).toMatch(sent)
+        expect(send.stderr).toMatch(sent)
         expect(bodies()).toEqual(["First.", "Second."])
     })
 

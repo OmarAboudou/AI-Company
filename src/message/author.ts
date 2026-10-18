@@ -7,7 +7,7 @@ import type { MessageConfig } from "./message.ts"
 
 export type Author = Pick<MessageConfig, "position" | "employee" | "committer">
 
-function committer(): MessageConfig["committer"] {
+export function committer(): MessageConfig["committer"] {
     const name = gitConfig(projectRoot, "user.name")
     const email = gitConfig(projectRoot, "user.email")
     if (name === undefined || email === undefined) {
