@@ -18,7 +18,7 @@ describe("llmco provider", () => {
         const show = runCli("provider", "show", "anthropic")
         expect(show.exitCode).toBe(0)
         expect(show.stdout).toBe(
-            "# Anthropic\n\napi key: (none)\nmodels: (none)\n",
+            "# Anthropic\n\napi key: (none)\nconnections: (none)\nmodels: (none)\n",
         )
     })
 
