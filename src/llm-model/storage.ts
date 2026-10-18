@@ -1,4 +1,4 @@
-import { rm } from "node:fs/promises"
+import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
 import { listSubdirectories, readConfig } from "../files.ts"
 import { llmProviderDir } from "../llm-provider/storage.ts"
@@ -72,4 +72,17 @@ export async function deleteLlmModel(
     id: string,
 ): Promise<void> {
     await rm(llmModelDir(projectRoot, providerId, id), { recursive: true })
+}
+
+export async function copyLlmModel(
+    projectRoot: string,
+    providerId: string,
+    id: string,
+    newId: string,
+): Promise<void> {
+    await cp(
+        llmModelDir(projectRoot, providerId, id),
+        llmModelDir(projectRoot, providerId, newId),
+        { recursive: true, errorOnExist: true, force: false },
+    )
 }

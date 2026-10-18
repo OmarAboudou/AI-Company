@@ -5,6 +5,7 @@ import { join } from "node:path"
 import { UserError } from "../errors.ts"
 import type { LlmModel } from "./llm-model.ts"
 import {
+    copyLlmModel,
     deleteLlmModel,
     listLlmModels,
     llmModelExists,
@@ -141,5 +142,18 @@ describe("deleteLlmModel", () => {
 
         expect(before).toEqual([haiku, opus])
         expect(after).toEqual([haiku])
+    })
+})
+
+describe("copyLlmModel", () => {
+    test("copies the model's folder under its new id", async () => {
+        await saveLlmModel(projectRoot, opus)
+        const before = await listLlmModels(projectRoot, "anthropic")
+
+        await copyLlmModel(projectRoot, "anthropic", opus.id, "opus-5-5")
+        const after = await listLlmModels(projectRoot, "anthropic")
+
+        expect(before).toEqual([opus])
+        expect(after).toEqual([opus, { ...opus, id: "opus-5-5" }])
     })
 })
