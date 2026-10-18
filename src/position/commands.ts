@@ -27,7 +27,8 @@ export function registerPositionCommands(program: Command): void {
 
     positionCommand
         .command("create")
-        .description("Create a position.")
+        .alias("open")
+        .description("Create (open) a position.")
         .argument(
             "<position-id>",
             idDescription("position", "backend-developer"),
