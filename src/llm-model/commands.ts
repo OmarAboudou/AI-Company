@@ -4,6 +4,7 @@ import {
     idDescription,
     loadExistingLlmModel,
     loadExistingLlmProvider,
+    newIdDescription,
     parseId,
     printColumns,
     projectRoot,
@@ -11,11 +12,12 @@ import {
     requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
-import { listEmployees } from "../employee/storage.ts"
+import { listEmployees, saveEmployee } from "../employee/storage.ts"
 import { UserError } from "../errors.ts"
 import { listLlmProviders } from "../llm-provider/storage.ts"
 import { LlmModelConfigSchema } from "./llm-model.ts"
 import {
+    copyLlmModel,
     deleteLlmModel,
     listLlmModels,
     llmModelExists,
@@ -124,6 +126,48 @@ export function registerLlmModelCommands(program: Command): void {
             }
             await saveLlmModel(projectRoot, { providerId, id, ...config.data })
             console.log(`Updated model "${id}" of provider "${providerId}".`)
+        })
+
+    modelCommand
+        .command("update-id")
+        .description(
+            "Change the id of a model and of the employees running on it.",
+        )
+        .argument("<provider-id>", idDescription("provider", "anthropic"))
+        .argument("<model-id>", idDescription("model", "claude-opus-5-5"))
+        .argument("<new-model-id>", newIdDescription("model", "opus"))
+        .action(async (rawProviderId, rawModelId, rawNewId) => {
+            await requireCompany()
+            const [model, employees] = await Promise.all([
+                loadExistingLlmModel(rawProviderId, rawModelId),
+                listEmployees(projectRoot),
+            ])
+            const newId = parseId("model", rawNewId)
+            if (await llmModelExists(projectRoot, model.providerId, newId)) {
+                throw new UserError(
+                    `Provider "${model.providerId}" already has a model "${newId}".`,
+                )
+            }
+            const users = employees
+                .filter((employee) => employee.kind === "llm")
+                .filter(
+                    (employee) =>
+                        employee.providerId === model.providerId &&
+                        employee.modelId === model.id,
+                )
+            await copyLlmModel(projectRoot, model.providerId, model.id, newId)
+            await Promise.all(
+                users.map((employee) =>
+                    saveEmployee(projectRoot, { ...employee, modelId: newId }),
+                ),
+            )
+            await deleteLlmModel(projectRoot, model.providerId, model.id)
+            const renamed = `Model "${model.id}" of provider "${model.providerId}" is now "${newId}"`
+            console.log(
+                users.length === 0
+                    ? `${renamed}.`
+                    : `${renamed}; updated employees: ${users.map(({ id }) => id).join(", ")}.`,
+            )
         })
 
     modelCommand
