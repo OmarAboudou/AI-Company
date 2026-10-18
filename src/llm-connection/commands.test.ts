@@ -239,6 +239,33 @@ describe("llmco provider connection delete", () => {
         expect(after).toContain("connections: anthropic-messages\n")
     })
 
+    test("delete refuses a connection a model is called with", () => {
+        createConnection("anthropic", "anthropic-messages", "-u", anthropicUrl)
+        const opus = [
+            "anthropic",
+            "claude-opus-5-5",
+            "-n",
+            "Opus",
+            "-a",
+            "opus",
+        ]
+        runCli("model", "create", ...opus)
+
+        const deletion = runCli(
+            "provider",
+            "connection",
+            "delete",
+            "anthropic",
+            "anthropic-messages",
+        )
+
+        expect(deletion.exitCode).toBe(1)
+        expect(deletion.stderr).toContain("is used by models claude-opus-5-5")
+        expect(runCli("provider", "connection", "list").stdout).toContain(
+            anthropicUrl,
+        )
+    })
+
     test("delete fails for a connection the provider doesn't have", () => {
         const deletion = runCli(
             "provider",
