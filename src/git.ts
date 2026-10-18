@@ -1,14 +1,16 @@
 import { UserError } from "./errors.ts"
 
-function runGit(dir: string, args: string[]): string | undefined {
+function spawnGit(dir: string, args: string[]) {
     try {
-        const result = Bun.spawnSync(["git", ...args], { cwd: dir })
-        return result.exitCode === 0
-            ? result.stdout.toString().trim()
-            : undefined
+        return Bun.spawnSync(["git", ...args], { cwd: dir })
     } catch {
         throw new UserError("llmco needs git: install it, then try again.")
     }
+}
+
+function runGit(dir: string, args: string[]): string | undefined {
+    const result = spawnGit(dir, args)
+    return result.exitCode === 0 ? result.stdout.toString().trim() : undefined
 }
 
 export function requireGitRepository(dir: string): void {
@@ -22,4 +24,11 @@ export function requireGitRepository(dir: string): void {
 export function gitConfig(dir: string, key: string): string | undefined {
     const value = runGit(dir, ["config", key])
     return value === "" ? undefined : value
+}
+
+export function isInRepositoryButNotIgnored(
+    dir: string,
+    path: string,
+): boolean {
+    return spawnGit(dir, ["check-ignore", "-q", path]).exitCode === 1
 }
