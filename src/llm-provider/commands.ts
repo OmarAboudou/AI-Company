@@ -3,6 +3,7 @@ import { z } from "zod"
 import {
     idDescription,
     loadExistingLlmProvider,
+    newIdDescription,
     parseId,
     printColumns,
     projectRoot,
@@ -10,11 +11,12 @@ import {
     requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
-import { listEmployees } from "../employee/storage.ts"
+import { listEmployees, saveEmployee } from "../employee/storage.ts"
 import { UserError } from "../errors.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import { LlmProviderConfigSchema } from "./llm-provider.ts"
 import {
+    copyLlmProvider,
     deleteLlmProvider,
     listLlmProviders,
     llmProviderExists,
@@ -91,6 +93,48 @@ export function registerLlmProviderCommands(program: Command): void {
             }
             await saveLlmProvider(projectRoot, { id, ...config.data })
             console.log(`Updated provider "${id}".`)
+        })
+
+    providerCommand
+        .command("update-id")
+        .description(
+            "Change the id of an LLM provider and of the employees running on it.",
+        )
+        .argument("<provider-id>", idDescription("provider", "anthropic"))
+        .argument(
+            "<new-provider-id>",
+            newIdDescription("provider", "anthropic-api"),
+        )
+        .action(async (rawId, rawNewId) => {
+            await requireCompany()
+            const newId = parseId("provider", rawNewId)
+            const [provider, taken, employees] = await Promise.all([
+                loadExistingLlmProvider(rawId),
+                llmProviderExists(projectRoot, newId),
+                listEmployees(projectRoot),
+            ])
+            if (taken) {
+                throw new UserError(`Provider "${newId}" already exists.`)
+            }
+            const users = employees
+                .filter((employee) => employee.kind === "llm")
+                .filter((employee) => employee.providerId === provider.id)
+            await copyLlmProvider(projectRoot, provider.id, newId)
+            await Promise.all(
+                users.map((employee) =>
+                    saveEmployee(projectRoot, {
+                        ...employee,
+                        providerId: newId,
+                    }),
+                ),
+            )
+            await deleteLlmProvider(projectRoot, provider.id)
+            const renamed = `Provider "${provider.id}" is now "${newId}"`
+            console.log(
+                users.length === 0
+                    ? `${renamed}.`
+                    : `${renamed}; updated employees: ${users.map(({ id }) => id).join(", ")}.`,
+            )
         })
 
     providerCommand
