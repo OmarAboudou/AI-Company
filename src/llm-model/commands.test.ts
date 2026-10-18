@@ -129,6 +129,7 @@ describe("llmco model delete", () => {
 
         expect(deletion.exitCode).toBe(1)
         expect(deletion.stderr).toContain("is used by claude.")
+        expect(deletion.stderr).toContain("llmco employee update")
         expect(runCli("model", "show", ...opus).exitCode).toBe(0)
     })
 

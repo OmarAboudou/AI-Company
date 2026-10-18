@@ -92,7 +92,7 @@ export function registerLlmProviderCommands(program: Command): void {
             )
             if (users.length > 0) {
                 throw new UserError(
-                    `Provider "${provider.id}" is used by ${users.map(({ id }) => id).join(", ")}. Delete these employees first, even with --force.`,
+                    `Provider "${provider.id}" is used by ${users.map(({ id }) => id).join(", ")}. Give these employees another model with \`llmco employee update\`, or delete them, first; --force doesn't change that.`,
                 )
             }
             const modelIds = models.map(({ id }) => id).join(", ")
