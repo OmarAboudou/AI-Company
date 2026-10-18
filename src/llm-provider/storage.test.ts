@@ -6,6 +6,7 @@ import { UserError } from "../errors.ts"
 import { listLlmModels, saveLlmModel } from "../llm-model/storage.ts"
 import type { LlmProvider } from "./llm-provider.ts"
 import {
+    copyLlmProvider,
     deleteLlmProvider,
     listLlmProviders,
     llmProviderExists,
@@ -119,5 +120,29 @@ describe("deleteLlmProvider", () => {
 
         expect(before).toEqual([[anthropic], [opus]])
         expect(after).toEqual([[], []])
+    })
+})
+
+describe("copyLlmProvider", () => {
+    test("copies the provider's folder, models included", async () => {
+        const opus = {
+            providerId: "anthropic",
+            id: "claude-opus-5-5",
+            name: "Claude Opus 5.5",
+            apiId: "claude-opus-5-5",
+        }
+        await Promise.all([
+            saveLlmProvider(projectRoot, anthropic),
+            saveLlmModel(projectRoot, opus),
+        ])
+        const before = await listLlmProviders(projectRoot)
+
+        await copyLlmProvider(projectRoot, "anthropic", "claude-api")
+        const after = await listLlmProviders(projectRoot)
+        const models = await listLlmModels(projectRoot, "claude-api")
+
+        expect(before).toEqual([anthropic])
+        expect(after).toEqual([anthropic, { ...anthropic, id: "claude-api" }])
+        expect(models).toEqual([{ ...opus, providerId: "claude-api" }])
     })
 })
