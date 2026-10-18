@@ -3,7 +3,9 @@ import { CompanyConfigSchema } from "./company/company.ts"
 import { EmployeeConfigSchema } from "./employee/employee.ts"
 import { LlmModelConfigSchema } from "./llm-model/llm-model.ts"
 import { LlmProviderConfigSchema } from "./llm-provider/llm-provider.ts"
+import { MessageConfigSchema } from "./message/message.ts"
 import { PositionConfigSchema } from "./position/position.ts"
+import { ThreadConfigSchema } from "./thread/thread.ts"
 
 const publishedAt =
     "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas"
@@ -14,6 +16,8 @@ const configSchemas = {
     employee: EmployeeConfigSchema,
     "llm-provider": LlmProviderConfigSchema,
     "llm-model": LlmModelConfigSchema,
+    thread: ThreadConfigSchema,
+    message: MessageConfigSchema,
 }
 
 export const jsonSchemas = Object.fromEntries(
