@@ -17,7 +17,9 @@ describe("llmco provider", () => {
 
         const show = runCli("provider", "show", "anthropic")
         expect(show.exitCode).toBe(0)
-        expect(show.stdout).toBe("# Anthropic\n\nmodels: (none)\n")
+        expect(show.stdout).toBe(
+            "# Anthropic\n\napi key: (none)\nmodels: (none)\n",
+        )
     })
 
     test("show lists the provider's models, sorted by id", () => {
@@ -69,6 +71,76 @@ describe("llmco provider", () => {
 
         expect(show.exitCode).toBe(1)
         expect(show.stderr).toContain('No provider "anthropic".')
+    })
+})
+
+describe("llmco provider API key", () => {
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+    })
+
+    test.each([
+        ["--api-key-env", "ANTHROPIC_API_KEY", "environment variable"],
+        ["-e", "ANTHROPIC_API_KEY", "environment variable"],
+        ["--api-key-file", "~/.keys/anthropic", "file"],
+        ["-k", "~/.keys/anthropic", "file"],
+    ])("create %s %s then show names its source", (flag, value, kind) => {
+        const create = ["provider", "create", "anthropic", "-n", "Anthropic"]
+        expect(runCli(...create, flag, value).exitCode).toBe(0)
+
+        const show = runCli("provider", "show", "anthropic").stdout
+
+        expect(show).toContain(`api key: ${kind} ${value}\n`)
+    })
+
+    test("create refuses an environment variable and a file at once", () => {
+        const create = runCli(
+            "provider",
+            "create",
+            "anthropic",
+            "-n",
+            "Anthropic",
+            "-e",
+            "ANTHROPIC_API_KEY",
+            "-k",
+            "~/.keys/anthropic",
+        )
+
+        expect(create.exitCode).toBe(1)
+        expect(create.stderr).toContain("cannot be used with")
+        expect(runCli("provider", "list").stdout).toContain("No providers")
+    })
+
+    test("create rejects an invalid environment variable name", () => {
+        const create = ["provider", "create", "anthropic", "-n", "Anthropic"]
+
+        const result = runCli(...create, "-e", "ANTHROPIC-KEY")
+
+        expect(result.exitCode).toBe(1)
+        expect(result.stderr).toContain("environment variable name")
+    })
+
+    test("update -e replaces a file with an environment variable", () => {
+        const create = ["provider", "create", "anthropic", "-n", "Anthropic"]
+        runCli(...create, "-k", "~/.keys/anthropic")
+        const before = runCli("provider", "show", "anthropic").stdout
+
+        runCli("provider", "update", "anthropic", "-e", "ANTHROPIC_API_KEY")
+        const after = runCli("provider", "show", "anthropic").stdout
+
+        expect(before).toContain("api key: file ~/.keys/anthropic\n")
+        expect(after).toContain("api key: environment variable ANTHROPIC")
+    })
+
+    test("update -n keeps the API key's source", () => {
+        const create = ["provider", "create", "anthropic", "-n", "Anthropic"]
+        runCli(...create, "-e", "ANTHROPIC_API_KEY")
+
+        runCli("provider", "update", "anthropic", "-n", "Anthropic PBC")
+        const show = runCli("provider", "show", "anthropic").stdout
+
+        expect(show).toContain("# Anthropic PBC\n")
+        expect(show).toContain("api key: environment variable ANTHROPIC")
     })
 })
 
