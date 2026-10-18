@@ -7,7 +7,9 @@ import {
     parseId,
     printColumns,
     projectRoot,
+    requireAnOption,
     requireCompany,
+    withoutUndefined,
 } from "../cli-helpers.ts"
 import { listEmployees } from "../employee/storage.ts"
 import { UserError } from "../errors.ts"
@@ -91,6 +93,37 @@ export function registerLlmModelCommands(program: Command): void {
             console.log(
                 `# ${model.name}\n\nprovider: ${model.providerId}\napi id: ${model.apiId}`,
             )
+        })
+
+    modelCommand
+        .command("update")
+        .description("Update a model: only the options given change.")
+        .argument("<provider-id>", idDescription("provider", "anthropic"))
+        .argument("<model-id>", idDescription("model", "claude-opus-5-5"))
+        .option("-n, --name <name>", "model name")
+        .option(
+            "-a, --api-id <api-id>",
+            "id of the model on the provider's side, as its API expects it, e.g. claude-opus-5-5 or llama3.1:8b",
+        )
+        .action(async (rawProviderId, rawModelId, options) => {
+            requireAnOption(options)
+            await requireCompany()
+            const { providerId, id, ...current } = await loadExistingLlmModel(
+                rawProviderId,
+                rawModelId,
+            )
+            const config = LlmModelConfigSchema.safeParse({
+                ...current,
+                ...withoutUndefined({
+                    name: options.name,
+                    apiId: options.apiId,
+                }),
+            })
+            if (!config.success) {
+                throw new UserError(z.prettifyError(config.error))
+            }
+            await saveLlmModel(projectRoot, { providerId, id, ...config.data })
+            console.log(`Updated model "${id}" of provider "${providerId}".`)
         })
 
     modelCommand
