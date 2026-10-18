@@ -1,4 +1,4 @@
-import { rm } from "node:fs/promises"
+import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
 import { listSubdirectories, readConfig } from "../files.ts"
 import { llmcoDir } from "../project.ts"
@@ -56,4 +56,16 @@ export async function deleteEmployee(
     id: string,
 ): Promise<void> {
     await rm(employeeDir(projectRoot, id), { recursive: true })
+}
+
+export async function copyEmployee(
+    projectRoot: string,
+    id: string,
+    newId: string,
+): Promise<void> {
+    await cp(employeeDir(projectRoot, id), employeeDir(projectRoot, newId), {
+        recursive: true,
+        errorOnExist: true,
+        force: false,
+    })
 }
