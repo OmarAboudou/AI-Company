@@ -35,7 +35,7 @@ const thanks = message("3", { position: director }, "Thanks!")
 
 describe("anthropicTurns", () => {
     test("gives others' messages as user turns, in a message tag", () => {
-        const turns = anthropicTurns([question], "claude-senior", new Map())
+        const turns = anthropicTurns([question], claude, new Map())
         const text = [
             '<message from="Omar Aboudou" position="Director (@director)" sent="2026-10-18 14:03 UTC">',
             "@backend-developer Hono or Express?",
@@ -51,7 +51,7 @@ describe("anthropicTurns", () => {
         const quoted = { id: "growth", title: 'Head of "Growth"' }
         const memo = message("4", { position: quoted }, "Numbers are up.")
 
-        const turns = anthropicTurns([memo], "claude-senior", new Map())
+        const turns = anthropicTurns([memo], claude, new Map())
 
         expect(turns[0]?.content).toEqual([
             {
@@ -66,7 +66,7 @@ describe("anthropicTurns", () => {
     test("gives the employee's own messages as assistant turns", () => {
         const turns = anthropicTurns(
             [question, answer, thanks],
-            "claude-senior",
+            claude,
             new Map(),
         )
 
@@ -86,7 +86,7 @@ describe("anthropicTurns", () => {
 
         const turns = anthropicTurns(
             [question, answer],
-            "claude-senior",
+            claude,
             new Map([["2", replayed]]),
         )
 
@@ -96,20 +96,35 @@ describe("anthropicTurns", () => {
     test("keeps consecutive messages of others in one turn, apart", () => {
         const second = message("2", question, "Or Fastify?")
 
-        const turns = anthropicTurns(
-            [question, second],
-            "claude-senior",
-            new Map(),
-        )
+        const turns = anthropicTurns([question, second], claude, new Map())
 
         expect(turns).toHaveLength(1)
         expect(turns[0]?.content).toHaveLength(2)
     })
 
+    test("recognizes its messages written under a former id", () => {
+        const renamed = {
+            id: "claude-lead",
+            formerIds: [{ id: "claude-senior", until: "2026-10-19T09:00:00Z" }],
+        }
+
+        const turns = anthropicTurns([question, answer], renamed, new Map())
+
+        expect(turns.map(({ role }) => role)).toEqual(["user", "assistant"])
+    })
+
+    test("sees a former holder's messages as someone else's", () => {
+        const rehired = { ...claude, createdAt: "2026-10-19T09:00:00Z" }
+
+        const turns = anthropicTurns([question, answer], rehired, new Map())
+
+        expect(turns.map(({ role }) => role)).toEqual(["user"])
+    })
+
     test("sees another employee's messages as someone else's", () => {
         const turns = anthropicTurns(
             [question, answer],
-            "claude-junior",
+            { id: "claude-junior" },
             new Map(),
         )
 

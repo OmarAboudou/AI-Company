@@ -92,3 +92,10 @@ export function currentId(
 ): string {
     return entities.find((entity) => hadId(entity, id, at))?.id ?? id
 }
+
+export function wrote(
+    employee: IdHistory,
+    { employee: author, sentAt }: { employee?: { id: string }; sentAt: string },
+): boolean {
+    return author !== undefined && hadId(employee, author.id, sentAt)
+}
