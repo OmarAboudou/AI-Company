@@ -13,6 +13,7 @@ import {
 } from "../cli-helpers.ts"
 import { listEmployees, saveEmployee } from "../employee/storage.ts"
 import { UserError } from "../errors.ts"
+import { protocols } from "../llm-connection/llm-connection.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import { type ApiKeySource, LlmProviderConfigSchema } from "./llm-provider.ts"
 import {
@@ -104,7 +105,7 @@ export function registerLlmProviderCommands(program: Command): void {
     providerCommand
         .command("show")
         .description(
-            "Display an LLM provider, its API key's source and its models.",
+            "Display an LLM provider: its API key's source, connections and models.",
         )
         .argument("<provider-id>", idDescription("provider", "anthropic"))
         .action(async (rawId) => {
@@ -115,9 +116,17 @@ export function registerLlmProviderCommands(program: Command): void {
                 models.length > 0
                     ? models.map(({ id }) => id).join(", ")
                     : "(none)"
-            console.log(
-                `# ${provider.name}\n\napi key: ${describeApiKey(provider.apiKey)}\nmodels: ${modelIds}`,
+            const connections = protocols.filter(
+                (protocol) => provider.connections?.[protocol] !== undefined,
             )
+            const lines = [
+                `# ${provider.name}`,
+                "",
+                `api key: ${describeApiKey(provider.apiKey)}`,
+                `connections: ${connections.length > 0 ? connections.join(", ") : "(none)"}`,
+                `models: ${modelIds}`,
+            ]
+            console.log(lines.join("\n"))
         })
 
     providerCommand
