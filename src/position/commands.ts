@@ -13,7 +13,12 @@ import {
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
 import { PositionConfigSchema } from "./position.ts"
-import { listPositions, positionExists, savePosition } from "./storage.ts"
+import {
+    deletePosition,
+    listPositions,
+    positionExists,
+    savePosition,
+} from "./storage.ts"
 
 export function registerPositionCommands(program: Command): void {
     const positionCommand = program
@@ -149,6 +154,27 @@ export function registerPositionCommands(program: Command): void {
             await savePosition(projectRoot, position)
             console.log(
                 `Position "${position.id}" is now vacant: "${defaultEmployeeId}" is no longer its default employee.`,
+            )
+        })
+
+    positionCommand
+        .command("delete")
+        .alias("close")
+        .description(
+            "Delete (close) a position. Its default employee stays hired.",
+        )
+        .argument(
+            "<position-id>",
+            idDescription("position", "backend-developer"),
+        )
+        .action(async (rawId) => {
+            await requireCompany()
+            const position = await loadExistingPosition(rawId)
+            await deletePosition(projectRoot, position.id)
+            console.log(
+                position.defaultEmployeeId === undefined
+                    ? `Deleted position "${position.id}".`
+                    : `Deleted position "${position.id}"; its default employee "${position.defaultEmployeeId}" stays hired.`,
             )
         })
 }

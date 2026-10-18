@@ -317,3 +317,42 @@ describe("corrupted files", () => {
 test("position commands require a company", () => {
     expect(runCli("position", "list").exitCode).toBe(1)
 })
+
+describe("llmco position delete", () => {
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+        runCli("position", "create", "developer", "-t", "Developer")
+    })
+
+    test("delete removes the position", () => {
+        const deletion = runCli("position", "delete", "developer")
+
+        expect(deletion.exitCode).toBe(0)
+        expect(deletion.stdout).toBe('Deleted position "developer".\n')
+        expect(runCli("position", "show", "developer").exitCode).toBe(1)
+    })
+
+    test("close is an alias of delete", () => {
+        expect(runCli("position", "close", "developer").exitCode).toBe(0)
+        expect(runCli("position", "list").stdout).toContain("No positions")
+    })
+
+    test("delete keeps the default employee hired", () => {
+        runCli("employee", "create", "human", "omar", "-n", "Omar")
+        runCli("position", "assign", "developer", "omar")
+
+        const deletion = runCli("position", "delete", "developer")
+        const show = runCli("employee", "show", "omar")
+
+        expect(deletion.exitCode).toBe(0)
+        expect(deletion.stdout).toContain('default employee "omar" stays hired')
+        expect(show.stdout).toContain("positions: (none)")
+    })
+
+    test("delete fails for an unknown position", () => {
+        const deletion = runCli("position", "delete", "qa-tester")
+
+        expect(deletion.exitCode).toBe(1)
+        expect(deletion.stderr).toContain('No position "qa-tester".')
+    })
+})
