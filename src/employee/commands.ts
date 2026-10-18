@@ -247,31 +247,30 @@ export function registerEmployeeCommands(program: Command): void {
         })
 
     employeeCommand
-        .command("hand-over")
+        .command("replace")
+        .alias("hand-over")
         .description(
-            "Give every position an employee fills to another employee, who becomes their default employee.",
+            "Replace (hand over) an employee by another in every position it fills. It stays hired.",
         )
         .argument("<employee-id>", idDescription("employee", "claude-senior"))
         .argument(
-            "<successor-id>",
-            "id of the employee taking the positions over (e.g. omar)",
+            "<replacement-id>",
+            "id of the employee taking its positions over (e.g. omar)",
         )
-        .action(async (rawId, rawSuccessorId) => {
+        .action(async (rawId, rawReplacementId) => {
             await requireCompany()
-            const [employee, successor, positions] = await Promise.all([
+            const [employee, replacement, positions] = await Promise.all([
                 loadExistingEmployee(rawId),
-                loadExistingEmployee(rawSuccessorId),
+                loadExistingEmployee(rawReplacementId),
                 listPositions(projectRoot),
             ])
-            if (successor.id === employee.id) {
-                throw new UserError(
-                    `"${employee.id}" can't hand its positions over to itself.`,
-                )
+            if (replacement.id === employee.id) {
+                throw new UserError(`"${employee.id}" can't replace itself.`)
             }
             const filled = filledPositions(positions, employee.id)
             if (filled.length === 0) {
                 console.log(
-                    `"${employee.id}" fills no position: nothing to hand over.`,
+                    `"${employee.id}" fills no position: nothing to replace.`,
                 )
                 return
             }
@@ -279,12 +278,12 @@ export function registerEmployeeCommands(program: Command): void {
                 filled.map((position) =>
                     savePosition(projectRoot, {
                         ...position,
-                        defaultEmployeeId: successor.id,
+                        defaultEmployeeId: replacement.id,
                     }),
                 ),
             )
             console.log(
-                `"${successor.id}" takes over ${filled.map(({ id }) => id).join(", ")} from "${employee.id}", who stays hired.`,
+                `"${replacement.id}" replaces "${employee.id}" as default employee of ${filled.map(({ id }) => id).join(", ")}; "${employee.id}" stays hired.`,
             )
         })
 
