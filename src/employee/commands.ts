@@ -4,6 +4,7 @@ import {
     idDescription,
     loadExistingEmployee,
     loadExistingLlmModel,
+    newIdDescription,
     parseId,
     printColumns,
     projectRoot,
@@ -16,6 +17,7 @@ import type { Position } from "../position/position.ts"
 import { listPositions, savePosition } from "../position/storage.ts"
 import { type EmployeeConfig, EmployeeConfigSchema } from "./employee.ts"
 import {
+    copyEmployee,
     deleteEmployee,
     employeeExists,
     listEmployees,
@@ -199,6 +201,46 @@ export function registerEmployeeCommands(program: Command): void {
             await requireLlmModel(result.data)
             await saveEmployee(projectRoot, { id, ...result.data })
             console.log(`Updated employee "${id}".`)
+        })
+
+    employeeCommand
+        .command("update-id")
+        .description(
+            "Change the id of an employee and of the positions it fills.",
+        )
+        .argument("<employee-id>", idDescription("employee", "claude-senior"))
+        .argument(
+            "<new-employee-id>",
+            newIdDescription("employee", "claude-lead"),
+        )
+        .action(async (rawId, rawNewId) => {
+            await requireCompany()
+            const newId = parseId("employee", rawNewId)
+            const [employee, taken, positions] = await Promise.all([
+                loadExistingEmployee(rawId),
+                employeeExists(projectRoot, newId),
+                listPositions(projectRoot),
+            ])
+            if (taken) {
+                throw new UserError(`Employee "${newId}" already exists.`)
+            }
+            const filled = filledPositions(positions, employee.id)
+            await copyEmployee(projectRoot, employee.id, newId)
+            await Promise.all(
+                filled.map((position) =>
+                    savePosition(projectRoot, {
+                        ...position,
+                        defaultEmployeeId: newId,
+                    }),
+                ),
+            )
+            await deleteEmployee(projectRoot, employee.id)
+            const renamed = `Employee "${employee.id}" is now "${newId}"`
+            console.log(
+                filled.length === 0
+                    ? `${renamed}.`
+                    : `${renamed}; updated positions: ${filled.map(({ id }) => id).join(", ")}.`,
+            )
         })
 
     employeeCommand

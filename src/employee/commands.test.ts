@@ -243,6 +243,53 @@ describe("llmco employee update", () => {
     })
 })
 
+describe("llmco employee update-id", () => {
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+        runCli("employee", "create", "human", "omar", "-n", "Omar")
+        runCli("employee", "create", "human", "alice", "-n", "Alice")
+        runCli("position", "create", "developer", "-t", "Developer")
+        runCli("position", "create", "qa-tester", "-t", "QA Tester")
+    })
+
+    test("update-id moves an employee who fills no position", () => {
+        const update = runCli("employee", "update-id", "omar", "omar-a")
+        const show = runCli("employee", "show", "omar-a").stdout
+
+        expect(update.stdout).toBe('Employee "omar" is now "omar-a".\n')
+        expect(show).toStartWith("# Omar\n\nkind: human\n")
+        expect(runCli("employee", "show", "omar").exitCode).toBe(1)
+    })
+
+    test("update-id rewrites the positions it fills", () => {
+        runCli("position", "assign", "developer", "omar")
+        runCli("position", "assign", "qa-tester", "omar")
+
+        const update = runCli("employee", "update-id", "omar", "omar-a")
+        const list = runCli("position", "list").stdout
+
+        expect(update.stdout).toContain("updated positions: developer, qa-")
+        expect(list).toContain("developer  Developer  omar-a\n")
+        expect(list).toContain("qa-tester  QA Tester  omar-a\n")
+    })
+
+    test("update-id refuses an id another employee has", () => {
+        const update = runCli("employee", "update-id", "omar", "alice")
+        const show = runCli("employee", "show", "alice").stdout
+
+        expect(update.exitCode).toBe(1)
+        expect(update.stderr).toContain('Employee "alice" already exists.')
+        expect(show).toStartWith("# Alice\n")
+    })
+
+    test("update-id fails for an unknown employee", () => {
+        const update = runCli("employee", "update-id", "bob", "robert")
+
+        expect(update.exitCode).toBe(1)
+        expect(update.stderr).toContain('No employee "bob".')
+    })
+})
+
 describe("llmco employee delete", () => {
     beforeEach(() => {
         runCli("init", "-n", "Acme")
