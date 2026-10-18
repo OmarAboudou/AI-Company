@@ -1,11 +1,26 @@
 import type Anthropic from "@anthropic-ai/sdk"
 import type { Message } from "../message/message.ts"
-import { minutes, signature } from "../message/signature.ts"
+import { authorName, minutes } from "../message/signature.ts"
 
 export type Replays = ReadonlyMap<string, Anthropic.ContentBlockParam[]>
 
-function header(message: Message): string {
-    return `From: ${signature(message)}, ${minutes(message.sentAt)}`
+function attribute(value: string): string {
+    return value
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("<", "&lt;")
+}
+
+function delimited(message: Message): string {
+    const { position } = message
+    const from = attribute(authorName(message))
+    const as = attribute(`${position.title} (@${position.id})`)
+    const sent = minutes(message.sentAt)
+    return [
+        `<message from="${from}" position="${as}" sent="${sent}">`,
+        message.body.trimEnd(),
+        "</message>",
+    ].join("\n")
 }
 
 export function anthropicTurns(
@@ -24,7 +39,7 @@ export function anthropicTurns(
             ? (replays.get(message.id) ?? [
                   { type: "text", text: message.body },
               ])
-            : [{ type: "text", text: `${header(message)}\n\n${message.body}` }]
+            : [{ type: "text", text: delimited(message) }]
         const last = turns.at(-1)
         if (last?.role === role) {
             last.content.push(...content)

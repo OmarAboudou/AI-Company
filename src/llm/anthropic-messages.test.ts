@@ -32,20 +32,31 @@ const answer = message("2", { position: developer, employee: claude }, "Hono.")
 const thanks = message("3", { position: director }, "Thanks!")
 
 describe("anthropicTurns", () => {
-    test("gives others' messages as user turns, after a header", () => {
+    test("gives others' messages as user turns, in a message tag", () => {
         const turns = anthropicTurns([question], "claude-senior", new Map())
-        const header =
-            "From: Omar Aboudou, Director (@director), 2026-10-18 14:03 UTC"
+        const text = [
+            '<message from="Omar Aboudou" position="Director (@director)" sent="2026-10-18 14:03 UTC">',
+            "@backend-developer Hono or Express?",
+            "</message>",
+        ].join("\n")
 
         expect(turns).toEqual([
+            { role: "user", content: [{ type: "text", text }] },
+        ])
+    })
+
+    test("escapes quotes in the tag's attributes", () => {
+        const quoted = { id: "growth", title: 'Head of "Growth"' }
+        const memo = message("4", { position: quoted }, "Numbers are up.")
+
+        const turns = anthropicTurns([memo], "claude-senior", new Map())
+
+        expect(turns[0]?.content).toEqual([
             {
-                role: "user",
-                content: [
-                    {
-                        type: "text",
-                        text: `${header}\n\n@backend-developer Hono or Express?`,
-                    },
-                ],
+                type: "text",
+                text: expect.stringContaining(
+                    'position="Head of &quot;Growth&quot; (@growth)"',
+                ),
             },
         ])
     })

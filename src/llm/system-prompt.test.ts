@@ -80,10 +80,11 @@ describe("systemPrompt", () => {
         expect(prompt).toContain("# Your position: Backend Developer")
     })
 
-    test("names the thread, the director's position and mentions", () => {
+    test("names the thread, the message tag, the director and mentions", () => {
         const prompt = systemPrompt(context)
 
         expect(prompt).toContain('This thread is "Choice of framework".')
+        expect(prompt).toContain("comes inside a <message> tag")
         expect(prompt).toContain("Messages from @director come from")
         expect(prompt).toContain("mention it as @position-id")
     })
