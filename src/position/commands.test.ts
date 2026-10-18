@@ -27,6 +27,14 @@ describe("llmco position", () => {
         )
     })
 
+    test("open is an alias of create", () => {
+        const open = runCli("position", "open", "developer", "-t", "Developer")
+        const show = runCli("position", "show", "developer").stdout
+
+        expect(open.exitCode).toBe(0)
+        expect(show).toContain("# Developer")
+    })
+
     test("list aligns titles and employees after the ids, sorted by id", () => {
         runCli("position", "create", "qa-tester", "--title", "QA Tester")
         runCli("position", "create", "developer", "--title", "Developer")
