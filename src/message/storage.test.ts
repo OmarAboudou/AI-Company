@@ -6,9 +6,11 @@ import { IdSchema } from "../id.ts"
 import type { Message } from "./message.ts"
 import {
     listMessages,
+    loadResponse,
     newMessageId,
     nextSentAt,
     saveMessage,
+    saveResponse,
 } from "./storage.ts"
 
 let projectRoot: string
@@ -67,6 +69,30 @@ describe("saveMessage and listMessages", () => {
         const messages = await listMessages(projectRoot, question.threadId)
 
         expect(messages).toEqual([question, answer])
+    })
+})
+
+describe("saveResponse and loadResponse", () => {
+    const response = {
+        providerId: "anthropic",
+        modelId: "claude-opus-5-5",
+        protocol: "anthropic-messages",
+        apiId: "claude-opus-5-5",
+        response: { content: [{ type: "text", text: "Hono." }] },
+    } as const
+
+    test("write response.json next to the message, then read it", async () => {
+        await saveMessage(projectRoot, answer)
+
+        await saveResponse(projectRoot, answer, response)
+
+        expect(await loadResponse(projectRoot, answer)).toEqual(response)
+    })
+
+    test("load gives nothing for a message without response", async () => {
+        await saveMessage(projectRoot, question)
+
+        expect(await loadResponse(projectRoot, question)).toBeUndefined()
     })
 })
 
