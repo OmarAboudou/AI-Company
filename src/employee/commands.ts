@@ -247,6 +247,48 @@ export function registerEmployeeCommands(program: Command): void {
         })
 
     employeeCommand
+        .command("hand-over")
+        .description(
+            "Give every position an employee fills to another employee, who becomes their default employee.",
+        )
+        .argument("<employee-id>", idDescription("employee", "claude-senior"))
+        .argument(
+            "<successor-id>",
+            "id of the employee taking the positions over (e.g. omar)",
+        )
+        .action(async (rawId, rawSuccessorId) => {
+            await requireCompany()
+            const [employee, successor, positions] = await Promise.all([
+                loadExistingEmployee(rawId),
+                loadExistingEmployee(rawSuccessorId),
+                listPositions(projectRoot),
+            ])
+            if (successor.id === employee.id) {
+                throw new UserError(
+                    `"${employee.id}" can't hand its positions over to itself.`,
+                )
+            }
+            const filled = filledPositions(positions, employee.id)
+            if (filled.length === 0) {
+                console.log(
+                    `"${employee.id}" fills no position: nothing to hand over.`,
+                )
+                return
+            }
+            await Promise.all(
+                filled.map((position) =>
+                    savePosition(projectRoot, {
+                        ...position,
+                        defaultEmployeeId: successor.id,
+                    }),
+                ),
+            )
+            console.log(
+                `"${successor.id}" takes over ${filled.map(({ id }) => id).join(", ")} from "${employee.id}", who stays hired.`,
+            )
+        })
+
+    employeeCommand
         .command("delete")
         .alias("fire")
         .description("Delete (fire) an employee.")
