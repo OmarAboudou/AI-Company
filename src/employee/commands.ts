@@ -225,6 +225,9 @@ export function registerEmployeeCommands(program: Command): void {
                 throw new UserError(`Employee "${newId}" already exists.`)
             }
             const filled = filledPositions(positions, employee.id)
+            // Copy, repoint, then delete rather than move, so that an
+            // interrupted command never leaves a position naming a missing
+            // employee: at worst, the employee exists twice.
             await copyEmployee(projectRoot, employee.id, newId)
             await Promise.all(
                 filled.map((position) =>
