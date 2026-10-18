@@ -3,6 +3,7 @@ import { z } from "zod"
 import {
     idDescription,
     loadExistingLlmProvider,
+    parseId,
     printColumns,
     projectRoot,
     requireAnOption,
@@ -10,6 +11,7 @@ import {
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
+import { listLlmModels } from "../llm-model/storage.ts"
 import {
     type LlmProvider,
     LlmProviderConfigSchema,
@@ -178,15 +180,21 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
 
     connectionCommand
         .command("delete")
-        .description("Delete a provider's connection.")
+        .description("Delete a provider's connection no model is called with.")
         .argument("<provider-id>", idDescription("provider", "anthropic"))
         .addArgument(protocolArgument())
         .action(async (rawProviderId, protocol) => {
             await requireCompany()
-            const provider = await loadProviderWithConnection(
-                rawProviderId,
-                protocol,
-            )
+            const [provider, models] = await Promise.all([
+                loadProviderWithConnection(rawProviderId, protocol),
+                listLlmModels(projectRoot, parseId("provider", rawProviderId)),
+            ])
+            const users = models.filter((model) => model.protocol === protocol)
+            if (users.length > 0) {
+                throw new UserError(
+                    `The ${protocol} connection of provider "${provider.id}" is used by models ${users.map(({ id }) => id).join(", ")}. Give them another protocol with \`llmco model update -p\`, or delete them, first.`,
+                )
+            }
             const remaining = Object.entries(provider.connections ?? {}).filter(
                 ([name]) => name !== protocol,
             )
