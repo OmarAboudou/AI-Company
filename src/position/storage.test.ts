@@ -8,6 +8,7 @@ import {
     listPositions,
     loadPosition,
     positionExists,
+    renamePosition,
     savePosition,
 } from "./storage.ts"
 
@@ -119,5 +120,18 @@ describe("deletePosition", () => {
 
         expect(before).toEqual([developer])
         expect(after).toEqual([])
+    })
+})
+
+describe("renamePosition", () => {
+    test("moves the position's folder to its new id", async () => {
+        await savePosition(projectRoot, developer)
+        const before = await listPositions(projectRoot)
+
+        await renamePosition(projectRoot, developer.id, "api-developer")
+        const after = await listPositions(projectRoot)
+
+        expect(before).toEqual([developer])
+        expect(after).toEqual([{ ...developer, id: "api-developer" }])
     })
 })
