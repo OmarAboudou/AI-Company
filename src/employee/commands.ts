@@ -7,7 +7,9 @@ import {
     parseId,
     printColumns,
     projectRoot,
+    requireAnOption,
     requireCompany,
+    withoutUndefined,
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
 import type { Position } from "../position/position.ts"
@@ -153,6 +155,50 @@ export function registerEmployeeCommands(program: Command): void {
                 `positions: ${positionsFilledBy(positions, employee.id)}`,
             )
             console.log(lines.join("\n"))
+        })
+
+    employeeCommand
+        .command("update")
+        .description(
+            "Update an employee: only the options given change. Its kind can't change.",
+        )
+        .argument("<employee-id>", idDescription("employee", "claude-senior"))
+        .option("-n, --name <name>", "employee name")
+        .option(
+            "-p, --provider <provider-id>",
+            "LLM provider id, e.g. anthropic (see llmco provider list), for an LLM employee",
+        )
+        .option(
+            "-m, --model <model-id>",
+            "id of one of the provider's models in llmco, e.g. claude-opus-5-5 (see llmco model list), for an LLM employee",
+        )
+        .action(async (rawId, options) => {
+            requireAnOption(options)
+            await requireCompany()
+            const { id, ...current } = await loadExistingEmployee(rawId)
+            const llmOptions = [options.provider, options.model]
+            if (
+                current.kind === "human" &&
+                llmOptions.some((option) => option !== undefined)
+            ) {
+                throw new UserError(
+                    `Employee "${id}" is a human: it has no provider or model.`,
+                )
+            }
+            const result = EmployeeConfigSchema.safeParse({
+                ...current,
+                ...withoutUndefined({
+                    name: options.name,
+                    providerId: options.provider,
+                    modelId: options.model,
+                }),
+            })
+            if (!result.success) {
+                throw new UserError(z.prettifyError(result.error))
+            }
+            await requireLlmModel(result.data)
+            await saveEmployee(projectRoot, { id, ...result.data })
+            console.log(`Updated employee "${id}".`)
         })
 
     employeeCommand
