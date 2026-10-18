@@ -112,9 +112,12 @@ describe("listPositions", () => {
 describe("deletePosition", () => {
     test("removes the position's folder", async () => {
         await savePosition(projectRoot, developer)
+        const before = await listPositions(projectRoot)
 
         await deletePosition(projectRoot, developer.id)
+        const after = await listPositions(projectRoot)
 
-        expect(await listPositions(projectRoot)).toEqual([])
+        expect(before).toEqual([developer])
+        expect(after).toEqual([])
     })
 })
