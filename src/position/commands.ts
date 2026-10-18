@@ -14,13 +14,14 @@ import {
     requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
+import { loadCompany, saveCompany } from "../company/storage.ts"
 import { UserError } from "../errors.ts"
 import { PositionConfigSchema } from "./position.ts"
 import {
+    copyPosition,
     deletePosition,
     listPositions,
     positionExists,
-    renamePosition,
     savePosition,
 } from "./storage.ts"
 
@@ -138,7 +139,9 @@ export function registerPositionCommands(program: Command): void {
 
     positionCommand
         .command("update-id")
-        .description("Change the id of a position, which renames its folder.")
+        .description(
+            "Change the id of a position, which renames its folder. For the director's position, the company follows.",
+        )
         .argument(
             "<position-id>",
             idDescription("position", "backend-developer"),
@@ -150,14 +153,24 @@ export function registerPositionCommands(program: Command): void {
         .action(async (rawId, rawNewId) => {
             await requireCompany()
             const newId = parseId("position", rawNewId)
-            const [position, taken] = await Promise.all([
+            const [position, taken, company] = await Promise.all([
                 loadExistingPosition(rawId),
                 positionExists(projectRoot, newId),
+                loadCompany(projectRoot),
             ])
             if (taken) {
                 throw new UserError(`Position "${newId}" already exists.`)
             }
-            await renamePosition(projectRoot, position.id, newId)
+            // Copy, repoint, then delete rather than move, as for employees:
+            // the company must never name a missing director's position.
+            await copyPosition(projectRoot, position.id, newId)
+            if (company.directorPositionId === position.id) {
+                await saveCompany(projectRoot, {
+                    ...company,
+                    directorPositionId: newId,
+                })
+            }
+            await deletePosition(projectRoot, position.id)
             console.log(`Position "${position.id}" is now "${newId}".`)
         })
 
@@ -226,7 +239,7 @@ export function registerPositionCommands(program: Command): void {
         .command("delete")
         .alias("close")
         .description(
-            "Delete (close) a position. Its default employee stays hired.",
+            "Delete (close) a position, except the director's. Its default employee stays hired.",
         )
         .argument(
             "<position-id>",
@@ -234,7 +247,15 @@ export function registerPositionCommands(program: Command): void {
         )
         .action(async (rawId) => {
             await requireCompany()
-            const position = await loadExistingPosition(rawId)
+            const [position, company] = await Promise.all([
+                loadExistingPosition(rawId),
+                loadCompany(projectRoot),
+            ])
+            if (company.directorPositionId === position.id) {
+                throw new UserError(
+                    `Position "${position.id}" is the director's position: it can't be deleted.`,
+                )
+            }
             await deletePosition(projectRoot, position.id)
             console.log(
                 position.defaultEmployeeId === undefined

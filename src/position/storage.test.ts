@@ -4,11 +4,11 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { UserError } from "../errors.ts"
 import {
+    copyPosition,
     deletePosition,
     listPositions,
     loadPosition,
     positionExists,
-    renamePosition,
     savePosition,
 } from "./storage.ts"
 
@@ -123,15 +123,18 @@ describe("deletePosition", () => {
     })
 })
 
-describe("renamePosition", () => {
-    test("moves the position's folder to its new id", async () => {
+describe("copyPosition", () => {
+    test("copies the position's folder under its new id", async () => {
         await savePosition(projectRoot, developer)
         const before = await listPositions(projectRoot)
 
-        await renamePosition(projectRoot, developer.id, "api-developer")
+        await copyPosition(projectRoot, developer.id, "api-developer")
         const after = await listPositions(projectRoot)
 
         expect(before).toEqual([developer])
-        expect(after).toEqual([{ ...developer, id: "api-developer" }])
+        expect(after).toEqual([
+            { ...developer, id: "api-developer" },
+            developer,
+        ])
     })
 })
