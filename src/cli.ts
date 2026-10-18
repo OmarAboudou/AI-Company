@@ -5,7 +5,9 @@ import { registerEmployeeCommands } from "./employee/commands.ts"
 import { UserError } from "./errors.ts"
 import { registerLlmModelCommands } from "./llm-model/commands.ts"
 import { registerLlmProviderCommands } from "./llm-provider/commands.ts"
+import { registerMessageCommands } from "./message/commands.ts"
 import { registerPositionCommands } from "./position/commands.ts"
+import { registerThreadCommands } from "./thread/commands.ts"
 
 const program = new Command()
     .name("llmco")
@@ -17,6 +19,8 @@ registerPositionCommands(program)
 registerEmployeeCommands(program)
 registerLlmProviderCommands(program)
 registerLlmModelCommands(program)
+registerThreadCommands(program)
+registerMessageCommands(program)
 
 try {
     await program.parseAsync()

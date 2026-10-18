@@ -12,6 +12,8 @@ import type { LlmProvider } from "./llm-provider/llm-provider.ts"
 import { llmProviderExists, loadLlmProvider } from "./llm-provider/storage.ts"
 import type { Position } from "./position/position.ts"
 import { loadPosition, positionExists } from "./position/storage.ts"
+import { loadThread, threadExists } from "./thread/storage.ts"
+import type { Thread } from "./thread/thread.ts"
 
 export const projectRoot = process.cwd()
 
@@ -60,6 +62,7 @@ export function withoutUndefined<Values extends object>(
 }
 
 const entityFolders = {
+    thread: ".llmco/threads",
     position: ".llmco/positions",
     employee: ".llmco/employees",
     provider: ".llmco/llm-providers",
@@ -148,4 +151,12 @@ export async function loadExistingLlmModel(
         )
     }
     return loadLlmModel(projectRoot, provider.id, modelId)
+}
+
+export async function loadExistingThread(rawId: string): Promise<Thread> {
+    const id = parseId("thread", rawId)
+    if (!(await threadExists(projectRoot, id))) {
+        throw new UserError(`No thread "${id}". Run \`llmco thread list\`.`)
+    }
+    return loadThread(projectRoot, id)
 }
