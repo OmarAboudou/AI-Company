@@ -16,6 +16,7 @@ import {
 } from "../cli-helpers.ts"
 import { loadCompany, saveCompany } from "../company/storage.ts"
 import { UserError } from "../errors.ts"
+import { withNewId } from "../id-history.ts"
 import { PositionConfigSchema } from "./position.ts"
 import {
     copyPosition,
@@ -176,6 +177,10 @@ export function registerPositionCommands(program: Command): void {
             // Copy, repoint, then delete rather than move, as for employees:
             // the company must never name a missing director's position.
             await copyPosition(projectRoot, position.id, newId)
+            await savePosition(
+                projectRoot,
+                withNewId(position, newId, new Date().toISOString()),
+            )
             if (company.directorPositionId === position.id) {
                 await saveCompany(projectRoot, {
                     ...company,

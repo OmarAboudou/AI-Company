@@ -13,6 +13,7 @@ import {
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
+import { withNewId } from "../id-history.ts"
 import type { Position } from "../position/position.ts"
 import { listPositions, savePosition } from "../position/storage.ts"
 import { type EmployeeConfig, EmployeeConfigSchema } from "./employee.ts"
@@ -232,6 +233,10 @@ export function registerEmployeeCommands(program: Command): void {
             // interrupted command never leaves a position naming a missing
             // employee: at worst, the employee exists twice.
             await copyEmployee(projectRoot, employee.id, newId)
+            await saveEmployee(
+                projectRoot,
+                withNewId(employee, newId, new Date().toISOString()),
+            )
             await Promise.all(
                 filled.map((position) =>
                     savePosition(projectRoot, {
