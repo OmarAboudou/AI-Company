@@ -41,10 +41,34 @@ describe("systemPrompt", () => {
     test("gives the company's and the position's descriptions", () => {
         const prompt = systemPrompt(context)
 
-        const position = "# Your position: Backend Developer"
+        const company = [
+            "# Acme",
+            "",
+            "<company_description>",
+            "We build things.",
+            "</company_description>",
+        ]
+        const position = [
+            "# Your position: Backend Developer",
+            "",
+            "<position_description>",
+            "You build the API.",
+            "</position_description>",
+        ]
 
-        expect(prompt).toContain("# Acme\n\nWe build things.\n\n")
-        expect(prompt).toContain(`${position}\n\nYou build the API.\n\n`)
+        expect(prompt).toContain(`${company.join("\n")}\n\n`)
+        expect(prompt).toContain(`${position.join("\n")}\n\n`)
+    })
+
+    test("keeps a description's own headings inside its tags", () => {
+        const description = "# Goals\n\nShip the API."
+        const position = { ...context.position, description }
+
+        const prompt = systemPrompt({ ...context, position })
+
+        expect(prompt).toContain(
+            `<position_description>\n${description}\n</position_description>`,
+        )
     })
 
     test("leaves out a section whose description is empty", () => {

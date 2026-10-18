@@ -10,9 +10,11 @@ export type PromptContext = {
     thread: Thread
 }
 
-function section(title: string, text: string): string[] {
+function section(title: string, tag: string, text: string): string[] {
     const trimmed = text.trim()
-    return trimmed === "" ? [] : [`# ${title}`, "", trimmed, ""]
+    return trimmed === ""
+        ? []
+        : [`# ${title}`, "", `<${tag}>`, trimmed, `</${tag}>`, ""]
 }
 
 export function systemPrompt({
@@ -24,8 +26,12 @@ export function systemPrompt({
     return [
         `You are ${employee.name}, ${position.title} at ${company.name}.`,
         "",
-        ...section(company.name, company.description),
-        ...section(`Your position: ${position.title}`, position.description),
+        ...section(company.name, "company_description", company.description),
+        ...section(
+            `Your position: ${position.title}`,
+            "position_description",
+            position.description,
+        ),
         "# Messages",
         "",
         `You work through threads of messages between the company's positions. This thread is "${thread.subject}".`,
