@@ -19,6 +19,7 @@ import {
 } from "../message/commands.ts"
 import { minutes, signature } from "../message/signature.ts"
 import { listMessages } from "../message/storage.ts"
+import { listPositions } from "../position/storage.ts"
 import { awaitedIds, memberIds } from "./members.ts"
 import { listThreads, newThreadId, saveThread } from "./storage.ts"
 import { ThreadConfigSchema } from "./thread.ts"
@@ -79,7 +80,10 @@ export function registerThreadCommands(program: Command): void {
         )
         .action(async () => {
             await requireCompany()
-            const threads = await listThreads(projectRoot)
+            const [threads, positions] = await Promise.all([
+                listThreads(projectRoot),
+                listPositions(projectRoot),
+            ])
             if (threads.length === 0) {
                 console.log("No threads yet. Run `llmco thread create`.")
                 return
@@ -87,7 +91,7 @@ export function registerThreadCommands(program: Command): void {
             const rows = await Promise.all(
                 threads.map(async (thread) => {
                     const messages = await listMessages(projectRoot, thread.id)
-                    const awaited = awaitedIds(thread, messages)
+                    const awaited = awaitedIds(thread, messages, positions)
                     return [
                         thread.id,
                         thread.subject,
@@ -113,19 +117,22 @@ export function registerThreadCommands(program: Command): void {
         .action(async (rawId, { json }) => {
             await requireCompany()
             const thread = await loadExistingThread(rawId)
-            const messages = await listMessages(projectRoot, thread.id)
+            const [messages, positions] = await Promise.all([
+                listMessages(projectRoot, thread.id),
+                listPositions(projectRoot),
+            ])
             if (json) {
                 for (const { threadId, ...message } of messages) {
                     console.log(JSON.stringify(message))
                 }
                 return
             }
-            const awaited = awaitedIds(thread, messages)
+            const awaited = awaitedIds(thread, messages, positions)
             const lines = [
                 `# ${thread.subject}`,
                 "",
                 `Created by ${signature(thread.createdBy)}, ${minutes(thread.createdAt)}.`,
-                `Members: ${mentionsOf(memberIds(thread, messages))}.`,
+                `Members: ${mentionsOf(memberIds(thread, messages, positions))}.`,
             ]
             if (awaited.length > 0) {
                 lines.push(`Awaiting: ${mentionsOf(awaited)}.`)
