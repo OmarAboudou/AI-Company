@@ -9,7 +9,7 @@ import {
     parseId,
     printColumns,
     projectRoot,
-    readDescription,
+    readTextOrFile,
     requireAnOption,
     requireCompany,
     withoutUndefined,
@@ -58,10 +58,7 @@ export function registerPositionCommands(program: Command): void {
             await savePosition(projectRoot, {
                 id,
                 ...config.data,
-                description: await readDescription(
-                    description,
-                    descriptionFile,
-                ),
+                description: await readTextOrFile(description, descriptionFile),
             })
             console.log(`Created position "${id}".`)
         })
@@ -118,7 +115,7 @@ export function registerPositionCommands(program: Command): void {
             await requireCompany()
             const { id, description, ...current } =
                 await loadExistingPosition(rawId)
-            const newDescription = await readDescription(
+            const newDescription = await readTextOrFile(
                 options.description,
                 options.descriptionFile,
             )

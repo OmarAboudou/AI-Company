@@ -3,7 +3,7 @@ import { z } from "zod"
 import {
     descriptionFileOption,
     projectRoot,
-    readDescription,
+    readTextOrFile,
     requireAnOption,
     requireCompany,
     withoutUndefined,
@@ -39,7 +39,7 @@ export function registerCompanyCommands(program: Command): void {
             if (!config.success) {
                 throw new UserError(z.prettifyError(config.error))
             }
-            const description = await readDescription(
+            const description = await readTextOrFile(
                 options.description,
                 options.descriptionFile,
             )
@@ -80,7 +80,7 @@ export function registerCompanyCommands(program: Command): void {
             await requireCompany()
             const [company, newDescription] = await Promise.all([
                 loadCompany(projectRoot),
-                readDescription(options.description, options.descriptionFile),
+                readTextOrFile(options.description, options.descriptionFile),
             ])
             const { description: currentDescription, ...current } = company
             const config = CompanyConfigSchema.safeParse({

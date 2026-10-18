@@ -30,17 +30,17 @@ export function descriptionFileOption() {
     ).conflicts("description")
 }
 
-export async function readDescription<Description extends string | undefined>(
-    description: Description,
-    descriptionFile: string | undefined,
-): Promise<Description | string> {
-    if (descriptionFile === undefined) {
-        return description
+export async function readTextOrFile<Text extends string | undefined>(
+    text: Text,
+    file: string | undefined,
+): Promise<Text | string> {
+    if (file === undefined) {
+        return text
     }
-    if (descriptionFile === "-") {
+    if (file === "-") {
         return Bun.stdin.text()
     }
-    return readText(projectRoot, descriptionFile)
+    return readText(projectRoot, file)
 }
 
 export function requireAnOption(options: object): void {
