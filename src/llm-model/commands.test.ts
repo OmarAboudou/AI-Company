@@ -105,6 +105,47 @@ describe("llmco model", () => {
     })
 })
 
+describe("llmco model update", () => {
+    const opus = ["anthropic", "claude-opus-5-5"]
+
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+        runCli("provider", "create", "anthropic", "-n", "Anthropic")
+        runCli("model", "create", ...opus, "-n", "Opus", "-a", "claude-opus")
+    })
+
+    test("update -a changes the api id and keeps the name", () => {
+        const update = runCli("model", "update", ...opus, "-a", "opus-v2")
+        const show = runCli("model", "show", ...opus).stdout
+
+        expect(update.stdout).toContain('Updated model "claude-opus-5-5"')
+        expect(show).toBe("# Opus\n\nprovider: anthropic\napi id: opus-v2\n")
+    })
+
+    test("update -n changes the name and keeps the api id", () => {
+        runCli("model", "update", ...opus, "-n", "Claude Opus 5.5")
+
+        const show = runCli("model", "show", ...opus).stdout
+
+        expect(show).toContain("# Claude Opus 5.5\n")
+        expect(show).toContain("api id: claude-opus\n")
+    })
+
+    test("update validates like create", () => {
+        const update = runCli("model", "update", ...opus, "-a", " ")
+
+        expect(update.exitCode).toBe(1)
+        expect(update.stderr).toContain("at apiId")
+    })
+
+    test("update requires at least one option", () => {
+        const update = runCli("model", "update", ...opus)
+
+        expect(update.exitCode).toBe(1)
+        expect(update.stderr).toContain("Nothing to update")
+    })
+})
+
 describe("llmco model delete", () => {
     const opus = ["anthropic", "claude-opus-5-5"]
 
