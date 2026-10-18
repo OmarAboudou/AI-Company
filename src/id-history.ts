@@ -21,3 +21,18 @@ export const idHistoryShape = {
                 "Ids it had before, oldest first, added by update-id. Threads keep the ids they were written with: a former id still designates it in messages written before the change.",
         }),
 }
+
+export type IdHistory = {
+    id: string
+    createdAt?: string
+    formerIds?: { id: string; until: string }[]
+}
+
+export function withNewId<Entity extends IdHistory>(
+    entity: Entity,
+    newId: string,
+    until: string,
+): Entity {
+    const formerIds = [...(entity.formerIds ?? []), { id: entity.id, until }]
+    return { ...entity, id: newId, formerIds }
+}

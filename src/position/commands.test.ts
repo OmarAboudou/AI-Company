@@ -3,6 +3,7 @@ import { useTemporaryProject } from "../cli-test-helpers.ts"
 
 type History = {
     createdAt: string
+    formerIds?: { id: string; until: string }[]
 }
 
 const { runCli, runCliWithStdin, projectPath } = useTemporaryProject()
@@ -489,8 +490,8 @@ describe("a position's id history", () => {
 
     async function history(id: string): Promise<History> {
         const path = projectPath(".llmco", "positions", id, "config.json")
-        const { createdAt } = await Bun.file(path).json()
-        return { createdAt }
+        const { createdAt, formerIds } = await Bun.file(path).json()
+        return { createdAt, formerIds }
     }
 
     test("create records when the position was created", async () => {
@@ -502,5 +503,38 @@ describe("a position's id history", () => {
 
         expect(created).toBeGreaterThanOrEqual(before)
         expect(created).toBeLessThanOrEqual(after)
+    })
+
+    test("update-id records each former id and when it stopped", async () => {
+        runCli("position", "create", "developer", "-t", "Developer")
+        const created = await history("developer")
+
+        const before = Date.now()
+        runCli("position", "update-id", "developer", "api-developer")
+        runCli("position", "update-id", "api-developer", "backend-developer")
+        const after = Date.now()
+
+        const renamed = await history("backend-developer")
+        const formerIds = renamed.formerIds ?? []
+        const ids = formerIds.map(({ id }) => id)
+        const untils = formerIds.map(({ until }) => Date.parse(until))
+
+        expect(created.formerIds).toBeUndefined()
+        expect(renamed.createdAt).toBe(created.createdAt)
+        expect(ids).toEqual(["developer", "api-developer"])
+        expect(Math.min(...untils)).toBeGreaterThanOrEqual(before)
+        expect(Math.max(...untils)).toBeLessThanOrEqual(after)
+    })
+
+    test("update keeps the history", async () => {
+        runCli("position", "create", "developer", "-t", "Developer")
+        runCli("position", "update-id", "developer", "api-developer")
+        const before = await history("api-developer")
+
+        runCli("position", "update", "api-developer", "-t", "API Developer")
+        const after = await history("api-developer")
+
+        expect(before.formerIds).toHaveLength(1)
+        expect(after).toEqual(before)
     })
 })
