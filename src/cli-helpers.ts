@@ -109,7 +109,7 @@ export function printColumns(rows: string[][]): void {
                 ? cell.padEnd(columnWidths[column] ?? 0)
                 : cell,
         )
-        console.log(cells.join("  "))
+        console.log(cells.join("  ").trimEnd())
     }
 }
 

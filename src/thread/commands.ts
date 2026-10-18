@@ -18,6 +18,7 @@ import {
 } from "../message/commands.ts"
 import type { Message } from "../message/message.ts"
 import { listMessages } from "../message/storage.ts"
+import { awaitedIds, memberIds } from "./members.ts"
 import { listThreads, newThreadId, saveThread } from "./storage.ts"
 import { ThreadConfigSchema } from "./thread.ts"
 
@@ -28,6 +29,10 @@ function signature({
 }: Pick<Message, "position" | "employee" | "committer">): string {
     const name = employee?.name ?? committer.name
     return `${name}, ${position.title} (@${position.id})`
+}
+
+function mentionsOf(positionIds: string[]): string {
+    return positionIds.map((id) => `@${id}`).join(", ")
 }
 
 function minutes(timestamp: string): string {
@@ -80,7 +85,9 @@ export function registerThreadCommands(program: Command): void {
 
     threadCommand
         .command("list")
-        .description("List the threads, oldest first.")
+        .description(
+            "List the threads, oldest first, with the positions they await.",
+        )
         .action(async () => {
             await requireCompany()
             const threads = await listThreads(projectRoot)
@@ -88,7 +95,20 @@ export function registerThreadCommands(program: Command): void {
                 console.log("No threads yet. Run `llmco thread create`.")
                 return
             }
-            printColumns(threads.map(({ id, subject }) => [id, subject]))
+            const rows = await Promise.all(
+                threads.map(async (thread) => {
+                    const messages = await listMessages(projectRoot, thread.id)
+                    const awaited = awaitedIds(thread, messages)
+                    return [
+                        thread.id,
+                        thread.subject,
+                        awaited.length > 0
+                            ? `awaiting ${mentionsOf(awaited)}`
+                            : "",
+                    ]
+                }),
+            )
+            printColumns(rows)
         })
 
     threadCommand
@@ -111,11 +131,16 @@ export function registerThreadCommands(program: Command): void {
                 }
                 return
             }
+            const awaited = awaitedIds(thread, messages)
             const lines = [
                 `# ${thread.subject}`,
                 "",
                 `Created by ${signature(thread.createdBy)}, ${minutes(thread.createdAt)}.`,
+                `Members: ${mentionsOf(memberIds(thread, messages))}.`,
             ]
+            if (awaited.length > 0) {
+                lines.push(`Awaiting: ${mentionsOf(awaited)}.`)
+            }
             for (const message of messages) {
                 lines.push(
                     "",

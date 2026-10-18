@@ -105,6 +105,25 @@ describe("mentions", () => {
         expect(mentions()).toEqual([["backend-developer", "qa-tester"]])
     })
 
+    test("thread show lists the members and the awaited positions", () => {
+        runCli("message", "send", threadId, "-b", "@qa-tester, a test plan?")
+
+        const show = runCli("thread", "show", threadId).stdout
+
+        expect(show).toContain("Members: @director, @qa-tester.\n")
+        expect(show).toContain("Awaiting: @qa-tester.\n")
+    })
+
+    test("thread list shows the awaited positions", () => {
+        const before = runCli("thread", "list").stdout
+
+        runCli("message", "send", threadId, "-b", "@qa-tester, a test plan?")
+        const after = runCli("thread", "list").stdout
+
+        expect(before).not.toContain("awaiting")
+        expect(after).toContain("Budget  awaiting @qa-tester\n")
+    })
+
     test("a mention of no position is reported and ignored", () => {
         const body = "@qa-testers, a test plan?"
 
