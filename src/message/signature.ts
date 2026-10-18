@@ -1,12 +1,12 @@
-import type { Message } from "./message.ts"
+import type { Author } from "./author.ts"
 
-export function signature({
-    position,
-    employee,
-    committer,
-}: Pick<Message, "position" | "employee" | "committer">): string {
-    const name = employee?.name ?? committer.name
-    return `${name}, ${position.title} (@${position.id})`
+export function authorName({ employee, committer }: Author): string {
+    return employee?.name ?? committer.name
+}
+
+export function signature(author: Author): string {
+    const { position } = author
+    return `${authorName(author)}, ${position.title} (@${position.id})`
 }
 
 export function minutes(timestamp: string): string {
