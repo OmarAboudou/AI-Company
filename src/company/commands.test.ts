@@ -114,6 +114,33 @@ describe("llmco init", () => {
     })
 })
 
+describe("the director's position", () => {
+    beforeEach(() => {
+        runCli("init", "-n", "Acme", "-D", "founder")
+    })
+
+    test("can't be deleted", () => {
+        const deletion = runCli("position", "delete", "director")
+
+        expect(deletion.exitCode).toBe(1)
+        expect(deletion.stderr).toContain("is the director's position")
+        expect(runCli("position", "show", "director").exitCode).toBe(0)
+    })
+
+    test("update-id makes the company follow", async () => {
+        const path = projectPath(".llmco", "company", "config.json")
+        const before = await Bun.file(path).json()
+
+        runCli("position", "update-id", "director", "ceo")
+        const after = await Bun.file(path).json()
+
+        expect(before.directorPositionId).toBe("director")
+        expect(after.directorPositionId).toBe("ceo")
+        expect(runCli("position", "show", "director").exitCode).toBe(1)
+        expect(runCli("position", "delete", "ceo").exitCode).toBe(1)
+    })
+})
+
 describe("llmco company show", () => {
     test("fails when there is no company", () => {
         expect(runCli("company", "show").exitCode).toBe(1)

@@ -1,4 +1,4 @@
-import { rename, rm } from "node:fs/promises"
+import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
 import { listSubdirectories, readConfig, readText } from "../files.ts"
 import { llmcoDir } from "../project.ts"
@@ -63,10 +63,14 @@ export async function deletePosition(
     await rm(positionDir(projectRoot, id), { recursive: true })
 }
 
-export async function renamePosition(
+export async function copyPosition(
     projectRoot: string,
     id: string,
     newId: string,
 ): Promise<void> {
-    await rename(positionDir(projectRoot, id), positionDir(projectRoot, newId))
+    await cp(positionDir(projectRoot, id), positionDir(projectRoot, newId), {
+        recursive: true,
+        errorOnExist: true,
+        force: false,
+    })
 }
