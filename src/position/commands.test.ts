@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../cli-test-helpers.ts"
 
+type History = {
+    createdAt: string
+}
+
 const { runCli, runCliWithStdin, projectPath } = useTemporaryProject()
 
 describe("llmco position", () => {
@@ -123,7 +127,8 @@ describe("llmco position assign and unassign", () => {
 
     async function positionConfig(id: string): Promise<unknown> {
         const path = projectPath(".llmco", "positions", id, "config.json")
-        return Bun.file(path).json()
+        const { createdAt, ...config } = await Bun.file(path).json()
+        return config
     }
 
     test("assign sets the default employee of a vacant position", async () => {
@@ -474,5 +479,28 @@ describe("llmco position delete", () => {
 
         expect(deletion.exitCode).toBe(1)
         expect(deletion.stderr).toContain('No position "qa-tester".')
+    })
+})
+
+describe("a position's id history", () => {
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+    })
+
+    async function history(id: string): Promise<History> {
+        const path = projectPath(".llmco", "positions", id, "config.json")
+        const { createdAt } = await Bun.file(path).json()
+        return { createdAt }
+    }
+
+    test("create records when the position was created", async () => {
+        const before = Date.now()
+        runCli("position", "create", "developer", "-t", "Developer")
+        const after = Date.now()
+
+        const created = Date.parse((await history("developer")).createdAt)
+
+        expect(created).toBeGreaterThanOrEqual(before)
+        expect(created).toBeLessThanOrEqual(after)
     })
 })

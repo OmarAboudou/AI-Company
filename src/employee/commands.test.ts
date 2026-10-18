@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../cli-test-helpers.ts"
 
-const { runCli } = useTemporaryProject()
+type History = {
+    createdAt: string
+}
+
+const { runCli, projectPath } = useTemporaryProject()
 
 describe("llmco employee", () => {
     beforeEach(() => {
@@ -438,5 +442,28 @@ describe("llmco employee delete", () => {
 
         expect(deletion.exitCode).toBe(1)
         expect(deletion.stderr).toContain('No employee "claude".')
+    })
+})
+
+describe("an employee's id history", () => {
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+    })
+
+    async function history(id: string): Promise<History> {
+        const path = projectPath(".llmco", "employees", id, "config.json")
+        const { createdAt } = await Bun.file(path).json()
+        return { createdAt }
+    }
+
+    test("create records when the employee was created", async () => {
+        const before = Date.now()
+        runCli("employee", "create", "human", "developer", "-n", "Dev")
+        const after = Date.now()
+
+        const created = Date.parse((await history("developer")).createdAt)
+
+        expect(created).toBeGreaterThanOrEqual(before)
+        expect(created).toBeLessThanOrEqual(after)
     })
 })

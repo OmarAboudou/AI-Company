@@ -44,10 +44,13 @@ async function requireLlmModel(config: EmployeeConfig): Promise<void> {
     }
 }
 
-async function createEmployee(rawId: string, config: unknown): Promise<void> {
+async function createEmployee(rawId: string, config: object): Promise<void> {
     await requireCompany()
     const id = parseId("employee", rawId)
-    const result = EmployeeConfigSchema.safeParse(config)
+    const result = EmployeeConfigSchema.safeParse({
+        ...config,
+        createdAt: new Date().toISOString(),
+    })
     if (!result.success) {
         throw new UserError(z.prettifyError(result.error))
     }

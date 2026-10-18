@@ -55,6 +55,24 @@ describe("llmco init", () => {
         expect(config).toEqual({ name: "Acme", directorPositionId: "director" })
     })
 
+    test("records when the director's position was created", async () => {
+        const path = projectPath(
+            ".llmco",
+            "positions",
+            "director",
+            "config.json",
+        )
+        const before = Date.now()
+
+        runCli("init", "-n", "Acme")
+        const after = Date.now()
+
+        const created = Date.parse((await Bun.file(path).json()).createdAt)
+
+        expect(created).toBeGreaterThanOrEqual(before)
+        expect(created).toBeLessThanOrEqual(after)
+    })
+
     test("refuses a directory outside any git repository", async () => {
         await rm(projectPath(".git"), { recursive: true })
 
