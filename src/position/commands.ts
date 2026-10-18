@@ -51,7 +51,10 @@ export function registerPositionCommands(program: Command): void {
             if (await positionExists(projectRoot, id)) {
                 throw new UserError(`Position "${id}" already exists.`)
             }
-            const config = PositionConfigSchema.safeParse({ title })
+            const config = PositionConfigSchema.safeParse({
+                title,
+                createdAt: new Date().toISOString(),
+            })
             if (!config.success) {
                 throw new UserError(z.prettifyError(config.error))
             }

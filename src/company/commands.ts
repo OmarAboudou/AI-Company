@@ -46,6 +46,7 @@ export function registerCompanyCommands(program: Command): void {
             await savePosition(projectRoot, {
                 id: directorPositionId,
                 title: "Director",
+                createdAt: new Date().toISOString(),
                 description: "",
             })
             // The company comes last: until its config.json exists, llmco
