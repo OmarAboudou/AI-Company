@@ -30,10 +30,10 @@ export function descriptionFileOption() {
     ).conflicts("description")
 }
 
-export async function readDescription(
-    description: string,
+export async function readDescription<Description extends string | undefined>(
+    description: Description,
     descriptionFile: string | undefined,
-): Promise<string> {
+): Promise<Description | string> {
     if (descriptionFile === undefined) {
         return description
     }
@@ -41,6 +41,22 @@ export async function readDescription(
         return Bun.stdin.text()
     }
     return readText(projectRoot, descriptionFile)
+}
+
+export function requireAnOption(options: object): void {
+    if (Object.values(options).every((value) => value === undefined)) {
+        throw new UserError(
+            "Nothing to update: give at least one option (see --help).",
+        )
+    }
+}
+
+export function withoutUndefined<Values extends object>(
+    values: Values,
+): Partial<Values> {
+    return Object.fromEntries(
+        Object.entries(values).filter(([, value]) => value !== undefined),
+    ) as Partial<Values>
 }
 
 const entityFolders = {
