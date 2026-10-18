@@ -2,10 +2,24 @@ const id = "[a-z0-9]+(?:-[a-z0-9]+)*"
 
 const mention = new RegExp(`(?<![\\w@.])@(${id})(?::(${id}))?(?![\\w-])`, "g")
 
+function onItsOwnLine(children: string): string {
+    return `\n${children}\n`
+}
+
 function withoutCode(markdown: string): string {
-    return markdown
-        .replace(/^(`{3,}|~{3,}).*$[\s\S]*?(?:^\1\s*$|(?![\s\S]))/gm, "")
-        .replace(/(`+)[\s\S]*?\1/g, "")
+    return Bun.markdown.render(markdown, {
+        code: () => "",
+        codespan: () => "",
+        paragraph: onItsOwnLine,
+        heading: onItsOwnLine,
+        blockquote: onItsOwnLine,
+        list: onItsOwnLine,
+        listItem: onItsOwnLine,
+        table: onItsOwnLine,
+        tr: onItsOwnLine,
+        th: onItsOwnLine,
+        td: onItsOwnLine,
+    })
 }
 
 export type Mentions = {
