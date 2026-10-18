@@ -105,6 +105,48 @@ describe("llmco model", () => {
     })
 })
 
+describe("llmco model delete", () => {
+    const opus = ["anthropic", "claude-opus-5-5"]
+
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+        runCli("provider", "create", "anthropic", "-n", "Anthropic")
+        runCli("model", "create", ...opus, "-n", "Opus", "-a", "opus")
+    })
+
+    test("delete removes a model no employee runs on", () => {
+        const deletion = runCli("model", "delete", ...opus)
+
+        expect(deletion.exitCode).toBe(0)
+        expect(runCli("model", "list").stdout).toContain("No models yet.")
+    })
+
+    test("delete refuses a model an employee runs on", () => {
+        const hire = ["employee", "create", "llm", "claude", "-n", "Claude"]
+        runCli(...hire, "-p", "anthropic", "-m", "claude-opus-5-5")
+
+        const deletion = runCli("model", "delete", ...opus)
+
+        expect(deletion.exitCode).toBe(1)
+        expect(deletion.stderr).toContain("is used by claude.")
+        expect(runCli("model", "show", ...opus).exitCode).toBe(0)
+    })
+
+    test("delete has no --force: it would leave employees without a model", () => {
+        const deletion = runCli("model", "delete", ...opus, "--force")
+
+        expect(deletion.exitCode).toBe(1)
+        expect(deletion.stderr).toContain("unknown option '--force'")
+    })
+
+    test("delete fails for a model the provider does not have", () => {
+        const deletion = runCli("model", "delete", "anthropic", "gpt-5")
+
+        expect(deletion.exitCode).toBe(1)
+        expect(deletion.stderr).toContain('has no model "gpt-5"')
+    })
+})
+
 test("model commands require a company", () => {
     expect(runCli("model", "list").exitCode).toBe(1)
 })

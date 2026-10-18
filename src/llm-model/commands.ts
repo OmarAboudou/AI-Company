@@ -9,10 +9,16 @@ import {
     projectRoot,
     requireCompany,
 } from "../cli-helpers.ts"
+import { listEmployees } from "../employee/storage.ts"
 import { UserError } from "../errors.ts"
 import { listLlmProviders } from "../llm-provider/storage.ts"
 import { LlmModelConfigSchema } from "./llm-model.ts"
-import { listLlmModels, llmModelExists, saveLlmModel } from "./storage.ts"
+import {
+    deleteLlmModel,
+    listLlmModels,
+    llmModelExists,
+    saveLlmModel,
+} from "./storage.ts"
 
 export function registerLlmModelCommands(program: Command): void {
     const modelCommand = program
@@ -84,6 +90,34 @@ export function registerLlmModelCommands(program: Command): void {
             const model = await loadExistingLlmModel(rawProviderId, rawModelId)
             console.log(
                 `# ${model.name}\n\nprovider: ${model.providerId}\napi id: ${model.apiId}`,
+            )
+        })
+
+    modelCommand
+        .command("delete")
+        .description("Delete a model no employee runs on.")
+        .argument("<provider-id>", idDescription("provider", "anthropic"))
+        .argument("<model-id>", idDescription("model", "claude-opus-5-5"))
+        .action(async (rawProviderId, rawModelId) => {
+            await requireCompany()
+            const [model, employees] = await Promise.all([
+                loadExistingLlmModel(rawProviderId, rawModelId),
+                listEmployees(projectRoot),
+            ])
+            const users = employees.filter(
+                (employee) =>
+                    employee.kind === "llm" &&
+                    employee.providerId === model.providerId &&
+                    employee.modelId === model.id,
+            )
+            if (users.length > 0) {
+                throw new UserError(
+                    `Model "${model.id}" of provider "${model.providerId}" is used by ${users.map(({ id }) => id).join(", ")}. Delete these employees first.`,
+                )
+            }
+            await deleteLlmModel(projectRoot, model.providerId, model.id)
+            console.log(
+                `Deleted model "${model.id}" of provider "${model.providerId}".`,
             )
         })
 }
