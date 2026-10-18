@@ -6,7 +6,7 @@ const framework = {
     createdAt: "2026-10-18T14:03:22.123Z",
     createdBy: {
         position: { id: "director", title: "Director" },
-        employee: { id: "omar", name: "Omar Aboudou" },
+        committer: { name: "Omar Aboudou", email: "omar@example.com" },
     },
 }
 
@@ -26,7 +26,14 @@ describe("ThreadConfigSchema", () => {
         expect(accepts({ ...framework, createdAt: "2026-10-18" })).toBe(false)
     })
 
-    test("requires the creator's position and employee", () => {
+    test("accepts the employee who created it", () => {
+        const employee = { id: "julie", name: "Julie" }
+        const createdBy = { ...framework.createdBy, employee }
+
+        expect(accepts({ ...framework, createdBy })).toBe(true)
+    })
+
+    test("requires the creator's position and committer", () => {
         const createdBy = { position: framework.createdBy.position }
 
         expect(accepts({ ...framework, createdBy })).toBe(false)

@@ -1,14 +1,16 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../cli-test-helpers.ts"
 
-const { runCli } = useTemporaryProject()
+const { runCli, runCliWithEnv, projectPath } = useTemporaryProject()
+
+function runGit(...args: string[]) {
+    Bun.spawnSync(["git", ...args], { cwd: projectPath() })
+}
 
 const today = new Date().toISOString().slice(0, 10)
 
 beforeEach(() => {
     runCli("init", "-n", "Acme")
-    runCli("employee", "create", "human", "founder", "-n", "Test User")
-    runCli("position", "assign", "director", "founder")
 })
 
 function createThread(...args: string[]) {
@@ -59,37 +61,19 @@ describe("llmco thread create", () => {
         expect(create.stderr).toContain("--subject")
     })
 
-    test("refuses to write while the director's position is vacant", () => {
-        runCli("position", "unassign", "director")
+    test("refuses to write without git's user.name and user.email", () => {
+        const withoutGitIdentity = {
+            GIT_CONFIG_GLOBAL: "/dev/null",
+            GIT_CONFIG_NOSYSTEM: "1",
+        }
+        runGit("config", "--unset", "user.name")
+        const create = ["thread", "create", "-s", "Budget"]
 
-        const create = createThread()
+        const creation = runCliWithEnv(withoutGitIdentity, ...create)
 
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain('"director" is vacant')
+        expect(creation.exitCode).toBe(1)
+        expect(creation.stderr).toContain("set `git config user.name`")
         expect(runCli("thread", "list").stdout).toContain("No threads yet.")
-    })
-
-    test("refuses to write while an LLM holds the director's position", () => {
-        const url = "https://api.anthropic.com"
-        runCli("provider", "create", "anthropic", "-n", "Anthropic")
-        runCli(
-            "provider",
-            "connection",
-            "create",
-            "anthropic",
-            "anthropic-messages",
-            "-u",
-            url,
-        )
-        runCli("model", "create", "anthropic", "opus", "-n", "Opus", "-a", "o")
-        const hire = ["employee", "create", "llm", "claude", "-n", "Claude"]
-        runCli(...hire, "-p", "anthropic", "-m", "opus")
-        runCli("position", "assign", "director", "claude", "--replace")
-
-        const create = createThread()
-
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain("a human must hold it")
     })
 })
 
@@ -126,7 +110,7 @@ describe("llmco thread show", () => {
         expect(first.body).toBe("Hono or Express?")
         expect(second.body).toBe("Hono, then.")
         expect(second.position).toEqual({ id: "director", title: "Director" })
-        expect(second.employee).toEqual({ id: "founder", name: "Test User" })
+        expect(second).not.toHaveProperty("employee")
         expect(second.committer).toEqual({
             name: "Test User",
             email: "test@example.com",

@@ -44,11 +44,21 @@
                     "required": ["id", "name"],
                     "additionalProperties": false,
                     "description": "An employee as it was when this was written: its id and name. Never rewritten afterwards."
+                },
+                "committer": {
+                    "type": "object",
+                    "properties": {
+                        "name": { "type": "string", "minLength": 1 },
+                        "email": { "type": "string", "minLength": 1 }
+                    },
+                    "required": ["name", "email"],
+                    "additionalProperties": false,
+                    "description": "The person at the keyboard according to git config user.name and user.email, as in a commit."
                 }
             },
-            "required": ["position", "employee"],
+            "required": ["position", "committer"],
             "additionalProperties": false,
-            "description": "Who created the thread: the position it was created from, and the employee working it."
+            "description": "Who created the thread: the position it was created from, the employee working it, absent when a director created it, and the committer."
         }
     },
     "required": ["subject", "createdAt", "createdBy"],

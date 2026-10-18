@@ -1,5 +1,6 @@
 import { z } from "zod"
 import {
+    CommitterSchema,
     EmployeeSnapshotSchema,
     PositionSnapshotSchema,
 } from "../thread/thread.ts"
@@ -9,19 +10,11 @@ export const MessageConfigSchema = z
         position: PositionSnapshotSchema.meta({
             description: "The position the message was written from.",
         }),
-        employee: EmployeeSnapshotSchema.meta({
+        employee: EmployeeSnapshotSchema.optional().meta({
             description:
-                "The employee who wrote the message, working that position.",
+                "The employee who wrote the message, working that position. Absent when a director wrote it: a person working on the repository, whom the committer names.",
         }),
-        committer: z
-            .strictObject({
-                name: z.string().trim().min(1),
-                email: z.string().trim().min(1),
-            })
-            .meta({
-                description:
-                    "The person at the keyboard according to git config user.name and user.email, as in a commit.",
-            }),
+        committer: CommitterSchema,
         sentAt: z.iso.datetime().meta({
             description: "When the message was written, in UTC.",
         }),

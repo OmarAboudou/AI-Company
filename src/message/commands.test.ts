@@ -7,8 +7,6 @@ let threadId = ""
 
 beforeEach(() => {
     runCli("init", "-n", "Acme")
-    runCli("employee", "create", "human", "founder", "-n", "Test User")
-    runCli("position", "assign", "director", "founder")
     threadId = runCli("thread", "create", "-s", "Budget").stdout.trim()
 })
 
