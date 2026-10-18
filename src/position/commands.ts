@@ -9,7 +9,9 @@ import {
     printColumns,
     projectRoot,
     readDescription,
+    requireAnOption,
     requireCompany,
+    withoutUndefined,
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
 import { PositionConfigSchema } from "./position.ts"
@@ -95,6 +97,45 @@ export function registerPositionCommands(program: Command): void {
             console.log(
                 `# ${position.title}\n\ndefault employee: ${position.defaultEmployeeId ?? "(vacant)"}\n\n${position.description}`,
             )
+        })
+
+    positionCommand
+        .command("update")
+        .description(
+            "Update a position: only the options given change. Its default employee changes with assign and unassign.",
+        )
+        .argument(
+            "<position-id>",
+            idDescription("position", "backend-developer"),
+        )
+        .option("-t, --title <title>", "position title")
+        .option(
+            "-d, --description <text>",
+            "what the position is responsible for",
+        )
+        .addOption(descriptionFileOption())
+        .action(async (rawId, options) => {
+            requireAnOption(options)
+            await requireCompany()
+            const { id, description, ...current } =
+                await loadExistingPosition(rawId)
+            const newDescription = await readDescription(
+                options.description,
+                options.descriptionFile,
+            )
+            const config = PositionConfigSchema.safeParse({
+                ...current,
+                ...withoutUndefined({ title: options.title }),
+            })
+            if (!config.success) {
+                throw new UserError(z.prettifyError(config.error))
+            }
+            await savePosition(projectRoot, {
+                id,
+                ...config.data,
+                description: newDescription ?? description,
+            })
+            console.log(`Updated position "${id}".`)
         })
 
     positionCommand

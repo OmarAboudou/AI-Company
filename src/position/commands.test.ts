@@ -326,6 +326,63 @@ test("position commands require a company", () => {
     expect(runCli("position", "list").exitCode).toBe(1)
 })
 
+describe("llmco position update", () => {
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+        runCli("position", "create", "developer", "-t", "Dev", "-d", "Code.")
+    })
+
+    test("update -t changes the title and keeps the description", () => {
+        const update = runCli("position", "update", "developer", "-t", "Lead")
+        const show = runCli("position", "show", "developer").stdout
+
+        expect(update.stdout).toBe('Updated position "developer".\n')
+        expect(show).toBe("# Lead\n\ndefault employee: (vacant)\n\nCode.\n")
+    })
+
+    test("update -d changes the description and keeps the title", () => {
+        runCli("position", "update", "developer", "-d", "Review code.")
+
+        const show = runCli("position", "show", "developer").stdout
+
+        expect(show).toStartWith("# Dev\n")
+        expect(show).toEndWith("\n\nReview code.\n")
+    })
+
+    test("update keeps the default employee", () => {
+        runCli("employee", "create", "human", "omar", "-n", "Omar")
+        runCli("position", "assign", "developer", "omar")
+
+        runCli("position", "update", "developer", "-t", "Lead")
+
+        const show = runCli("position", "show", "developer").stdout
+        expect(show).toContain("default employee: omar")
+    })
+
+    test("update -F - reads the new description from stdin", () => {
+        const update = ["position", "update", "developer", "-F", "-"]
+
+        runCliWithStdin("From stdin.", ...update)
+
+        const show = runCli("position", "show", "developer").stdout
+        expect(show).toEndWith("From stdin.\n")
+    })
+
+    test("update requires at least one option", () => {
+        const update = runCli("position", "update", "developer")
+
+        expect(update.exitCode).toBe(1)
+        expect(update.stderr).toContain("Nothing to update")
+    })
+
+    test("update fails for an unknown position", () => {
+        const update = runCli("position", "update", "qa-tester", "-t", "QA")
+
+        expect(update.exitCode).toBe(1)
+        expect(update.stderr).toContain('No position "qa-tester".')
+    })
+})
+
 describe("llmco position delete", () => {
     beforeEach(() => {
         runCli("init", "-n", "Acme")
