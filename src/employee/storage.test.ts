@@ -105,9 +105,12 @@ describe("listEmployees", () => {
 describe("deleteEmployee", () => {
     test("removes the employee's folder", async () => {
         await saveEmployee(projectRoot, omar)
+        const before = await listEmployees(projectRoot)
 
         await deleteEmployee(projectRoot, omar.id)
+        const after = await listEmployees(projectRoot)
 
-        expect(await listEmployees(projectRoot)).toEqual([])
+        expect(before).toEqual([omar])
+        expect(after).toEqual([])
     })
 })
