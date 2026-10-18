@@ -1,0 +1,58 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/thread.json",
+    "type": "object",
+    "properties": {
+        "subject": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Subject of the thread, e.g. Choice of framework."
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "When the thread was created, in UTC."
+        },
+        "createdBy": {
+            "type": "object",
+            "properties": {
+                "position": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                            "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                        },
+                        "title": { "type": "string", "minLength": 1 }
+                    },
+                    "required": ["id", "title"],
+                    "additionalProperties": false,
+                    "description": "A position as it was when this was written: its id and title. Never rewritten afterwards, even if the position is renamed or deleted."
+                },
+                "employee": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                            "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                        },
+                        "name": { "type": "string", "minLength": 1 }
+                    },
+                    "required": ["id", "name"],
+                    "additionalProperties": false,
+                    "description": "An employee as it was when this was written: its id and name. Never rewritten afterwards."
+                }
+            },
+            "required": ["position", "employee"],
+            "additionalProperties": false,
+            "description": "Who created the thread: the position it was created from, and the employee working it."
+        }
+    },
+    "required": ["subject", "createdAt", "createdBy"],
+    "additionalProperties": false,
+    "title": "llmco thread",
+    "description": "A thread of messages between positions, in .llmco/threads/<thread-id>/thread.json. Its messages live next to it, in messages/<message-id>/. Never modified once written."
+}

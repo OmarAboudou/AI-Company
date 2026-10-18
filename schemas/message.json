@@ -1,0 +1,55 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/message.json",
+    "type": "object",
+    "properties": {
+        "position": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                },
+                "title": { "type": "string", "minLength": 1 }
+            },
+            "required": ["id", "title"],
+            "additionalProperties": false,
+            "description": "The position the message was written from."
+        },
+        "employee": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                },
+                "name": { "type": "string", "minLength": 1 }
+            },
+            "required": ["id", "name"],
+            "additionalProperties": false,
+            "description": "The employee who wrote the message, working that position."
+        },
+        "committer": {
+            "type": "object",
+            "properties": {
+                "name": { "type": "string", "minLength": 1 },
+                "email": { "type": "string", "minLength": 1 }
+            },
+            "required": ["name", "email"],
+            "additionalProperties": false,
+            "description": "The person at the keyboard according to git config user.name and user.email, as in a commit."
+        },
+        "sentAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "When the message was written, in UTC."
+        }
+    },
+    "required": ["position", "employee", "committer", "sentAt"],
+    "additionalProperties": false,
+    "title": "llmco message",
+    "description": "A message of a thread, in .llmco/threads/<thread-id>/messages/<message-id>/message.json. Its body lives next to it, in body.md. Never modified once written."
+}
