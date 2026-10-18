@@ -23,9 +23,13 @@ export function useTemporaryProject() {
         await rm(projectRoot, { recursive: true, force: true })
     })
 
-    function runCliWithStdin(stdin: string, ...args: string[]) {
+    function run(
+        { stdin = "", env = {} }: { stdin?: string; env?: object },
+        args: string[],
+    ) {
         const result = Bun.spawnSync([process.execPath, cliPath, ...args], {
             cwd: projectRoot,
+            env: { ...process.env, ...env },
             stdin: new TextEncoder().encode(stdin),
         })
         return {
@@ -36,8 +40,11 @@ export function useTemporaryProject() {
     }
 
     return {
-        runCli: (...args: string[]) => runCliWithStdin("", ...args),
-        runCliWithStdin,
+        runCli: (...args: string[]) => run({}, args),
+        runCliWithStdin: (stdin: string, ...args: string[]) =>
+            run({ stdin }, args),
+        runCliWithEnv: (env: Record<string, string>, ...args: string[]) =>
+            run({ env }, args),
         projectPath: (...segments: string[]) => join(projectRoot, ...segments),
     }
 }

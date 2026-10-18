@@ -5,7 +5,7 @@ const { runCli } = useTemporaryProject()
 
 describe("llmco employee", () => {
     beforeEach(() => {
-        runCli("init", "--name", "Acme")
+        runCli("init", "--name", "Acme", "-D", "founder")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
         runCli(
             "provider",
@@ -68,11 +68,14 @@ describe("llmco employee", () => {
 
         expect(runCli("employee", "list").stdout).toBe(
             "claude-senior  Claude Senior  anthropic/claude-opus-5-5\n" +
+                "founder        Test User      human\n" +
                 "omar           Omar Aboudou   human\n",
         )
     })
 
     test("list says so when there is no employee", () => {
+        runCli("employee", "delete", "founder", "--force")
+
         const list = runCli("employee", "list")
 
         expect(list.exitCode).toBe(0)
@@ -183,7 +186,7 @@ describe("llmco employee update", () => {
     }
 
     beforeEach(() => {
-        runCli("init", "-n", "Acme")
+        runCli("init", "-n", "Acme", "-D", "founder")
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
         runCli(
             "provider",
@@ -272,7 +275,7 @@ describe("llmco employee update", () => {
 
 describe("llmco employee update-id", () => {
     beforeEach(() => {
-        runCli("init", "-n", "Acme")
+        runCli("init", "-n", "Acme", "-D", "founder")
         runCli("employee", "create", "human", "omar", "-n", "Omar")
         runCli("employee", "create", "human", "alice", "-n", "Alice")
         runCli("position", "create", "developer", "-t", "Developer")
@@ -319,7 +322,7 @@ describe("llmco employee update-id", () => {
 
 describe("llmco employee replace", () => {
     beforeEach(() => {
-        runCli("init", "-n", "Acme")
+        runCli("init", "-n", "Acme", "-D", "founder")
         runCli("employee", "create", "human", "omar", "-n", "Omar")
         runCli("employee", "create", "human", "alice", "-n", "Alice")
         for (const id of ["developer", "qa-tester", "designer"]) {
@@ -350,10 +353,11 @@ describe("llmco employee replace", () => {
     test("replace keeps both employees and the replacement's positions", () => {
         runCli("employee", "replace", "omar", "alice")
 
-        const list = runCli("employee", "list", "--positions").stdout
+        const alice = runCli("employee", "show", "alice").stdout
+        const omar = runCli("employee", "show", "omar").stdout
 
-        expect(list).toContain("alice  Alice  human  designer, developer, qa-")
-        expect(list).toContain("omar   Omar   human  (none)\n")
+        expect(alice).toContain("positions: designer, developer, qa-tester\n")
+        expect(omar).toContain("positions: (none)\n")
     })
 
     test("replace says so when the employee fills no position", () => {
@@ -384,7 +388,7 @@ describe("llmco employee replace", () => {
 
 describe("llmco employee delete", () => {
     beforeEach(() => {
-        runCli("init", "-n", "Acme")
+        runCli("init", "-n", "Acme", "-D", "founder")
         runCli("employee", "create", "human", "omar", "-n", "Omar")
         runCli("position", "create", "developer", "-t", "Developer")
         runCli("position", "create", "qa-tester", "-t", "QA Tester")
@@ -400,7 +404,7 @@ describe("llmco employee delete", () => {
 
     test("fire is an alias of delete", () => {
         expect(runCli("employee", "fire", "omar").exitCode).toBe(0)
-        expect(runCli("employee", "list").stdout).toContain("No employees")
+        expect(runCli("employee", "show", "omar").exitCode).toBe(1)
     })
 
     test("delete refuses an employee who fills positions", () => {

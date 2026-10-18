@@ -3,6 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { UserError } from "../errors.ts"
+import type { Company } from "./company.ts"
 import { companyExists, loadCompany, saveCompany } from "./storage.ts"
 
 let projectRoot: string
@@ -15,6 +16,12 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
+const acme: Company = {
+    name: "Acme",
+    directorPositionId: "director",
+    description: "We build things.",
+}
+
 async function writeCompanyFiles(config: unknown, description: string) {
     const dir = join(projectRoot, ".llmco", "company")
     await Bun.write(join(dir, "config.json"), JSON.stringify(config))
@@ -23,10 +30,11 @@ async function writeCompanyFiles(config: unknown, description: string) {
 
 describe("loadCompany", () => {
     test("reads config.json and description.md", async () => {
-        await writeCompanyFiles({ name: "Acme" }, "We build things.")
+        const config = { name: "Acme", directorPositionId: "director" }
+        await writeCompanyFiles(config, "We build things.")
 
         expect(await loadCompany(projectRoot)).toEqual({
-            name: "Acme",
+            ...config,
             description: "We build things.",
         })
     })
@@ -44,14 +52,11 @@ describe("loadCompany", () => {
 
 describe("saveCompany", () => {
     test("writes config.json and description.md", async () => {
-        await saveCompany(projectRoot, {
-            name: "Acme",
-            description: "We build things.",
-        })
+        await saveCompany(projectRoot, acme)
 
         const dir = join(projectRoot, ".llmco", "company")
         expect(await Bun.file(join(dir, "config.json")).text()).toBe(
-            '{\n    "name": "Acme"\n}\n',
+            '{\n    "name": "Acme",\n    "directorPositionId": "director"\n}\n',
         )
         expect(await Bun.file(join(dir, "description.md")).text()).toBe(
             "We build things.",
@@ -59,11 +64,9 @@ describe("saveCompany", () => {
     })
 
     test("writes what loadCompany reads back", async () => {
-        const company = { name: "Acme", description: "We build things." }
+        await saveCompany(projectRoot, acme)
 
-        await saveCompany(projectRoot, company)
-
-        expect(await loadCompany(projectRoot)).toEqual(company)
+        expect(await loadCompany(projectRoot)).toEqual(acme)
     })
 })
 
@@ -71,7 +74,7 @@ describe("companyExists", () => {
     test("is false before saving and true after", async () => {
         expect(await companyExists(projectRoot)).toBe(false)
 
-        await saveCompany(projectRoot, { name: "Acme", description: "" })
+        await saveCompany(projectRoot, acme)
 
         expect(await companyExists(projectRoot)).toBe(true)
     })

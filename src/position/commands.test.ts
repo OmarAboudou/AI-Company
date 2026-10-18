@@ -5,7 +5,7 @@ const { runCli, runCliWithStdin, projectPath } = useTemporaryProject()
 
 describe("llmco position", () => {
     beforeEach(() => {
-        runCli("init", "--name", "Acme")
+        runCli("init", "--name", "Acme", "-D", "founder")
     })
 
     test("create then show displays the title and description", () => {
@@ -40,15 +40,10 @@ describe("llmco position", () => {
         runCli("position", "create", "developer", "--title", "Developer")
 
         expect(runCli("position", "list").stdout).toBe(
-            "developer  Developer  (vacant)\nqa-tester  QA Tester  (vacant)\n",
+            "developer  Developer  (vacant)\n" +
+                "director   Director   founder\n" +
+                "qa-tester  QA Tester  (vacant)\n",
         )
-    })
-
-    test("list says so when there is no position", () => {
-        const list = runCli("position", "list")
-
-        expect(list.exitCode).toBe(0)
-        expect(list.stdout).toContain("No positions yet.")
     })
 
     test("create refuses an existing id", () => {
@@ -88,7 +83,7 @@ describe("llmco position", () => {
 
 describe("llmco position assign and unassign", () => {
     beforeEach(() => {
-        runCli("init", "-n", "Acme")
+        runCli("init", "-n", "Acme", "-D", "founder")
         runCli("position", "create", "developer", "-t", "Developer")
         runCli("position", "create", "qa-tester", "-t", "QA Tester")
         runCli("employee", "create", "human", "omar", "-n", "Omar")
@@ -232,6 +227,7 @@ describe("llmco position assign and unassign", () => {
 
         expect(runCli("position", "list").stdout).toBe(
             "developer  Developer  (vacant)\n" +
+                "director   Director   founder\n" +
                 "qa-tester  QA Tester  claude-senior\n",
         )
         expect(runCli("position", "show", "qa-tester").stdout).toBe(
@@ -247,6 +243,7 @@ describe("llmco position assign and unassign", () => {
 
             expect(runCli("employee", "list", flag).stdout).toBe(
                 "claude-senior  Claude Senior  anthropic/claude-opus-5-5  developer, qa-tester\n" +
+                    "founder        Test User      human                      director\n" +
                     "omar           Omar           human                      (none)\n",
             )
         },
@@ -273,7 +270,7 @@ describe("--description-file", () => {
     const markdown = "## Mission\n\nYou build the API.\n"
 
     test("position create reads the description from stdin with -", () => {
-        runCli("init", "--name", "Acme")
+        runCli("init", "--name", "Acme", "-D", "founder")
 
         const create = runCliWithStdin(
             markdown,
@@ -295,7 +292,7 @@ describe("--description-file", () => {
 
 describe("short options", () => {
     test("position create accepts -t and -d", () => {
-        runCli("init", "-n", "Acme")
+        runCli("init", "-n", "Acme", "-D", "founder")
 
         runCli(
             "position",
@@ -315,7 +312,7 @@ describe("short options", () => {
 
 describe("corrupted files", () => {
     test("position list names the broken position file", async () => {
-        runCli("init", "--name", "Acme")
+        runCli("init", "--name", "Acme", "-D", "founder")
         runCli("position", "create", "developer", "--title", "Developer")
         await Bun.write(
             projectPath(".llmco", "positions", "developer", "config.json"),
@@ -337,7 +334,7 @@ test("position commands require a company", () => {
 
 describe("llmco position update", () => {
     beforeEach(() => {
-        runCli("init", "-n", "Acme")
+        runCli("init", "-n", "Acme", "-D", "founder")
         runCli("position", "create", "developer", "-t", "Dev", "-d", "Code.")
     })
 
@@ -394,7 +391,7 @@ describe("llmco position update", () => {
 
 describe("llmco position update-id", () => {
     beforeEach(() => {
-        runCli("init", "-n", "Acme")
+        runCli("init", "-n", "Acme", "-D", "founder")
         runCli("position", "create", "developer", "-t", "Dev", "-d", "Code.")
         runCli("position", "create", "qa-tester", "-t", "QA")
     })
@@ -444,7 +441,7 @@ describe("llmco position update-id", () => {
 
 describe("llmco position delete", () => {
     beforeEach(() => {
-        runCli("init", "-n", "Acme")
+        runCli("init", "-n", "Acme", "-D", "founder")
         runCli("position", "create", "developer", "-t", "Developer")
     })
 
@@ -458,7 +455,7 @@ describe("llmco position delete", () => {
 
     test("close is an alias of delete", () => {
         expect(runCli("position", "close", "developer").exitCode).toBe(0)
-        expect(runCli("position", "list").stdout).toContain("No positions")
+        expect(runCli("position", "show", "developer").exitCode).toBe(1)
     })
 
     test("delete keeps the default employee hired", () => {

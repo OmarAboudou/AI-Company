@@ -1,33 +1,38 @@
 import { describe, expect, test } from "bun:test"
 import { CompanyConfigSchema } from "./company.ts"
 
+const acme = { name: "Acme", directorPositionId: "director" }
+
 function accepts(config: unknown): boolean {
     return CompanyConfigSchema.safeParse(config).success
 }
 
 describe("CompanyConfigSchema", () => {
-    test("accepts a config with a name", () => {
-        expect(CompanyConfigSchema.parse({ name: "Acme" })).toEqual({
-            name: "Acme",
-        })
+    test("accepts a config with a name and a director's position", () => {
+        expect(CompanyConfigSchema.parse(acme)).toEqual(acme)
     })
 
     test("trims whitespace around the name", () => {
-        const config = CompanyConfigSchema.parse({ name: "  Acme  " })
+        const config = CompanyConfigSchema.parse({ ...acme, name: "  Acme  " })
 
         expect(config.name).toBe("Acme")
     })
 
     test("rejects a config without a name", () => {
-        expect(accepts({})).toBe(false)
+        expect(accepts({ directorPositionId: "director" })).toBe(false)
     })
 
     test("rejects an empty or whitespace-only name", () => {
-        expect(accepts({ name: "" })).toBe(false)
-        expect(accepts({ name: "   " })).toBe(false)
+        expect(accepts({ ...acme, name: "" })).toBe(false)
+        expect(accepts({ ...acme, name: "   " })).toBe(false)
+    })
+
+    test("requires a kebab-case director's position", () => {
+        expect(accepts({ name: "Acme" })).toBe(false)
+        expect(accepts({ ...acme, directorPositionId: "Director" })).toBe(false)
     })
 
     test("rejects an unknown key", () => {
-        expect(accepts({ nmae: "Acme" })).toBe(false)
+        expect(accepts({ ...acme, nmae: "Acme" })).toBe(false)
     })
 })
