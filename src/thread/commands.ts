@@ -20,8 +20,9 @@ import {
 import { minutes, signature } from "../message/signature.ts"
 import { listMessages } from "../message/storage.ts"
 import { listPositions } from "../position/storage.ts"
+import { readArchives } from "./archives.ts"
 import { awaitedIds, memberIds } from "./members.ts"
-import { listThreads, newThreadId, saveThread } from "./storage.ts"
+import { newThreadId, saveThread } from "./storage.ts"
 import { ThreadConfigSchema } from "./thread.ts"
 
 function mentionsOf(positionIds: string[]): string {
@@ -80,17 +81,16 @@ export function registerThreadCommands(program: Command): void {
         )
         .action(async () => {
             await requireCompany()
-            const [threads, positions] = await Promise.all([
-                listThreads(projectRoot),
+            const [archives, positions] = await Promise.all([
+                readArchives(projectRoot),
                 listPositions(projectRoot),
             ])
-            if (threads.length === 0) {
+            if (archives.length === 0) {
                 console.log("No threads yet. Run `llmco thread create`.")
                 return
             }
-            const rows = await Promise.all(
-                threads.map(async (thread) => {
-                    const messages = await listMessages(projectRoot, thread.id)
+            printColumns(
+                archives.map(({ thread, messages }) => {
                     const awaited = awaitedIds(thread, messages, positions)
                     return [
                         thread.id,
@@ -101,7 +101,6 @@ export function registerThreadCommands(program: Command): void {
                     ]
                 }),
             )
-            printColumns(rows)
         })
 
     threadCommand
