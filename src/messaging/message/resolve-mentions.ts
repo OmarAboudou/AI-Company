@@ -1,12 +1,12 @@
 import { listPositions } from "../../organization/position/storage.ts"
 import { findMentions } from "./find-mentions.ts"
-import type { Draft } from "./schema.ts"
+import type { UnsentMessage } from "./schema.ts"
 
 export async function resolveMentions(
     projectRoot: string,
     body: string,
     authorPositionId: string,
-): Promise<Pick<Draft, "mentions" | "unknownMentionIds">> {
+): Promise<Pick<UnsentMessage, "mentions" | "unknownMentionIds">> {
     const { positionIds } = findMentions(body)
     const positions = await listPositions(projectRoot)
     const knownPositionIds = new Set(positions.map(({ id }) => id))

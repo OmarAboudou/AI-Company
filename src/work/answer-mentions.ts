@@ -12,7 +12,7 @@ import { readApiKey } from "../llm/provider/read-api-key.ts"
 import { loadLlmProvider } from "../llm/provider/storage.ts"
 import { resolveMentions } from "../messaging/message/resolve-mentions.ts"
 import type { Message } from "../messaging/message/schema.ts"
-import { sendDraft } from "../messaging/message/send-draft.ts"
+import { sendUnsentMessage } from "../messaging/message/send-unsent-message.ts"
 import {
     listMessages,
     loadProviderResponse,
@@ -132,14 +132,14 @@ async function answerAs(
             `${employee.name} answered nothing (stop reason: ${response.stop_reason}).`,
         )
     }
-    const draft = {
+    const unsentAnswer = {
         position: { id: position.id, title: position.title },
         employee: { id: employee.id, name: employee.name },
         committer: readGitCommitter(projectRoot),
         body,
         ...(await resolveMentions(projectRoot, body, position.id)),
     }
-    const answer = await sendDraft(projectRoot, threadId, draft)
+    const answer = await sendUnsentMessage(projectRoot, threadId, unsentAnswer)
     await saveProviderResponse(projectRoot, answer, {
         providerId: provider.id,
         modelId: model.id,
@@ -152,7 +152,7 @@ async function answerAs(
         employee,
         answer,
         isCut: response.stop_reason === "max_tokens",
-        unknownMentionIds: draft.unknownMentionIds,
+        unknownMentionIds: unsentAnswer.unknownMentionIds,
     })
 }
 

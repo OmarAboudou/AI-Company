@@ -35,7 +35,7 @@ export type MessageConfig = z.infer<typeof MessageConfigSchema>
 
 export type Author = Pick<MessageConfig, "position" | "employee" | "committer">
 
-export type Draft = Author & {
+export type UnsentMessage = Author & {
     body: string
     mentions: string[]
     unknownMentionIds: string[]
