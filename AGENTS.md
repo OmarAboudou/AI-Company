@@ -16,6 +16,24 @@ Everything written into the repository or on GitHub is in English: code, comment
 
 Only for a non-obvious *why* that no test can carry (a workaround, an external constraint). No comments that paraphrase the code, explain a library, or mention file paths: they go stale silently. Express guarantees as tests instead.
 
+## Naming
+
+A name says what its value is, so that code reads at first sight. The code is being renamed to follow these rules (#86).
+
+- **Functions** start with a verb saying what they do:
+  - `load`, `list`, `save`, `delete`: read or write the disk, for one item, all the items of a kind, writing, removing;
+  - `get`: compute a value from data already in memory;
+  - `read`: read what comes from outside llmco, such as git or environment variables;
+  - `require`: check, and throw when the check fails;
+  - `is`, `has`, `can`: answer yes or no;
+  - `format`, `build`: produce a text;
+  - `parse`: decode an input;
+  - `create`: make a new value.
+- **Booleans** read as assertions: `isConfirmed`, `hasTemporaryAssignment`, `shouldReplace`. An option read from the command line is renamed where it is destructured: `{ replace: shouldReplace }`.
+- **Texts** say they are texts: `assignedMessage`, `refusalMessage`.
+- **Collections** are plural and say what they hold: `filledPositions`, `keptPositionIds`.
+- No articles (`getAwaitedPositionIds`, not `getTheAwaitedPositionIds`), and no vague names such as `data`, `info`, `back` or `done`.
+
 ## Where knowledge lives
 
 - **Where code goes**: the rules in [ARCHITECTURE.md](ARCHITECTURE.md). Read them before adding, moving or splitting a file.
