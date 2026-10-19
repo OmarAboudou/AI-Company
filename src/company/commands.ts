@@ -10,7 +10,7 @@ import { requireGitRepository } from "../git/require-git-repository.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
 import { CompanyConfigSchema } from "../organization/company/schema.ts"
 import {
-    companyExists,
+    hasCompany,
     loadCompany,
     saveCompany,
 } from "../organization/company/storage.ts"
@@ -31,7 +31,7 @@ export function registerCompanyCommands(program: Command): void {
         .hook("preAction", requireDirector)
         .action(async (options) => {
             requireGitRepository(projectRoot)
-            if (await companyExists(projectRoot)) {
+            if (await hasCompany(projectRoot)) {
                 throw new UserError(
                     "A company already exists in this directory.",
                 )
