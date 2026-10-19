@@ -12,20 +12,20 @@ import {
 import { printColumns } from "../../print-columns.ts"
 import { projectRoot } from "../../project-root.ts"
 
-function currentEmployeeInList(
+function formatCurrentEmployee(
     { defaultEmployeeId }: Position,
     { temporaryAssignment }: PositionState,
 ): string {
     if (temporaryAssignment === undefined) {
         return defaultEmployeeId ?? "(vacant)"
     }
-    const temporarily =
+    const temporaryNote =
         defaultEmployeeId === undefined
             ? "temporarily"
             : `temporarily; default: ${defaultEmployeeId}`
     return temporaryAssignment.kind === "directors"
-        ? `(git users, ${temporarily})`
-        : `${temporaryAssignment.employeeId} (${temporarily})`
+        ? `(git users, ${temporaryNote})`
+        : `${temporaryAssignment.employeeId} (${temporaryNote})`
 }
 
 export function registerPositionListCommand(positionCommand: Command): void {
@@ -46,11 +46,11 @@ export function registerPositionListCommand(positionCommand: Command): void {
                         projectRoot,
                         position.id,
                     )
-                    const current =
+                    const currentEmployeeCell =
                         position.id === company.directorPositionId
                             ? "(git users)"
-                            : currentEmployeeInList(position, state)
-                    return [position.id, position.title, current]
+                            : formatCurrentEmployee(position, state)
+                    return [position.id, position.title, currentEmployeeCell]
                 }),
             )
             printColumns(rows)

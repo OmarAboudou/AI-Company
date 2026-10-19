@@ -6,7 +6,7 @@ import {
 } from "../../../organization/position/unassign-position.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
 import { projectRoot } from "../../project-root.ts"
-import { stillTemporary } from "./still-temporary.ts"
+import { formatStillTemporaryMessage } from "./format-still-temporary-message.ts"
 
 function formatUnassignedMessage({
     positionId,
@@ -16,7 +16,7 @@ function formatUnassignedMessage({
     if (previousEmployeeId === undefined) {
         return `Position "${positionId}" is already vacant.`
     }
-    return `Position "${positionId}" is now vacant: "${previousEmployeeId}" is no longer its default employee.${stillTemporary(temporaryAssignment)}`
+    return `Position "${positionId}" is now vacant: "${previousEmployeeId}" is no longer its default employee.${formatStillTemporaryMessage(temporaryAssignment)}`
 }
 
 export function registerPositionUnassignCommand(

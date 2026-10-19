@@ -6,7 +6,7 @@ import {
 } from "../../../organization/position/assign-position.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
 import { projectRoot } from "../../project-root.ts"
-import { stillTemporary } from "./still-temporary.ts"
+import { formatStillTemporaryMessage } from "./format-still-temporary-message.ts"
 
 function formatAssignedMessage({
     positionId,
@@ -24,7 +24,7 @@ function formatAssignedMessage({
             : `"${employeeId}" replaces "${previousEmployeeId}" as the default employee of position "${positionId}"`
     return hasEndedTemporaryAssignment
         ? `${assignedMessage}, which ends its temporary assignment.`
-        : `${assignedMessage}.${stillTemporary(temporaryAssignment)}`
+        : `${assignedMessage}.${formatStillTemporaryMessage(temporaryAssignment)}`
 }
 
 export function registerPositionAssignCommand(positionCommand: Command): void {
