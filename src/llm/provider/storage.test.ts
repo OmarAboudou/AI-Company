@@ -7,10 +7,10 @@ import { listLlmModels, saveLlmModel } from "../../llm-model/storage.ts"
 import { UserError } from "../../user-error.ts"
 import type { LlmProvider } from "./schema.ts"
 import {
-    copyLlmProvider,
-    deleteLlmProvider,
+    copyLlmProviderFolder,
+    deleteLlmProviderFolder,
+    hasLlmProvider,
     listLlmProviders,
-    llmProviderExists,
     loadLlmProvider,
     saveLlmProvider,
 } from "./storage.ts"
@@ -73,13 +73,13 @@ describe("loadLlmProvider", () => {
     })
 })
 
-describe("llmProviderExists", () => {
+describe("hasLlmProvider", () => {
     test("is false before saving and true after", async () => {
-        expect(await llmProviderExists(projectRoot, "anthropic")).toBe(false)
+        expect(await hasLlmProvider(projectRoot, "anthropic")).toBe(false)
 
         await saveLlmProvider(projectRoot, anthropic)
 
-        expect(await llmProviderExists(projectRoot, "anthropic")).toBe(true)
+        expect(await hasLlmProvider(projectRoot, "anthropic")).toBe(true)
     })
 })
 
@@ -96,7 +96,7 @@ describe("listLlmProviders", () => {
     })
 })
 
-describe("deleteLlmProvider", () => {
+describe("deleteLlmProviderFolder", () => {
     test("removes the provider's folder, models included", async () => {
         const opus: LlmModel = {
             providerId: "anthropic",
@@ -117,7 +117,7 @@ describe("deleteLlmProvider", () => {
             ])
         const before = await listProvidersAndModels()
 
-        await deleteLlmProvider(projectRoot, "anthropic")
+        await deleteLlmProviderFolder(projectRoot, "anthropic")
         const after = await listProvidersAndModels()
 
         expect(before).toEqual([[anthropic], [opus]])
@@ -125,7 +125,7 @@ describe("deleteLlmProvider", () => {
     })
 })
 
-describe("copyLlmProvider", () => {
+describe("copyLlmProviderFolder", () => {
     test("copies the provider's folder, models included", async () => {
         const opus: LlmModel = {
             providerId: "anthropic",
@@ -140,7 +140,7 @@ describe("copyLlmProvider", () => {
         ])
         const before = await listLlmProviders(projectRoot)
 
-        await copyLlmProvider(projectRoot, "anthropic", "claude-api")
+        await copyLlmProviderFolder(projectRoot, "anthropic", "claude-api")
         const after = await listLlmProviders(projectRoot)
         const models = await listLlmModels(projectRoot, "claude-api")
 

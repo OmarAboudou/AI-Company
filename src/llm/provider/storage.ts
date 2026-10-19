@@ -5,23 +5,26 @@ import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
 import { type LlmProvider, LlmProviderConfigSchema } from "./schema.ts"
 
-function llmProvidersDir(projectRoot: string): string {
+function getLlmProvidersFolderPath(projectRoot: string): string {
     return join(getLlmcoFolderPath(projectRoot), "llm-providers")
 }
 
-export function llmProviderDir(projectRoot: string, id: string): string {
-    return join(llmProvidersDir(projectRoot), id)
+export function getLlmProviderFolderPath(
+    projectRoot: string,
+    id: string,
+): string {
+    return join(getLlmProvidersFolderPath(projectRoot), id)
 }
 
-function llmProviderConfigPath(projectRoot: string, id: string): string {
-    return join(llmProviderDir(projectRoot, id), "config.json")
+function getLlmProviderConfigFilePath(projectRoot: string, id: string): string {
+    return join(getLlmProviderFolderPath(projectRoot, id), "config.json")
 }
 
-export async function llmProviderExists(
+export async function hasLlmProvider(
     projectRoot: string,
     id: string,
 ): Promise<boolean> {
-    return Bun.file(llmProviderConfigPath(projectRoot, id)).exists()
+    return Bun.file(getLlmProviderConfigFilePath(projectRoot, id)).exists()
 }
 
 export async function loadLlmProvider(
@@ -30,7 +33,7 @@ export async function loadLlmProvider(
 ): Promise<LlmProvider> {
     const config = await readJsonFile(
         projectRoot,
-        llmProviderConfigPath(projectRoot, id),
+        getLlmProviderConfigFilePath(projectRoot, id),
         LlmProviderConfigSchema,
     )
     return { id, ...config }
@@ -39,8 +42,12 @@ export async function loadLlmProvider(
 export async function listLlmProviders(
     projectRoot: string,
 ): Promise<LlmProvider[]> {
-    const ids = await listSubdirectories(llmProvidersDir(projectRoot))
-    return Promise.all(ids.map((id) => loadLlmProvider(projectRoot, id)))
+    const providerIds = await listSubdirectories(
+        getLlmProvidersFolderPath(projectRoot),
+    )
+    return Promise.all(
+        providerIds.map((id) => loadLlmProvider(projectRoot, id)),
+    )
 }
 
 export async function saveLlmProvider(
@@ -49,26 +56,26 @@ export async function saveLlmProvider(
 ): Promise<void> {
     const { id, ...config } = provider
     await Bun.write(
-        llmProviderConfigPath(projectRoot, id),
+        getLlmProviderConfigFilePath(projectRoot, id),
         `${JSON.stringify(config, null, 4)}\n`,
     )
 }
 
-export async function deleteLlmProvider(
+export async function deleteLlmProviderFolder(
     projectRoot: string,
     id: string,
 ): Promise<void> {
-    await rm(llmProviderDir(projectRoot, id), { recursive: true })
+    await rm(getLlmProviderFolderPath(projectRoot, id), { recursive: true })
 }
 
-export async function copyLlmProvider(
+export async function copyLlmProviderFolder(
     projectRoot: string,
     id: string,
     newId: string,
 ): Promise<void> {
     await cp(
-        llmProviderDir(projectRoot, id),
-        llmProviderDir(projectRoot, newId),
+        getLlmProviderFolderPath(projectRoot, id),
+        getLlmProviderFolderPath(projectRoot, newId),
         { recursive: true, errorOnExist: true, force: false },
     )
 }
