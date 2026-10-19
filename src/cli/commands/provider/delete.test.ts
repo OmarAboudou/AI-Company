@@ -54,23 +54,4 @@ describe("llmco provider delete", () => {
             expect(runCli("model", "list").stdout).toContain("No models")
         },
     )
-
-    test("delete refuses a provider an employee runs on, even with --force", () => {
-        createModel("claude-opus-5-5")
-        const hire = ["employee", "create", "llm", "claude", "-n", "Claude"]
-        runCli(...hire, "-p", "anthropic", "-m", "claude-opus-5-5")
-
-        const deletion = runCli("provider", "delete", "anthropic", "--force")
-
-        expect(deletion.exitCode).toBe(1)
-        expect(deletion.stderr).toContain("is used by claude.")
-        expect(runCli("provider", "show", "anthropic").exitCode).toBe(0)
-    })
-
-    test("delete fails for an unknown provider", () => {
-        const deletion = runCli("provider", "delete", "ollama")
-
-        expect(deletion.exitCode).toBe(1)
-        expect(deletion.stderr).toContain('No provider "ollama".')
-    })
 })

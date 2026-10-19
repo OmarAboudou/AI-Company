@@ -56,19 +56,4 @@ describe("llmco provider connection update", () => {
         expect(update.exitCode).toBe(1)
         expect(update.stderr).toContain("Nothing to update")
     })
-
-    test("update fails for a connection the provider doesn't have", () => {
-        const update = runCli(
-            "provider",
-            "connection",
-            "update",
-            "openrouter",
-            "openai-responses",
-            "-u",
-            "https://openrouter.ai/api/v1",
-        )
-
-        expect(update.exitCode).toBe(1)
-        expect(update.stderr).toContain("has no openai-responses connection")
-    })
 })

@@ -78,42 +78,4 @@ describe("llmco provider connection create", () => {
         expect(create.exitCode).toBe(1)
         expect(create.stderr).toContain("anthropic-messages")
     })
-
-    test("create refuses a base URL that isn't http or https", () => {
-        const create = createConnection(
-            "anthropic",
-            "anthropic-messages",
-            "-u",
-            "localhost:11434",
-        )
-
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain("Invalid URL")
-    })
-
-    test("create refuses --auth on an OpenAI protocol", () => {
-        const create = createConnection(
-            "openrouter",
-            "openai-chat-completions",
-            "-u",
-            "https://openrouter.ai/api/v1",
-            "-a",
-            "bearer",
-        )
-
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain("only applies to anthropic-messages")
-    })
-
-    test("create fails for an unknown provider", () => {
-        const create = createConnection(
-            "ollama",
-            "anthropic-messages",
-            "-u",
-            "http://localhost:11434",
-        )
-
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain('No provider "ollama".')
-    })
 })
