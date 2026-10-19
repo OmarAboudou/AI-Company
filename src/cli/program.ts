@@ -1,13 +1,13 @@
 import { Command } from "@commander-js/extra-typings"
-import { registerMessageCommands } from "../message/commands.ts"
-import { registerThreadCommands } from "../thread/commands.ts"
 import { registerCompanyCommands } from "./commands/company/company.ts"
 import { registerCurrentHumanCommand } from "./commands/current-human.ts"
 import { registerEmployeeCommands } from "./commands/employee/employee.ts"
 import { registerInitCommand } from "./commands/init.ts"
+import { registerMessageCommands } from "./commands/message/message.ts"
 import { registerModelCommands } from "./commands/model/model.ts"
 import { registerPositionCommands } from "./commands/position/position.ts"
 import { registerProviderCommands } from "./commands/provider/provider.ts"
+import { registerThreadCommands } from "./commands/thread/thread.ts"
 
 export function createProgram(): Command {
     const program = new Command()
