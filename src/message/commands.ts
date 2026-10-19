@@ -1,11 +1,8 @@
 import { type Command, Option } from "@commander-js/extra-typings"
-import {
-    idDescription,
-    loadExistingThread,
-    projectRoot,
-    readTextOrFile,
-    requireCompany,
-} from "../cli-helpers.ts"
+import { idDescription } from "../cli/format-id-argument-description.ts"
+import { projectRoot } from "../cli/project-root.ts"
+import { readTextOrFile } from "../cli/read-text-or-file.ts"
+import { loadExistingThread, requireCompany } from "../cli-helpers.ts"
 import { answerMentions } from "../llm/reply.ts"
 import { listPositions } from "../position/storage.ts"
 import { UserError } from "../user-error.ts"

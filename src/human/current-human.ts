@@ -1,5 +1,5 @@
 import type { CommandUnknownOpts } from "@commander-js/extra-typings"
-import { projectRoot } from "../cli-helpers.ts"
+import { projectRoot } from "../cli/project-root.ts"
 import type { Employee } from "../employee/employee.ts"
 import { employeeExists, loadEmployee } from "../employee/storage.ts"
 import { IdSchema } from "../ids/id-schema.ts"

@@ -1,5 +1,5 @@
 import type Anthropic from "@anthropic-ai/sdk"
-import { projectRoot } from "../cli-helpers.ts"
+import { projectRoot } from "../cli/project-root.ts"
 import { loadCompany } from "../company/storage.ts"
 import type { Employee } from "../employee/employee.ts"
 import { loadEmployee } from "../employee/storage.ts"

@@ -1,16 +1,16 @@
 import { type Command, Option } from "@commander-js/extra-typings"
 import { z } from "zod"
+import { descriptionFileOption } from "../cli/create-description-file-option.ts"
+import { idDescription } from "../cli/format-id-argument-description.ts"
+import { newIdDescription } from "../cli/format-new-id-argument-description.ts"
+import { printColumns } from "../cli/print-columns.ts"
+import { projectRoot } from "../cli/project-root.ts"
+import { readTextOrFile } from "../cli/read-text-or-file.ts"
+import { requireAnOption } from "../cli/require-at-least-one-option.ts"
 import {
-    descriptionFileOption,
-    idDescription,
     loadExistingEmployee,
     loadExistingPosition,
-    newIdDescription,
     parseId,
-    printColumns,
-    projectRoot,
-    readTextOrFile,
-    requireAnOption,
     requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"

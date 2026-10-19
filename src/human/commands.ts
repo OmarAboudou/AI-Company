@@ -1,5 +1,6 @@
 import type { Command } from "@commander-js/extra-typings"
-import { projectRoot, requireCompany } from "../cli-helpers.ts"
+import { projectRoot } from "../cli/project-root.ts"
+import { requireCompany } from "../cli-helpers.ts"
 import { loadCompany } from "../company/storage.ts"
 import { readGitCommitter } from "../git/read-git-committer.ts"
 import { listPositions } from "../position/storage.ts"

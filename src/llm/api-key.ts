@@ -1,6 +1,6 @@
 import { homedir } from "node:os"
 import { join, resolve } from "node:path"
-import { projectRoot } from "../cli-helpers.ts"
+import { projectRoot } from "../cli/project-root.ts"
 import { readTextFile } from "../files/read-text-file.ts"
 import { isInRepositoryButNotIgnored } from "../git/is-in-repository-but-not-ignored.ts"
 import type { LlmProvider } from "../llm-provider/llm-provider.ts"
