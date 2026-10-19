@@ -6,6 +6,7 @@ import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
 import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
+import { createLlmConnection } from "../llm/connection/create-llm-connection.ts"
 import { loadLlmProviderWithConnection } from "../llm/connection/load-llm-provider-with-connection.ts"
 import { requireAnthropicForAuth } from "../llm/connection/require-anthropic-for-auth.ts"
 import { saveLlmConnections } from "../llm/connection/save-llm-connections.ts"
@@ -15,7 +16,6 @@ import {
     type Protocol,
     protocols,
 } from "../llm/connection/schema.ts"
-import { loadExistingLlmProvider } from "../llm/provider/load-existing-llm-provider.ts"
 import { listLlmProviders } from "../llm/provider/storage.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
@@ -64,21 +64,12 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
         .addOption(authOption())
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol, { baseUrl, auth }) => {
-            await requireCompany(projectRoot)
-            const provider = await loadExistingLlmProvider(
+            const provider = await createLlmConnection(
                 projectRoot,
                 rawProviderId,
+                protocol,
+                { baseUrl, auth },
             )
-            if (provider.connections?.[protocol] !== undefined) {
-                throw new UserError(
-                    `Provider "${provider.id}" already has a connection through ${protocol}.`,
-                )
-            }
-            requireAnthropicForAuth(protocol, auth)
-            await saveLlmConnections(projectRoot, provider, {
-                ...provider.connections,
-                [protocol]: { baseUrl, ...getDefinedValues({ auth }) },
-            })
             console.log(
                 `Created the ${protocol} connection of provider "${provider.id}".`,
             )
