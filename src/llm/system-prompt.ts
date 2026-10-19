@@ -1,6 +1,6 @@
 import type { Company } from "../company/company.ts"
 import type { Employee } from "../employee/employee.ts"
-import type { Position } from "../position/position.ts"
+import type { Position } from "../organization/position/schema.ts"
 import type { Thread } from "../thread/thread.ts"
 
 export type PromptContext = {

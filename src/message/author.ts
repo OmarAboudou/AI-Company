@@ -9,13 +9,13 @@ import {
     currentHuman,
     positionsWorkedBy,
 } from "../human/current-human.ts"
-import type { Position, Worker } from "../position/position.ts"
+import { currentWorker } from "../organization/position/get-current-worker.ts"
+import type { Position, Worker } from "../organization/position/schema.ts"
 import {
     listPositions,
     loadPosition,
     loadPositionState,
-} from "../position/storage.ts"
-import { currentWorker } from "../position/worker.ts"
+} from "../organization/position/storage.ts"
 import type { Archive } from "../thread/archives.ts"
 import { memberIds } from "../thread/members.ts"
 import { UserError } from "../user-error.ts"

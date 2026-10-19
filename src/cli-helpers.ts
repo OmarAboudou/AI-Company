@@ -8,8 +8,11 @@ import type { LlmModel } from "./llm-model/llm-model.ts"
 import { llmModelExists, loadLlmModel } from "./llm-model/storage.ts"
 import type { LlmProvider } from "./llm-provider/llm-provider.ts"
 import { llmProviderExists, loadLlmProvider } from "./llm-provider/storage.ts"
-import type { Position } from "./position/position.ts"
-import { loadPosition, positionExists } from "./position/storage.ts"
+import type { Position } from "./organization/position/schema.ts"
+import {
+    loadPosition,
+    positionExists,
+} from "./organization/position/storage.ts"
 import { loadThread, threadExists } from "./thread/storage.ts"
 import type { Thread } from "./thread/thread.ts"
 import { UserError } from "./user-error.ts"

@@ -11,7 +11,7 @@ import {
 import {
     PositionConfigSchema,
     PositionStateSchema,
-} from "../src/position/position.ts"
+} from "../src/organization/position/schema.ts"
 import { ThreadConfigSchema } from "../src/thread/thread.ts"
 
 const publishedAt =

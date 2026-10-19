@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { currentWorker } from "./worker.ts"
+import { currentWorker } from "./get-current-worker.ts"
 
 const developer = {
     id: "developer",

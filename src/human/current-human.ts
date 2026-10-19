@@ -3,9 +3,9 @@ import { projectRoot } from "../cli/project-root.ts"
 import type { Employee } from "../employee/employee.ts"
 import { employeeExists, loadEmployee } from "../employee/storage.ts"
 import { IdSchema } from "../ids/id-schema.ts"
-import type { Position, Worker } from "../position/position.ts"
-import { loadPositionState } from "../position/storage.ts"
-import { currentWorker } from "../position/worker.ts"
+import { currentWorker } from "../organization/position/get-current-worker.ts"
+import type { Position, Worker } from "../organization/position/schema.ts"
+import { loadPositionState } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
 
 export type CurrentHuman =

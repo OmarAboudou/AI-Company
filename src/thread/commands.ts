@@ -16,7 +16,7 @@ import {
 } from "../message/commands.ts"
 import { minutes, signature } from "../message/signature.ts"
 import { listMessages } from "../message/storage.ts"
-import { listPositions } from "../position/storage.ts"
+import { listPositions } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
 import { readArchives } from "./archives.ts"
 import { awaitedIds, memberIds } from "./members.ts"
