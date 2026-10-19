@@ -8,7 +8,7 @@ import { loadPositionState } from "../../../organization/position/storage.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
 import { projectRoot } from "../../project-root.ts"
 
-function currentEmployeeInShow(
+function formatCurrentEmployee(
     { defaultEmployeeId }: Position,
     temporaryAssignment: Worker | undefined,
 ): string {
@@ -38,15 +38,15 @@ export function registerPositionShowCommand(positionCommand: Command): void {
                     loadCompany(projectRoot),
                     loadPositionState(projectRoot, parseId("position", rawId)),
                 ])
-            const holders =
+            const holderLines =
                 position.id === company.directorPositionId
                     ? ["held by: the repository's git users"]
                     : [
-                          `current employee: ${currentEmployeeInShow(position, temporaryAssignment)}`,
+                          `current employee: ${formatCurrentEmployee(position, temporaryAssignment)}`,
                           `default employee: ${position.defaultEmployeeId ?? "(none)"}`,
                       ]
             console.log(
-                `# ${position.title}\n\n${holders.join("\n")}\n\n${position.description}`,
+                `# ${position.title}\n\n${holderLines.join("\n")}\n\n${position.description}`,
             )
         })
 }
