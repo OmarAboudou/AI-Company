@@ -3,10 +3,10 @@ import { loadCompany } from "../company/storage.ts"
 import { readGitCommitter } from "../git/read-git-committer.ts"
 import type { Employee } from "../organization/employee/schema.ts"
 import { loadEmployee } from "../organization/employee/storage.ts"
-import { positionsWorkedBy } from "../organization/human/list-positions-worked-by.ts"
+import { listPositionsWorkedBy } from "../organization/human/list-positions-worked-by.ts"
 import {
     type CurrentHuman,
-    currentHuman,
+    readCurrentHuman,
 } from "../organization/human/read-current-human.ts"
 import { getCurrentWorker } from "../organization/position/get-current-worker.ts"
 import { loadExistingPosition } from "../organization/position/load-existing-position.ts"
@@ -119,11 +119,15 @@ export async function currentAuthor({
     asPositionId?: string
 } = {}): Promise<Author> {
     const [human, positions, { directorPositionId }] = await Promise.all([
-        currentHuman(),
+        readCurrentHuman(),
         listPositions(projectRoot),
         loadCompany(projectRoot),
     ])
-    const worked = await positionsWorkedBy(human, positions, directorPositionId)
+    const worked = await listPositionsWorkedBy(
+        human,
+        positions,
+        directorPositionId,
+    )
     const choice = {
         human,
         worked: worked.map(({ position }) => position),

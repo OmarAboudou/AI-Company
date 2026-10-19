@@ -2,14 +2,14 @@ import { projectRoot } from "../../cli/project-root.ts"
 import { UserError } from "../../user-error.ts"
 import type { Employee } from "../employee/schema.ts"
 import { hasEmployee, loadEmployee } from "../employee/storage.ts"
-import { employeeIdFromEnvironment } from "./read-current-human-id.ts"
+import { readCurrentHumanId } from "./read-current-human-id.ts"
 
 export type CurrentHuman =
     | { kind: "director" }
     | { kind: "employee"; employee: Extract<Employee, { kind: "human" }> }
 
-export async function currentHuman(): Promise<CurrentHuman> {
-    const id = employeeIdFromEnvironment()
+export async function readCurrentHuman(): Promise<CurrentHuman> {
+    const id = readCurrentHumanId()
     if (id === undefined) {
         return { kind: "director" }
     }

@@ -1,7 +1,7 @@
 import { IdSchema } from "../../ids/id-schema.ts"
 import { UserError } from "../../user-error.ts"
 
-export function employeeIdFromEnvironment(): string | undefined {
+export function readCurrentHumanId(): string | undefined {
     const rawId = process.env.LLMCO_CURRENT_HUMAN_ID
     if (rawId === undefined || rawId === "") {
         return undefined

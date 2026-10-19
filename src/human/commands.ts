@@ -3,8 +3,8 @@ import { projectRoot } from "../cli/project-root.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { loadCompany } from "../company/storage.ts"
 import { readGitCommitter } from "../git/read-git-committer.ts"
-import { positionsWorkedBy } from "../organization/human/list-positions-worked-by.ts"
-import { currentHuman } from "../organization/human/read-current-human.ts"
+import { listPositionsWorkedBy } from "../organization/human/list-positions-worked-by.ts"
+import { readCurrentHuman } from "../organization/human/read-current-human.ts"
 import { listPositions } from "../organization/position/storage.ts"
 
 export function registerHumanCommands(program: Command): void {
@@ -16,11 +16,11 @@ export function registerHumanCommands(program: Command): void {
         .action(async () => {
             await requireCompany(projectRoot)
             const [human, positions, company] = await Promise.all([
-                currentHuman(),
+                readCurrentHuman(),
                 listPositions(projectRoot),
                 loadCompany(projectRoot),
             ])
-            const worked = await positionsWorkedBy(
+            const worked = await listPositionsWorkedBy(
                 human,
                 positions,
                 company.directorPositionId,
@@ -30,8 +30,8 @@ export function registerHumanCommands(program: Command): void {
                 human.kind === "director"
                     ? `${name}, a director`
                     : `${human.employee.name} (${human.employee.id}), a human employee`
-            const workedIds = worked.map(({ position, temporarily }) =>
-                temporarily ? `${position.id} (temporarily)` : position.id,
+            const workedIds = worked.map(({ position, isTemporary }) =>
+                isTemporary ? `${position.id} (temporarily)` : position.id,
             )
             console.log(
                 [

@@ -4,7 +4,7 @@ import type { Position, Worker } from "../position/schema.ts"
 import { loadPositionState } from "../position/storage.ts"
 import type { CurrentHuman } from "./read-current-human.ts"
 
-export type WorkedPosition = { position: Position; temporarily: boolean }
+export type WorkedPosition = { position: Position; isTemporary: boolean }
 
 function isWorkedBy(human: CurrentHuman, worker: Worker | undefined): boolean {
     if (human.kind === "director") {
@@ -15,22 +15,22 @@ function isWorkedBy(human: CurrentHuman, worker: Worker | undefined): boolean {
     )
 }
 
-export async function positionsWorkedBy(
+export async function listPositionsWorkedBy(
     human: CurrentHuman,
     positions: Position[],
     directorPositionId: string,
 ): Promise<WorkedPosition[]> {
-    const workers = await Promise.all(
+    const positionsAndWorkers = await Promise.all(
         positions.map(async (position) => {
             const state = await loadPositionState(projectRoot, position.id)
             return {
                 position,
-                temporarily: state.temporaryAssignment !== undefined,
+                isTemporary: state.temporaryAssignment !== undefined,
                 worker: getCurrentWorker(position, state, directorPositionId),
             }
         }),
     )
-    return workers
+    return positionsAndWorkers
         .filter(({ worker }) => isWorkedBy(human, worker))
-        .map(({ position, temporarily }) => ({ position, temporarily }))
+        .map(({ position, isTemporary }) => ({ position, isTemporary }))
 }
