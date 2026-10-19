@@ -7,11 +7,15 @@ import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
 import { getDefinedValues } from "../get-defined-values.ts"
 import { requireGitRepository } from "../git/require-git-repository.ts"
+import { requireCompany } from "../organization/company/require-company.ts"
+import { CompanyConfigSchema } from "../organization/company/schema.ts"
+import {
+    companyExists,
+    loadCompany,
+    saveCompany,
+} from "../organization/company/storage.ts"
 import { savePosition } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
-import { CompanyConfigSchema } from "./company.ts"
-import { requireCompany } from "./require-company.ts"
-import { companyExists, loadCompany, saveCompany } from "./storage.ts"
 
 const directorPositionId = "director"
 

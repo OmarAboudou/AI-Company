@@ -1,6 +1,6 @@
 import { z } from "zod"
-import { requireCompany } from "../../company/require-company.ts"
 import { UserError } from "../../user-error.ts"
+import { requireCompany } from "../company/require-company.ts"
 import { loadExistingPosition } from "./load-existing-position.ts"
 import { type Position, PositionConfigSchema } from "./schema.ts"
 import { savePosition } from "./storage.ts"

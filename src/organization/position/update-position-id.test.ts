@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
-import { createTemporaryCompany } from "../../company/create-temporary-company.ts"
-import { loadCompany } from "../../company/storage.ts"
 import { UserError } from "../../user-error.ts"
+import { createTemporaryCompany } from "../company/create-temporary-company.ts"
+import { loadCompany } from "../company/storage.ts"
 import {
     hasPosition,
     loadPosition,

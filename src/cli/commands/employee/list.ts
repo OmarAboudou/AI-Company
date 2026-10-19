@@ -1,5 +1,5 @@
 import type { Command } from "@commander-js/extra-typings"
-import { requireCompany } from "../../../company/require-company.ts"
+import { requireCompany } from "../../../organization/company/require-company.ts"
 import { listEmployees } from "../../../organization/employee/storage.ts"
 import { listPositions } from "../../../organization/position/storage.ts"
 import { printColumns } from "../../print-columns.ts"

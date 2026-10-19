@@ -1,8 +1,8 @@
-import { requireCompany } from "../../company/require-company.ts"
-import { loadCompany } from "../../company/storage.ts"
 import { readArchives } from "../../thread/archives.ts"
 import { awaitedIds } from "../../thread/members.ts"
 import { UserError } from "../../user-error.ts"
+import { requireCompany } from "../company/require-company.ts"
+import { loadCompany } from "../company/storage.ts"
 import { loadExistingPosition } from "./load-existing-position.ts"
 import type { Position } from "./schema.ts"
 import {

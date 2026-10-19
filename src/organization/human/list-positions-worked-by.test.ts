@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
-import { createTemporaryCompany } from "../../company/create-temporary-company.ts"
+import { createTemporaryCompany } from "../company/create-temporary-company.ts"
 import {
     listPositions,
     savePosition,

@@ -1,6 +1,6 @@
 import type { Command } from "@commander-js/extra-typings"
-import { requireCompany } from "../../../company/require-company.ts"
-import { loadCompany } from "../../../company/storage.ts"
+import { requireCompany } from "../../../organization/company/require-company.ts"
+import { loadCompany } from "../../../organization/company/storage.ts"
 import type {
     Position,
     PositionState,

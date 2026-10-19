@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { CompanyConfigSchema } from "./company.ts"
+import { CompanyConfigSchema } from "./schema.ts"
 
 const acme = { name: "Acme", directorPositionId: "director" }
 
