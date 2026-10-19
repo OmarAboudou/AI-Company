@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-const { runCli, projectPath } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("llmco company show", () => {
     test("fails when there is no company", () => {
@@ -13,7 +13,7 @@ describe("corrupted files", () => {
     test("company show names the invalid file and field", async () => {
         runCli("init", "--name", "Acme")
         await Bun.write(
-            projectPath(".llmco", "company", "config.json"),
+            getProjectPath(".llmco", "company", "config.json"),
             '{ "name": "" }',
         )
 

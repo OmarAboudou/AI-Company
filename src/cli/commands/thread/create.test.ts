@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, test } from "bun:test"
 import { useFakeAnthropicServer } from "../../../llm/anthropic-messages/use-fake-anthropic-server.ts"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-const { runCli, runCliWithEnv, projectPath, runCliAsync } =
+const { runCli, runCliWithEnv, getProjectPath, runCliAsync } =
     useTemporaryProject()
 
 describe("llmco thread create", () => {
     function runGit(...args: string[]) {
-        Bun.spawnSync(["git", ...args], { cwd: projectPath() })
+        Bun.spawnSync(["git", ...args], { cwd: getProjectPath() })
     }
 
     const today = new Date().toISOString().slice(0, 10)

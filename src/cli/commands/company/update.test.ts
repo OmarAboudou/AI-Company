@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-const { runCli, projectPath } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("llmco company update", () => {
     beforeEach(() => {
@@ -25,7 +25,7 @@ describe("llmco company update", () => {
     })
 
     test("update -F reads the new description from a file", async () => {
-        await Bun.write(projectPath("company.md"), "From a file.")
+        await Bun.write(getProjectPath("company.md"), "From a file.")
 
         runCli("company", "update", "-F", "company.md")
 

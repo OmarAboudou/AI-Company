@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-const { runCli, projectPath } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 const interimEmployee = ["position", "interim", "employee"]
 
 async function temporaryAssignee(positionId: string): Promise<unknown> {
     const path = [".llmco", ".state", "positions", `${positionId}.json`]
-    const file = Bun.file(projectPath(...path))
+    const file = Bun.file(getProjectPath(...path))
     return (await file.exists())
         ? (await file.json()).temporaryAssignment
         : undefined

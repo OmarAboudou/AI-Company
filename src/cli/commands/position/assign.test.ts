@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-const { runCli, projectPath } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 const interimEmployee = ["position", "interim", "employee"]
 
 function positionStatePath(id: string): string {
-    return projectPath(".llmco", ".state", "positions", `${id}.json`)
+    return getProjectPath(".llmco", ".state", "positions", `${id}.json`)
 }
 
 async function positionState(id: string): Promise<unknown> {
@@ -55,7 +55,7 @@ describe("llmco position assign and unassign", () => {
     })
 
     async function positionConfig(id: string): Promise<unknown> {
-        const path = projectPath(".llmco", "positions", id, "config.json")
+        const path = getProjectPath(".llmco", "positions", id, "config.json")
         return Bun.file(path).json()
     }
 

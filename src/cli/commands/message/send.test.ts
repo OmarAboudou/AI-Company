@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from "bun:test"
 import { useFakeAnthropicServer } from "../../../llm/anthropic-messages/use-fake-anthropic-server.ts"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-const { runCli, runCliWithStdin, projectPath, runCliWithEnv, runCliAsync } =
+const { runCli, runCliWithStdin, getProjectPath, runCliWithEnv, runCliAsync } =
     useTemporaryProject()
 
 describe("llmco message send", () => {
@@ -34,7 +34,10 @@ describe("llmco message send", () => {
     })
 
     test("-F reads the body from a file", async () => {
-        await Bun.write(projectPath("budget.md"), "# Budget\n\n- API: 50 €\n")
+        await Bun.write(
+            getProjectPath("budget.md"),
+            "# Budget\n\n- API: 50 €\n",
+        )
 
         runCli("message", "send", threadId, "-F", "budget.md")
 
