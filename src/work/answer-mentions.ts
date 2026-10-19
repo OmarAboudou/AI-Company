@@ -117,24 +117,26 @@ async function answerAs(
     if (response.stop_reason === "max_tokens") {
         console.error(`${employee.name}'s answer was cut at its length limit.`)
     }
-    const id = await sendDraft(projectRoot, threadId, {
+    const draft = {
         position: { id: position.id, title: position.title },
         employee: { id: employee.id, name: employee.name },
         committer: readGitCommitter(projectRoot),
         body,
         ...(await resolveMentions(projectRoot, body, position.id)),
+    }
+    const answer = await sendDraft(projectRoot, threadId, draft)
+    for (const positionId of draft.unknownMentionIds) {
+        console.error(
+            `"@${positionId}" names no position, so it mentions nobody.`,
+        )
+    }
+    await saveProviderResponse(projectRoot, answer, {
+        providerId: provider.id,
+        modelId: model.id,
+        protocol: model.protocol,
+        apiId: model.apiId,
+        response,
     })
-    await saveProviderResponse(
-        projectRoot,
-        { threadId, id },
-        {
-            providerId: provider.id,
-            modelId: model.id,
-            protocol: model.protocol,
-            apiId: model.apiId,
-            response,
-        },
-    )
 }
 
 export async function answerMentions(

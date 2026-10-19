@@ -1,5 +1,6 @@
 import { type Command, Option } from "@commander-js/extra-typings"
 import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
+import { printUnknownMentions } from "../cli/print-unknown-mentions.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
 import { createDraft } from "../messaging/message/create-draft.ts"
@@ -71,8 +72,11 @@ export function registerMessageCommands(program: Command): void {
                 asPositionId: options.asPosition,
             })
             const draft = await createDraft(projectRoot, author, body)
-            const id = await sendDraft(projectRoot, thread.id, draft)
-            console.error(`Sent message "${id}" in thread "${thread.id}".`)
+            const message = await sendDraft(projectRoot, thread.id, draft)
+            printUnknownMentions(draft.unknownMentionIds)
+            console.error(
+                `Sent message "${message.id}" in thread "${thread.id}".`,
+            )
             await answerMentions(projectRoot, thread.id, draft.mentions)
         })
 }
