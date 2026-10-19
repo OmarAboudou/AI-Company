@@ -15,10 +15,10 @@ import {
     LlmProviderConfigSchema,
 } from "../llm/provider/schema.ts"
 import {
-    copyLlmProvider,
-    deleteLlmProvider,
+    copyLlmProviderFolder,
+    deleteLlmProviderFolder,
+    hasLlmProvider,
     listLlmProviders,
-    llmProviderExists,
     saveLlmProvider,
 } from "../llm/provider/storage.ts"
 import { registerLlmConnectionCommands } from "../llm-connection/commands.ts"
@@ -85,7 +85,7 @@ export function registerLlmProviderCommands(program: Command): void {
         .action(async (rawId, { name, ...apiKeyOptions }) => {
             await requireCompany(projectRoot)
             const id = parseId("provider", rawId)
-            if (await llmProviderExists(projectRoot, id)) {
+            if (await hasLlmProvider(projectRoot, id)) {
                 throw new UserError(`Provider "${id}" already exists.`)
             }
             const config = LlmProviderConfigSchema.safeParse({
@@ -193,7 +193,7 @@ export function registerLlmProviderCommands(program: Command): void {
             const newId = parseId("provider", rawNewId)
             const [provider, taken, employees] = await Promise.all([
                 loadExistingLlmProvider(projectRoot, rawId),
-                llmProviderExists(projectRoot, newId),
+                hasLlmProvider(projectRoot, newId),
                 listEmployees(projectRoot),
             ])
             if (taken) {
@@ -204,7 +204,7 @@ export function registerLlmProviderCommands(program: Command): void {
                 .filter((employee) => employee.providerId === provider.id)
             // Copy, repoint, then delete rather than move, as for employees:
             // an employee must never run on a missing provider.
-            await copyLlmProvider(projectRoot, provider.id, newId)
+            await copyLlmProviderFolder(projectRoot, provider.id, newId)
             await Promise.all(
                 users.map((employee) =>
                     saveEmployee(projectRoot, {
@@ -213,7 +213,7 @@ export function registerLlmProviderCommands(program: Command): void {
                     }),
                 ),
             )
-            await deleteLlmProvider(projectRoot, provider.id)
+            await deleteLlmProviderFolder(projectRoot, provider.id)
             const renamed = `Provider "${provider.id}" is now "${newId}"`
             console.log(
                 users.length === 0
@@ -256,7 +256,7 @@ export function registerLlmProviderCommands(program: Command): void {
                     `Provider "${provider.id}" has models ${modelIds}. Add --force to delete them with it.`,
                 )
             }
-            await deleteLlmProvider(projectRoot, provider.id)
+            await deleteLlmProviderFolder(projectRoot, provider.id)
             console.log(
                 models.length === 0
                     ? `Deleted provider "${provider.id}".`

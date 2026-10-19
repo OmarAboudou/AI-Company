@@ -6,7 +6,7 @@ import { isInRepositoryButNotIgnored } from "../../git/is-in-repository-but-not-
 import { UserError } from "../../user-error.ts"
 import type { LlmProvider } from "./schema.ts"
 
-function keyFilePath(path: string): string {
+function getKeyFilePath(path: string): string {
     if (path === "~" || path.startsWith("~/")) {
         return join(homedir(), path.slice(1))
     }
@@ -16,30 +16,30 @@ function keyFilePath(path: string): string {
 export async function readApiKey(
     provider: LlmProvider,
 ): Promise<string | undefined> {
-    const source = provider.apiKey
-    if (source === undefined) {
+    const apiKeySource = provider.apiKey
+    if (apiKeySource === undefined) {
         return undefined
     }
-    if (source.kind === "env") {
-        const key = process.env[source.variable]?.trim()
-        if (key === undefined || key === "") {
+    if (apiKeySource.kind === "env") {
+        const apiKey = process.env[apiKeySource.variable]?.trim()
+        if (apiKey === undefined || apiKey === "") {
             throw new UserError(
-                `Provider "${provider.id}" reads its API key from the environment variable ${source.variable}, which isn't set.`,
+                `Provider "${provider.id}" reads its API key from the environment variable ${apiKeySource.variable}, which isn't set.`,
             )
         }
-        return key
+        return apiKey
     }
-    const path = keyFilePath(source.path)
+    const path = getKeyFilePath(apiKeySource.path)
     if (isInRepositoryButNotIgnored(projectRoot, path)) {
         throw new UserError(
-            `Provider "${provider.id}" reads its API key from ${source.path}, which is in the repository but not ignored by git: ignore it, or move it out of the repository.`,
+            `Provider "${provider.id}" reads its API key from ${apiKeySource.path}, which is in the repository but not ignored by git: ignore it, or move it out of the repository.`,
         )
     }
-    const key = (await readTextFile(projectRoot, path)).trim()
-    if (key === "") {
+    const apiKey = (await readTextFile(projectRoot, path)).trim()
+    if (apiKey === "") {
         throw new UserError(
-            `Provider "${provider.id}" reads its API key from ${source.path}, which is empty.`,
+            `Provider "${provider.id}" reads its API key from ${apiKeySource.path}, which is empty.`,
         )
     }
-    return key
+    return apiKey
 }

@@ -2,11 +2,11 @@ import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
 import { listSubdirectories } from "../files/list-subdirectories.ts"
 import { readJsonFile } from "../files/read-json-file.ts"
-import { llmProviderDir } from "../llm/provider/storage.ts"
+import { getLlmProviderFolderPath } from "../llm/provider/storage.ts"
 import { type LlmModel, LlmModelConfigSchema } from "./llm-model.ts"
 
 function llmModelsDir(projectRoot: string, providerId: string): string {
-    return join(llmProviderDir(projectRoot, providerId), "models")
+    return join(getLlmProviderFolderPath(projectRoot, providerId), "models")
 }
 
 function llmModelDir(
