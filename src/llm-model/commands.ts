@@ -12,10 +12,10 @@ import { type Protocol, protocols } from "../llm/connection/schema.ts"
 import { loadExistingLlmModel } from "../llm/model/load-existing-llm-model.ts"
 import { LlmModelConfigSchema } from "../llm/model/schema.ts"
 import {
-    copyLlmModel,
-    deleteLlmModel,
+    copyLlmModelFolder,
+    deleteLlmModelFolder,
+    hasLlmModel,
     listLlmModels,
-    llmModelExists,
     saveLlmModel,
 } from "../llm/model/storage.ts"
 import { loadExistingLlmProvider } from "../llm/provider/load-existing-llm-provider.ts"
@@ -98,7 +98,7 @@ export function registerLlmModelCommands(program: Command): void {
                 rawProviderId,
             )
             const modelId = parseId("model", rawModelId)
-            if (await llmModelExists(projectRoot, provider.id, modelId)) {
+            if (await hasLlmModel(projectRoot, provider.id, modelId)) {
                 throw new UserError(
                     `Provider "${provider.id}" already has a model "${modelId}".`,
                 )
@@ -234,7 +234,7 @@ export function registerLlmModelCommands(program: Command): void {
                 listEmployees(projectRoot),
             ])
             const newId = parseId("model", rawNewId)
-            if (await llmModelExists(projectRoot, model.providerId, newId)) {
+            if (await hasLlmModel(projectRoot, model.providerId, newId)) {
                 throw new UserError(
                     `Provider "${model.providerId}" already has a model "${newId}".`,
                 )
@@ -248,13 +248,18 @@ export function registerLlmModelCommands(program: Command): void {
                 )
             // Copy, repoint, then delete rather than move, as for employees:
             // an employee must never run on a missing model.
-            await copyLlmModel(projectRoot, model.providerId, model.id, newId)
+            await copyLlmModelFolder(
+                projectRoot,
+                model.providerId,
+                model.id,
+                newId,
+            )
             await Promise.all(
                 users.map((employee) =>
                     saveEmployee(projectRoot, { ...employee, modelId: newId }),
                 ),
             )
-            await deleteLlmModel(projectRoot, model.providerId, model.id)
+            await deleteLlmModelFolder(projectRoot, model.providerId, model.id)
             const renamed = `Model "${model.id}" of provider "${model.providerId}" is now "${newId}"`
             console.log(
                 users.length === 0
@@ -292,7 +297,7 @@ export function registerLlmModelCommands(program: Command): void {
                     `Model "${model.id}" of provider "${model.providerId}" is used by ${users.map(({ id }) => id).join(", ")}. Give these employees another model with \`llmco employee update\`, or delete them, first.`,
                 )
             }
-            await deleteLlmModel(projectRoot, model.providerId, model.id)
+            await deleteLlmModelFolder(projectRoot, model.providerId, model.id)
             console.log(
                 `Deleted model "${model.id}" of provider "${model.providerId}".`,
             )

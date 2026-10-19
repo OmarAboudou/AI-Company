@@ -2,7 +2,7 @@ import { parseId } from "../../ids/parse-id.ts"
 import { UserError } from "../../user-error.ts"
 import { loadExistingLlmProvider } from "../provider/load-existing-llm-provider.ts"
 import type { LlmModel } from "./schema.ts"
-import { llmModelExists, loadLlmModel } from "./storage.ts"
+import { hasLlmModel, loadLlmModel } from "./storage.ts"
 
 export async function loadExistingLlmModel(
     projectRoot: string,
@@ -11,7 +11,7 @@ export async function loadExistingLlmModel(
 ): Promise<LlmModel> {
     const provider = await loadExistingLlmProvider(projectRoot, rawProviderId)
     const modelId = parseId("model", rawModelId)
-    if (!(await llmModelExists(projectRoot, provider.id, modelId))) {
+    if (!(await hasLlmModel(projectRoot, provider.id, modelId))) {
         throw new UserError(
             `Provider "${provider.id}" has no model "${modelId}". Run \`llmco model list\`.`,
         )
