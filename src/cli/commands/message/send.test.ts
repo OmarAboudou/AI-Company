@@ -13,7 +13,7 @@ describe("llmco message send", () => {
         threadId = runCli("thread", "create", "-s", "Budget").stdout.trim()
     })
 
-    function bodies(): string[] {
+    function listBodies(): string[] {
         const lines = runCli("thread", "show", threadId, "--json").stdout
         return lines
             .trimEnd()
@@ -25,12 +25,13 @@ describe("llmco message send", () => {
     test("-b adds a message at the end of the thread", () => {
         runCli("message", "send", threadId, "-b", "First.")
 
-        const send = runCli("message", "send", threadId, "--body", "Second.")
+        const sending = runCli("message", "send", threadId, "--body", "Second.")
 
-        const sent = /^Sent message "\d{8}-\d{6}-\d{3}-[0-9a-f]{4}" in thread/
+        const sentMessagePattern =
+            /^Sent message "\d{8}-\d{6}-\d{3}-[0-9a-f]{4}" in thread/
 
-        expect(send.stderr).toMatch(sent)
-        expect(bodies()).toEqual(["First.", "Second."])
+        expect(sending.stderr).toMatch(sentMessagePattern)
+        expect(listBodies()).toEqual(["First.", "Second."])
     })
 
     test("-F reads the body from a file", async () => {
@@ -41,25 +42,25 @@ describe("llmco message send", () => {
 
         runCli("message", "send", threadId, "-F", "budget.md")
 
-        expect(bodies()).toEqual(["# Budget\n\n- API: 50 €\n"])
+        expect(listBodies()).toEqual(["# Budget\n\n- API: 50 €\n"])
     })
 
     test("-F - reads the body from stdin", () => {
         runCliWithStdin("From stdin.\n", "message", "send", threadId, "-F", "-")
 
-        expect(bodies()).toEqual(["From stdin.\n"])
+        expect(listBodies()).toEqual(["From stdin.\n"])
     })
 
     test("requires a body", () => {
-        const send = runCli("message", "send", threadId)
+        const sending = runCli("message", "send", threadId)
 
-        expect(send.exitCode).toBe(1)
-        expect(send.stderr).toContain("-b, --body or -F, --body-file")
-        expect(bodies()).toEqual([])
+        expect(sending.exitCode).toBe(1)
+        expect(sending.stderr).toContain("-b, --body or -F, --body-file")
+        expect(listBodies()).toEqual([])
     })
 
     test("refuses a body and a body file at once", () => {
-        const send = runCli(
+        const sending = runCli(
             "message",
             "send",
             threadId,
@@ -69,15 +70,17 @@ describe("llmco message send", () => {
             "budget.md",
         )
 
-        expect(send.exitCode).toBe(1)
-        expect(send.stderr).toContain("cannot be used with")
+        expect(sending.exitCode).toBe(1)
+        expect(sending.stderr).toContain("cannot be used with")
     })
 
     test("fails for an unknown thread", () => {
-        const send = runCli("message", "send", "2026-10-18-nothing", "-b", "Hi")
+        const unknownThreadId = "2026-10-18-nothing"
 
-        expect(send.exitCode).toBe(1)
-        expect(send.stderr).toContain('No thread "2026-10-18-nothing".')
+        const sending = runCli("message", "send", unknownThreadId, "-b", "Hi")
+
+        expect(sending.exitCode).toBe(1)
+        expect(sending.stderr).toContain(`No thread "${unknownThreadId}".`)
     })
 })
 
@@ -94,7 +97,7 @@ describe("mentions", () => {
         runCli("position", "create", "qa-tester", "-t", "QA Tester")
     })
 
-    function mentions(): string[][] {
+    function listMentions(): string[][] {
         const lines = runCli("thread", "show", threadId, "--json").stdout
         return lines
             .trimEnd()
@@ -105,11 +108,11 @@ describe("mentions", () => {
     test("a mention of no position is reported and ignored", () => {
         const body = "@qa-testers, a test plan?"
 
-        const send = runCli("message", "send", threadId, "-b", body)
+        const sending = runCli("message", "send", threadId, "-b", body)
 
-        expect(send.exitCode).toBe(0)
-        expect(send.stderr).toContain('"@qa-testers" names no position')
-        expect(mentions()).toEqual([[]])
+        expect(sending.exitCode).toBe(0)
+        expect(sending.stderr).toContain('"@qa-testers" names no position')
+        expect(listMentions()).toEqual([[]])
     })
 })
 
@@ -121,7 +124,7 @@ describe("--as-position", () => {
         runCli("position", "create", "support", "-t", "support")
     })
 
-    function lastPositionId(threadId: string): string {
+    function loadLastPositionId(threadId: string): string {
         const lines = runCli("thread", "show", threadId, "--json").stdout
         return JSON.parse(lines.trimEnd().split("\n").at(-1) ?? "").position.id
     }
@@ -134,11 +137,11 @@ describe("--as-position", () => {
     test("message send -a overrides the position chosen by default", () => {
         runCli(...interimDirectors, "support")
         const threadId = createThread({}).stdout.trim()
-        const send = ["message", "send", threadId, "-b", "Done."]
+        const sendArgs = ["message", "send", threadId, "-b", "Done."]
 
-        runCli(...send, "-a", "support")
+        runCli(...sendArgs, "-a", "support")
 
-        expect(lastPositionId(threadId)).toBe("support")
+        expect(loadLastPositionId(threadId)).toBe("support")
     })
 })
 
@@ -147,7 +150,7 @@ describe("the answers of the positions it mentions", () => {
 
     const fakeServer = useFakeAnthropicServer()
 
-    const key = { TEST_ANTHROPIC_KEY: "sk-test" }
+    const apiKeyEnv = { TEST_ANTHROPIC_KEY: "sk-test" }
 
     const question = "@backend-developer Hono or Express?"
 
@@ -203,27 +206,27 @@ describe("the answers of the positions it mentions", () => {
         threadId = runCli("thread", "create", "-s", "Framework").stdout.trim()
     })
 
-    function send(body: string, env: Record<string, string> = key) {
+    function send(body: string, env: Record<string, string> = apiKeyEnv) {
         return runCliAsync(env, "message", "send", threadId, "-b", body)
     }
 
     test("message send prints the answer as it streams", async () => {
         fakeServer.respondWith({ text: "Hono, for Bun." })
 
-        const sent = await send(question)
+        const sending = await send(question)
 
-        expect(sent.exitCode).toBe(0)
-        expect(sent.stdout).toBe("Hono, for Bun.\n")
-        expect(sent.stderr).toContain("Claude Senior answers as Backend")
+        expect(sending.exitCode).toBe(0)
+        expect(sending.stdout).toBe("Hono, for Bun.\n")
+        expect(sending.stderr).toContain("Claude Senior answers as Backend")
     })
 
     test("a vacant position leaves the message waiting", async () => {
         runCli("position", "create", "qa-tester", "-t", "QA Tester")
 
-        const sent = await send("@qa-tester a test plan?")
+        const sending = await send("@qa-tester a test plan?")
 
-        expect(sent.exitCode).toBe(0)
-        expect(sent.stderr).toContain("@qa-tester is vacant")
+        expect(sending.exitCode).toBe(0)
+        expect(sending.stderr).toContain("@qa-tester is vacant")
         expect(fakeServer.requests).toHaveLength(0)
     })
 
@@ -231,31 +234,31 @@ describe("the answers of the positions it mentions", () => {
         runCli("employee", "create", "human", "julie", "-n", "Julie")
         runCli("position", "assign", "backend-developer", "julie", "-r")
 
-        const sent = await send(question)
+        const sending = await send(question)
 
-        expect(sent.stderr).toContain("worked by Julie, a human")
+        expect(sending.stderr).toContain("worked by Julie, a human")
         expect(fakeServer.requests).toHaveLength(0)
     })
 
     test("an API error is reported, and the mention stays awaited", async () => {
         fakeServer.respondWith({ status: 401, error: "invalid x-api-key" })
 
-        const sent = await send(question)
+        const sending = await send(question)
         const list = runCli("thread", "list").stdout
 
-        expect(sent.exitCode).toBe(1)
-        expect(sent.stderr).toContain("invalid x-api-key")
+        expect(sending.exitCode).toBe(1)
+        expect(sending.stderr).toContain("invalid x-api-key")
         expect(list).toContain("awaiting @backend-developer")
     })
 
     test("a position assigned temporarily to the directors leaves the message waiting", async () => {
         runCli(...interimDirectors, "backend-developer")
 
-        const sent = await send(question)
+        const sending = await send(question)
         const list = runCli("thread", "list").stdout
 
-        expect(sent.exitCode).toBe(0)
-        expect(sent.stderr).toContain(
+        expect(sending.exitCode).toBe(0)
+        expect(sending.stderr).toContain(
             "@backend-developer is worked by the directors",
         )
         expect(fakeServer.requests).toHaveLength(0)

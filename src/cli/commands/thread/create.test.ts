@@ -21,10 +21,10 @@ describe("llmco thread create", () => {
     }
 
     test("prints the id of the thread, from its date and subject", () => {
-        const create = createThread()
+        const creation = createThread()
 
-        expect(create.exitCode).toBe(0)
-        expect(create.stdout).toBe(`${today}-choice-of-framework\n`)
+        expect(creation.exitCode).toBe(0)
+        expect(creation.stdout).toBe(`${today}-choice-of-framework\n`)
     })
 
     test("-b sends the first message", () => {
@@ -32,29 +32,29 @@ describe("llmco thread create", () => {
 
         const show = runCli("thread", "show", id).stdout
 
-        const lastMessage =
+        const lastMessagePattern =
             /## Test User, Director \(@director\) · .* UTC\n\n(.*)\n$/
 
-        expect(show).toMatch(lastMessage)
-        expect(show.match(lastMessage)?.[1]).toBe("Hono or Express?")
+        expect(show).toMatch(lastMessagePattern)
+        expect(show.match(lastMessagePattern)?.[1]).toBe("Hono or Express?")
     })
 
     test("requires a subject", () => {
-        const create = runCli("thread", "create")
+        const creation = runCli("thread", "create")
 
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain("--subject")
+        expect(creation.exitCode).toBe(1)
+        expect(creation.stderr).toContain("--subject")
     })
 
     test("refuses to write without git's user.name and user.email", () => {
-        const withoutGitIdentity = {
+        const envWithoutGitIdentity = {
             GIT_CONFIG_GLOBAL: "/dev/null",
             GIT_CONFIG_NOSYSTEM: "1",
         }
         runGit("config", "--unset", "user.name")
         const create = ["thread", "create", "-s", "Budget"]
 
-        const creation = runCliWithEnv(withoutGitIdentity, ...create)
+        const creation = runCliWithEnv(envWithoutGitIdentity, ...create)
 
         expect(creation.exitCode).toBe(1)
         expect(creation.stderr).toContain("set `git config user.name`")
@@ -70,7 +70,7 @@ describe("--as-position", () => {
         runCli("position", "create", "support", "-t", "support")
     })
 
-    function lastPositionId(threadId: string): string {
+    function loadLastPositionId(threadId: string): string {
         const lines = runCli("thread", "show", threadId, "--json").stdout
         return JSON.parse(lines.trimEnd().split("\n").at(-1) ?? "").position.id
     }
@@ -83,11 +83,11 @@ describe("--as-position", () => {
     test("thread create --as-position writes from one of the positions you work", () => {
         runCli(...interimDirectors, "support")
 
-        const create = createThread({}, "--as-position", "support")
-        const threadId = create.stdout.trim()
+        const creation = createThread({}, "--as-position", "support")
+        const threadId = creation.stdout.trim()
         const show = runCli("thread", "show", threadId).stdout
 
-        expect(lastPositionId(threadId)).toBe("support")
+        expect(loadLastPositionId(threadId)).toBe("support")
         expect(show).toContain("Created by Test User, support (@support)")
     })
 })
@@ -95,7 +95,7 @@ describe("--as-position", () => {
 describe("an LLM employee answers when its position is mentioned", () => {
     const fakeServer = useFakeAnthropicServer()
 
-    const key = { TEST_ANTHROPIC_KEY: "sk-test" }
+    const apiKeyEnv = { TEST_ANTHROPIC_KEY: "sk-test" }
 
     beforeEach(() => {
         runCli("init", "-n", "Acme")
@@ -149,8 +149,8 @@ describe("an LLM employee answers when its position is mentioned", () => {
     test("thread create -b gets its first message answered too", async () => {
         fakeServer.respondWith({ text: "Budget approved." })
 
-        const create = await runCliAsync(
-            key,
+        const creation = await runCliAsync(
+            apiKeyEnv,
             "thread",
             "create",
             "-s",
@@ -158,7 +158,7 @@ describe("an LLM employee answers when its position is mentioned", () => {
             "-b",
             "@backend-developer 50 € for the API?",
         )
-        const [id, answer] = create.stdout.split("\n")
+        const [id, answer] = creation.stdout.split("\n")
 
         expect(id).toMatch(/-budget$/)
         expect(answer).toBe("Budget approved.")
