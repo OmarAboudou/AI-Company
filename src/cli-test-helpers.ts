@@ -35,9 +35,10 @@ export function useTemporaryProject() {
 
     // No test may reach a real API: the CLI never sees this machine's API
     // keys, nor the credentials an SDK could find in its home directory.
+    // Nor does it see who this machine's shell is switched to.
     function environment(env: Record<string, string>) {
         const kept = Object.entries(process.env).filter(
-            ([name]) => !/^(ANTHROPIC|OPENAI)_/.test(name),
+            ([name]) => !/^(ANTHROPIC|OPENAI|LLMCO)_/.test(name),
         )
         return { ...Object.fromEntries(kept), HOME: home, ...env }
     }
