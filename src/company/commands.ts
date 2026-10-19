@@ -10,6 +10,7 @@ import {
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
 import { requireGitRepository } from "../git.ts"
+import { requireDirector } from "../human/current-human.ts"
 import { savePosition } from "../position/storage.ts"
 import { CompanyConfigSchema } from "./company.ts"
 import { companyExists, loadCompany, saveCompany } from "./storage.ts"
@@ -25,6 +26,7 @@ export function registerCompanyCommands(program: Command): void {
         .requiredOption("-n, --name <name>", "company name")
         .option("-d, --description <text>", "company description", "")
         .addOption(descriptionFileOption())
+        .hook("preAction", requireDirector)
         .action(async (options) => {
             requireGitRepository(projectRoot)
             if (await companyExists(projectRoot)) {
@@ -76,6 +78,7 @@ export function registerCompanyCommands(program: Command): void {
         .option("-n, --name <name>", "company name")
         .option("-d, --description <text>", "company description")
         .addOption(descriptionFileOption())
+        .hook("preAction", requireDirector)
         .action(async (options) => {
             requireAnOption(options)
             await requireCompany()
