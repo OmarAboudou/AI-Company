@@ -7,19 +7,15 @@ import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
 import { protocols } from "../llm/connection/schema.ts"
 import { createLlmProvider } from "../llm/provider/create-llm-provider.ts"
+import { deleteLlmProvider } from "../llm/provider/delete-llm-provider.ts"
 import { loadExistingLlmProvider } from "../llm/provider/load-existing-llm-provider.ts"
 import type { ApiKeySource } from "../llm/provider/schema.ts"
-import {
-    deleteLlmProviderFolder,
-    listLlmProviders,
-} from "../llm/provider/storage.ts"
+import { listLlmProviders } from "../llm/provider/storage.ts"
 import { updateLlmProvider } from "../llm/provider/update-llm-provider.ts"
 import { updateLlmProviderId } from "../llm/provider/update-llm-provider-id.ts"
 import { registerLlmConnectionCommands } from "../llm-connection/commands.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
-import { listEmployees } from "../organization/employee/storage.ts"
-import { UserError } from "../user-error.ts"
 
 function apiKeyEnvOption() {
     return new Option(
@@ -180,34 +176,16 @@ export function registerLlmProviderCommands(program: Command): void {
         )
         .option("-f, --force", "delete it even if it has models, deleting them")
         .hook("preAction", requireDirector)
-        .action(async (rawId, { force }) => {
-            await requireCompany(projectRoot)
-            const provider = await loadExistingLlmProvider(projectRoot, rawId)
-            const [models, employees] = await Promise.all([
-                listLlmModels(projectRoot, provider.id),
-                listEmployees(projectRoot),
-            ])
-            const users = employees.filter(
-                (employee) =>
-                    employee.kind === "llm" &&
-                    employee.providerId === provider.id,
+        .action(async (rawId, { force: shouldForce }) => {
+            const { provider, deletedModelIds } = await deleteLlmProvider(
+                projectRoot,
+                rawId,
+                { shouldForce },
             )
-            if (users.length > 0) {
-                throw new UserError(
-                    `Provider "${provider.id}" is used by ${users.map(({ id }) => id).join(", ")}. Give these employees another model with \`llmco employee update\`, or delete them, first; --force doesn't change that.`,
-                )
-            }
-            const modelIds = models.map(({ id }) => id).join(", ")
-            if (models.length > 0 && !force) {
-                throw new UserError(
-                    `Provider "${provider.id}" has models ${modelIds}. Add --force to delete them with it.`,
-                )
-            }
-            await deleteLlmProviderFolder(projectRoot, provider.id)
             console.log(
-                models.length === 0
+                deletedModelIds.length === 0
                     ? `Deleted provider "${provider.id}".`
-                    : `Deleted provider "${provider.id}" and its models ${modelIds}.`,
+                    : `Deleted provider "${provider.id}" and its models ${deletedModelIds.join(", ")}.`,
             )
         })
 
