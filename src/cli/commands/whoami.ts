@@ -1,11 +1,11 @@
 import type { Command } from "@commander-js/extra-typings"
-import { projectRoot } from "../cli/project-root.ts"
-import { requireCompany } from "../company/require-company.ts"
-import { loadCompany } from "../company/storage.ts"
-import { readGitCommitter } from "../git/read-git-committer.ts"
-import { listPositionsWorkedBy } from "../organization/human/list-positions-worked-by.ts"
-import { readCurrentHuman } from "../organization/human/read-current-human.ts"
-import { listPositions } from "../organization/position/storage.ts"
+import { requireCompany } from "../../company/require-company.ts"
+import { loadCompany } from "../../company/storage.ts"
+import { readGitCommitter } from "../../git/read-git-committer.ts"
+import { listPositionsWorkedBy } from "../../organization/human/list-positions-worked-by.ts"
+import { readCurrentHuman } from "../../organization/human/read-current-human.ts"
+import { listPositions } from "../../organization/position/storage.ts"
+import { projectRoot } from "../project-root.ts"
 
 export function registerHumanCommands(program: Command): void {
     program
