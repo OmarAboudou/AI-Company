@@ -33,6 +33,25 @@ import { buildSystemPrompt } from "./build-system-prompt.ts"
 
 type LlmEmployee = Extract<Employee, { kind: "llm" }>
 
+export type AnswerEvent =
+    | { kind: "vacant"; position: Position }
+    | { kind: "worked-by-directors"; position: Position }
+    | {
+          kind: "worked-by-human"
+          position: Position
+          employee: Extract<Employee, { kind: "human" }>
+      }
+    | { kind: "answering"; position: Position; employee: LlmEmployee }
+    | { kind: "text"; text: string }
+    | { kind: "streamed" }
+    | {
+          kind: "answered"
+          employee: LlmEmployee
+          answer: Message
+          isCut: boolean
+          unknownMentionIds: string[]
+      }
+
 async function loadReplays(
     projectRoot: string,
     messages: Message[],
@@ -65,6 +84,7 @@ async function answerAs(
     threadId: string,
     position: Position,
     employee: LlmEmployee,
+    onEvent: (event: AnswerEvent) => void,
 ): Promise<void> {
     const [company, thread, messages, provider, model] = await Promise.all([
         loadCompany(projectRoot),
@@ -88,9 +108,7 @@ async function answerAs(
         readApiKey(projectRoot, provider),
         loadReplays(projectRoot, messages, employee, model),
     ])
-    console.error(
-        `${employee.name} answers as ${position.title} (@${position.id}):`,
-    )
+    onEvent({ kind: "answering", position, employee })
     const response = await callAnthropicMessages({
         connection,
         apiKey,
@@ -102,9 +120,9 @@ async function answerAs(
             thread,
         }),
         turns: getAnthropicTurns(messages, employee, ownReplays),
-        onText: (text) => process.stdout.write(text),
+        onText: (text) => onEvent({ kind: "text", text }),
     })
-    process.stdout.write("\n")
+    onEvent({ kind: "streamed" })
     const body = response.content
         .filter((block) => block.type === "text")
         .map(({ text }) => text)
@@ -114,9 +132,6 @@ async function answerAs(
             `${employee.name} answered nothing (stop reason: ${response.stop_reason}).`,
         )
     }
-    if (response.stop_reason === "max_tokens") {
-        console.error(`${employee.name}'s answer was cut at its length limit.`)
-    }
     const draft = {
         position: { id: position.id, title: position.title },
         employee: { id: employee.id, name: employee.name },
@@ -125,11 +140,6 @@ async function answerAs(
         ...(await resolveMentions(projectRoot, body, position.id)),
     }
     const answer = await sendDraft(projectRoot, threadId, draft)
-    for (const positionId of draft.unknownMentionIds) {
-        console.error(
-            `"@${positionId}" names no position, so it mentions nobody.`,
-        )
-    }
     await saveProviderResponse(projectRoot, answer, {
         providerId: provider.id,
         modelId: model.id,
@@ -137,12 +147,20 @@ async function answerAs(
         apiId: model.apiId,
         response,
     })
+    onEvent({
+        kind: "answered",
+        employee,
+        answer,
+        isCut: response.stop_reason === "max_tokens",
+        unknownMentionIds: draft.unknownMentionIds,
+    })
 }
 
 export async function answerMentions(
     projectRoot: string,
     threadId: string,
     positionIds: string[],
+    onEvent: (event: AnswerEvent) => void,
 ): Promise<void> {
     const failureMessages: string[] = []
     const { directorPositionId } = await loadCompany(projectRoot)
@@ -157,26 +175,20 @@ export async function answerMentions(
             directorPositionId,
         )
         if (worker === undefined) {
-            console.error(
-                `@${position.id} is vacant: the message waits until someone is assigned.`,
-            )
+            onEvent({ kind: "vacant", position })
             continue
         }
         if (worker.kind === "directors") {
-            console.error(
-                `@${position.id} is worked by the directors: the message waits for their answer.`,
-            )
+            onEvent({ kind: "worked-by-directors", position })
             continue
         }
         const employee = await loadEmployee(projectRoot, worker.employeeId)
         if (employee.kind === "human") {
-            console.error(
-                `@${position.id} is worked by ${employee.name}, a human: the message waits for their answer.`,
-            )
+            onEvent({ kind: "worked-by-human", position, employee })
             continue
         }
         try {
-            await answerAs(projectRoot, threadId, position, employee)
+            await answerAs(projectRoot, threadId, position, employee, onEvent)
         } catch (error) {
             if (!(error instanceof UserError)) {
                 throw error

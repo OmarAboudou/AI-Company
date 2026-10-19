@@ -1,6 +1,7 @@
 import type { Command } from "@commander-js/extra-typings"
 import { z } from "zod"
 import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
+import { printAnswerEvent } from "../cli/print-answer-event.ts"
 import { printColumns } from "../cli/print-columns.ts"
 import { printUnknownMentions } from "../cli/print-unknown-mentions.ts"
 import { projectRoot } from "../cli/project-root.ts"
@@ -83,7 +84,12 @@ export function registerThreadCommands(program: Command): void {
             if (draft !== undefined) {
                 await sendDraft(projectRoot, id, draft)
                 printUnknownMentions(draft.unknownMentionIds)
-                await answerMentions(projectRoot, id, draft.mentions)
+                await answerMentions(
+                    projectRoot,
+                    id,
+                    draft.mentions,
+                    printAnswerEvent,
+                )
             }
         })
 
