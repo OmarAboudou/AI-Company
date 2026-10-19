@@ -10,6 +10,20 @@ type History = {
 
 const { runCli, projectPath } = useTemporaryProject()
 
+const interimEmployee = ["position", "interim", "employee"]
+
+async function temporaryAssignee(positionId: string): Promise<unknown> {
+    const path = [".llmco", ".state", "positions", `${positionId}.json`]
+    const file = Bun.file(projectPath(...path))
+    return (await file.exists())
+        ? (await file.json()).temporaryAssignment
+        : undefined
+}
+
+function employeeWorker(employeeId: string) {
+    return { kind: "employee", employeeId }
+}
+
 describe("llmco employee", () => {
     beforeEach(() => {
         runCli("init", "--name", "Acme")
@@ -305,6 +319,22 @@ describe("llmco employee update-id", () => {
         expect(update.stdout).toContain("updated positions: developer, qa-")
         expect(list).toContain("developer  Developer  omar-a\n")
         expect(list).toContain("qa-tester  QA Tester  omar-a\n")
+    })
+
+    test("update-id rewrites its temporary assignments", async () => {
+        runCli("position", "assign", "developer", "omar")
+        runCli(...interimEmployee, "qa-tester", "omar")
+
+        const before = await temporaryAssignee("qa-tester")
+
+        const update = runCli("employee", "update-id", "omar", "omar-a")
+        const after = await temporaryAssignee("qa-tester")
+
+        expect(update.stdout).toContain(
+            "updated positions: developer, qa-tester (temporarily).",
+        )
+        expect(before).toEqual(employeeWorker("omar"))
+        expect(after).toEqual(employeeWorker("omar-a"))
     })
 
     test("update-id refuses an id another employee has", () => {
