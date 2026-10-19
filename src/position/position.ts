@@ -61,7 +61,7 @@ export const PositionStateSchema = z
     .meta({
         title: "llmco position state",
         description:
-            "What happens to a position while the company runs, in .llmco/state/positions/<position-id>.json. Written by llmco and ignored by git; absent while the position's default employee works it, or nobody if it is vacant.",
+            "What happens to a position while the company runs, in .llmco/.state/positions/<position-id>.json. Written by llmco and ignored by git; absent while the position's default employee works it, or nobody if it is vacant.",
     })
 
 export type PositionState = z.infer<typeof PositionStateSchema>
