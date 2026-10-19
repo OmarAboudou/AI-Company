@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../use-temporary-project.ts"
 
-const { runCli, projectPath } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("llmco init", () => {
     test("creates a company that company show displays", () => {
@@ -37,7 +37,7 @@ describe("--description-file", () => {
     const markdown = "## Mission\n\nYou build the API.\n"
 
     test("init reads the description from a file", async () => {
-        await Bun.write(projectPath("company.md"), markdown)
+        await Bun.write(getProjectPath("company.md"), markdown)
 
         runCli("init", "--name", "Acme", "--description-file", "company.md")
 
@@ -83,7 +83,7 @@ describe("short options", () => {
     })
 
     test("-F reads the description from a file", async () => {
-        await Bun.write(projectPath("company.md"), "We build things.")
+        await Bun.write(getProjectPath("company.md"), "We build things.")
 
         runCli("init", "-n", "Acme", "-F", "company.md")
 

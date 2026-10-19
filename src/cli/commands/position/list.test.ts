@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-const { runCli, projectPath } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 const interimEmployee = ["position", "interim", "employee"]
 const interimDirectors = ["position", "interim", "directors"]
@@ -105,7 +105,7 @@ describe("corrupted files", () => {
         runCli("init", "--name", "Acme")
         runCli("position", "create", "developer", "--title", "Developer")
         await Bun.write(
-            projectPath(".llmco", "positions", "developer", "config.json"),
+            getProjectPath(".llmco", "positions", "developer", "config.json"),
             "{ not json",
         )
 

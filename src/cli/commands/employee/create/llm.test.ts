@@ -3,7 +3,7 @@ import { saveMessage } from "../../../../messaging/message/storage.ts"
 import { saveThread } from "../../../../messaging/thread/storage.ts"
 import { useTemporaryProject } from "../../../use-temporary-project.ts"
 
-const { runCli, projectPath } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("llmco employee", () => {
     beforeEach(() => {
@@ -93,7 +93,7 @@ describe("--reuse-id", () => {
     })
 
     async function archiveMessageBy(employeeId: string, sentAt: string) {
-        await saveThread(projectPath(), {
+        await saveThread(getProjectPath(), {
             id: threadId,
             subject: "Budget",
             createdAt: "2026-10-18T14:00:00.000Z",
@@ -102,7 +102,7 @@ describe("--reuse-id", () => {
                 committer,
             },
         })
-        await saveMessage(projectPath(), {
+        await saveMessage(getProjectPath(), {
             threadId,
             id: "20261018-140100-000-0000",
             position: { id: "developer", title: "Developer" },

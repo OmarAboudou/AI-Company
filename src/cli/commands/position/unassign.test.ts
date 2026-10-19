@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-const { runCli, projectPath } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("llmco position assign and unassign", () => {
     beforeEach(() => {
@@ -44,7 +44,7 @@ describe("llmco position assign and unassign", () => {
     })
 
     async function positionConfig(id: string): Promise<unknown> {
-        const path = projectPath(".llmco", "positions", id, "config.json")
+        const path = getProjectPath(".llmco", "positions", id, "config.json")
         return Bun.file(path).json()
     }
 

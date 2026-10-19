@@ -16,19 +16,19 @@ export function useTemporaryProject() {
             mkdtemp(join(tmpdir(), "llmco-")),
             mkdtemp(join(tmpdir(), "llmco-home-")),
         ])
-        for (const args of [
+        for (const gitArgs of [
             ["init", "-q"],
             ["config", "user.name", "Test User"],
             ["config", "user.email", "test@example.com"],
         ]) {
-            Bun.spawnSync(["git", ...args], { cwd: projectRoot })
+            Bun.spawnSync(["git", ...gitArgs], { cwd: projectRoot })
         }
     })
 
     afterEach(async () => {
         await Promise.all(
-            [projectRoot, home].map((dir) =>
-                rm(dir, { recursive: true, force: true }),
+            [projectRoot, home].map((folderPath) =>
+                rm(folderPath, { recursive: true, force: true }),
             ),
         )
     })
@@ -36,45 +36,45 @@ export function useTemporaryProject() {
     // No test may reach a real API: the CLI never sees this machine's API
     // keys, nor the credentials an SDK could find in its home directory.
     // Nor does it see who this machine's shell is switched to.
-    function environment(env: Record<string, string>) {
-        const kept = Object.entries(process.env).filter(
+    function readCliEnvironment(env: Record<string, string>) {
+        const keptEntries = Object.entries(process.env).filter(
             ([name]) => !/^(ANTHROPIC|OPENAI|LLMCO)_/.test(name),
         )
-        return { ...Object.fromEntries(kept), HOME: home, ...env }
+        return { ...Object.fromEntries(keptEntries), HOME: home, ...env }
     }
 
-    function spawnOptions({ stdin = "", env = {} }: RunOptions) {
+    function createSpawnOptions({ stdin = "", env = {} }: RunOptions) {
         return {
             cwd: projectRoot,
-            env: environment(env),
+            env: readCliEnvironment(env),
             stdin: new TextEncoder().encode(stdin),
         }
     }
 
     function run(options: RunOptions, args: string[]) {
-        const result = Bun.spawnSync(
+        const cliProcess = Bun.spawnSync(
             [process.execPath, cliPath, ...args],
-            spawnOptions(options),
+            createSpawnOptions(options),
         )
         return {
-            exitCode: result.exitCode,
-            stdout: result.stdout.toString(),
-            stderr: result.stderr.toString(),
+            exitCode: cliProcess.exitCode,
+            stdout: cliProcess.stdout.toString(),
+            stderr: cliProcess.stderr.toString(),
         }
     }
 
     // Bun.spawnSync blocks this process, so a fake API server started by
     // the test would never answer the CLI.
     async function runAsync(options: RunOptions, args: string[]) {
-        const child = Bun.spawn([process.execPath, cliPath, ...args], {
-            ...spawnOptions(options),
+        const cliProcess = Bun.spawn([process.execPath, cliPath, ...args], {
+            ...createSpawnOptions(options),
             stdout: "pipe",
             stderr: "pipe",
         })
         const [stdout, stderr, exitCode] = await Promise.all([
-            new Response(child.stdout).text(),
-            new Response(child.stderr).text(),
-            child.exited,
+            new Response(cliProcess.stdout).text(),
+            new Response(cliProcess.stderr).text(),
+            cliProcess.exited,
         ])
         return { exitCode, stdout, stderr }
     }
@@ -87,7 +87,8 @@ export function useTemporaryProject() {
             run({ env }, args),
         runCliAsync: (env: Record<string, string>, ...args: string[]) =>
             runAsync({ env }, args),
-        projectPath: (...segments: string[]) => join(projectRoot, ...segments),
-        homePath: (...segments: string[]) => join(home, ...segments),
+        getProjectPath: (...segments: string[]) =>
+            join(projectRoot, ...segments),
+        getHomePath: (...segments: string[]) => join(home, ...segments),
     }
 }

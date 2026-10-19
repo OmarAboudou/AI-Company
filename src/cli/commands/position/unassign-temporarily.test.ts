@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-const { runCli, projectPath } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 const interimEmployee = ["position", "interim", "employee"]
 const interimDirectors = ["position", "interim", "directors"]
 
 function positionStatePath(id: string): string {
-    return projectPath(".llmco", ".state", "positions", `${id}.json`)
+    return getProjectPath(".llmco", ".state", "positions", `${id}.json`)
 }
 
 async function positionState(id: string): Promise<unknown> {
