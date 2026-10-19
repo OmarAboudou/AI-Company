@@ -1,4 +1,4 @@
-import type { Command } from "@commander-js/extra-typings"
+import { type Command, Option } from "@commander-js/extra-typings"
 import { z } from "zod"
 import {
     descriptionFileOption,
@@ -38,6 +38,75 @@ function workerName(assignment: Worker): string {
 
 function temporaryHolder(assignment: Worker, directors: string): string {
     return assignment.kind === "directors" ? directors : assignment.employeeId
+}
+
+function replaceTemporaryOption() {
+    return new Option(
+        "-r, --replace",
+        "replace the current temporary assignment",
+    )
+}
+
+type Assignee =
+    | { kind: "employee"; rawEmployeeId: string }
+    | { kind: "directors" }
+
+async function assignTemporarily(
+    rawPositionId: string,
+    assignee: Assignee,
+    replace: boolean | undefined,
+): Promise<void> {
+    await requireCompany()
+    const [position, employee, company, state] = await Promise.all([
+        loadExistingPosition(rawPositionId),
+        assignee.kind === "employee"
+            ? loadExistingEmployee(assignee.rawEmployeeId)
+            : undefined,
+        loadCompany(projectRoot),
+        loadPositionState(projectRoot, parseId("position", rawPositionId)),
+    ])
+    if (position.id === company.directorPositionId) {
+        throw new UserError(
+            `Position "${position.id}" is the director's position: the people working on this repository always hold it.`,
+        )
+    }
+    const current = state.temporaryAssignment
+    if (employee !== undefined && employee.id === position.defaultEmployeeId) {
+        if (current !== undefined) {
+            throw new UserError(
+                `"${employee.id}" is the default employee of position "${position.id}": run \`llmco position unassign-temporarily ${position.id}\` to give the position back to it.`,
+            )
+        }
+        console.log(
+            `"${employee.id}" already works position "${position.id}", as its default employee.`,
+        )
+        return
+    }
+    const assignment: Worker =
+        employee === undefined
+            ? { kind: "directors" }
+            : { kind: "employee", employeeId: employee.id }
+    if (current !== undefined && Bun.deepEquals(current, assignment)) {
+        console.log(
+            `Position "${position.id}" is already assigned temporarily to ${workerName(assignment)}.`,
+        )
+        return
+    }
+    if (current !== undefined && !replace) {
+        throw new UserError(
+            `Position "${position.id}" is already assigned temporarily to ${workerName(current)}. Add --replace to replace it.`,
+        )
+    }
+    await savePositionState(projectRoot, position.id, {
+        ...state,
+        temporaryAssignment: assignment,
+    })
+    const assigned = `Position "${position.id}" is now assigned temporarily to ${workerName(assignment)}`
+    console.log(
+        current === undefined
+            ? `${assigned}.`
+            : `${assigned} instead of ${workerName(current)}.`,
+    )
 }
 
 export function registerPositionCommands(program: Command): void {
@@ -297,78 +366,45 @@ export function registerPositionCommands(program: Command): void {
             )
         })
 
-    positionCommand
+    const assignTemporarilyCommand = positionCommand
         .command("assign-temporarily")
         .alias("interim")
         .description(
-            "Assign a position temporarily to an employee, or without one to the directors, until unassign-temporarily. Its default employee doesn't change.",
+            "Assign a position temporarily, until unassign-temporarily: to an employee, or to the directors themselves. Its default employee doesn't change.",
+        )
+
+    assignTemporarilyCommand
+        .command("employee")
+        .description("Assign a position temporarily to an employee.")
+        .argument(
+            "<position-id>",
+            idDescription("position", "backend-developer"),
+        )
+        .argument("<employee-id>", idDescription("employee", "julie"))
+        .addOption(replaceTemporaryOption())
+        .action(async (rawPositionId, rawEmployeeId, { replace }) => {
+            await assignTemporarily(
+                rawPositionId,
+                { kind: "employee", rawEmployeeId },
+                replace,
+            )
+        })
+
+    assignTemporarilyCommand
+        .command("directors")
+        .description(
+            "Assign a position temporarily to the directors: the people working on the repository cover it themselves, without an employee.",
         )
         .argument(
             "<position-id>",
             idDescription("position", "backend-developer"),
         )
-        .argument(
-            "[employee-id]",
-            "id of the employee working the position meanwhile (e.g. julie); without it, the directors work it themselves",
-        )
-        .option("-r, --replace", "replace the current temporary assignment")
-        .action(async (rawPositionId, rawEmployeeId, { replace }) => {
-            await requireCompany()
-            const [position, employee, company, state] = await Promise.all([
-                loadExistingPosition(rawPositionId),
-                rawEmployeeId === undefined
-                    ? undefined
-                    : loadExistingEmployee(rawEmployeeId),
-                loadCompany(projectRoot),
-                loadPositionState(
-                    projectRoot,
-                    parseId("position", rawPositionId),
-                ),
-            ])
-            if (position.id === company.directorPositionId) {
-                throw new UserError(
-                    `Position "${position.id}" is the director's position: the people working on this repository always hold it.`,
-                )
-            }
-            const current = state.temporaryAssignment
-            if (
-                employee !== undefined &&
-                employee.id === position.defaultEmployeeId
-            ) {
-                if (current !== undefined) {
-                    throw new UserError(
-                        `"${employee.id}" is the default employee of position "${position.id}": run \`llmco position unassign-temporarily ${position.id}\` to give the position back to it.`,
-                    )
-                }
-                console.log(
-                    `"${employee.id}" already works position "${position.id}", as its default employee.`,
-                )
-                return
-            }
-            const assignment: Worker =
-                employee === undefined
-                    ? { kind: "directors" }
-                    : { kind: "employee", employeeId: employee.id }
-            if (current !== undefined && Bun.deepEquals(current, assignment)) {
-                console.log(
-                    `Position "${position.id}" is already assigned temporarily to ${workerName(assignment)}.`,
-                )
-                return
-            }
-            if (current !== undefined && !replace) {
-                throw new UserError(
-                    `Position "${position.id}" is already assigned temporarily to ${workerName(current)}. Add --replace to replace it.`,
-                )
-            }
-            await savePositionState(projectRoot, position.id, {
-                ...state,
-                temporaryAssignment: assignment,
-            })
-            const assigned = `Position "${position.id}" is now assigned temporarily to ${workerName(assignment)}`
-            console.log(
-                current === undefined
-                    ? `${assigned}.`
-                    : `${assigned} instead of ${workerName(current)}.`,
+        .addOption(replaceTemporaryOption())
+        .action(async (rawPositionId, { replace }) => {
+            await assignTemporarily(
+                rawPositionId,
+                { kind: "directors" },
+                replace,
             )
         })
 
