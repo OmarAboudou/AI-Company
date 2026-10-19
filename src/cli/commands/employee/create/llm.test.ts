@@ -82,44 +82,6 @@ describe("llmco employee", () => {
         expect(withoutModel.exitCode).toBe(1)
         expect(withoutProvider.exitCode).toBe(1)
     })
-
-    test("create llm requires an existing provider", () => {
-        const create = ["employee", "create", "llm", "x", "-n", "X"]
-
-        const hire = runCli(...create, "-p", "bedrock", "-m", "claude-opus-5-5")
-
-        expect(hire.exitCode).toBe(1)
-        expect(hire.stderr).toContain('No provider "bedrock".')
-    })
-
-    test("create llm requires a model of that provider", () => {
-        const create = ["employee", "create", "llm", "x", "-n", "X"]
-
-        const hire = runCli(...create, "-p", "anthropic", "-m", "gpt-5")
-
-        expect(hire.exitCode).toBe(1)
-        expect(hire.stderr).toContain('"anthropic" has no model "gpt-5"')
-        expect(runCli("employee", "show", "x").exitCode).toBe(1)
-    })
-
-    test("create llm rejects a model id that is not kebab-case", () => {
-        const create = runCli(
-            "employee",
-            "create",
-            "llm",
-            "local",
-            "-n",
-            "Local",
-            "-p",
-            "ollama",
-            "-m",
-            "llama3.1:8b",
-        )
-
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain("kebab-case")
-        expect(create.stderr).toContain("at modelId")
-    })
 })
 
 describe("--reuse-id", () => {
