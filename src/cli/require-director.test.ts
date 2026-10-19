@@ -73,7 +73,7 @@ const free = [
     "thread list",
     "thread show",
     "message send",
-    "whoami",
+    "current-human",
 ]
 
 function leafCommands(command: CommandUnknownOpts): string[] {

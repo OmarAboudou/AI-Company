@@ -4,9 +4,9 @@ import { registerLlmModelCommands } from "../llm-model/commands.ts"
 import { registerLlmProviderCommands } from "../llm-provider/commands.ts"
 import { registerMessageCommands } from "../message/commands.ts"
 import { registerThreadCommands } from "../thread/commands.ts"
+import { registerCurrentHumanCommand } from "./commands/current-human.ts"
 import { registerEmployeeCommands } from "./commands/employee/employee.ts"
 import { registerPositionCommands } from "./commands/position/position.ts"
-import { registerWhoamiCommand } from "./commands/whoami.ts"
 
 export function createProgram(): Command {
     const program = new Command()
@@ -20,6 +20,6 @@ export function createProgram(): Command {
     registerLlmModelCommands(program)
     registerThreadCommands(program)
     registerMessageCommands(program)
-    registerWhoamiCommand(program)
+    registerCurrentHumanCommand(program)
     return program
 }

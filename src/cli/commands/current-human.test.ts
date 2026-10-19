@@ -20,23 +20,30 @@ beforeEach(() => {
     }
 })
 
-describe("llmco whoami", () => {
+describe("llmco current-human", () => {
     test("without LLMCO_CURRENT_HUMAN_ID, shows a director, named by git", () => {
-        const whoami = runCli("whoami")
+        const currentHuman = runCli("current-human")
 
-        expect(whoami.exitCode).toBe(0)
-        expect(whoami.stdout).toBe(
+        expect(currentHuman.exitCode).toBe(0)
+        expect(currentHuman.stdout).toBe(
             "Test User, a director\n" +
                 "positions: director\n" +
                 "committer: Test User <test@example.com>\n",
         )
     })
 
-    test("shows the human employee LLMCO_CURRENT_HUMAN_ID names, and the committer", () => {
-        const whoami = runCliWithEnv(asJulie, "whoami")
+    test("whoami is an alias of current-human", () => {
+        const whoami = runCli("whoami")
 
         expect(whoami.exitCode).toBe(0)
-        expect(whoami.stdout).toBe(
+        expect(whoami.stdout).toBe(runCli("current-human").stdout)
+    })
+
+    test("shows the human employee LLMCO_CURRENT_HUMAN_ID names, and the committer", () => {
+        const currentHuman = runCliWithEnv(asJulie, "current-human")
+
+        expect(currentHuman.exitCode).toBe(0)
+        expect(currentHuman.stdout).toBe(
             "Julie (julie), a human employee\n" +
                 "positions: (none)\n" +
                 "committer: Test User <test@example.com>\n",
@@ -49,15 +56,17 @@ describe("llmco whoami", () => {
         runCli(...interimEmployee, "design", "bob")
         runCli(...interimEmployee, "support", "julie")
 
-        const whoami = runCliWithEnv(asJulie, "whoami").stdout
+        const currentHuman = runCliWithEnv(asJulie, "current-human").stdout
 
-        expect(whoami).toContain("positions: graphics, support (temporarily)\n")
+        expect(currentHuman).toContain(
+            "positions: graphics, support (temporarily)\n",
+        )
     })
 
     test("refuses an id naming no employee", () => {
-        const whoami = runCliWithEnv(switchedTo("eve"), "whoami")
+        const currentHuman = runCliWithEnv(switchedTo("eve"), "current-human")
 
-        expect(whoami.exitCode).toBe(1)
-        expect(whoami.stderr).toContain('names no employee: "eve"')
+        expect(currentHuman.exitCode).toBe(1)
+        expect(currentHuman.stderr).toContain('names no employee: "eve"')
     })
 })

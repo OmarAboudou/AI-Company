@@ -23,7 +23,7 @@ export function bodyOption(what = "the message") {
 export function asPositionOption() {
     return new Option(
         "-a, --as-position <position-id>",
-        "position to write from, among those you work (see whoami); by default, the only one of them in the thread, else the director's or your only one",
+        "position to write from, among those you work (see current-human); by default, the only one of them in the thread, else the director's or your only one",
     )
 }
 
@@ -107,7 +107,7 @@ export function registerMessageCommands(program: Command): void {
     messageCommand
         .command("send")
         .description(
-            "Send a message in a thread, as the person at the keyboard (see whoami), and print the answers of the LLM employees it mentions.",
+            "Send a message in a thread, as the person at the keyboard (see current-human), and print the answers of the LLM employees it mentions.",
         )
         .argument(
             "<thread-id>",
