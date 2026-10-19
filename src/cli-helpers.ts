@@ -1,6 +1,4 @@
 import { projectRoot } from "./cli/project-root.ts"
-import type { Employee } from "./employee/employee.ts"
-import { employeeExists, loadEmployee } from "./employee/storage.ts"
 import { parseId } from "./ids/parse-id.ts"
 import type { LlmModel } from "./llm-model/llm-model.ts"
 import { llmModelExists, loadLlmModel } from "./llm-model/storage.ts"
@@ -16,14 +14,6 @@ export function withoutUndefined<Values extends object>(
     return Object.fromEntries(
         Object.entries(values).filter(([, value]) => value !== undefined),
     ) as Partial<Values>
-}
-
-export async function loadExistingEmployee(rawId: string): Promise<Employee> {
-    const id = parseId("employee", rawId)
-    if (!(await employeeExists(projectRoot, id))) {
-        throw new UserError(`No employee "${id}". Run \`llmco employee list\`.`)
-    }
-    return loadEmployee(projectRoot, id)
 }
 
 export async function loadExistingLlmProvider(

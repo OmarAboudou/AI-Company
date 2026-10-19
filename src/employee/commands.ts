@@ -5,11 +5,7 @@ import { formatNewIdArgumentDescription } from "../cli/format-new-id-argument-de
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
-import {
-    loadExistingEmployee,
-    loadExistingLlmModel,
-    withoutUndefined,
-} from "../cli-helpers.ts"
+import { loadExistingLlmModel, withoutUndefined } from "../cli-helpers.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
@@ -32,6 +28,7 @@ import {
     type EmployeeConfig,
     EmployeeConfigSchema,
 } from "./employee.ts"
+import { loadExistingEmployee } from "./load-existing-employee.ts"
 import {
     copyEmployee,
     deleteEmployee,
@@ -245,7 +242,7 @@ export function registerEmployeeCommands(program: Command): void {
         .action(async (rawId) => {
             await requireCompany(projectRoot)
             const [employee, positions] = await Promise.all([
-                loadExistingEmployee(rawId),
+                loadExistingEmployee(projectRoot, rawId),
                 listPositions(projectRoot),
             ])
             const lines = [`# ${employee.name}`, "", `kind: ${employee.kind}`]
@@ -284,7 +281,7 @@ export function registerEmployeeCommands(program: Command): void {
             requireAtLeastOneOption(options)
             await requireCompany(projectRoot)
             const { id, createdAt, formerIds, ...current } =
-                await loadExistingEmployee(rawId)
+                await loadExistingEmployee(projectRoot, rawId)
             const llmOptions = [options.provider, options.model]
             if (
                 current.kind === "human" &&
@@ -334,7 +331,7 @@ export function registerEmployeeCommands(program: Command): void {
             await requireCompany(projectRoot)
             const newId = parseId("employee", rawNewId)
             const [employee, taken, positions] = await Promise.all([
-                loadExistingEmployee(rawId),
+                loadExistingEmployee(projectRoot, rawId),
                 employeeExists(projectRoot, newId),
                 listPositions(projectRoot),
             ])
@@ -405,8 +402,8 @@ export function registerEmployeeCommands(program: Command): void {
         .action(async (rawId, rawReplacementId, { temporary }) => {
             await requireCompany(projectRoot)
             const [employee, replacement, positions] = await Promise.all([
-                loadExistingEmployee(rawId),
-                loadExistingEmployee(rawReplacementId),
+                loadExistingEmployee(projectRoot, rawId),
+                loadExistingEmployee(projectRoot, rawReplacementId),
                 listPositions(projectRoot),
             ])
             if (replacement.id === employee.id) {
@@ -493,7 +490,7 @@ export function registerEmployeeCommands(program: Command): void {
         .action(async (rawId, { force }) => {
             await requireCompany(projectRoot)
             const [employee, positions] = await Promise.all([
-                loadExistingEmployee(rawId),
+                loadExistingEmployee(projectRoot, rawId),
                 listPositions(projectRoot),
             ])
             const filled = filledPositions(positions, employee.id)
