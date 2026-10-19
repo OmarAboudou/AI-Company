@@ -5,25 +5,20 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { parseId } from "../ids/parse-id.ts"
 import { protocols } from "../llm/connection/schema.ts"
 import { createLlmProvider } from "../llm/provider/create-llm-provider.ts"
 import { loadExistingLlmProvider } from "../llm/provider/load-existing-llm-provider.ts"
 import type { ApiKeySource } from "../llm/provider/schema.ts"
 import {
-    copyLlmProviderFolder,
     deleteLlmProviderFolder,
-    hasLlmProvider,
     listLlmProviders,
 } from "../llm/provider/storage.ts"
 import { updateLlmProvider } from "../llm/provider/update-llm-provider.ts"
+import { updateLlmProviderId } from "../llm/provider/update-llm-provider-id.ts"
 import { registerLlmConnectionCommands } from "../llm-connection/commands.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
-import {
-    listEmployees,
-    saveEmployee,
-} from "../organization/employee/storage.ts"
+import { listEmployees } from "../organization/employee/storage.ts"
 import { UserError } from "../user-error.ts"
 
 function apiKeyEnvOption() {
@@ -164,36 +159,13 @@ export function registerLlmProviderCommands(program: Command): void {
         )
         .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId) => {
-            await requireCompany(projectRoot)
-            const newId = parseId("provider", rawNewId)
-            const [provider, taken, employees] = await Promise.all([
-                loadExistingLlmProvider(projectRoot, rawId),
-                hasLlmProvider(projectRoot, newId),
-                listEmployees(projectRoot),
-            ])
-            if (taken) {
-                throw new UserError(`Provider "${newId}" already exists.`)
-            }
-            const users = employees
-                .filter((employee) => employee.kind === "llm")
-                .filter((employee) => employee.providerId === provider.id)
-            // Copy, repoint, then delete rather than move, as for employees:
-            // an employee must never run on a missing provider.
-            await copyLlmProviderFolder(projectRoot, provider.id, newId)
-            await Promise.all(
-                users.map((employee) =>
-                    saveEmployee(projectRoot, {
-                        ...employee,
-                        providerId: newId,
-                    }),
-                ),
-            )
-            await deleteLlmProviderFolder(projectRoot, provider.id)
-            const renamed = `Provider "${provider.id}" is now "${newId}"`
+            const { provider, renamedProvider, updatedEmployeeIds } =
+                await updateLlmProviderId(projectRoot, rawId, rawNewId)
+            const renamedMessage = `Provider "${provider.id}" is now "${renamedProvider.id}"`
             console.log(
-                users.length === 0
-                    ? `${renamed}.`
-                    : `${renamed}; updated employees: ${users.map(({ id }) => id).join(", ")}.`,
+                updatedEmployeeIds.length === 0
+                    ? `${renamedMessage}.`
+                    : `${renamedMessage}; updated employees: ${updatedEmployeeIds.join(", ")}.`,
             )
         })
 
