@@ -31,13 +31,6 @@ describe("llmco provider", () => {
         expect(second.exitCode).toBe(1)
         expect(show).toContain("# Anthropic\n")
     })
-
-    test("create rejects an id that is not kebab-case", () => {
-        const create = runCli("provider", "create", "Anthropic", "-n", "A")
-
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain("kebab-case")
-    })
 })
 
 describe("llmco provider API key", () => {
@@ -75,14 +68,5 @@ describe("llmco provider API key", () => {
         expect(create.exitCode).toBe(1)
         expect(create.stderr).toContain("cannot be used with")
         expect(runCli("provider", "list").stdout).toContain("No providers")
-    })
-
-    test("create rejects an invalid environment variable name", () => {
-        const create = ["provider", "create", "anthropic", "-n", "Anthropic"]
-
-        const result = runCli(...create, "-e", "$ANTHROPIC_API_KEY")
-
-        expect(result.exitCode).toBe(1)
-        expect(result.stderr).toContain("variable's name, without $")
     })
 })

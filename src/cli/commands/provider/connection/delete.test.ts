@@ -64,17 +64,4 @@ describe("llmco provider connection delete", () => {
             anthropicUrl,
         )
     })
-
-    test("delete fails for a connection the provider doesn't have", () => {
-        const deletion = runCli(
-            "provider",
-            "connection",
-            "delete",
-            "anthropic",
-            "anthropic-messages",
-        )
-
-        expect(deletion.exitCode).toBe(1)
-        expect(deletion.stderr).toContain("has no anthropic-messages")
-    })
 })

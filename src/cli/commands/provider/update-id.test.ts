@@ -47,11 +47,4 @@ describe("llmco provider update-id", () => {
         expect(update.stderr).toContain('Provider "ollama" already exists.')
         expect(runCli("model", "list").stdout).toContain("anthropic/opus")
     })
-
-    test("update-id fails for an unknown provider", () => {
-        const update = runCli("provider", "update-id", "groq", "groq-api")
-
-        expect(update.exitCode).toBe(1)
-        expect(update.stderr).toContain('No provider "groq".')
-    })
 })

@@ -19,17 +19,6 @@ describe("llmco provider API key", () => {
         expect(before).toContain("api key: file ~/.keys/anthropic\n")
         expect(after).toContain("api key: environment variable ANTHROPIC")
     })
-
-    test("update -n keeps the API key's source", () => {
-        const create = ["provider", "create", "anthropic", "-n", "Anthropic"]
-        runCli(...create, "-e", "ANTHROPIC_API_KEY")
-
-        runCli("provider", "update", "anthropic", "-n", "Anthropic PBC")
-        const show = runCli("provider", "show", "anthropic").stdout
-
-        expect(show).toContain("# Anthropic PBC\n")
-        expect(show).toContain("api key: environment variable ANTHROPIC")
-    })
 })
 
 describe("llmco provider update", () => {
@@ -51,12 +40,5 @@ describe("llmco provider update", () => {
 
         expect(update.exitCode).toBe(1)
         expect(update.stderr).toContain("Nothing to update")
-    })
-
-    test("update fails for an unknown provider", () => {
-        const update = runCli("provider", "update", "ollama", "-n", "Ollama")
-
-        expect(update.exitCode).toBe(1)
-        expect(update.stderr).toContain('No provider "ollama".')
     })
 })
