@@ -1,5 +1,4 @@
 import { Argument, type Command, Option } from "@commander-js/extra-typings"
-import { z } from "zod"
 import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
@@ -7,6 +6,9 @@ import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
 import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
+import { loadLlmProviderWithConnection } from "../llm/connection/load-llm-provider-with-connection.ts"
+import { requireAnthropicForAuth } from "../llm/connection/require-anthropic-for-auth.ts"
+import { saveLlmConnections } from "../llm/connection/save-llm-connections.ts"
 import {
     authSchemes,
     type Connection,
@@ -14,11 +16,7 @@ import {
     protocols,
 } from "../llm/connection/schema.ts"
 import { loadExistingLlmProvider } from "../llm/provider/load-existing-llm-provider.ts"
-import {
-    type LlmProvider,
-    LlmProviderConfigSchema,
-} from "../llm/provider/schema.ts"
-import { listLlmProviders, saveLlmProvider } from "../llm/provider/storage.ts"
+import { listLlmProviders } from "../llm/provider/storage.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
 import { UserError } from "../user-error.ts"
@@ -37,49 +35,11 @@ function authOption() {
     ).choices(authSchemes)
 }
 
-function requireAnthropicForAuth(
-    protocol: Protocol,
-    auth: string | undefined,
-): void {
-    if (auth !== undefined && protocol !== "anthropic-messages") {
-        throw new UserError(
-            "--auth only applies to anthropic-messages: the OpenAI protocols always send a bearer token.",
-        )
-    }
-}
-
 function sentAuth(protocol: Protocol, connection: Connection): string {
     if (protocol !== "anthropic-messages") {
         return "bearer"
     }
     return ("auth" in connection ? connection.auth : undefined) ?? "x-api-key"
-}
-
-async function saveConnections(
-    { id, ...current }: LlmProvider,
-    connections: object,
-): Promise<void> {
-    const config = LlmProviderConfigSchema.safeParse({
-        ...current,
-        connections,
-    })
-    if (!config.success) {
-        throw new UserError(z.prettifyError(config.error))
-    }
-    await saveLlmProvider(projectRoot, { id, ...config.data })
-}
-
-async function loadProviderWithConnection(
-    rawProviderId: string,
-    protocol: Protocol,
-): Promise<LlmProvider> {
-    const provider = await loadExistingLlmProvider(projectRoot, rawProviderId)
-    if (provider.connections?.[protocol] === undefined) {
-        throw new UserError(
-            `Provider "${provider.id}" has no ${protocol} connection. Run \`llmco provider connection list\`.`,
-        )
-    }
-    return provider
 }
 
 export function registerLlmConnectionCommands(providerCommand: Command): void {
@@ -115,7 +75,7 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
                 )
             }
             requireAnthropicForAuth(protocol, auth)
-            await saveConnections(provider, {
+            await saveLlmConnections(projectRoot, provider, {
                 ...provider.connections,
                 [protocol]: { baseUrl, ...getDefinedValues({ auth }) },
             })
@@ -171,12 +131,13 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
         .action(async (rawProviderId, protocol, options) => {
             requireAtLeastOneOption(options)
             await requireCompany(projectRoot)
-            const provider = await loadProviderWithConnection(
+            const provider = await loadLlmProviderWithConnection(
+                projectRoot,
                 rawProviderId,
                 protocol,
             )
             requireAnthropicForAuth(protocol, options.auth)
-            await saveConnections(provider, {
+            await saveLlmConnections(projectRoot, provider, {
                 ...provider.connections,
                 [protocol]: {
                     ...provider.connections?.[protocol],
@@ -200,7 +161,11 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
         .action(async (rawProviderId, protocol) => {
             await requireCompany(projectRoot)
             const [provider, models] = await Promise.all([
-                loadProviderWithConnection(rawProviderId, protocol),
+                loadLlmProviderWithConnection(
+                    projectRoot,
+                    rawProviderId,
+                    protocol,
+                ),
                 listLlmModels(projectRoot, parseId("provider", rawProviderId)),
             ])
             const users = models.filter((model) => model.protocol === protocol)
@@ -212,7 +177,11 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
             const remaining = Object.entries(provider.connections ?? {}).filter(
                 ([name]) => name !== protocol,
             )
-            await saveConnections(provider, Object.fromEntries(remaining))
+            await saveLlmConnections(
+                projectRoot,
+                provider,
+                Object.fromEntries(remaining),
+            )
             console.log(
                 `Deleted the ${protocol} connection of provider "${provider.id}".`,
             )
