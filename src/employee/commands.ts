@@ -10,18 +10,16 @@ import { requireCompany } from "../company/require-company.ts"
 import { getDefinedValues } from "../get-defined-values.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
 import { parseId } from "../ids/parse-id.ts"
-import { loadExistingLlmModel } from "../llm-model/load-existing-llm-model.ts"
+import { createEmployee } from "../organization/employee/create-employee.ts"
 import { getPositionsFilledBy } from "../organization/employee/get-positions-filled-by.ts"
 import {
     listPositionsWorkedTemporarilyBy,
     type TemporaryPosition,
 } from "../organization/employee/list-positions-worked-temporarily-by.ts"
 import { loadExistingEmployee } from "../organization/employee/load-existing-employee.ts"
+import { requireEmployeeModel } from "../organization/employee/require-employee-model.ts"
 import { requireUnusedEmployeeId } from "../organization/employee/require-unused-employee-id.ts"
-import {
-    type EmployeeConfig,
-    EmployeeConfigSchema,
-} from "../organization/employee/schema.ts"
+import { EmployeeConfigSchema } from "../organization/employee/schema.ts"
 import {
     copyEmployeeFolder,
     deleteEmployeeFolder,
@@ -42,48 +40,11 @@ function positionsFilledBy(positions: Position[], employeeId: string): string {
     return ids.length > 0 ? ids.join(", ") : "(none)"
 }
 
-async function requireLlmModel(config: EmployeeConfig): Promise<void> {
-    if (config.kind === "llm") {
-        await loadExistingLlmModel(
-            projectRoot,
-            config.providerId,
-            config.modelId,
-        )
-    }
-}
-
 function reuseIdOption() {
     return new Option(
         "-r, --reuse-id",
         "give the id even if an earlier employee had it, in threads or as a former id",
     )
-}
-
-async function createEmployee(
-    rawId: string,
-    config: unknown,
-    reuseId: boolean | undefined,
-): Promise<void> {
-    await requireCompany(projectRoot)
-    const id = parseId("employee", rawId)
-    const result = EmployeeConfigSchema.safeParse(config)
-    if (!result.success) {
-        throw new UserError(z.prettifyError(result.error))
-    }
-    const [exists] = await Promise.all([
-        hasEmployee(projectRoot, id),
-        requireLlmModel(result.data),
-    ])
-    if (exists) {
-        throw new UserError(`Employee "${id}" already exists.`)
-    }
-    await requireUnusedEmployeeId(projectRoot, id, { shouldReuseId: reuseId })
-    await saveEmployee(projectRoot, {
-        id,
-        ...result.data,
-        createdAt: new Date().toISOString(),
-    })
-    console.log(`Created employee "${id}".`)
 }
 
 export function registerEmployeeCommands(program: Command): void {
@@ -115,11 +76,13 @@ export function registerEmployeeCommands(program: Command): void {
         )
         .addOption(reuseIdOption())
         .action(async (rawId, { name, provider, model, reuseId }) => {
-            await createEmployee(
+            const employee = await createEmployee(
+                projectRoot,
                 rawId,
                 { name, kind: "llm", providerId: provider, modelId: model },
-                reuseId,
+                { shouldReuseId: reuseId },
             )
+            console.log(`Created employee "${employee.id}".`)
         })
 
     createEmployeeCommand
@@ -132,7 +95,13 @@ export function registerEmployeeCommands(program: Command): void {
         .requiredOption("-n, --name <name>", "employee name")
         .addOption(reuseIdOption())
         .action(async (rawId, { name, reuseId }) => {
-            await createEmployee(rawId, { name, kind: "human" }, reuseId)
+            const employee = await createEmployee(
+                projectRoot,
+                rawId,
+                { name, kind: "human" },
+                { shouldReuseId: reuseId },
+            )
+            console.log(`Created employee "${employee.id}".`)
         })
 
     employeeCommand
@@ -238,7 +207,7 @@ export function registerEmployeeCommands(program: Command): void {
             if (!result.success) {
                 throw new UserError(z.prettifyError(result.error))
             }
-            await requireLlmModel(result.data)
+            await requireEmployeeModel(projectRoot, result.data)
             await saveEmployee(projectRoot, {
                 id,
                 ...result.data,
