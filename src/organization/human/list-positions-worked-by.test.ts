@@ -47,13 +47,13 @@ const julie: CurrentHuman = {
 
 async function listIdsWorkedBy(human: CurrentHuman) {
     const positions = await listPositions(projectRoot)
-    const worked = await listPositionsWorkedBy(
+    const workedPositions = await listPositionsWorkedBy(
         projectRoot,
         human,
         positions,
         "director",
     )
-    return worked.map(({ position, isTemporary }) =>
+    return workedPositions.map(({ position, isTemporary }) =>
         isTemporary ? `${position.id} (temporarily)` : position.id,
     )
 }
