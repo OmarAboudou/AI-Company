@@ -31,7 +31,7 @@ describe("llmco position", () => {
         const show = runCli("position", "show", "backend-developer")
         expect(show.exitCode).toBe(0)
         expect(show.stdout).toBe(
-            "# Backend Developer\n\ndefault employee: (vacant)\n\nYou build the API.\n",
+            "# Backend Developer\n\ncurrent employee: (vacant)\ndefault employee: (none)\n\nYou build the API.\n",
         )
     })
 
@@ -239,7 +239,7 @@ describe("llmco position assign and unassign", () => {
                 "qa-tester  QA Tester  claude-senior\n",
         )
         expect(runCli("position", "show", "qa-tester").stdout).toBe(
-            "# QA Tester\n\ndefault employee: claude-senior\n\n\n",
+            "# QA Tester\n\ncurrent employee: claude-senior\ndefault employee: claude-senior\n\n\n",
         )
     })
 
@@ -471,8 +471,8 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
         runCli(...interimDirectors, "designer")
 
         expect(runCli("position", "list").stdout).toBe(
-            "designer   Designer   (vacant)     temporarily: (git users)\n" +
-                "developer  Developer  omar         temporarily: julie\n" +
+            "designer   Designer   (git users, temporarily)\n" +
+                "developer  Developer  julie (temporarily; default: omar)\n" +
                 "director   Director   (git users)\n",
         )
     })
@@ -485,10 +485,10 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
         const designer = runCli("position", "show", "designer").stdout
 
         expect(developer).toBe(
-            "# Developer\n\ndefault employee: omar\ntemporarily worked by: julie\n\n\n",
+            "# Developer\n\ncurrent employee: julie (temporarily)\ndefault employee: omar\n\n\n",
         )
         expect(designer).toBe(
-            "# Designer\n\ndefault employee: (vacant)\ntemporarily worked by: the repository's git users\n\n\n",
+            "# Designer\n\ncurrent employee: the repository's git users (temporarily)\ndefault employee: (none)\n\n\n",
         )
     })
 
@@ -521,7 +521,7 @@ describe("--description-file", () => {
 
         expect(create.exitCode).toBe(0)
         expect(runCli("position", "show", "developer").stdout).toBe(
-            `# Developer\n\ndefault employee: (vacant)\n\n${markdown}\n`,
+            `# Developer\n\ncurrent employee: (vacant)\ndefault employee: (none)\n\n${markdown}\n`,
         )
     })
 })
@@ -541,7 +541,7 @@ describe("short options", () => {
         )
 
         expect(runCli("position", "show", "developer").stdout).toBe(
-            "# Developer\n\ndefault employee: (vacant)\n\nYou build the API.\n",
+            "# Developer\n\ncurrent employee: (vacant)\ndefault employee: (none)\n\nYou build the API.\n",
         )
     })
 })
@@ -579,7 +579,9 @@ describe("llmco position update", () => {
         const show = runCli("position", "show", "developer").stdout
 
         expect(update.stdout).toBe('Updated position "developer".\n')
-        expect(show).toBe("# Lead\n\ndefault employee: (vacant)\n\nCode.\n")
+        expect(show).toBe(
+            "# Lead\n\ncurrent employee: (vacant)\ndefault employee: (none)\n\nCode.\n",
+        )
     })
 
     test("update -d changes the description and keeps the title", () => {
@@ -637,7 +639,9 @@ describe("llmco position update-id", () => {
         const show = runCli("position", "show", "api-dev").stdout
 
         expect(update.stdout).toBe('Position "developer" is now "api-dev".\n')
-        expect(show).toBe("# Dev\n\ndefault employee: (vacant)\n\nCode.\n")
+        expect(show).toBe(
+            "# Dev\n\ncurrent employee: (vacant)\ndefault employee: (none)\n\nCode.\n",
+        )
         expect(runCli("position", "show", "developer").exitCode).toBe(1)
     })
 
