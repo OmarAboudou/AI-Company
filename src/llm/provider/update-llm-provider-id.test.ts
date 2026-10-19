@@ -56,38 +56,46 @@ describe("updateLlmProviderId", () => {
     })
 
     test("makes the employees running on it follow", async () => {
-        const outcome = await updateLlmProviderId(projectRoot, "anthropic", "a")
+        const renaming = await updateLlmProviderId(
+            projectRoot,
+            "anthropic",
+            "a",
+        )
 
         const employee = await loadEmployee(projectRoot, "claude")
         expect(employee).toEqual({ ...claude, providerId: "a" })
-        expect(outcome.updatedEmployeeIds).toEqual(["claude"])
+        expect(renaming.updatedEmployeeIds).toEqual(["claude"])
     })
 
     test("refuses an id another provider has", async () => {
-        const update = updateLlmProviderId(projectRoot, "anthropic", "ollama")
+        const updating = updateLlmProviderId(projectRoot, "anthropic", "ollama")
 
-        await expect(update).rejects.toThrow(UserError)
-        await expect(update).rejects.toThrow('"ollama" already exists.')
+        await expect(updating).rejects.toThrow(UserError)
+        await expect(updating).rejects.toThrow('"ollama" already exists.')
         expect(await hasLlmProvider(projectRoot, "anthropic")).toBe(true)
     })
 
     test("refuses a new id that is not kebab-case", async () => {
-        const update = updateLlmProviderId(projectRoot, "anthropic", "A")
+        const updating = updateLlmProviderId(projectRoot, "anthropic", "A")
 
-        await expect(update).rejects.toThrow('Invalid provider id "A"')
+        await expect(updating).rejects.toThrow('Invalid provider id "A"')
     })
 
     test("refuses an unknown provider", async () => {
-        const update = updateLlmProviderId(projectRoot, "openai", "oai")
+        const updating = updateLlmProviderId(projectRoot, "openai", "oai")
 
-        await expect(update).rejects.toThrow('No provider "openai".')
+        await expect(updating).rejects.toThrow('No provider "openai".')
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const update = updateLlmProviderId(elsewhere, "anthropic", "a")
+        const updating = updateLlmProviderId(
+            folderWithoutCompany,
+            "anthropic",
+            "a",
+        )
 
-        await expect(update).rejects.toThrow("Run `llmco init` first.")
+        await expect(updating).rejects.toThrow("Run `llmco init` first.")
     })
 })

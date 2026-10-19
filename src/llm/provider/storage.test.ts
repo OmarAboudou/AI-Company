@@ -33,16 +33,16 @@ describe("saveLlmProvider", () => {
     test("writes config.json in a folder named after the id", async () => {
         await saveLlmProvider(projectRoot, anthropic)
 
-        const path = join(
+        const configPath = join(
             projectRoot,
             ".llmco",
             "llm-providers",
             "anthropic",
             "config.json",
         )
-        const config = await Bun.file(path).text()
+        const configText = await Bun.file(configPath).text()
 
-        expect(config).toBe('{\n    "name": "Anthropic"\n}\n')
+        expect(configText).toBe('{\n    "name": "Anthropic"\n}\n')
     })
 })
 
@@ -50,9 +50,9 @@ describe("loadLlmProvider", () => {
     test("reads back what saveLlmProvider wrote", async () => {
         await saveLlmProvider(projectRoot, anthropic)
 
-        const loaded = await loadLlmProvider(projectRoot, "anthropic")
+        const loadedProvider = await loadLlmProvider(projectRoot, "anthropic")
 
-        expect(loaded).toEqual(anthropic)
+        expect(loadedProvider).toEqual(anthropic)
     })
 
     test("rejects an invalid config.json", async () => {

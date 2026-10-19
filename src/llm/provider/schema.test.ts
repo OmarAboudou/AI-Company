@@ -29,23 +29,29 @@ describe("LlmProviderConfigSchema", () => {
 })
 
 describe("LlmProviderConfigSchema apiKey", () => {
-    const env = { kind: "env", variable: "ANTHROPIC_API_KEY" } as const
-    const file = { kind: "file", path: "~/.keys/anthropic" } as const
+    const envSource = { kind: "env", variable: "ANTHROPIC_API_KEY" } as const
+    const fileSource = { kind: "file", path: "~/.keys/anthropic" } as const
 
     test("accepts an environment variable or a file", () => {
-        const fromEnv = { ...anthropic, apiKey: env }
-        const fromFile = { ...anthropic, apiKey: file }
+        const envProvider = { ...anthropic, apiKey: envSource }
+        const fileProvider = { ...anthropic, apiKey: fileSource }
 
-        expect(LlmProviderConfigSchema.parse(fromEnv)).toEqual(fromEnv)
-        expect(LlmProviderConfigSchema.parse(fromFile)).toEqual(fromFile)
+        const parsedEnvProvider = LlmProviderConfigSchema.parse(envProvider)
+        const parsedFileProvider = LlmProviderConfigSchema.parse(fileProvider)
+
+        expect(parsedEnvProvider).toEqual(envProvider)
+        expect(parsedFileProvider).toEqual(fileProvider)
     })
 
     test("rejects the key itself", () => {
-        const key = { ...anthropic, apiKey: "sk-ant-xyz" }
-        const keyObject = { ...anthropic, apiKey: { value: "sk-ant-xyz" } }
+        const providerWithKey = { ...anthropic, apiKey: "sk-ant-xyz" }
+        const providerWithKeyObject = {
+            ...anthropic,
+            apiKey: { value: "sk-ant-xyz" },
+        }
 
-        expect(accepts(key)).toBe(false)
-        expect(accepts(keyObject)).toBe(false)
+        expect(accepts(providerWithKey)).toBe(false)
+        expect(accepts(providerWithKeyObject)).toBe(false)
     })
 
     test("rejects an unknown kind", () => {
@@ -55,27 +61,33 @@ describe("LlmProviderConfigSchema apiKey", () => {
     })
 
     test("rejects the other kind's field", () => {
-        const apiKey = { ...env, path: "~/.keys/anthropic" }
+        const apiKey = { ...envSource, path: "~/.keys/anthropic" }
 
         expect(accepts({ ...anthropic, apiKey })).toBe(false)
     })
 
     test("rejects an invalid environment variable name", () => {
-        const startsWithDigit = { ...env, variable: "1KEY" }
-        const hyphenated = { ...env, variable: "MY-KEY" }
+        const sourceStartingWithDigit = { ...envSource, variable: "1KEY" }
+        const hyphenatedSource = { ...envSource, variable: "MY-KEY" }
 
-        expect(accepts({ ...anthropic, apiKey: startsWithDigit })).toBe(false)
-        expect(accepts({ ...anthropic, apiKey: hyphenated })).toBe(false)
+        const digitFirstProvider = {
+            ...anthropic,
+            apiKey: sourceStartingWithDigit,
+        }
+        const hyphenatedProvider = { ...anthropic, apiKey: hyphenatedSource }
+
+        expect(accepts(digitFirstProvider)).toBe(false)
+        expect(accepts(hyphenatedProvider)).toBe(false)
     })
 
     test("rejects a variable written with $, as a shell reads it", () => {
-        const apiKey = { ...env, variable: "$ANTHROPIC_API_KEY" }
+        const apiKey = { ...envSource, variable: "$ANTHROPIC_API_KEY" }
 
         expect(accepts({ ...anthropic, apiKey })).toBe(false)
     })
 
     test("rejects an empty file path", () => {
-        const apiKey = { ...file, path: " " }
+        const apiKey = { ...fileSource, path: " " }
 
         expect(accepts({ ...anthropic, apiKey })).toBe(false)
     })

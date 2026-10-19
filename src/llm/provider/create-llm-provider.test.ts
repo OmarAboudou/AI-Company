@@ -23,11 +23,15 @@ const anthropic = {
 
 describe("createLlmProvider", () => {
     test("saves the provider with its name and API key's source", async () => {
-        const created = await createLlmProvider(projectRoot, "acme", anthropic)
+        const createdProvider = await createLlmProvider(
+            projectRoot,
+            "acme",
+            anthropic,
+        )
 
         const provider = await loadLlmProvider(projectRoot, "acme")
         expect(provider).toEqual({ id: "acme", ...anthropic })
-        expect(created).toEqual(provider)
+        expect(createdProvider).toEqual(provider)
     })
 
     test("saves a provider without API key", async () => {
@@ -56,17 +60,25 @@ describe("createLlmProvider", () => {
 
     test("refuses an invalid API key's source", async () => {
         const apiKey = { kind: "env", variable: "$ANTHROPIC_API_KEY" } as const
-        const dollar = { ...anthropic, apiKey }
+        const anthropicWithDollar = { ...anthropic, apiKey }
 
-        const creation = createLlmProvider(projectRoot, "anthropic", dollar)
+        const creation = createLlmProvider(
+            projectRoot,
+            "anthropic",
+            anthropicWithDollar,
+        )
 
         await expect(creation).rejects.toThrow(UserError)
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const creation = createLlmProvider(elsewhere, "anthropic", anthropic)
+        const creation = createLlmProvider(
+            folderWithoutCompany,
+            "anthropic",
+            anthropic,
+        )
 
         await expect(creation).rejects.toThrow("Run `llmco init` first.")
     })

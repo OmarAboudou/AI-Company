@@ -45,30 +45,42 @@ describe("updateLlmProvider", () => {
     })
 
     test("returns the provider it saved", async () => {
-        const updated = await updateLlmProvider(projectRoot, "anthropic", {})
+        const updatedProvider = await updateLlmProvider(
+            projectRoot,
+            "anthropic",
+            {},
+        )
 
-        expect(updated).toEqual(await loadLlmProvider(projectRoot, "anthropic"))
+        const savedProvider = await loadLlmProvider(projectRoot, "anthropic")
+
+        expect(updatedProvider).toEqual(savedProvider)
     })
 
     test("refuses a blank name", async () => {
-        const blank = { name: " " }
+        const blankNameChanges = { name: " " }
 
-        const update = updateLlmProvider(projectRoot, "anthropic", blank)
+        const updating = updateLlmProvider(
+            projectRoot,
+            "anthropic",
+            blankNameChanges,
+        )
 
-        await expect(update).rejects.toThrow(UserError)
+        await expect(updating).rejects.toThrow(UserError)
     })
 
     test("refuses an unknown provider", async () => {
-        const update = updateLlmProvider(projectRoot, "openai", { name: "O" })
+        const updating = updateLlmProvider(projectRoot, "openai", { name: "O" })
 
-        await expect(update).rejects.toThrow('No provider "openai".')
+        await expect(updating).rejects.toThrow('No provider "openai".')
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const update = updateLlmProvider(elsewhere, "anthropic", { name: "A" })
+        const updating = updateLlmProvider(folderWithoutCompany, "anthropic", {
+            name: "A",
+        })
 
-        await expect(update).rejects.toThrow("Run `llmco init` first.")
+        await expect(updating).rejects.toThrow("Run `llmco init` first.")
     })
 })
