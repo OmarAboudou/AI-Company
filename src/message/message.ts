@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { IdSchema } from "../ids/id-schema.ts"
-import { ProtocolSchema } from "../llm-connection/llm-connection.ts"
+import { ProtocolSchema } from "../llm/connection/schema.ts"
 import {
     CommitterSchema,
     EmployeeSnapshotSchema,

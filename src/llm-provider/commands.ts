@@ -8,8 +8,20 @@ import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
 import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
+import { protocols } from "../llm/connection/schema.ts"
+import { loadExistingLlmProvider } from "../llm/provider/load-existing-llm-provider.ts"
+import {
+    type ApiKeySource,
+    LlmProviderConfigSchema,
+} from "../llm/provider/schema.ts"
+import {
+    copyLlmProvider,
+    deleteLlmProvider,
+    listLlmProviders,
+    llmProviderExists,
+    saveLlmProvider,
+} from "../llm/provider/storage.ts"
 import { registerLlmConnectionCommands } from "../llm-connection/commands.ts"
-import { protocols } from "../llm-connection/llm-connection.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
 import {
@@ -17,15 +29,6 @@ import {
     saveEmployee,
 } from "../organization/employee/storage.ts"
 import { UserError } from "../user-error.ts"
-import { type ApiKeySource, LlmProviderConfigSchema } from "./llm-provider.ts"
-import { loadExistingLlmProvider } from "./load-existing-llm-provider.ts"
-import {
-    copyLlmProvider,
-    deleteLlmProvider,
-    listLlmProviders,
-    llmProviderExists,
-    saveLlmProvider,
-} from "./storage.ts"
 
 function apiKeyEnvOption() {
     return new Option(

@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { ConnectionsSchema } from "../llm-connection/llm-connection.ts"
+import { ConnectionsSchema } from "../connection/schema.ts"
 
 const environmentVariableName =
     "must be an environment variable's name, without $: letters, digits and underscores, not starting with a digit"

@@ -1,9 +1,9 @@
 import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
-import { getLlmcoFolderPath } from "../files/get-llmco-folder-path.ts"
-import { listSubdirectories } from "../files/list-subdirectories.ts"
-import { readJsonFile } from "../files/read-json-file.ts"
-import { type LlmProvider, LlmProviderConfigSchema } from "./llm-provider.ts"
+import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
+import { listSubdirectories } from "../../files/list-subdirectories.ts"
+import { readJsonFile } from "../../files/read-json-file.ts"
+import { type LlmProvider, LlmProviderConfigSchema } from "./schema.ts"
 
 function llmProvidersDir(projectRoot: string): string {
     return join(getLlmcoFolderPath(projectRoot), "llm-providers")
