@@ -22,6 +22,13 @@ export function bodyOption(what = "the message") {
     return new Option("-b, --body <text>", `${what}, in Markdown`)
 }
 
+export function asOption() {
+    return new Option(
+        "-a, --as <position-id>",
+        "position to write from, among those you work (see whoami); by default, the only one of them in the thread, else the director's or your only one",
+    )
+}
+
 export function bodyFileOption(what = "the message") {
     return new Option(
         "-F, --body-file <path>",
@@ -110,6 +117,7 @@ export function registerMessageCommands(program: Command): void {
         )
         .addOption(bodyOption())
         .addOption(bodyFileOption())
+        .addOption(asOption())
         .action(async (rawThreadId, options) => {
             await requireCompany()
             const thread = await loadExistingThread(rawThreadId)
@@ -120,7 +128,10 @@ export function registerMessageCommands(program: Command): void {
                 )
             }
             const messages = await listMessages(projectRoot, thread.id)
-            const author = await currentAuthor({ thread, messages })
+            const author = await currentAuthor({
+                archive: { thread, messages },
+                asPositionId: options.as,
+            })
             const draft = await draftMessage(author, body)
             const id = await sendDraft(thread.id, draft)
             console.error(`Sent message "${id}" in thread "${thread.id}".`)
