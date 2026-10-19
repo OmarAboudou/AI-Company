@@ -3,7 +3,6 @@ import { z } from "zod"
 import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
-import { loadExistingThread } from "../cli-helpers.ts"
 import { formatDateTime } from "../format-date-time.ts"
 import {
     asPositionOption,
@@ -21,6 +20,7 @@ import { createThreadId } from "../messaging/thread/create-thread-id.ts"
 import { getAwaitedIds } from "../messaging/thread/get-awaited-ids.ts"
 import { getMemberIds } from "../messaging/thread/get-member-ids.ts"
 import { listArchives } from "../messaging/thread/list-archives.ts"
+import { loadExistingThread } from "../messaging/thread/load-existing-thread.ts"
 import { ThreadConfigSchema } from "../messaging/thread/schema.ts"
 import { saveThread } from "../messaging/thread/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
@@ -129,7 +129,7 @@ export function registerThreadCommands(program: Command): void {
         .option("-j, --json", "print one JSON object per message and line")
         .action(async (rawId, { json }) => {
             await requireCompany(projectRoot)
-            const thread = await loadExistingThread(rawId)
+            const thread = await loadExistingThread(projectRoot, rawId)
             const [messages, positions] = await Promise.all([
                 listMessages(projectRoot, thread.id),
                 listPositions(projectRoot),
