@@ -4,7 +4,9 @@ import { registerProviderConnectionDeleteCommand } from "./delete.ts"
 import { registerProviderConnectionListCommand } from "./list.ts"
 import { registerProviderConnectionUpdateCommand } from "./update.ts"
 
-export function registerLlmConnectionCommands(providerCommand: Command): void {
+export function registerProviderConnectionCommands(
+    providerCommand: Command,
+): void {
     const connectionCommand = providerCommand
         .command("connection")
         .description(

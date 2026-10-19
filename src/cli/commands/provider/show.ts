@@ -7,7 +7,7 @@ import { requireCompany } from "../../../organization/company/require-company.ts
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
 import { projectRoot } from "../../project-root.ts"
 
-function describeApiKey(apiKey: ApiKeySource | undefined): string {
+function formatApiKeySource(apiKey: ApiKeySource | undefined): string {
     if (apiKey === undefined) {
         return "(none)"
     }
@@ -34,14 +34,14 @@ export function registerProviderShowCommand(providerCommand: Command): void {
                 models.length > 0
                     ? models.map(({ id }) => id).join(", ")
                     : "(none)"
-            const connections = protocols.filter(
+            const connectedProtocols = protocols.filter(
                 (protocol) => provider.connections?.[protocol] !== undefined,
             )
             const lines = [
                 `# ${provider.name}`,
                 "",
-                `api key: ${describeApiKey(provider.apiKey)}`,
-                `connections: ${connections.length > 0 ? connections.join(", ") : "(none)"}`,
+                `api key: ${formatApiKeySource(provider.apiKey)}`,
+                `connections: ${connectedProtocols.length > 0 ? connectedProtocols.join(", ") : "(none)"}`,
                 `models: ${modelIds}`,
             ]
             console.log(lines.join("\n"))

@@ -1,6 +1,6 @@
 import type { ApiKeySource } from "../../../llm/provider/schema.ts"
 
-export function apiKeySource(options: {
+export function getApiKeySource(options: {
     apiKeyEnv?: string
     apiKeyFile?: string
 }): ApiKeySource | undefined {

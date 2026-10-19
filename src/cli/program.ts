@@ -7,7 +7,7 @@ import { registerCurrentHumanCommand } from "./commands/current-human.ts"
 import { registerEmployeeCommands } from "./commands/employee/employee.ts"
 import { registerInitCommand } from "./commands/init.ts"
 import { registerPositionCommands } from "./commands/position/position.ts"
-import { registerLlmProviderCommands } from "./commands/provider/provider.ts"
+import { registerProviderCommands } from "./commands/provider/provider.ts"
 
 export function createProgram(): Command {
     const program = new Command()
@@ -18,7 +18,7 @@ export function createProgram(): Command {
     registerCompanyCommands(program)
     registerPositionCommands(program)
     registerEmployeeCommands(program)
-    registerLlmProviderCommands(program)
+    registerProviderCommands(program)
     registerLlmModelCommands(program)
     registerThreadCommands(program)
     registerMessageCommands(program)

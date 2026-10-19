@@ -3,8 +3,8 @@ import { createLlmConnection } from "../../../../llm/connection/create-llm-conne
 import { formatIdArgumentDescription } from "../../../format-id-argument-description.ts"
 import { projectRoot } from "../../../project-root.ts"
 import { requireDirector } from "../../../require-director.ts"
-import { authOption } from "./auth-option.ts"
-import { protocolArgument } from "./protocol-argument.ts"
+import { createAuthOption } from "./create-auth-option.ts"
+import { createProtocolArgument } from "./create-protocol-argument.ts"
 
 export function registerProviderConnectionCreateCommand(
     connectionCommand: Command,
@@ -16,12 +16,12 @@ export function registerProviderConnectionCreateCommand(
             "<provider-id>",
             formatIdArgumentDescription("provider", "anthropic"),
         )
-        .addArgument(protocolArgument())
+        .addArgument(createProtocolArgument())
         .requiredOption(
             "-u, --base-url <url>",
             "URL the protocol's paths are appended to, e.g. https://api.anthropic.com",
         )
-        .addOption(authOption())
+        .addOption(createAuthOption())
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol, { baseUrl, auth }) => {
             const provider = await createLlmConnection(

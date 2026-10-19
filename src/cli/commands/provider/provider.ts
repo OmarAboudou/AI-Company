@@ -1,5 +1,5 @@
 import type { Command } from "@commander-js/extra-typings"
-import { registerLlmConnectionCommands } from "./connection/connection.ts"
+import { registerProviderConnectionCommands } from "./connection/connection.ts"
 import { registerProviderCreateCommand } from "./create.ts"
 import { registerProviderDeleteCommand } from "./delete.ts"
 import { registerProviderListCommand } from "./list.ts"
@@ -7,7 +7,7 @@ import { registerProviderShowCommand } from "./show.ts"
 import { registerProviderUpdateCommand } from "./update.ts"
 import { registerProviderUpdateIdCommand } from "./update-id.ts"
 
-export function registerLlmProviderCommands(program: Command): void {
+export function registerProviderCommands(program: Command): void {
     const providerCommand = program
         .command("provider")
         .description("Manage the LLM providers serving models to the company.")
@@ -17,5 +17,5 @@ export function registerLlmProviderCommands(program: Command): void {
     registerProviderUpdateCommand(providerCommand)
     registerProviderUpdateIdCommand(providerCommand)
     registerProviderDeleteCommand(providerCommand)
-    registerLlmConnectionCommands(providerCommand)
+    registerProviderConnectionCommands(providerCommand)
 }
