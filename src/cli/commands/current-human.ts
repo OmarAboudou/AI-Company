@@ -7,9 +7,10 @@ import { readCurrentHuman } from "../../organization/human/read-current-human.ts
 import { listPositions } from "../../organization/position/storage.ts"
 import { projectRoot } from "../project-root.ts"
 
-export function registerWhoamiCommand(program: Command): void {
+export function registerCurrentHumanCommand(program: Command): void {
     program
-        .command("whoami")
+        .command("current-human")
+        .alias("whoami")
         .description(
             "Show who is at the keyboard: a director, or the human employee LLMCO_CURRENT_HUMAN_ID names; the positions they work; and the committer, from git.",
         )

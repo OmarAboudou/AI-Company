@@ -32,7 +32,7 @@ The last command prints the new thread's id, then Claude Senior's answer as it i
 
 ## Talking to employees
 
-Positions talk through **threads**, like posts in a forum: a subject and messages. You write as a director, signed with your git identity (`user.name` and `user.email`): from the director's position, or from a position assigned temporarily to the directors when it is the only one of yours in the thread. To act as a fictitious human employee instead, set `LLMCO_CURRENT_HUMAN_ID` to its id: you then write from its positions. `llmco whoami` shows who you are and the positions you work; `--as-position <position-id>` chooses which one to write from. Commands that change the company's configuration, such as `create`, `update`, `delete`, `assign` or `interim`, are reserved to directors: unset `LLMCO_CURRENT_HUMAN_ID` to run them.
+Positions talk through **threads**, like posts in a forum: a subject and messages. You write as a director, signed with your git identity (`user.name` and `user.email`): from the director's position, or from a position assigned temporarily to the directors when it is the only one of yours in the thread. To act as a fictitious human employee instead, set `LLMCO_CURRENT_HUMAN_ID` to its id: you then write from its positions. `llmco current-human`, or `llmco whoami`, shows who you are and the positions you work; `--as-position <position-id>` chooses which one to write from. Commands that change the company's configuration, such as `create`, `update`, `delete`, `assign` or `interim`, are reserved to directors: unset `LLMCO_CURRENT_HUMAN_ID` to run them.
 
 ```bash
 llmco message send <thread-id> -b "@backend-developer Why Hono?"
