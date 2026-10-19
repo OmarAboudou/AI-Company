@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { ThreadConfigSchema } from "./thread.ts"
+import { ThreadConfigSchema } from "./schema.ts"
 
 const framework = {
     subject: "Choice of framework",

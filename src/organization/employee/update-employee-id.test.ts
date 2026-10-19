@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { saveMessage } from "../../message/storage.ts"
-import { saveThread } from "../../thread/storage.ts"
+import { saveThread } from "../../messaging/thread/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.ts"
 import {

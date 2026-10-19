@@ -2,15 +2,8 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import {
-    listThreads,
-    loadThread,
-    newThreadId,
-    saveThread,
-    slugify,
-    threadExists,
-} from "./storage.ts"
-import type { Thread } from "./thread.ts"
+import type { Thread } from "./schema.ts"
+import { listThreads, loadThread, saveThread } from "./storage.ts"
 
 let projectRoot: string
 
@@ -55,56 +48,5 @@ describe("listThreads", () => {
         await saveThread(projectRoot, older)
 
         expect(await listThreads(projectRoot)).toEqual([older, framework])
-    })
-})
-
-describe("slugify", () => {
-    test.each([
-        ["Choice of framework", "choice-of-framework"],
-        [
-            "Choix du framework : Hono ou Express ?",
-            "choix-du-framework-hono-ou-express",
-        ],
-        ["Économie & café", "economie-cafe"],
-        ["  API v2  ", "api-v2"],
-        ["!!!", "thread"],
-        ["予算", "thread"],
-    ])("%s becomes %s", (subject, slug) => {
-        expect(slugify(subject)).toBe(slug)
-    })
-
-    test("keeps whole words within 50 characters", () => {
-        const subject = "word ".repeat(20)
-
-        const slug = slugify(subject)
-
-        expect(slug.length).toBeLessThanOrEqual(50)
-        expect(slug).toMatch(/^word(-word)*$/)
-    })
-})
-
-describe("newThreadId", () => {
-    test("starts with the creation date", async () => {
-        const id = await newThreadId(
-            projectRoot,
-            "Choice of framework",
-            framework.createdAt,
-        )
-
-        expect(id).toBe("2026-10-18-choice-of-framework")
-    })
-
-    test("adds a number when the id is taken", async () => {
-        await saveThread(projectRoot, framework)
-        const exists = await threadExists(projectRoot, framework.id)
-
-        const id = await newThreadId(
-            projectRoot,
-            "Choice of framework",
-            framework.createdAt,
-        )
-
-        expect(exists).toBe(true)
-        expect(id).toBe("2026-10-18-choice-of-framework-2")
     })
 })

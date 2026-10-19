@@ -3,7 +3,7 @@ import { join } from "node:path"
 import { listSubdirectories } from "../files/list-subdirectories.ts"
 import { readJsonFile } from "../files/read-json-file.ts"
 import { readTextFile } from "../files/read-text-file.ts"
-import { threadDir } from "../thread/storage.ts"
+import { threadDir } from "../messaging/thread/storage.ts"
 import {
     type Message,
     MessageConfigSchema,

@@ -6,13 +6,13 @@ import {
     MessageConfigSchema,
     ProviderResponseSchema,
 } from "../src/message/message.ts"
+import { ThreadConfigSchema } from "../src/messaging/thread/schema.ts"
 import { CompanyConfigSchema } from "../src/organization/company/schema.ts"
 import { EmployeeConfigSchema } from "../src/organization/employee/schema.ts"
 import {
     PositionConfigSchema,
     PositionStateSchema,
 } from "../src/organization/position/schema.ts"
-import { ThreadConfigSchema } from "../src/thread/thread.ts"
 
 const publishedAt =
     "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas"

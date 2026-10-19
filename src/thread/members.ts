@@ -1,7 +1,7 @@
 import { getCurrentId } from "../ids/get-current-id.ts"
 import type { IdHistory } from "../ids/id-history-schema.ts"
 import type { Message } from "../message/message.ts"
-import type { Thread } from "./thread.ts"
+import type { Thread } from "../messaging/thread/schema.ts"
 
 type Exchange = { authorId: string; mentionIds: string[] }
 

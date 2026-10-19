@@ -5,6 +5,7 @@ import { isAuthorOf } from "../ids/is-author-of.ts"
 import { readMentions, sendDraft } from "../message/commands.ts"
 import type { Message } from "../message/message.ts"
 import { listMessages, loadResponse, saveResponse } from "../message/storage.ts"
+import { loadThread } from "../messaging/thread/storage.ts"
 import { loadCompany } from "../organization/company/storage.ts"
 import type { Employee } from "../organization/employee/schema.ts"
 import { loadEmployee } from "../organization/employee/storage.ts"
@@ -14,7 +15,6 @@ import {
     loadPosition,
     loadPositionState,
 } from "../organization/position/storage.ts"
-import { loadThread } from "../thread/storage.ts"
 import { UserError } from "../user-error.ts"
 import { callAnthropicMessages } from "./anthropic-messages/call-anthropic-messages.ts"
 import {

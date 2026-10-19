@@ -1,4 +1,4 @@
-import { readArchives } from "../../thread/archives.ts"
+import { readArchives } from "../../messaging/thread/list-archives.ts"
 import { awaitedIds } from "../../thread/members.ts"
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"

@@ -1,5 +1,6 @@
 import { projectRoot } from "../cli/project-root.ts"
 import { readGitCommitter } from "../git/read-git-committer.ts"
+import type { Archive } from "../messaging/thread/list-archives.ts"
 import { loadCompany } from "../organization/company/storage.ts"
 import type { Employee } from "../organization/employee/schema.ts"
 import { loadEmployee } from "../organization/employee/storage.ts"
@@ -16,7 +17,6 @@ import {
     loadPosition,
     loadPositionState,
 } from "../organization/position/storage.ts"
-import type { Archive } from "../thread/archives.ts"
 import { memberIds } from "../thread/members.ts"
 import { UserError } from "../user-error.ts"
 import type { MessageConfig } from "./message.ts"

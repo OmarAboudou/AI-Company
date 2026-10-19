@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { IdSchema } from "../ids/id-schema.ts"
+import { IdSchema } from "../../ids/id-schema.ts"
 
 export const PositionSnapshotSchema = z
     .strictObject({

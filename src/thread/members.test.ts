@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test"
 import type { IdHistory } from "../ids/id-history-schema.ts"
 import type { Message } from "../message/message.ts"
+import type { Thread } from "../messaging/thread/schema.ts"
 import { awaitedIds, memberIds } from "./members.ts"
-import type { Thread } from "./thread.ts"
 
 const director = { id: "director", title: "Director" }
 const committer = { name: "Omar Aboudou", email: "omar@example.com" }
