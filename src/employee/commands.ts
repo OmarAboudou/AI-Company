@@ -13,8 +13,8 @@ import {
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { requireDirector } from "../human/current-human.ts"
-import { withNewId } from "../ids/get-renamed-entity.ts"
-import { wrote } from "../ids/is-author-of.ts"
+import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
+import { isAuthorOf } from "../ids/is-author-of.ts"
 import type { Position, PositionState } from "../position/position.ts"
 import {
     listPositions,
@@ -96,7 +96,7 @@ async function earlierUses(id: string, renamed?: Employee): Promise<string[]> {
             return [creator, ...messages].some(
                 (author) =>
                     author.employee?.id === id &&
-                    !(renamed !== undefined && wrote(renamed, author)),
+                    !(renamed !== undefined && isAuthorOf(renamed, author)),
             )
         })
         .map(({ thread }) => `in thread "${thread.id}"`)
@@ -334,7 +334,7 @@ export function registerEmployeeCommands(program: Command): void {
             await copyEmployee(projectRoot, employee.id, newId)
             await saveEmployee(
                 projectRoot,
-                withNewId(employee, newId, new Date().toISOString()),
+                getRenamedEntity(employee, newId, new Date().toISOString()),
             )
             await Promise.all([
                 ...filled.map((position) =>

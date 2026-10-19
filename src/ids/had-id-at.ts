@@ -1,6 +1,6 @@
 import type { IdHistory } from "./id-history-schema.ts"
 
-export function hadId(entity: IdHistory, id: string, at: string): boolean {
+export function hadIdAt(entity: IdHistory, id: string, at: string): boolean {
     const moment = Date.parse(at)
     let since =
         entity.createdAt === undefined

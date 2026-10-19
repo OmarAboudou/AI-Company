@@ -1,4 +1,4 @@
-import { currentId } from "../ids/get-current-id.ts"
+import { getCurrentId } from "../ids/get-current-id.ts"
 import type { IdHistory } from "../ids/id-history-schema.ts"
 import type { Message } from "../message/message.ts"
 import type { Thread } from "./thread.ts"
@@ -7,8 +7,8 @@ type Exchange = { authorId: string; mentionIds: string[] }
 
 function exchanges(messages: Message[], positions: IdHistory[]): Exchange[] {
     return messages.map(({ position, mentions, sentAt }) => ({
-        authorId: currentId(positions, position.id, sentAt),
-        mentionIds: mentions.map((id) => currentId(positions, id, sentAt)),
+        authorId: getCurrentId(positions, position.id, sentAt),
+        mentionIds: mentions.map((id) => getCurrentId(positions, id, sentAt)),
     }))
 }
 
@@ -26,7 +26,7 @@ function members(creatorId: string, exchanged: Exchange[]): string[] {
 
 function creatorId(thread: Thread, positions: IdHistory[]): string {
     const { createdBy, createdAt } = thread
-    return currentId(positions, createdBy.position.id, createdAt)
+    return getCurrentId(positions, createdBy.position.id, createdAt)
 }
 
 export function memberIds(
