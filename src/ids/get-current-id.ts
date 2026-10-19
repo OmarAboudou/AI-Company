@@ -3,8 +3,10 @@ import type { IdHistory } from "./id-history-schema.ts"
 
 export function getCurrentId(
     entities: IdHistory[],
-    id: string,
-    at: string,
+    usedId: string,
+    usedAt: string,
 ): string {
-    return entities.find((entity) => hadIdAt(entity, id, at))?.id ?? id
+    return (
+        entities.find((entity) => hadIdAt(entity, usedId, usedAt))?.id ?? usedId
+    )
 }

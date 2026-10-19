@@ -9,30 +9,34 @@ const developer: IdHistory = {
 
 describe("getRenamedEntity", () => {
     test("gives the new id and records the former one", () => {
-        const until = "2026-10-19T09:00:00.000Z"
+        const renamedAt = "2026-10-19T09:00:00.000Z"
 
-        const renamed = getRenamedEntity(developer, "api-developer", until)
+        const renamedDeveloper = getRenamedEntity(
+            developer,
+            "api-developer",
+            renamedAt,
+        )
 
-        expect(renamed).toEqual({
+        expect(renamedDeveloper).toEqual({
             id: "api-developer",
             createdAt: developer.createdAt,
-            formerIds: [{ id: "developer", until }],
+            formerIds: [{ id: "developer", until: renamedAt }],
         })
     })
 
     test("adds each former id after the previous ones", () => {
-        const first = "2026-10-19T09:00:00.000Z"
-        const second = "2026-10-20T09:00:00.000Z"
+        const firstRenamedAt = "2026-10-19T09:00:00.000Z"
+        const secondRenamedAt = "2026-10-20T09:00:00.000Z"
 
-        const renamed = getRenamedEntity(
-            getRenamedEntity(developer, "api-developer", first),
+        const renamedDeveloper = getRenamedEntity(
+            getRenamedEntity(developer, "api-developer", firstRenamedAt),
             "backend-developer",
-            second,
+            secondRenamedAt,
         )
 
-        expect(renamed.formerIds).toEqual([
-            { id: "developer", until: first },
-            { id: "api-developer", until: second },
+        expect(renamedDeveloper.formerIds).toEqual([
+            { id: "developer", until: firstRenamedAt },
+            { id: "api-developer", until: secondRenamedAt },
         ])
     })
 })

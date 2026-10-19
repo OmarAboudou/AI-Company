@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test"
 import { type IdHistory, IdHistorySchema } from "./id-history-schema.ts"
 
-function accepts(config: unknown): boolean {
-    return IdHistorySchema.safeParse(config).success
+function accepts(history: unknown): boolean {
+    return IdHistorySchema.safeParse(history).success
 }
 
 const developer: IdHistory = {
@@ -23,10 +23,10 @@ describe("IdHistorySchema", () => {
     })
 
     test("requires dates in UTC", () => {
-        const local = "2026-10-18T16:00:00+02:00"
-        const formerIds = [{ id: "dev", until: local }]
+        const localTime = "2026-10-18T16:00:00+02:00"
+        const formerIds = [{ id: "dev", until: localTime }]
 
-        expect(accepts({ createdAt: local })).toBe(false)
+        expect(accepts({ createdAt: localTime })).toBe(false)
         expect(accepts({ formerIds })).toBe(false)
     })
 
