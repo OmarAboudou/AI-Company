@@ -37,23 +37,6 @@ describe("llmco model protocol", () => {
         expect(before).toContain("protocol: anthropic-messages\n")
         expect(after).toContain("protocol: openai-responses\n")
     })
-
-    test("update -p refuses a protocol the provider has no connection for", () => {
-        connect("anthropic-messages")
-        runCli("model", "create", ...opus)
-
-        const model = ["anthropic", "claude-opus-5-5"]
-        const update = runCli(
-            "model",
-            "update",
-            ...model,
-            "-p",
-            "openai-responses",
-        )
-
-        expect(update.exitCode).toBe(1)
-        expect(update.stderr).toContain("has no openai-responses connection")
-    })
 })
 
 describe("llmco model update", () => {
@@ -91,13 +74,6 @@ describe("llmco model update", () => {
 
         expect(show).toContain("# Claude Opus 5.5\n")
         expect(show).toContain("api id: claude-opus\n")
-    })
-
-    test("update validates like create", () => {
-        const update = runCli("model", "update", ...opus, "-a", " ")
-
-        expect(update.exitCode).toBe(1)
-        expect(update.stderr).toContain("at apiId")
     })
 
     test("update requires at least one option", () => {

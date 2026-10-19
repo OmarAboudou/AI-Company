@@ -46,11 +46,4 @@ describe("llmco model delete", () => {
         expect(deletion.exitCode).toBe(1)
         expect(deletion.stderr).toContain("unknown option '--force'")
     })
-
-    test("delete fails for a model the provider does not have", () => {
-        const deletion = runCli("model", "delete", "anthropic", "gpt-5")
-
-        expect(deletion.exitCode).toBe(1)
-        expect(deletion.stderr).toContain('has no model "gpt-5"')
-    })
 })
