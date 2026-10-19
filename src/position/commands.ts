@@ -7,9 +7,10 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
-import { loadExistingEmployee, withoutUndefined } from "../cli-helpers.ts"
+import { withoutUndefined } from "../cli-helpers.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { loadCompany, saveCompany } from "../company/storage.ts"
+import { loadExistingEmployee } from "../employee/load-existing-employee.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
 import { parseId } from "../ids/parse-id.ts"
@@ -94,7 +95,7 @@ async function assignTemporarily(
     const [position, employee, company, state] = await Promise.all([
         loadExistingPosition(projectRoot, rawPositionId),
         assignee.kind === "employee"
-            ? loadExistingEmployee(assignee.rawEmployeeId)
+            ? loadExistingEmployee(projectRoot, assignee.rawEmployeeId)
             : undefined,
         loadCompany(projectRoot),
         loadPositionState(projectRoot, parseId("position", rawPositionId)),
@@ -353,7 +354,7 @@ export function registerPositionCommands(program: Command): void {
             await requireCompany(projectRoot)
             const [position, employee, company, state] = await Promise.all([
                 loadExistingPosition(projectRoot, rawPositionId),
-                loadExistingEmployee(rawEmployeeId),
+                loadExistingEmployee(projectRoot, rawEmployeeId),
                 loadCompany(projectRoot),
                 loadPositionState(
                     projectRoot,
