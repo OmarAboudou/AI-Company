@@ -1,11 +1,12 @@
 import { Command } from "@commander-js/extra-typings"
-import { registerCompanyCommands } from "../company/commands.ts"
 import { registerLlmModelCommands } from "../llm-model/commands.ts"
 import { registerLlmProviderCommands } from "../llm-provider/commands.ts"
 import { registerMessageCommands } from "../message/commands.ts"
 import { registerThreadCommands } from "../thread/commands.ts"
+import { registerCompanyCommands } from "./commands/company/company.ts"
 import { registerCurrentHumanCommand } from "./commands/current-human.ts"
 import { registerEmployeeCommands } from "./commands/employee/employee.ts"
+import { registerInitCommand } from "./commands/init.ts"
 import { registerPositionCommands } from "./commands/position/position.ts"
 
 export function createProgram(): Command {
@@ -13,6 +14,7 @@ export function createProgram(): Command {
         .name("llmco")
         .description("Run a virtual company staffed by LLM agents.")
         .showHelpAfterError()
+    registerInitCommand(program)
     registerCompanyCommands(program)
     registerPositionCommands(program)
     registerEmployeeCommands(program)
