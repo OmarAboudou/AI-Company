@@ -19,8 +19,8 @@ export type AnthropicMessagesCall = {
     connection: NonNullable<Connections["anthropic-messages"]>
     apiKey: string | undefined
     apiId: string
-    system: string
-    messages: Anthropic.MessageParam[]
+    systemPrompt: string
+    turns: Anthropic.MessageParam[]
     onText: (text: string) => void
 }
 
@@ -28,20 +28,25 @@ export async function callAnthropicMessages({
     connection,
     apiKey,
     apiId,
-    system,
-    messages,
+    systemPrompt,
+    turns,
     onText,
 }: AnthropicMessagesCall): Promise<Anthropic.Message> {
-    const bearer = connection.auth === "bearer"
+    const isBearerAuth = connection.auth === "bearer"
     const client = new AnthropicWithoutLocalCredentials({
         baseURL: connection.baseUrl,
-        apiKey: bearer ? null : (apiKey ?? null),
-        authToken: bearer ? (apiKey ?? null) : null,
+        apiKey: isBearerAuth ? null : (apiKey ?? null),
+        authToken: isBearerAuth ? (apiKey ?? null) : null,
         ...(apiKey === undefined && { defaultHeaders: { "x-api-key": null } }),
     })
     try {
         return await client.messages
-            .stream({ model: apiId, max_tokens: maxTokens, system, messages })
+            .stream({
+                model: apiId,
+                max_tokens: maxTokens,
+                system: systemPrompt,
+                messages: turns,
+            })
             .on("text", onText)
             .finalMessage()
     } catch (error) {
