@@ -4,11 +4,8 @@ import { formatIdArgumentDescription } from "../cli/format-id-argument-descripti
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
-import {
-    loadExistingLlmProvider,
-    requireCompany,
-    withoutUndefined,
-} from "../cli-helpers.ts"
+import { loadExistingLlmProvider, withoutUndefined } from "../cli-helpers.ts"
+import { requireCompany } from "../company/require-company.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
@@ -106,7 +103,7 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
         .addOption(authOption())
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol, { baseUrl, auth }) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const provider = await loadExistingLlmProvider(rawProviderId)
             if (provider.connections?.[protocol] !== undefined) {
                 throw new UserError(
@@ -127,7 +124,7 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
         .command("list")
         .description("List the connections of every LLM provider.")
         .action(async () => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const providers = await listLlmProviders(projectRoot)
             const rows = providers.flatMap(({ id, connections }) =>
                 protocols.flatMap((protocol) => {
@@ -169,7 +166,7 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol, options) => {
             requireAtLeastOneOption(options)
-            await requireCompany()
+            await requireCompany(projectRoot)
             const provider = await loadProviderWithConnection(
                 rawProviderId,
                 protocol,
@@ -197,7 +194,7 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
         .addArgument(protocolArgument())
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [provider, models] = await Promise.all([
                 loadProviderWithConnection(rawProviderId, protocol),
                 listLlmModels(projectRoot, parseId("provider", rawProviderId)),

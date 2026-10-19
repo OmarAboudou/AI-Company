@@ -1,5 +1,4 @@
 import { projectRoot } from "./cli/project-root.ts"
-import { companyExists } from "./company/storage.ts"
 import type { Employee } from "./employee/employee.ts"
 import { employeeExists, loadEmployee } from "./employee/storage.ts"
 import { parseId } from "./ids/parse-id.ts"
@@ -12,14 +11,6 @@ import { hasPosition, loadPosition } from "./organization/position/storage.ts"
 import { loadThread, threadExists } from "./thread/storage.ts"
 import type { Thread } from "./thread/thread.ts"
 import { UserError } from "./user-error.ts"
-
-export async function requireCompany(): Promise<void> {
-    if (!(await companyExists(projectRoot))) {
-        throw new UserError(
-            "No company in this directory. Run `llmco init` first.",
-        )
-    }
-}
 
 export function withoutUndefined<Values extends object>(
     values: Values,

@@ -4,12 +4,13 @@ import { createDescriptionFileOption } from "../cli/create-description-file-opti
 import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
-import { requireCompany, withoutUndefined } from "../cli-helpers.ts"
+import { withoutUndefined } from "../cli-helpers.ts"
 import { requireGitRepository } from "../git/require-git-repository.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { savePosition } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
 import { CompanyConfigSchema } from "./company.ts"
+import { requireCompany } from "./require-company.ts"
 import { companyExists, loadCompany, saveCompany } from "./storage.ts"
 
 const directorPositionId = "director"
@@ -64,7 +65,7 @@ export function registerCompanyCommands(program: Command): void {
         .command("show")
         .description("Display the company name and description.")
         .action(async () => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const company = await loadCompany(projectRoot)
             console.log(`# ${company.name}\n\n${company.description}`)
         })
@@ -78,7 +79,7 @@ export function registerCompanyCommands(program: Command): void {
         .hook("preAction", requireDirector)
         .action(async (options) => {
             requireAtLeastOneOption(options)
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [company, newDescription] = await Promise.all([
                 loadCompany(projectRoot),
                 readTextOrFile(options.description, options.descriptionFile),

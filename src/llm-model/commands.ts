@@ -8,9 +8,9 @@ import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import {
     loadExistingLlmModel,
     loadExistingLlmProvider,
-    requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
+import { requireCompany } from "../company/require-company.ts"
 import { listEmployees, saveEmployee } from "../employee/storage.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { parseId } from "../ids/parse-id.ts"
@@ -91,7 +91,7 @@ export function registerLlmModelCommands(program: Command): void {
         .addOption(protocolOption())
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, options) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const provider = await loadExistingLlmProvider(rawProviderId)
             const modelId = parseId("model", rawModelId)
             if (await llmModelExists(projectRoot, provider.id, modelId)) {
@@ -121,7 +121,7 @@ export function registerLlmModelCommands(program: Command): void {
         .command("list")
         .description("List the models of every LLM provider.")
         .action(async () => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const providers = await listLlmProviders(projectRoot)
             const modelsByProvider = await Promise.all(
                 providers.map(({ id }) => listLlmModels(projectRoot, id)),
@@ -153,7 +153,7 @@ export function registerLlmModelCommands(program: Command): void {
             formatIdArgumentDescription("model", "claude-opus-5-5"),
         )
         .action(async (rawProviderId, rawModelId) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const model = await loadExistingLlmModel(rawProviderId, rawModelId)
             console.log(
                 `# ${model.name}\n\nprovider: ${model.providerId}\napi id: ${model.apiId}\nprotocol: ${model.protocol}`,
@@ -180,7 +180,7 @@ export function registerLlmModelCommands(program: Command): void {
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, options) => {
             requireAtLeastOneOption(options)
-            await requireCompany()
+            await requireCompany(projectRoot)
             const { providerId, id, ...current } = await loadExistingLlmModel(
                 rawProviderId,
                 rawModelId,
@@ -219,7 +219,7 @@ export function registerLlmModelCommands(program: Command): void {
         )
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, rawNewId) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [model, employees] = await Promise.all([
                 loadExistingLlmModel(rawProviderId, rawModelId),
                 listEmployees(projectRoot),
@@ -267,7 +267,7 @@ export function registerLlmModelCommands(program: Command): void {
         )
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [model, employees] = await Promise.all([
                 loadExistingLlmModel(rawProviderId, rawModelId),
                 listEmployees(projectRoot),
