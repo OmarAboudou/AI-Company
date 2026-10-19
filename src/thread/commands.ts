@@ -1,12 +1,9 @@
 import type { Command } from "@commander-js/extra-typings"
 import { z } from "zod"
-import {
-    idDescription,
-    loadExistingThread,
-    printColumns,
-    projectRoot,
-    requireCompany,
-} from "../cli-helpers.ts"
+import { idDescription } from "../cli/format-id-argument-description.ts"
+import { printColumns } from "../cli/print-columns.ts"
+import { projectRoot } from "../cli/project-root.ts"
+import { loadExistingThread, requireCompany } from "../cli-helpers.ts"
 import { answerMentions } from "../llm/reply.ts"
 import { currentAuthor } from "../message/author.ts"
 import {
