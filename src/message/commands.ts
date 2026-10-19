@@ -33,11 +33,7 @@ export async function readBody(options: {
     body?: string
     bodyFile?: string
 }): Promise<string | undefined> {
-    const body = await readTextOrFile(options.body, options.bodyFile)
-    if (body !== undefined && body.trim() === "") {
-        throw new UserError("The message's body is empty.")
-    }
-    return body
+    return readTextOrFile(options.body, options.bodyFile)
 }
 
 export function registerMessageCommands(program: Command): void {
