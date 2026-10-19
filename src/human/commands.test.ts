@@ -13,6 +13,15 @@ function switchedTo(employeeId: string) {
 
 const asJulie = switchedTo("julie")
 
+function hireLlmEmployee(id: string) {
+    const connection = ["provider", "connection", "create", "anthropic"]
+    const hire = ["employee", "create", "llm", id, "-n", "Claude Senior"]
+    runCli("provider", "create", "anthropic", "-n", "Anthropic")
+    runCli(...connection, "anthropic-messages", "-u", "https://x.test")
+    runCli("model", "create", "anthropic", "opus", "-n", "O", "-a", "o")
+    runCli(...hire, "-p", "anthropic", "-m", "opus")
+}
+
 beforeEach(() => {
     runCli("init", "-n", "Acme")
     runCli("employee", "create", "human", "julie", "-n", "Julie")
@@ -78,12 +87,7 @@ describe("llmco whoami", () => {
     })
 
     test("refuses an LLM employee", () => {
-        const connection = ["provider", "connection", "create", "anthropic"]
-        const hire = ["employee", "create", "llm", "claude", "-n", "Claude"]
-        runCli("provider", "create", "anthropic", "-n", "Anthropic")
-        runCli(...connection, "anthropic-messages", "-u", "https://x.test")
-        runCli("model", "create", "anthropic", "opus", "-n", "O", "-a", "o")
-        runCli(...hire, "-p", "anthropic", "-m", "opus")
+        hireLlmEmployee("claude")
 
         const whoami = runCliWithEnv(switchedTo("claude"), "whoami")
 
@@ -187,5 +191,99 @@ describe("the person at the keyboard writes in threads", () => {
             "`llmco position assign-temporarily employee <position-id> julie`",
         )
         expect(runCli("thread", "list").stdout).toContain("No threads yet.")
+    })
+})
+
+describe("--as", () => {
+    function lastPositionId(threadId: string): string {
+        const lines = runCli("thread", "show", threadId, "--json").stdout
+        return JSON.parse(lines.trimEnd().split("\n").at(-1) ?? "").position.id
+    }
+
+    function createThread(env: Record<string, string>, ...options: string[]) {
+        const create = ["thread", "create", "-s", "Logo", "-b", "Hello."]
+        return runCliWithEnv(env, ...create, ...options)
+    }
+
+    test("thread create --as writes from one of the positions you work", () => {
+        runCli(...interimDirectors, "support")
+
+        const threadId = createThread({}, "--as", "support").stdout.trim()
+        const show = runCli("thread", "show", threadId).stdout
+
+        expect(lastPositionId(threadId)).toBe("support")
+        expect(show).toContain("Created by Test User, support (@support)")
+    })
+
+    test("message send -a overrides the position chosen by default", () => {
+        runCli(...interimDirectors, "support")
+        const threadId = createThread({}).stdout.trim()
+        const send = ["message", "send", threadId, "-b", "Done."]
+
+        runCli(...send, "-a", "support")
+
+        expect(lastPositionId(threadId)).toBe("support")
+    })
+
+    test("lets a human employee working several positions choose one", () => {
+        runCli("position", "assign", "graphics", "julie")
+        runCli(...interimEmployee, "support", "julie")
+
+        const refused = createThread(asJulie)
+        const chosen = createThread(asJulie, "--as", "support")
+
+        expect(refused.exitCode).toBe(1)
+        expect(refused.stderr).toContain("Choose one with --as.")
+        expect(lastPositionId(chosen.stdout.trim())).toBe("support")
+    })
+
+    test("refuses a position worked by an LLM employee", () => {
+        hireLlmEmployee("claude")
+        runCli("position", "assign", "support", "claude")
+
+        const create = createThread({}, "--as", "support")
+
+        expect(create.exitCode).toBe(1)
+        expect(create.stderr).toBe(
+            "You don't work position \"support\": Claude Senior, an LLM employee, works it, and nobody writes on an LLM's behalf. Assign it to the directors temporarily first: `llmco position assign-temporarily directors support`.\n",
+        )
+        expect(runCli("thread", "list").stdout).toContain("No threads yet.")
+    })
+
+    test("refuses a vacant position, giving the command to work it", () => {
+        const create = createThread(asJulie, "--as", "support")
+
+        expect(create.exitCode).toBe(1)
+        expect(create.stderr).toContain(
+            "it is vacant. A director can assign it to julie temporarily: `llmco position assign-temporarily employee support julie`.",
+        )
+    })
+
+    test("refuses an employee's default position assigned temporarily to another", () => {
+        runCli("position", "assign", "graphics", "julie")
+        runCli(...interimEmployee, "graphics", "bob")
+
+        const create = createThread(asJulie, "--as", "graphics")
+
+        expect(create.exitCode).toBe(1)
+        expect(create.stderr).toContain(
+            "Bob, a human employee, works it. A director can give it back to julie: `llmco position unassign-temporarily graphics`.",
+        )
+    })
+
+    test("refuses the director's position to a human employee", () => {
+        runCli("position", "assign", "graphics", "julie")
+
+        const create = createThread(asJulie, "--as", "director")
+
+        expect(create.exitCode).toBe(1)
+        expect(create.stderr).toContain("Only directors write from")
+    })
+
+    test("refuses an unknown position", () => {
+        const create = createThread({}, "--as", "marketing")
+
+        expect(create.exitCode).toBe(1)
+        expect(create.stderr).toContain('No position "marketing".')
     })
 })
