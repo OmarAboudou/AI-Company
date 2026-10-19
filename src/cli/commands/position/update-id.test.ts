@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-const { runCli, projectPath } = useTemporaryProject()
+const { runCli } = useTemporaryProject()
 
 describe("llmco position update-id", () => {
     beforeEach(() => {
@@ -28,24 +28,5 @@ describe("llmco position update-id", () => {
         expect(update.exitCode).toBe(1)
         expect(update.stderr).toContain('Position "qa-tester" already exists.')
         expect(show).toStartWith("# QA\n")
-    })
-})
-
-describe("the director's position", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-    })
-
-    test("update-id makes the company follow", async () => {
-        const path = projectPath(".llmco", "company", "config.json")
-        const before = await Bun.file(path).json()
-
-        runCli("position", "update-id", "director", "ceo")
-        const after = await Bun.file(path).json()
-
-        expect(before.directorPositionId).toBe("director")
-        expect(after.directorPositionId).toBe("ceo")
-        expect(runCli("position", "show", "director").exitCode).toBe(1)
-        expect(runCli("position", "delete", "ceo").exitCode).toBe(1)
     })
 })

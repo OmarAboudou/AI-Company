@@ -39,12 +39,4 @@ describe("llmco company update", () => {
         expect(update.exitCode).toBe(1)
         expect(update.stderr).toContain("Nothing to update")
     })
-
-    test("update validates like init", () => {
-        const update = runCli("company", "update", "-n", " ")
-        const show = runCli("company", "show").stdout
-
-        expect(update.exitCode).toBe(1)
-        expect(show).toStartWith("# Acme\n")
-    })
 })

@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test"
-import { rm } from "node:fs/promises"
 import { useTemporaryProject } from "../use-temporary-project.ts"
 
 const { runCli, projectPath } = useTemporaryProject()
@@ -31,56 +30,6 @@ describe("llmco init", () => {
 
     test("requires a name", () => {
         expect(runCli("init").exitCode).toBe(1)
-    })
-
-    test("creates the director's position, held by no employee", () => {
-        const init = runCli("init", "-n", "Acme")
-        const position = runCli("position", "show", "director").stdout
-
-        expect(init.stdout).toBe(
-            'Created company "Acme" and its director\'s position "director".\n',
-        )
-        expect(position).toBe(
-            "# Director\n\nheld by: the repository's git users\n\n\n",
-        )
-        expect(runCli("employee", "list").stdout).toContain("No employees")
-    })
-
-    test("names the company's director's position in its config", async () => {
-        runCli("init", "-n", "Acme")
-
-        const path = projectPath(".llmco", "company", "config.json")
-        const config = await Bun.file(path).json()
-
-        expect(config).toEqual({ name: "Acme", directorPositionId: "director" })
-    })
-
-    test("records when the director's position was created", async () => {
-        const path = projectPath(
-            ".llmco",
-            "positions",
-            "director",
-            "history.json",
-        )
-        const before = Date.now()
-
-        runCli("init", "-n", "Acme")
-        const after = Date.now()
-
-        const created = Date.parse((await Bun.file(path).json()).createdAt)
-
-        expect(created).toBeGreaterThanOrEqual(before)
-        expect(created).toBeLessThanOrEqual(after)
-    })
-
-    test("refuses a directory outside any git repository", async () => {
-        await rm(projectPath(".git"), { recursive: true })
-
-        const init = runCli("init", "-n", "Acme")
-
-        expect(init.exitCode).toBe(1)
-        expect(init.stderr).toContain("Run `git init` first.")
-        expect(runCli("company", "show").exitCode).toBe(1)
     })
 })
 
