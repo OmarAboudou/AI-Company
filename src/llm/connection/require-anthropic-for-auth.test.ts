@@ -4,20 +4,20 @@ import { requireAnthropicForAuth } from "./require-anthropic-for-auth.ts"
 
 describe("requireAnthropicForAuth", () => {
     test("accepts an auth for anthropic-messages, or no auth", () => {
-        const anthropic = () =>
+        const requireBearerOnAnthropic = () =>
             requireAnthropicForAuth("anthropic-messages", "bearer")
-        const openAi = () =>
+        const requireNoAuthOnOpenAi = () =>
             requireAnthropicForAuth("openai-responses", undefined)
 
-        expect(anthropic).not.toThrow()
-        expect(openAi).not.toThrow()
+        expect(requireBearerOnAnthropic).not.toThrow()
+        expect(requireNoAuthOnOpenAi).not.toThrow()
     })
 
     test("refuses an auth for the OpenAI protocols", () => {
-        const openAi = () =>
+        const requireBearerOnOpenAi = () =>
             requireAnthropicForAuth("openai-responses", "bearer")
 
-        expect(openAi).toThrow(UserError)
-        expect(openAi).toThrow("always send a bearer token")
+        expect(requireBearerOnOpenAi).toThrow(UserError)
+        expect(requireBearerOnOpenAi).toThrow("always send a bearer token")
     })
 })

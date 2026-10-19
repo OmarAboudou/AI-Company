@@ -28,13 +28,15 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-function update(protocol: Protocol, changes: { auth?: string }) {
+function updateConnection(protocol: Protocol, changes: { auth?: string }) {
     return updateLlmConnection(projectRoot, "openrouter", protocol, changes)
 }
 
 describe("updateLlmConnection", () => {
     test("changes only what it is given, keeping the other connections", async () => {
-        const saved = await update("anthropic-messages", { auth: "bearer" })
+        const savedProvider = await updateConnection("anthropic-messages", {
+            auth: "bearer",
+        })
 
         const provider = await loadLlmProvider(projectRoot, "openrouter")
         expect(provider.connections).toEqual({
@@ -44,27 +46,34 @@ describe("updateLlmConnection", () => {
                 auth: "bearer",
             },
         })
-        expect(saved).toEqual(provider)
+        expect(savedProvider).toEqual(provider)
     })
 
     test("refuses --auth for an OpenAI protocol", async () => {
-        const updating = update("openai-responses", { auth: "bearer" })
+        const updating = updateConnection("openai-responses", {
+            auth: "bearer",
+        })
 
         await expect(updating).rejects.toThrow(UserError)
         await expect(updating).rejects.toThrow("only applies to anthropic")
     })
 
     test("refuses a protocol the provider has no connection through", async () => {
-        const updating = update("openai-chat-completions", {})
+        const updating = updateConnection("openai-chat-completions", {})
 
         await expect(updating).rejects.toThrow("no openai-chat-completions")
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
         const protocol = "openai-responses"
 
-        const updating = updateLlmConnection(elsewhere, "x", protocol, {})
+        const updating = updateLlmConnection(
+            folderWithoutCompany,
+            "x",
+            protocol,
+            {},
+        )
 
         await expect(updating).rejects.toThrow("Run `llmco init` first.")
     })

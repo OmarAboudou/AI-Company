@@ -35,13 +35,13 @@ function disconnect(protocol: Protocol) {
 
 describe("deleteLlmConnection", () => {
     test("removes the connection and keeps the others", async () => {
-        const saved = await disconnect("anthropic-messages")
+        const savedProvider = await disconnect("anthropic-messages")
 
         const provider = await loadLlmProvider(projectRoot, "openrouter")
         expect(Object.keys(provider.connections ?? {})).toEqual([
             "openai-responses",
         ])
-        expect(saved).toEqual(provider)
+        expect(savedProvider).toEqual(provider)
     })
 
     test("refuses a connection a model is called through", async () => {
@@ -66,9 +66,13 @@ describe("deleteLlmConnection", () => {
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const deletion = deleteLlmConnection(elsewhere, "x", "openai-responses")
+        const deletion = deleteLlmConnection(
+            folderWithoutCompany,
+            "x",
+            "openai-responses",
+        )
 
         await expect(deletion).rejects.toThrow("Run `llmco init` first.")
     })

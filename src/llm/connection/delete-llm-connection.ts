@@ -27,7 +27,7 @@ export async function deleteLlmConnection(
     }
     const remainingConnections = Object.entries(
         provider.connections ?? {},
-    ).filter(([name]) => name !== protocol)
+    ).filter(([connectionProtocol]) => connectionProtocol !== protocol)
     return saveLlmConnections(
         projectRoot,
         provider,

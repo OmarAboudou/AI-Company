@@ -29,13 +29,13 @@ function connect(protocol: Protocol, auth?: string) {
 
 describe("createLlmConnection", () => {
     test("adds a connection through a protocol to the provider", async () => {
-        const saved = await connect("anthropic-messages", "bearer")
+        const savedProvider = await connect("anthropic-messages", "bearer")
 
         const provider = await loadLlmProvider(projectRoot, "openrouter")
         expect(provider.connections).toEqual({
             "anthropic-messages": { baseUrl, auth: "bearer" },
         })
-        expect(saved).toEqual(provider)
+        expect(savedProvider).toEqual(provider)
     })
 
     test("keeps the provider's other connections", async () => {
@@ -88,10 +88,10 @@ describe("createLlmConnection", () => {
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
         const creation = createLlmConnection(
-            elsewhere,
+            folderWithoutCompany,
             "openrouter",
             "openai-responses",
             { baseUrl },

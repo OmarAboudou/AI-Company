@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import { ConnectionsSchema, protocols } from "./schema.ts"
 
-const local = { baseUrl: "http://localhost:11434" }
+const localConnection = { baseUrl: "http://localhost:11434" }
 
 function accepts(connections: unknown): boolean {
     return ConnectionsSchema.safeParse(connections).success
@@ -9,7 +9,7 @@ function accepts(connections: unknown): boolean {
 
 describe("ConnectionsSchema", () => {
     test.each(protocols)("accepts a %s connection with a base URL", (name) => {
-        const connections = { [name]: local }
+        const connections = { [name]: localConnection }
 
         expect(ConnectionsSchema.parse(connections)).toEqual(connections)
     })
@@ -19,7 +19,9 @@ describe("ConnectionsSchema", () => {
     })
 
     test("rejects an unknown protocol", () => {
-        expect(accepts({ "gemini-generate-content": local })).toBe(false)
+        const geminiConnections = { "gemini-generate-content": localConnection }
+
+        expect(accepts(geminiConnections)).toBe(false)
     })
 
     test("rejects a missing base URL", () => {
@@ -34,23 +36,26 @@ describe("ConnectionsSchema", () => {
     )
 
     test("accepts x-api-key or bearer auth on anthropic-messages", () => {
-        const bearer = { ...local, auth: "bearer" }
-        const apiKey = { ...local, auth: "x-api-key" }
+        const bearerConnection = { ...localConnection, auth: "bearer" }
+        const apiKeyConnection = { ...localConnection, auth: "x-api-key" }
 
-        expect(accepts({ "anthropic-messages": bearer })).toBe(true)
-        expect(accepts({ "anthropic-messages": apiKey })).toBe(true)
+        expect(accepts({ "anthropic-messages": bearerConnection })).toBe(true)
+        expect(accepts({ "anthropic-messages": apiKeyConnection })).toBe(true)
     })
 
     test("rejects an unknown auth", () => {
-        const basic = { ...local, auth: "basic" }
+        const basicConnection = { ...localConnection, auth: "basic" }
 
-        expect(accepts({ "anthropic-messages": basic })).toBe(false)
+        expect(accepts({ "anthropic-messages": basicConnection })).toBe(false)
     })
 
     test("rejects auth on the OpenAI protocols, always bearer", () => {
-        const bearer = { ...local, auth: "bearer" }
+        const bearerConnection = { ...localConnection, auth: "bearer" }
 
-        expect(accepts({ "openai-chat-completions": bearer })).toBe(false)
-        expect(accepts({ "openai-responses": bearer })).toBe(false)
+        const chatConnections = { "openai-chat-completions": bearerConnection }
+        const responsesConnections = { "openai-responses": bearerConnection }
+
+        expect(accepts(chatConnections)).toBe(false)
+        expect(accepts(responsesConnections)).toBe(false)
     })
 })
