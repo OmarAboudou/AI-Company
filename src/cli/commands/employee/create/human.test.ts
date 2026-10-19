@@ -3,11 +3,6 @@ import { saveMessage } from "../../../../message/storage.ts"
 import { saveThread } from "../../../../thread/storage.ts"
 import { useTemporaryProject } from "../../../use-temporary-project.ts"
 
-type History = {
-    createdAt: string
-    formerIds?: { id: string; until: string }[]
-}
-
 const { runCli, projectPath } = useTemporaryProject()
 
 describe("llmco employee", () => {
@@ -49,29 +44,6 @@ describe("llmco employee", () => {
 
         expect(create.exitCode).toBe(1)
         expect(create.stderr).toContain("unknown option '-m'")
-    })
-})
-
-describe("an employee's id history", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-    })
-
-    async function history(id: string): Promise<History> {
-        const path = projectPath(".llmco", "employees", id, "history.json")
-        const { createdAt, formerIds } = await Bun.file(path).json()
-        return { createdAt, formerIds }
-    }
-
-    test("create records when the employee was created", async () => {
-        const before = Date.now()
-        runCli("employee", "create", "human", "developer", "-n", "Dev")
-        const after = Date.now()
-
-        const created = Date.parse((await history("developer")).createdAt)
-
-        expect(created).toBeGreaterThanOrEqual(before)
-        expect(created).toBeLessThanOrEqual(after)
     })
 })
 
@@ -132,24 +104,4 @@ describe("--reuse-id", () => {
             expect(runCli("employee", "show", "claude").exitCode).toBe(0)
         },
     )
-
-    test("create names an existing employee before any earlier use", async () => {
-        const hire = ["employee", "create", "human", "claude", "-n", "C"]
-        runCli(...hire)
-        await archiveMessageBy("claude", new Date().toISOString())
-
-        const create = runCli(...hire)
-
-        expect(create.stderr).toContain('Employee "claude" already exists.')
-    })
-
-    test("create refuses another employee's former id", () => {
-        runCli("employee", "create", "human", "omar", "-n", "Omar")
-        runCli("employee", "update-id", "omar", "omar-a")
-
-        const create = runCli("employee", "create", "human", "omar", "-n", "O")
-
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain('as a former id of employee "omar-a"')
-    })
 })

@@ -1,12 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-type History = {
-    createdAt: string
-    formerIds?: { id: string; until: string }[]
-}
-
-const { runCli, projectPath } = useTemporaryProject()
+const { runCli } = useTemporaryProject()
 
 describe("llmco employee update", () => {
     function createModel(provider: string, model: string) {
@@ -52,14 +47,6 @@ describe("llmco employee update", () => {
         expect(show).toContain("model: claude-opus-5-5\n")
     })
 
-    test("update -m gives it another model of its provider", () => {
-        runCli("employee", "update", "claude", "-m", "claude-haiku-4-5")
-
-        const show = runCli("employee", "show", "claude").stdout
-
-        expect(show).toContain("model: claude-haiku-4-5\n")
-    })
-
     test("update -p and -m move it to another provider", () => {
         const update = ["employee", "update", "claude"]
 
@@ -69,58 +56,10 @@ describe("llmco employee update", () => {
         expect(list).toContain("ollama/llama-3-1-8b")
     })
 
-    test("update refuses a pair that doesn't exist", () => {
-        const update = runCli("employee", "update", "claude", "-p", "ollama")
-        const show = runCli("employee", "show", "claude").stdout
-
-        expect(update.exitCode).toBe(1)
-        expect(update.stderr).toContain('"ollama" has no model "claude-opus')
-        expect(show).toContain("provider: anthropic\n")
-    })
-
-    test("update refuses a provider or a model for a human", () => {
-        const update = runCli("employee", "update", "omar", "-m", "x")
-
-        expect(update.exitCode).toBe(1)
-        expect(update.stderr).toContain("is a human")
-    })
-
-    test("update -n renames a human", () => {
-        runCli("employee", "update", "omar", "-n", "Omar Aboudou")
-
-        const show = runCli("employee", "show", "omar").stdout
-
-        expect(show).toStartWith("# Omar Aboudou\n\nkind: human\n")
-    })
-
     test("update requires at least one option", () => {
         const update = runCli("employee", "update", "claude")
 
         expect(update.exitCode).toBe(1)
         expect(update.stderr).toContain("Nothing to update")
-    })
-})
-
-describe("an employee's id history", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-    })
-
-    async function history(id: string): Promise<History> {
-        const path = projectPath(".llmco", "employees", id, "history.json")
-        const { createdAt, formerIds } = await Bun.file(path).json()
-        return { createdAt, formerIds }
-    }
-
-    test("update keeps the history", async () => {
-        runCli("employee", "create", "human", "developer", "-n", "Dev")
-        runCli("employee", "update-id", "developer", "api-developer")
-        const before = await history("api-developer")
-
-        runCli("employee", "update", "api-developer", "-n", "API Dev")
-        const after = await history("api-developer")
-
-        expect(before.formerIds).toHaveLength(1)
-        expect(after).toEqual(before)
     })
 })

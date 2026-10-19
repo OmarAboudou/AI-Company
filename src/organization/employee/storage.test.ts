@@ -48,6 +48,22 @@ describe("saveEmployee", () => {
             '{\n    "name": "Claude Senior",\n    "kind": "llm",\n    "providerId": "anthropic",\n    "modelId": "claude-opus-5-5"\n}\n',
         )
     })
+
+    test("writes the id history to history.json, out of config.json", async () => {
+        const omar = { id: "omar", name: "Omar", kind: "human" } as const
+        const createdAt = "2026-10-18T14:00:00.000Z"
+        const formerIds = [{ id: "dev", until: "2026-10-19T09:00:00.000Z" }]
+
+        await saveEmployee(projectRoot, { ...omar, createdAt, formerIds })
+
+        const dir = join(projectRoot, ".llmco", "employees", "omar")
+        const [config, history] = await Promise.all([
+            Bun.file(join(dir, "config.json")).json(),
+            Bun.file(join(dir, "history.json")).json(),
+        ])
+        expect(config).toEqual({ name: "Omar", kind: "human" })
+        expect(history).toEqual({ createdAt, formerIds })
+    })
 })
 
 describe("loadEmployee", () => {

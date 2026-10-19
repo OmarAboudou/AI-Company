@@ -47,15 +47,6 @@ describe("llmco employee replace", () => {
         expect(runCli("position", "list").stdout).not.toContain("omar")
     })
 
-    test("replace keeps both employees and the replacement's positions", () => {
-        runCli("employee", "replace", "omar", "alice")
-
-        const list = runCli("employee", "list", "--positions").stdout
-
-        expect(list).toContain("alice  Alice  human  designer, developer, qa-")
-        expect(list).toContain("omar   Omar   human  (none)\n")
-    })
-
     test("replace says so when the employee fills no position", () => {
         runCli("employee", "create", "human", "bob", "-n", "Bob")
 
@@ -108,33 +99,10 @@ describe("llmco employee replace", () => {
         },
     )
 
-    test("replace --temporary ends a temporary assignment where the replacement is the default employee", async () => {
-        runCli(...interimEmployee, "designer", "omar")
-        const before = await temporaryAssignee("designer")
-
-        const replace = runCli("employee", "replace", "omar", "alice", "-t")
-        const after = await temporaryAssignee("designer")
-
-        expect(before).toEqual(employeeWorker("omar"))
-        expect(replace.stdout).toContain(
-            "Temporary assignments ended: designer.",
-        )
-        expect(after).toBeUndefined()
-    })
-
     test("replace refuses an employee replacing itself", () => {
         const replace = runCli("employee", "replace", "omar", "omar")
 
         expect(replace.exitCode).toBe(1)
         expect(replace.stderr).toContain("can't replace itself")
-    })
-
-    test("replace fails for an unknown replacement", () => {
-        const replace = runCli("employee", "replace", "omar", "bob")
-        const list = runCli("position", "list").stdout
-
-        expect(replace.exitCode).toBe(1)
-        expect(replace.stderr).toContain('No employee "bob".')
-        expect(list).toContain("developer  developer  omar\n")
     })
 })

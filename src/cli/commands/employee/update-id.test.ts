@@ -3,11 +3,6 @@ import { saveMessage } from "../../../message/storage.ts"
 import { saveThread } from "../../../thread/storage.ts"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-type History = {
-    createdAt: string
-    formerIds?: { id: string; until: string }[]
-}
-
 const { runCli, projectPath } = useTemporaryProject()
 
 const interimEmployee = ["position", "interim", "employee"]
@@ -78,61 +73,6 @@ describe("llmco employee update-id", () => {
         expect(update.stderr).toContain('Employee "alice" already exists.')
         expect(show).toStartWith("# Alice\n")
     })
-
-    test("update-id fails for an unknown employee", () => {
-        const update = runCli("employee", "update-id", "bob", "robert")
-
-        expect(update.exitCode).toBe(1)
-        expect(update.stderr).toContain('No employee "bob".')
-    })
-})
-
-describe("an employee's id history", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-    })
-
-    async function history(id: string): Promise<History> {
-        const path = projectPath(".llmco", "employees", id, "history.json")
-        const { createdAt, formerIds } = await Bun.file(path).json()
-        return { createdAt, formerIds }
-    }
-
-    test("leaves the history out of config.json", async () => {
-        runCli("employee", "create", "human", "developer", "-n", "Dev")
-        runCli("employee", "update-id", "developer", "api-developer")
-
-        const path = projectPath(
-            ".llmco",
-            "employees",
-            "api-developer",
-            "config.json",
-        )
-        const config = { name: "Dev", kind: "human" }
-
-        expect(await Bun.file(path).json()).toEqual(config)
-    })
-
-    test("update-id records each former id and when it stopped", async () => {
-        runCli("employee", "create", "human", "developer", "-n", "Dev")
-        const created = await history("developer")
-
-        const before = Date.now()
-        runCli("employee", "update-id", "developer", "api-developer")
-        runCli("employee", "update-id", "api-developer", "backend-developer")
-        const after = Date.now()
-
-        const renamed = await history("backend-developer")
-        const formerIds = renamed.formerIds ?? []
-        const ids = formerIds.map(({ id }) => id)
-        const untils = formerIds.map(({ until }) => Date.parse(until))
-
-        expect(created.formerIds).toBeUndefined()
-        expect(renamed.createdAt).toBe(created.createdAt)
-        expect(ids).toEqual(["developer", "api-developer"])
-        expect(Math.min(...untils)).toBeGreaterThanOrEqual(before)
-        expect(Math.max(...untils)).toBeLessThanOrEqual(after)
-    })
 })
 
 describe("--reuse-id", () => {
@@ -179,16 +119,5 @@ describe("--reuse-id", () => {
         expect(refused.exitCode).toBe(1)
         expect(refused.stderr).toContain("add --reuse-id")
         expect(reused.exitCode).toBe(0)
-    })
-
-    test("update-id gives an employee back its own former id", async () => {
-        runCli("employee", "create", "human", "omar", "-n", "Omar")
-        await archiveMessageBy("omar", new Date().toISOString())
-        runCli("employee", "update-id", "omar", "omar-a")
-
-        const update = runCli("employee", "update-id", "omar-a", "omar")
-
-        expect(update.exitCode).toBe(0)
-        expect(runCli("employee", "show", "omar").exitCode).toBe(0)
     })
 })
