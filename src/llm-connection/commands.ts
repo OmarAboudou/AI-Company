@@ -4,9 +4,9 @@ import { formatIdArgumentDescription } from "../cli/format-id-argument-descripti
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
+import { requireDirector } from "../cli/require-director.ts"
 import { loadExistingLlmProvider, withoutUndefined } from "../cli-helpers.ts"
 import { requireCompany } from "../company/require-company.ts"
-import { requireDirector } from "../human/current-human.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import {

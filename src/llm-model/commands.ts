@@ -5,13 +5,13 @@ import { formatNewIdArgumentDescription } from "../cli/format-new-id-argument-de
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
+import { requireDirector } from "../cli/require-director.ts"
 import {
     loadExistingLlmModel,
     loadExistingLlmProvider,
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { requireCompany } from "../company/require-company.ts"
-import { requireDirector } from "../human/current-human.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { type Protocol, protocols } from "../llm-connection/llm-connection.ts"
 import type { LlmProvider } from "../llm-provider/llm-provider.ts"
