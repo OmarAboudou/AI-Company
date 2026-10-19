@@ -1,0 +1,35 @@
+import type { Command } from "@commander-js/extra-typings"
+import { updateLlmProviderId } from "../../../llm/provider/update-llm-provider-id.ts"
+import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
+import { formatNewIdArgumentDescription } from "../../format-new-id-argument-description.ts"
+import { projectRoot } from "../../project-root.ts"
+import { requireDirector } from "../../require-director.ts"
+
+export function registerProviderUpdateIdCommand(
+    providerCommand: Command,
+): void {
+    providerCommand
+        .command("update-id")
+        .description(
+            "Change the id of an LLM provider and of the employees running on it.",
+        )
+        .argument(
+            "<provider-id>",
+            formatIdArgumentDescription("provider", "anthropic"),
+        )
+        .argument(
+            "<new-provider-id>",
+            formatNewIdArgumentDescription("provider", "anthropic-api"),
+        )
+        .hook("preAction", requireDirector)
+        .action(async (rawId, rawNewId) => {
+            const { provider, renamedProvider, updatedEmployeeIds } =
+                await updateLlmProviderId(projectRoot, rawId, rawNewId)
+            const renamedMessage = `Provider "${provider.id}" is now "${renamedProvider.id}"`
+            console.log(
+                updatedEmployeeIds.length === 0
+                    ? `${renamedMessage}.`
+                    : `${renamedMessage}; updated employees: ${updatedEmployeeIds.join(", ")}.`,
+            )
+        })
+}
