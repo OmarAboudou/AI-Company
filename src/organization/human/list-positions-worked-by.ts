@@ -1,4 +1,3 @@
-import { projectRoot } from "../../cli/project-root.ts"
 import { getCurrentWorker } from "../position/get-current-worker.ts"
 import type { Position, Worker } from "../position/schema.ts"
 import { loadPositionState } from "../position/storage.ts"
@@ -16,6 +15,7 @@ function isWorkedBy(human: CurrentHuman, worker: Worker | undefined): boolean {
 }
 
 export async function listPositionsWorkedBy(
+    projectRoot: string,
     human: CurrentHuman,
     positions: Position[],
     directorPositionId: string,

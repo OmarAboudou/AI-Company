@@ -16,11 +16,12 @@ export function registerHumanCommands(program: Command): void {
         .action(async () => {
             await requireCompany(projectRoot)
             const [human, positions, company] = await Promise.all([
-                readCurrentHuman(),
+                readCurrentHuman(projectRoot),
                 listPositions(projectRoot),
                 loadCompany(projectRoot),
             ])
             const worked = await listPositionsWorkedBy(
+                projectRoot,
                 human,
                 positions,
                 company.directorPositionId,
