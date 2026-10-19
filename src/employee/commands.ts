@@ -13,7 +13,8 @@ import {
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { requireDirector } from "../human/current-human.ts"
-import { withNewId, wrote } from "../id-history.ts"
+import { withNewId } from "../ids/get-renamed-entity.ts"
+import { wrote } from "../ids/is-author-of.ts"
 import type { Position, PositionState } from "../position/position.ts"
 import {
     listPositions,

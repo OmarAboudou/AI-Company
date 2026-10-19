@@ -6,7 +6,7 @@ import { listSubdirectories } from "../files/list-subdirectories.ts"
 import { readJsonFile } from "../files/read-json-file.ts"
 import { readTextFile } from "../files/read-text-file.ts"
 import { saveState } from "../files/save-state.ts"
-import { loadIdHistory, saveIdHistory } from "../id-history.ts"
+import { loadIdHistory, saveIdHistory } from "../ids/id-history-storage.ts"
 import {
     type Position,
     PositionConfigSchema,

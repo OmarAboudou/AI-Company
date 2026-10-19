@@ -1,4 +1,5 @@
-import { currentId, type IdHistory } from "../id-history.ts"
+import { currentId } from "../ids/get-current-id.ts"
+import type { IdHistory } from "../ids/id-history-schema.ts"
 import type { Message } from "../message/message.ts"
 import type { Thread } from "./thread.ts"
 
