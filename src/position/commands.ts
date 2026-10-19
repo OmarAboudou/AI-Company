@@ -14,6 +14,7 @@ import { loadExistingEmployee } from "../employee/load-existing-employee.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
 import { parseId } from "../ids/parse-id.ts"
+import { createPosition } from "../organization/position/create-position.ts"
 import { loadExistingPosition } from "../organization/position/load-existing-position.ts"
 import {
     type Position,
@@ -165,27 +166,16 @@ export function registerPositionCommands(program: Command): void {
         )
         .addOption(createDescriptionFileOption())
         .hook("preAction", requireDirector)
-        .action(async (rawId, { title, description, descriptionFile }) => {
-            await requireCompany(projectRoot)
-            const id = parseId("position", rawId)
-            if (await hasPosition(projectRoot, id)) {
-                throw new UserError(`Position "${id}" already exists.`)
-            }
-            const config = PositionConfigSchema.safeParse({ title })
-            if (!config.success) {
-                throw new UserError(z.prettifyError(config.error))
-            }
-            const text = await readTextOrFile(description, descriptionFile)
-            await Promise.all([
-                savePosition(projectRoot, {
-                    id,
-                    ...config.data,
-                    createdAt: new Date().toISOString(),
-                    description: text,
-                }),
-                deletePositionState(projectRoot, id),
-            ])
-            console.log(`Created position "${id}".`)
+        .action(async (rawId, options) => {
+            const description = await readTextOrFile(
+                options.description,
+                options.descriptionFile,
+            )
+            const position = await createPosition(projectRoot, rawId, {
+                title: options.title,
+                description,
+            })
+            console.log(`Created position "${position.id}".`)
         })
 
     positionCommand

@@ -1,0 +1,33 @@
+import { z } from "zod"
+import { requireCompany } from "../../company/require-company.ts"
+import { parseId } from "../../ids/parse-id.ts"
+import { UserError } from "../../user-error.ts"
+import { type Position, PositionConfigSchema } from "./schema.ts"
+import { deletePositionState, hasPosition, savePosition } from "./storage.ts"
+
+export async function createPosition(
+    projectRoot: string,
+    rawId: string,
+    { title, description }: { title: string; description: string },
+): Promise<Position> {
+    await requireCompany(projectRoot)
+    const id = parseId("position", rawId)
+    if (await hasPosition(projectRoot, id)) {
+        throw new UserError(`Position "${id}" already exists.`)
+    }
+    const validation = PositionConfigSchema.safeParse({ title })
+    if (!validation.success) {
+        throw new UserError(z.prettifyError(validation.error))
+    }
+    const position = {
+        id,
+        ...validation.data,
+        createdAt: new Date().toISOString(),
+        description,
+    }
+    await Promise.all([
+        savePosition(projectRoot, position),
+        deletePositionState(projectRoot, id),
+    ])
+    return position
+}
