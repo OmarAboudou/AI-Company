@@ -1,9 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk"
-import { UserError } from "../errors.ts"
 import { type IdHistory, wrote } from "../id-history.ts"
 import type { Connections } from "../llm-connection/llm-connection.ts"
 import type { Message } from "../message/message.ts"
 import { authorName, minutes } from "../message/signature.ts"
+import { UserError } from "../user-error.ts"
 
 export type Replays = ReadonlyMap<string, Anthropic.ContentBlockParam[]>
 

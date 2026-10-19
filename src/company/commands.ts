@@ -8,10 +8,10 @@ import {
     requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
-import { UserError } from "../errors.ts"
 import { requireGitRepository } from "../git.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { savePosition } from "../position/storage.ts"
+import { UserError } from "../user-error.ts"
 import { CompanyConfigSchema } from "./company.ts"
 import { companyExists, loadCompany, saveCompany } from "./storage.ts"
 

@@ -1,10 +1,10 @@
 import { homedir } from "node:os"
 import { join, resolve } from "node:path"
 import { projectRoot } from "../cli-helpers.ts"
-import { UserError } from "../errors.ts"
 import { readText } from "../files.ts"
 import { isInRepositoryButNotIgnored } from "../git.ts"
 import type { LlmProvider } from "../llm-provider/llm-provider.ts"
+import { UserError } from "../user-error.ts"
 
 function keyFilePath(path: string): string {
     if (path === "~" || path.startsWith("~/")) {

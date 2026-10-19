@@ -12,7 +12,6 @@ import {
     requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
-import { UserError } from "../errors.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { withNewId, wrote } from "../id-history.ts"
 import type { Position, PositionState } from "../position/position.ts"
@@ -23,6 +22,7 @@ import {
     savePositionState,
 } from "../position/storage.ts"
 import { readArchives } from "../thread/archives.ts"
+import { UserError } from "../user-error.ts"
 import {
     type Employee,
     type EmployeeConfig,

@@ -2,12 +2,12 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdir, mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { UserError } from "./errors.ts"
 import {
     gitConfig,
     isInRepositoryButNotIgnored,
     requireGitRepository,
 } from "./git.ts"
+import { UserError } from "./user-error.ts"
 
 let dir: string
 

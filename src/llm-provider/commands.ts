@@ -12,11 +12,11 @@ import {
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { listEmployees, saveEmployee } from "../employee/storage.ts"
-import { UserError } from "../errors.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { registerLlmConnectionCommands } from "../llm-connection/commands.ts"
 import { protocols } from "../llm-connection/llm-connection.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
+import { UserError } from "../user-error.ts"
 import { type ApiKeySource, LlmProviderConfigSchema } from "./llm-provider.ts"
 import {
     copyLlmProvider,

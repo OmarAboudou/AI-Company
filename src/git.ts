@@ -1,4 +1,4 @@
-import { UserError } from "./errors.ts"
+import { UserError } from "./user-error.ts"
 
 function spawnGit(dir: string, args: string[]) {
     try {

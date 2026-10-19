@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
-import { UserError } from "./errors.ts"
 import { createProgram } from "./program.ts"
+import { UserError } from "./user-error.ts"
 
 try {
     await createProgram().parseAsync()

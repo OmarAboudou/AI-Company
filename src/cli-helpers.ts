@@ -3,7 +3,6 @@ import { z } from "zod"
 import { companyExists } from "./company/storage.ts"
 import type { Employee } from "./employee/employee.ts"
 import { employeeExists, loadEmployee } from "./employee/storage.ts"
-import { UserError } from "./errors.ts"
 import { readText } from "./files.ts"
 import { IdSchema } from "./id.ts"
 import type { LlmModel } from "./llm-model/llm-model.ts"
@@ -14,6 +13,7 @@ import type { Position } from "./position/position.ts"
 import { loadPosition, positionExists } from "./position/storage.ts"
 import { loadThread, threadExists } from "./thread/storage.ts"
 import type { Thread } from "./thread/thread.ts"
+import { UserError } from "./user-error.ts"
 
 export const projectRoot = process.cwd()
 
