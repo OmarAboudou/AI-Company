@@ -411,7 +411,7 @@ export function registerEmployeeCommands(program: Command): void {
         .argument("<employee-id>", idDescription("employee", "claude-senior"))
         .option(
             "-f, --force",
-            "delete it even if it fills positions, leaving them vacant",
+            "delete it even if it fills positions, leaving them vacant, or works them temporarily, ending these assignments",
         )
         .action(async (rawId, { force }) => {
             await requireCompany()
@@ -420,22 +420,47 @@ export function registerEmployeeCommands(program: Command): void {
                 listPositions(projectRoot),
             ])
             const filled = filledPositions(positions, employee.id)
+            const temporary = await positionsWorkedTemporarily(
+                positions,
+                employee.id,
+            )
             const filledIds = filled.map(({ id }) => id).join(", ")
-            if (filled.length > 0 && !force) {
+            const temporaryIds = temporary
+                .map(({ position }) => position.id)
+                .join(", ")
+            const facts: string[] = []
+            const effects: string[] = []
+            const done: string[] = []
+            if (filled.length > 0) {
+                facts.push(`is the default employee of ${filledIds}`)
+                effects.push(`leave ${filledIds} vacant`)
+                done.push(`now vacant: ${filledIds}`)
+            }
+            if (temporary.length > 0) {
+                facts.push(`is assigned temporarily to ${temporaryIds}`)
+                effects.push(`end these temporary assignments`)
+                done.push(`temporary assignments ended: ${temporaryIds}`)
+            }
+            if (facts.length > 0 && !force) {
+                const actions = ["delete it anyway", ...effects]
                 throw new UserError(
-                    `Employee "${employee.id}" is the default employee of ${filledIds}. Add --force to delete it anyway and leave these positions vacant.`,
+                    `Employee "${employee.id}" ${facts.join(" and ")}. Add --force to ${actions.slice(0, -1).join(", ")} and ${actions.at(-1)}.`,
                 )
             }
-            await Promise.all(
-                filled.map(({ defaultEmployeeId, ...position }) =>
+            await Promise.all([
+                ...filled.map(({ defaultEmployeeId, ...position }) =>
                     savePosition(projectRoot, position),
                 ),
-            )
+                ...temporary.map(
+                    ({ position, state: { temporaryAssignment, ...state } }) =>
+                        savePositionState(projectRoot, position.id, state),
+                ),
+            ])
             await deleteEmployee(projectRoot, employee.id)
             console.log(
-                filled.length === 0
+                done.length === 0
                     ? `Deleted employee "${employee.id}".`
-                    : `Deleted employee "${employee.id}"; now vacant: ${filledIds}.`,
+                    : `Deleted employee "${employee.id}"; ${done.join("; ")}.`,
             )
         })
 }
