@@ -44,7 +44,7 @@ describe("saveMessage and listMessages", () => {
     test("write message.json and body.md, then read them back", async () => {
         await saveMessage(projectRoot, question)
 
-        const dir = join(
+        const messageFolderPath = join(
             projectRoot,
             ".llmco",
             "threads",
@@ -52,7 +52,7 @@ describe("saveMessage and listMessages", () => {
             "messages",
             question.id,
         )
-        const body = await Bun.file(join(dir, "body.md")).text()
+        const body = await Bun.file(join(messageFolderPath, "body.md")).text()
         const messages = await listMessages(projectRoot, question.threadId)
 
         expect(body).toBe(question.body)
@@ -70,21 +70,21 @@ describe("saveMessage and listMessages", () => {
 })
 
 describe("saveProviderResponse and loadProviderResponse", () => {
-    const response = {
+    const providerResponse = {
         providerId: "anthropic",
         modelId: "claude-opus-5-5",
         protocol: "anthropic-messages",
         apiId: "claude-opus-5-5",
-        response: { content: [{ type: "text", text: "Hono." }] },
+        payload: { content: [{ type: "text", text: "Hono." }] },
     } as const
 
     test("write response.json next to the message, then read it", async () => {
         await saveMessage(projectRoot, answer)
 
-        await saveProviderResponse(projectRoot, answer, response)
+        await saveProviderResponse(projectRoot, answer, providerResponse)
 
         const loadedResponse = await loadProviderResponse(projectRoot, answer)
-        expect(loadedResponse).toEqual(response)
+        expect(loadedResponse).toEqual(providerResponse)
     })
 
     test("load gives nothing for a message without response", async () => {

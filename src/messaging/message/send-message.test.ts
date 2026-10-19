@@ -11,14 +11,14 @@ import { createThread } from "../thread/create-thread.ts"
 import { sendMessage } from "./send-message.ts"
 import { listMessages } from "./storage.ts"
 
-const variable = "LLMCO_CURRENT_HUMAN_ID"
-const shellValue = process.env[variable]
+const variableName = "LLMCO_CURRENT_HUMAN_ID"
+const shellValue = process.env[variableName]
 const committer = { name: "Test User", email: "test@example.com" }
 let projectRoot: string
 let threadId: string
 
 beforeEach(async () => {
-    delete process.env[variable]
+    delete process.env[variableName]
     projectRoot = await createTemporaryCompany()
     createGitRepository(projectRoot, committer)
     await savePosition(projectRoot, {
@@ -32,9 +32,9 @@ beforeEach(async () => {
 
 afterEach(async () => {
     if (shellValue === undefined) {
-        delete process.env[variable]
+        delete process.env[variableName]
     } else {
-        process.env[variable] = shellValue
+        process.env[variableName] = shellValue
     }
     await rm(projectRoot, { recursive: true, force: true })
 })
@@ -94,12 +94,12 @@ describe("sendMessage", () => {
         await assignPositionTemporarily(projectRoot, "qa-tester", {
             kind: "directors",
         })
-        process.env[variable] = "julie"
+        process.env[variableName] = "julie"
         const { thread } = await createThread(projectRoot, {
             subject: "Logo",
             body: "@qa-tester, is the logo broken?",
         })
-        delete process.env[variable]
+        delete process.env[variableName]
 
         const { message } = await sendMessage(projectRoot, thread.id, {
             body: "It is.",
@@ -128,9 +128,11 @@ describe("sendMessage", () => {
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const sending = sendMessage(elsewhere, threadId, { body: "Hi" })
+        const sending = sendMessage(folderWithoutCompany, threadId, {
+            body: "Hi",
+        })
 
         await expect(sending).rejects.toThrow("Run `llmco init` first.")
     })

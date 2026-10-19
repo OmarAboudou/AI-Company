@@ -72,7 +72,7 @@ async function loadReplays(
                 return []
             }
             // llmco wrote it from the SDK's own response, in answerAs.
-            const { content } = response.response as Anthropic.Message
+            const { content } = response.payload as Anthropic.Message
             return [[message.id, content] as const]
         }),
     )
@@ -145,7 +145,7 @@ async function answerAs(
         modelId: model.id,
         protocol: model.protocol,
         apiId: model.apiId,
-        response,
+        payload: response,
     })
     onEvent({
         kind: "answered",

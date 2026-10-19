@@ -22,10 +22,10 @@ describe("createMessageId", () => {
     })
 
     test("differs between two messages sent at the same time", () => {
-        const ids = new Set(
+        const messageIds = new Set(
             Array.from({ length: 20 }, () => createMessageId(question.sentAt)),
         )
 
-        expect(ids.size).toBeGreaterThan(1)
+        expect(messageIds.size).toBeGreaterThan(1)
     })
 })
