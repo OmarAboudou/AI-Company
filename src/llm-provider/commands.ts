@@ -9,6 +9,7 @@ import { requireDirector } from "../cli/require-director.ts"
 import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { protocols } from "../llm/connection/schema.ts"
+import { createLlmProvider } from "../llm/provider/create-llm-provider.ts"
 import { loadExistingLlmProvider } from "../llm/provider/load-existing-llm-provider.ts"
 import {
     type ApiKeySource,
@@ -83,20 +84,11 @@ export function registerLlmProviderCommands(program: Command): void {
         .addOption(apiKeyFileOption())
         .hook("preAction", requireDirector)
         .action(async (rawId, { name, ...apiKeyOptions }) => {
-            await requireCompany(projectRoot)
-            const id = parseId("provider", rawId)
-            if (await hasLlmProvider(projectRoot, id)) {
-                throw new UserError(`Provider "${id}" already exists.`)
-            }
-            const config = LlmProviderConfigSchema.safeParse({
+            const provider = await createLlmProvider(projectRoot, rawId, {
                 name,
-                ...getDefinedValues({ apiKey: apiKeySource(apiKeyOptions) }),
+                apiKey: apiKeySource(apiKeyOptions),
             })
-            if (!config.success) {
-                throw new UserError(z.prettifyError(config.error))
-            }
-            await saveLlmProvider(projectRoot, { id, ...config.data })
-            console.log(`Created provider "${id}".`)
+            console.log(`Created provider "${provider.id}".`)
         })
 
     providerCommand

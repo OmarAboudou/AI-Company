@@ -1,0 +1,73 @@
+import { afterEach, beforeEach, describe, expect, test } from "bun:test"
+import { rm } from "node:fs/promises"
+import { join } from "node:path"
+import { createTemporaryCompany } from "../../organization/company/create-temporary-company.ts"
+import { UserError } from "../../user-error.ts"
+import { createLlmProvider } from "./create-llm-provider.ts"
+import { loadLlmProvider } from "./storage.ts"
+
+let projectRoot: string
+
+beforeEach(async () => {
+    projectRoot = await createTemporaryCompany()
+})
+
+afterEach(async () => {
+    await rm(projectRoot, { recursive: true, force: true })
+})
+
+const anthropic = {
+    name: "Anthropic",
+    apiKey: { kind: "env", variable: "ANTHROPIC_API_KEY" },
+} as const
+
+describe("createLlmProvider", () => {
+    test("saves the provider with its name and API key's source", async () => {
+        const created = await createLlmProvider(projectRoot, "acme", anthropic)
+
+        const provider = await loadLlmProvider(projectRoot, "acme")
+        expect(provider).toEqual({ id: "acme", ...anthropic })
+        expect(created).toEqual(provider)
+    })
+
+    test("saves a provider without API key", async () => {
+        const ollama = { name: "Ollama" }
+
+        await createLlmProvider(projectRoot, "ollama", ollama)
+
+        const provider = await loadLlmProvider(projectRoot, "ollama")
+        expect(provider).toEqual({ id: "ollama", ...ollama })
+    })
+
+    test("refuses an id another provider has", async () => {
+        await createLlmProvider(projectRoot, "anthropic", anthropic)
+
+        const creation = createLlmProvider(projectRoot, "anthropic", anthropic)
+
+        await expect(creation).rejects.toThrow(UserError)
+        await expect(creation).rejects.toThrow('"anthropic" already exists.')
+    })
+
+    test("refuses an id that is not kebab-case", async () => {
+        const creation = createLlmProvider(projectRoot, "Acme", anthropic)
+
+        await expect(creation).rejects.toThrow('Invalid provider id "Acme"')
+    })
+
+    test("refuses an invalid API key's source", async () => {
+        const apiKey = { kind: "env", variable: "$ANTHROPIC_API_KEY" } as const
+        const dollar = { ...anthropic, apiKey }
+
+        const creation = createLlmProvider(projectRoot, "anthropic", dollar)
+
+        await expect(creation).rejects.toThrow(UserError)
+    })
+
+    test("refuses to run outside a company", async () => {
+        const elsewhere = join(projectRoot, "elsewhere")
+
+        const creation = createLlmProvider(elsewhere, "anthropic", anthropic)
+
+        await expect(creation).rejects.toThrow("Run `llmco init` first.")
+    })
+})
