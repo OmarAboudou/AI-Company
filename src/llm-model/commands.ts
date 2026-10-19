@@ -11,12 +11,15 @@ import {
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { requireCompany } from "../company/require-company.ts"
-import { listEmployees, saveEmployee } from "../employee/storage.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { type Protocol, protocols } from "../llm-connection/llm-connection.ts"
 import type { LlmProvider } from "../llm-provider/llm-provider.ts"
 import { listLlmProviders, loadLlmProvider } from "../llm-provider/storage.ts"
+import {
+    listEmployees,
+    saveEmployee,
+} from "../organization/employee/storage.ts"
 import { UserError } from "../user-error.ts"
 import { LlmModelConfigSchema } from "./llm-model.ts"
 import {

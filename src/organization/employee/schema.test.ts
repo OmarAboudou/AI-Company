@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { EmployeeConfigSchema } from "./employee.ts"
+import { EmployeeConfigSchema } from "./schema.ts"
 
 const llm = {
     name: "Claude Senior",

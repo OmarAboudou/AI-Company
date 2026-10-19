@@ -1,6 +1,6 @@
-import { parseId } from "../ids/parse-id.ts"
-import { UserError } from "../user-error.ts"
-import type { Employee } from "./employee.ts"
+import { parseId } from "../../ids/parse-id.ts"
+import { UserError } from "../../user-error.ts"
+import type { Employee } from "./schema.ts"
 import { employeeExists, loadEmployee } from "./storage.ts"
 
 export async function loadExistingEmployee(

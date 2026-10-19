@@ -11,6 +11,19 @@ import { requireDirector } from "../human/current-human.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
 import { isAuthorOf } from "../ids/is-author-of.ts"
 import { parseId } from "../ids/parse-id.ts"
+import { loadExistingEmployee } from "../organization/employee/load-existing-employee.ts"
+import {
+    type Employee,
+    type EmployeeConfig,
+    EmployeeConfigSchema,
+} from "../organization/employee/schema.ts"
+import {
+    copyEmployee,
+    deleteEmployee,
+    employeeExists,
+    listEmployees,
+    saveEmployee,
+} from "../organization/employee/storage.ts"
 import type {
     Position,
     PositionState,
@@ -23,19 +36,6 @@ import {
 } from "../organization/position/storage.ts"
 import { readArchives } from "../thread/archives.ts"
 import { UserError } from "../user-error.ts"
-import {
-    type Employee,
-    type EmployeeConfig,
-    EmployeeConfigSchema,
-} from "./employee.ts"
-import { loadExistingEmployee } from "./load-existing-employee.ts"
-import {
-    copyEmployee,
-    deleteEmployee,
-    employeeExists,
-    listEmployees,
-    saveEmployee,
-} from "./storage.ts"
 
 function filledPositions(
     positions: Position[],
