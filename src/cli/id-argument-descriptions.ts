@@ -1,4 +1,4 @@
-const entityFolders = {
+const entityFolderPaths = {
     thread: ".llmco/threads",
     position: ".llmco/positions",
     employee: ".llmco/employees",
@@ -7,15 +7,15 @@ const entityFolders = {
 }
 
 export function formatIdArgumentDescription(
-    entity: keyof typeof entityFolders,
+    entityKind: keyof typeof entityFolderPaths,
     example: string,
 ): string {
-    return `${entity} id, which is also the name of its folder in ${entityFolders[entity]} (kebab-case, e.g. ${example})`
+    return `${entityKind} id, which is also the name of its folder in ${entityFolderPaths[entityKind]} (kebab-case, e.g. ${example})`
 }
 
 export function formatNewIdArgumentDescription(
-    entity: keyof typeof entityFolders,
+    entityKind: keyof typeof entityFolderPaths,
     example: string,
 ): string {
-    return `new ${entity} id, which becomes the name of its folder in ${entityFolders[entity]} (kebab-case, e.g. ${example})`
+    return `new ${entityKind} id, which becomes the name of its folder in ${entityFolderPaths[entityKind]} (kebab-case, e.g. ${example})`
 }
