@@ -10,13 +10,13 @@ import {
     asPositionOption,
     bodyFileOption,
     bodyOption,
-    draftMessage,
     readBody,
-    sendDraft,
 } from "../message/commands.ts"
+import { draftMessage } from "../messaging/message/create-draft.ts"
 import { authorName } from "../messaging/message/get-author-name.ts"
 import { currentAuthor } from "../messaging/message/read-current-author.ts"
 import type { Author } from "../messaging/message/schema.ts"
+import { sendDraft } from "../messaging/message/send-draft.ts"
 import { listMessages } from "../messaging/message/storage.ts"
 import { createThreadId } from "../messaging/thread/create-thread-id.ts"
 import { getAwaitedIds } from "../messaging/thread/get-awaited-ids.ts"

@@ -4,14 +4,11 @@ import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
 import { loadExistingThread } from "../cli-helpers.ts"
 import { answerMentions } from "../llm/reply.ts"
-import { newMessageId } from "../messaging/message/create-message-id.ts"
-import { findMentions } from "../messaging/message/find-mentions.ts"
-import { nextSentAt } from "../messaging/message/get-next-sent-at.ts"
+import { draftMessage } from "../messaging/message/create-draft.ts"
 import { currentAuthor } from "../messaging/message/read-current-author.ts"
-import type { Author } from "../messaging/message/schema.ts"
-import { listMessages, saveMessage } from "../messaging/message/storage.ts"
+import { sendDraft } from "../messaging/message/send-draft.ts"
+import { listMessages } from "../messaging/message/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
-import { listPositions } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
 
 export function bodyOption(what = "the message") {
@@ -41,60 +38,6 @@ export async function readBody(options: {
         throw new UserError("The message's body is empty.")
     }
     return body
-}
-
-export type Draft = Author & {
-    body: string
-    mentions: string[]
-    unknownMentions: string[]
-}
-
-export async function readMentions(
-    body: string,
-    authorPositionId: string,
-): Promise<Pick<Draft, "mentions" | "unknownMentions">> {
-    const { positionIds } = findMentions(body)
-    const positions = await listPositions(projectRoot)
-    const known = new Set(positions.map(({ id }) => id))
-    return {
-        mentions: positionIds.filter(
-            (id) => known.has(id) && id !== authorPositionId,
-        ),
-        unknownMentions: positionIds.filter((id) => !known.has(id)),
-    }
-}
-
-export async function draftMessage(
-    author: Author,
-    body: string,
-): Promise<Draft> {
-    const { employeeMentions } = findMentions(body)
-    if (employeeMentions.length > 0) {
-        throw new UserError(
-            `Mentioning a specific employee (${employeeMentions.join(", ")}) isn't possible yet: mention the position.`,
-        )
-    }
-    return {
-        ...author,
-        body,
-        ...(await readMentions(body, author.position.id)),
-    }
-}
-
-export async function sendDraft(
-    threadId: string,
-    { unknownMentions, ...draft }: Draft,
-): Promise<string> {
-    const messages = await listMessages(projectRoot, threadId)
-    const sentAt = nextSentAt(messages, new Date())
-    const id = newMessageId(sentAt)
-    await saveMessage(projectRoot, { threadId, id, ...draft, sentAt })
-    for (const positionId of unknownMentions) {
-        console.error(
-            `"@${positionId}" names no position, so it mentions nobody.`,
-        )
-    }
-    return id
 }
 
 export function registerMessageCommands(program: Command): void {

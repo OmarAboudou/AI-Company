@@ -35,6 +35,12 @@ export type MessageConfig = z.infer<typeof MessageConfigSchema>
 
 export type Author = Pick<MessageConfig, "position" | "employee" | "committer">
 
+export type Draft = Author & {
+    body: string
+    mentions: string[]
+    unknownMentions: string[]
+}
+
 export type Message = MessageConfig & {
     threadId: string
     id: string
