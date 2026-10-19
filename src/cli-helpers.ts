@@ -4,14 +4,6 @@ import { loadThread, threadExists } from "./thread/storage.ts"
 import type { Thread } from "./thread/thread.ts"
 import { UserError } from "./user-error.ts"
 
-export function withoutUndefined<Values extends object>(
-    values: Values,
-): Partial<Values> {
-    return Object.fromEntries(
-        Object.entries(values).filter(([, value]) => value !== undefined),
-    ) as Partial<Values>
-}
-
 export async function loadExistingThread(rawId: string): Promise<Thread> {
     const id = parseId("thread", rawId)
     if (!(await threadExists(projectRoot, id))) {

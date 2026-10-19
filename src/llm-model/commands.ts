@@ -6,8 +6,8 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { withoutUndefined } from "../cli-helpers.ts"
 import { requireCompany } from "../company/require-company.ts"
+import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { type Protocol, protocols } from "../llm-connection/llm-connection.ts"
 import type { LlmProvider } from "../llm-provider/llm-provider.ts"
@@ -200,7 +200,7 @@ export function registerLlmModelCommands(program: Command): void {
             }
             const config = LlmModelConfigSchema.safeParse({
                 ...current,
-                ...withoutUndefined(options),
+                ...getDefinedValues(options),
             })
             if (!config.success) {
                 throw new UserError(z.prettifyError(config.error))

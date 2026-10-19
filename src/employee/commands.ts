@@ -6,8 +6,8 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { withoutUndefined } from "../cli-helpers.ts"
 import { requireCompany } from "../company/require-company.ts"
+import { getDefinedValues } from "../get-defined-values.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
 import { isAuthorOf } from "../ids/is-author-of.ts"
 import { parseId } from "../ids/parse-id.ts"
@@ -298,7 +298,7 @@ export function registerEmployeeCommands(program: Command): void {
             }
             const result = EmployeeConfigSchema.safeParse({
                 ...current,
-                ...withoutUndefined({
+                ...getDefinedValues({
                     name: options.name,
                     providerId: options.provider,
                     modelId: options.model,

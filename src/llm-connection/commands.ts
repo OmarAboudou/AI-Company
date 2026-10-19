@@ -5,8 +5,8 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { withoutUndefined } from "../cli-helpers.ts"
 import { requireCompany } from "../company/require-company.ts"
+import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import {
@@ -117,7 +117,7 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
             requireAnthropicForAuth(protocol, auth)
             await saveConnections(provider, {
                 ...provider.connections,
-                [protocol]: { baseUrl, ...withoutUndefined({ auth }) },
+                [protocol]: { baseUrl, ...getDefinedValues({ auth }) },
             })
             console.log(
                 `Created the ${protocol} connection of provider "${provider.id}".`,
@@ -180,7 +180,7 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
                 ...provider.connections,
                 [protocol]: {
                     ...provider.connections?.[protocol],
-                    ...withoutUndefined(options),
+                    ...getDefinedValues(options),
                 },
             })
             console.log(
