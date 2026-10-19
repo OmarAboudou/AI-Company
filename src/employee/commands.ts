@@ -18,9 +18,9 @@ import {
     EmployeeConfigSchema,
 } from "../organization/employee/schema.ts"
 import {
-    copyEmployee,
-    deleteEmployee,
-    employeeExists,
+    copyEmployeeFolder,
+    deleteEmployeeFolder,
+    hasEmployee,
     listEmployees,
     saveEmployee,
 } from "../organization/employee/storage.ts"
@@ -135,7 +135,7 @@ async function createEmployee(
         throw new UserError(z.prettifyError(result.error))
     }
     const [exists] = await Promise.all([
-        employeeExists(projectRoot, id),
+        hasEmployee(projectRoot, id),
         requireLlmModel(result.data),
     ])
     if (exists) {
@@ -332,7 +332,7 @@ export function registerEmployeeCommands(program: Command): void {
             const newId = parseId("employee", rawNewId)
             const [employee, taken, positions] = await Promise.all([
                 loadExistingEmployee(projectRoot, rawId),
-                employeeExists(projectRoot, newId),
+                hasEmployee(projectRoot, newId),
                 listPositions(projectRoot),
             ])
             if (taken) {
@@ -346,7 +346,7 @@ export function registerEmployeeCommands(program: Command): void {
             // Copy, repoint, then delete rather than move, so that an
             // interrupted command never leaves a position naming a missing
             // employee: at worst, the employee exists twice.
-            await copyEmployee(projectRoot, employee.id, newId)
+            await copyEmployeeFolder(projectRoot, employee.id, newId)
             await saveEmployee(
                 projectRoot,
                 getRenamedEntity(employee, newId, new Date().toISOString()),
@@ -368,7 +368,7 @@ export function registerEmployeeCommands(program: Command): void {
                     }),
                 ),
             ])
-            await deleteEmployee(projectRoot, employee.id)
+            await deleteEmployeeFolder(projectRoot, employee.id)
             const updated = [
                 ...filled.map(({ id }) => id),
                 ...temporary.map(
@@ -530,7 +530,7 @@ export function registerEmployeeCommands(program: Command): void {
                         savePositionState(projectRoot, position.id, state),
                 ),
             ])
-            await deleteEmployee(projectRoot, employee.id)
+            await deleteEmployeeFolder(projectRoot, employee.id)
             console.log(
                 done.length === 0
                     ? `Deleted employee "${employee.id}".`

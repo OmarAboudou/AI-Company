@@ -5,9 +5,9 @@ import { join } from "node:path"
 import { UserError } from "../../user-error.ts"
 import type { Employee } from "./schema.ts"
 import {
-    copyEmployee,
-    deleteEmployee,
-    employeeExists,
+    copyEmployeeFolder,
+    deleteEmployeeFolder,
+    hasEmployee,
     listEmployees,
     loadEmployee,
     saveEmployee,
@@ -80,13 +80,13 @@ describe("loadEmployee", () => {
     })
 })
 
-describe("employeeExists", () => {
+describe("hasEmployee", () => {
     test("is false before saving and true after", async () => {
-        expect(await employeeExists(projectRoot, "omar")).toBe(false)
+        expect(await hasEmployee(projectRoot, "omar")).toBe(false)
 
         await saveEmployee(projectRoot, omar)
 
-        expect(await employeeExists(projectRoot, "omar")).toBe(true)
+        expect(await hasEmployee(projectRoot, "omar")).toBe(true)
     })
 })
 
@@ -103,12 +103,12 @@ describe("listEmployees", () => {
     })
 })
 
-describe("deleteEmployee", () => {
+describe("deleteEmployeeFolder", () => {
     test("removes the employee's folder", async () => {
         await saveEmployee(projectRoot, omar)
         const before = await listEmployees(projectRoot)
 
-        await deleteEmployee(projectRoot, omar.id)
+        await deleteEmployeeFolder(projectRoot, omar.id)
         const after = await listEmployees(projectRoot)
 
         expect(before).toEqual([omar])
@@ -116,12 +116,12 @@ describe("deleteEmployee", () => {
     })
 })
 
-describe("copyEmployee", () => {
+describe("copyEmployeeFolder", () => {
     test("copies the employee's folder under its new id", async () => {
         await saveEmployee(projectRoot, omar)
         const before = await listEmployees(projectRoot)
 
-        await copyEmployee(projectRoot, omar.id, "omar-aboudou")
+        await copyEmployeeFolder(projectRoot, omar.id, "omar-aboudou")
         const after = await listEmployees(projectRoot)
 
         expect(before).toEqual([omar])
