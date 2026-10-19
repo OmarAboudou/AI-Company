@@ -11,9 +11,12 @@ import { loadLlmProvider } from "../llm-provider/storage.ts"
 import { readMentions, sendDraft } from "../message/commands.ts"
 import type { Message } from "../message/message.ts"
 import { listMessages, loadResponse, saveResponse } from "../message/storage.ts"
-import type { Position } from "../position/position.ts"
-import { loadPosition, loadPositionState } from "../position/storage.ts"
-import { currentWorker } from "../position/worker.ts"
+import { currentWorker } from "../organization/position/get-current-worker.ts"
+import type { Position } from "../organization/position/schema.ts"
+import {
+    loadPosition,
+    loadPositionState,
+} from "../organization/position/storage.ts"
 import { loadThread } from "../thread/storage.ts"
 import { UserError } from "../user-error.ts"
 import {

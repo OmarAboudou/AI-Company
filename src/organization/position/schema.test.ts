@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { PositionConfigSchema, PositionStateSchema } from "./position.ts"
+import { PositionConfigSchema, PositionStateSchema } from "./schema.ts"
 
 const developer = { title: "Developer" }
 

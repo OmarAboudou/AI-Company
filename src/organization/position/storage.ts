@@ -1,18 +1,18 @@
 import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
-import { getLlmcoFolderPath } from "../files/get-llmco-folder-path.ts"
-import { getStateFolderPath } from "../files/get-state-folder-path.ts"
-import { listSubdirectories } from "../files/list-subdirectories.ts"
-import { readJsonFile } from "../files/read-json-file.ts"
-import { readTextFile } from "../files/read-text-file.ts"
-import { saveState } from "../files/save-state.ts"
-import { loadIdHistory, saveIdHistory } from "../ids/id-history-storage.ts"
+import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
+import { getStateFolderPath } from "../../files/get-state-folder-path.ts"
+import { listSubdirectories } from "../../files/list-subdirectories.ts"
+import { readJsonFile } from "../../files/read-json-file.ts"
+import { readTextFile } from "../../files/read-text-file.ts"
+import { saveState } from "../../files/save-state.ts"
+import { loadIdHistory, saveIdHistory } from "../../ids/id-history-storage.ts"
 import {
     type Position,
     PositionConfigSchema,
     type PositionState,
     PositionStateSchema,
-} from "./position.ts"
+} from "./schema.ts"
 
 function positionsDir(projectRoot: string): string {
     return join(getLlmcoFolderPath(projectRoot), "positions")

@@ -17,15 +17,12 @@ import {
 import { loadCompany, saveCompany } from "../company/storage.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
-import { readArchives } from "../thread/archives.ts"
-import { awaitedIds } from "../thread/members.ts"
-import { UserError } from "../user-error.ts"
 import {
     type Position,
     PositionConfigSchema,
     type PositionState,
     type Worker,
-} from "./position.ts"
+} from "../organization/position/schema.ts"
 import {
     copyPosition,
     deletePosition,
@@ -35,7 +32,10 @@ import {
     positionExists,
     savePosition,
     savePositionState,
-} from "./storage.ts"
+} from "../organization/position/storage.ts"
+import { readArchives } from "../thread/archives.ts"
+import { awaitedIds } from "../thread/members.ts"
+import { UserError } from "../user-error.ts"
 
 function workerName(assignment: Worker): string {
     return assignment.kind === "directors"

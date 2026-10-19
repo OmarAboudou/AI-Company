@@ -3,7 +3,7 @@ import { projectRoot } from "../cli/project-root.ts"
 import { requireCompany } from "../cli-helpers.ts"
 import { loadCompany } from "../company/storage.ts"
 import { readGitCommitter } from "../git/read-git-committer.ts"
-import { listPositions } from "../position/storage.ts"
+import { listPositions } from "../organization/position/storage.ts"
 import { currentHuman, positionsWorkedBy } from "./current-human.ts"
 
 export function registerHumanCommands(program: Command): void {

@@ -1,4 +1,4 @@
-import type { Position, PositionState, Worker } from "./position.ts"
+import type { Position, PositionState, Worker } from "./schema.ts"
 
 export function currentWorker(
     position: Position,

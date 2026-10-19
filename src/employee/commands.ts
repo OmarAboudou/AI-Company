@@ -15,13 +15,16 @@ import {
 import { requireDirector } from "../human/current-human.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
 import { isAuthorOf } from "../ids/is-author-of.ts"
-import type { Position, PositionState } from "../position/position.ts"
+import type {
+    Position,
+    PositionState,
+} from "../organization/position/schema.ts"
 import {
     listPositions,
     loadPositionState,
     savePosition,
     savePositionState,
-} from "../position/storage.ts"
+} from "../organization/position/storage.ts"
 import { readArchives } from "../thread/archives.ts"
 import { UserError } from "../user-error.ts"
 import {
