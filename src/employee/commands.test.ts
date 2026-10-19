@@ -470,6 +470,34 @@ describe("llmco employee delete", () => {
         },
     )
 
+    test("delete refuses an employee assigned temporarily", async () => {
+        runCli(...interimEmployee, "qa-tester", "omar")
+
+        const deletion = runCli("employee", "delete", "omar")
+
+        expect(deletion.exitCode).toBe(1)
+        expect(deletion.stderr).toBe(
+            'Employee "omar" is assigned temporarily to qa-tester. Add --force to delete it anyway and end these temporary assignments.\n',
+        )
+        const after = await temporaryAssignee("qa-tester")
+        expect(after).toEqual(employeeWorker("omar"))
+    })
+
+    test("delete --force ends its temporary assignments", async () => {
+        runCli("position", "assign", "developer", "omar")
+        runCli(...interimEmployee, "qa-tester", "omar")
+        const before = await temporaryAssignee("qa-tester")
+
+        const deletion = runCli("employee", "delete", "omar", "--force")
+        const after = await temporaryAssignee("qa-tester")
+
+        expect(deletion.stdout).toBe(
+            'Deleted employee "omar"; now vacant: developer; temporary assignments ended: qa-tester.\n',
+        )
+        expect(before).toEqual(employeeWorker("omar"))
+        expect(after).toBeUndefined()
+    })
+
     test("delete fails for an unknown employee", () => {
         const deletion = runCli("employee", "delete", "claude")
 
