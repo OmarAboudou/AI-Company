@@ -5,7 +5,7 @@ import { listThreads } from "./storage.ts"
 
 export type Archive = { thread: Thread; messages: Message[] }
 
-export async function readArchives(projectRoot: string): Promise<Archive[]> {
+export async function listArchives(projectRoot: string): Promise<Archive[]> {
     const threads = await listThreads(projectRoot)
     return Promise.all(
         threads.map(async (thread) => ({

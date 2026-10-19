@@ -1,5 +1,5 @@
 import { isAuthorOf } from "../../ids/is-author-of.ts"
-import { readArchives } from "../../messaging/thread/list-archives.ts"
+import { listArchives } from "../../messaging/thread/list-archives.ts"
 import { UserError } from "../../user-error.ts"
 import type { Employee } from "./schema.ts"
 import { listEmployees } from "./storage.ts"
@@ -11,7 +11,7 @@ async function listEarlierUses(
 ): Promise<string[]> {
     const [employees, archives] = await Promise.all([
         listEmployees(projectRoot),
-        readArchives(projectRoot),
+        listArchives(projectRoot),
     ])
     const formerIdUses = employees
         .filter(

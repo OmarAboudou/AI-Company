@@ -43,10 +43,10 @@ describe("listThreads", () => {
     })
 
     test("returns the threads sorted by id, so oldest first", async () => {
-        const older = { ...framework, id: "2026-10-17-budget" }
+        const olderThread = { ...framework, id: "2026-10-17-budget" }
         await saveThread(projectRoot, framework)
-        await saveThread(projectRoot, older)
+        await saveThread(projectRoot, olderThread)
 
-        expect(await listThreads(projectRoot)).toEqual([older, framework])
+        expect(await listThreads(projectRoot)).toEqual([olderThread, framework])
     })
 })

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import type { IdHistory } from "../../ids/id-history-schema.ts"
 import type { Message } from "../../message/message.ts"
-import { memberIds } from "./get-member-ids.ts"
+import { getMemberIds } from "./get-member-ids.ts"
 import type { Thread } from "./schema.ts"
 
 const director = { id: "director", title: "Director" }
@@ -15,7 +15,7 @@ const thread: Thread = {
     createdBy: { position: director, committer },
 }
 
-function message(
+function createMessage(
     positionId: string,
     mentions: string[] = [],
     sentAt = "2026-10-18T14:00:00.000Z",
@@ -31,23 +31,23 @@ function message(
     }
 }
 
-function members(messages: Message[], positions: IdHistory[] = []) {
-    return memberIds(thread, messages, positions)
+function getThreadMemberIds(messages: Message[], positions: IdHistory[] = []) {
+    return getMemberIds(thread, messages, positions)
 }
 
-describe("memberIds", () => {
+describe("getMemberIds", () => {
     test("is the creator's position in a thread without messages", () => {
-        expect(members([])).toEqual(["director"])
+        expect(getThreadMemberIds([])).toEqual(["director"])
     })
 
     test("adds authors and mentioned positions, in order", () => {
         const messages = [
-            message("director", ["backend-developer"]),
-            message("qa-tester"),
-            message("backend-developer", ["director", "designer"]),
+            createMessage("director", ["backend-developer"]),
+            createMessage("qa-tester"),
+            createMessage("backend-developer", ["director", "designer"]),
         ]
 
-        expect(members(messages)).toEqual([
+        expect(getThreadMemberIds(messages)).toEqual([
             "director",
             "backend-developer",
             "qa-tester",
@@ -67,6 +67,6 @@ describe("through the positions' id history", () => {
     ]
 
     test("names a renamed creator by its new id", () => {
-        expect(members([], positions)).toEqual(["ceo"])
+        expect(getThreadMemberIds([], positions)).toEqual(["ceo"])
     })
 })
