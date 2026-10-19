@@ -4,13 +4,15 @@ import { loadExistingPosition } from "./load-existing-position.ts"
 import type { Position, Worker } from "./schema.ts"
 import { loadPositionState, savePositionState } from "./storage.ts"
 
+export type UnassignPositionTemporarilyResult = {
+    position: Position
+    endedTemporaryAssignment: Worker | undefined
+}
+
 export async function unassignPositionTemporarily(
     projectRoot: string,
     rawId: string,
-): Promise<{
-    position: Position
-    endedTemporaryAssignment: Worker | undefined
-}> {
+): Promise<UnassignPositionTemporarilyResult> {
     await requireCompany(projectRoot)
     const [position, { temporaryAssignment, ...otherState }] =
         await Promise.all([

@@ -1,7 +1,7 @@
 import type { Command } from "@commander-js/extra-typings"
 import {
+    type DeleteEmployeeResult,
     deleteEmployee,
-    type EmployeeDeletion,
 } from "../../../organization/employee/delete-employee.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
 import { projectRoot } from "../../project-root.ts"
@@ -11,7 +11,7 @@ function formatDeletedMessage({
     employee,
     vacatedPositionIds,
     endedTemporaryPositionIds,
-}: EmployeeDeletion): string {
+}: DeleteEmployeeResult): string {
     const changeMessages: string[] = []
     if (vacatedPositionIds.length > 0) {
         changeMessages.push(`now vacant: ${vacatedPositionIds.join(", ")}`)

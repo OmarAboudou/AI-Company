@@ -1,6 +1,6 @@
 import type { Command } from "@commander-js/extra-typings"
 import {
-    type EmployeeReplacement,
+    type ReplaceEmployeeResult,
     replaceEmployee,
 } from "../../../organization/employee/replace-employee.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
@@ -14,7 +14,7 @@ function formatReplacedMessage({
     handedOverPositionIds,
     endedTemporaryPositionIds,
     keptTemporaryPositionIds,
-}: EmployeeReplacement): string {
+}: ReplaceEmployeeResult): string {
     const keptMessage =
         keptTemporaryPositionIds.length === 0
             ? ""

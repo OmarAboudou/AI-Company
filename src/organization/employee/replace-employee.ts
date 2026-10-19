@@ -12,7 +12,7 @@ import {
 } from "./list-positions-worked-temporarily-by.ts"
 import { loadExistingEmployee } from "./load-existing-employee.ts"
 
-export type EmployeeReplacement = {
+export type ReplaceEmployeeResult = {
     employeeId: string
     replacementId: string
     filledPositionIds: string[]
@@ -32,7 +32,7 @@ export async function replaceEmployee(
     {
         shouldHandOverTemporaryAssignments = false,
     }: { shouldHandOverTemporaryAssignments?: boolean } = {},
-): Promise<EmployeeReplacement> {
+): Promise<ReplaceEmployeeResult> {
     await requireCompany(projectRoot)
     const [employee, replacement, positions] = await Promise.all([
         loadExistingEmployee(projectRoot, rawId),

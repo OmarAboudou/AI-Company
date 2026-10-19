@@ -1,7 +1,7 @@
 import type { Command } from "@commander-js/extra-typings"
 import {
+    type AssignPositionResult,
     assignPosition,
-    type PositionAssignment,
 } from "../../../organization/position/assign-position.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
 import { projectRoot } from "../../project-root.ts"
@@ -14,7 +14,7 @@ function formatAssignedMessage({
     previousEmployeeId,
     hasEndedTemporaryAssignment,
     temporaryAssignment,
-}: PositionAssignment): string {
+}: AssignPositionResult): string {
     if (previousEmployeeId === employeeId) {
         return `"${employeeId}" is already the default employee of position "${positionId}".`
     }

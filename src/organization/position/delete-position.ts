@@ -11,11 +11,16 @@ import {
     listPositions,
 } from "./storage.ts"
 
+export type DeletePositionResult = {
+    position: Position
+    awaitingThreadIds: string[]
+}
+
 export async function deletePosition(
     projectRoot: string,
     rawId: string,
     { shouldForce = false }: { shouldForce?: boolean } = {},
-): Promise<{ position: Position; awaitingThreadIds: string[] }> {
+): Promise<DeletePositionResult> {
     await requireCompany(projectRoot)
     const [position, company, positions, archives] = await Promise.all([
         loadExistingPosition(projectRoot, rawId),

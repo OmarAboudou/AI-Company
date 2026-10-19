@@ -12,7 +12,7 @@ export type TemporaryAssignee =
     | { kind: "employee"; rawEmployeeId: string }
     | { kind: "directors" }
 
-export type TemporaryAssignmentOutcome =
+export type AssignPositionTemporarilyResult =
     | {
           kind: "worked-by-default-employee"
           positionId: string
@@ -35,7 +35,7 @@ export async function assignPositionTemporarily(
     rawPositionId: string,
     assignee: TemporaryAssignee,
     { shouldReplace = false }: { shouldReplace?: boolean } = {},
-): Promise<TemporaryAssignmentOutcome> {
+): Promise<AssignPositionTemporarilyResult> {
     await requireCompany(projectRoot)
     const [position, employee, company, state] = await Promise.all([
         loadExistingPosition(projectRoot, rawPositionId),
