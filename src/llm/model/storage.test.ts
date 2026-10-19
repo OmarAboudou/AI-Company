@@ -5,10 +5,10 @@ import { join } from "node:path"
 import { UserError } from "../../user-error.ts"
 import type { LlmModel } from "./schema.ts"
 import {
-    copyLlmModel,
-    deleteLlmModel,
+    copyLlmModelFolder,
+    deleteLlmModelFolder,
+    hasLlmModel,
     listLlmModels,
-    llmModelExists,
     loadLlmModel,
     saveLlmModel,
 } from "./storage.ts"
@@ -96,11 +96,11 @@ describe("loadLlmModel", () => {
     })
 })
 
-describe("llmModelExists", () => {
+describe("hasLlmModel", () => {
     test("is false before saving and true after", async () => {
-        const before = await llmModelExists(projectRoot, "ollama", llama.id)
+        const before = await hasLlmModel(projectRoot, "ollama", llama.id)
         await saveLlmModel(projectRoot, llama)
-        const after = await llmModelExists(projectRoot, "ollama", llama.id)
+        const after = await hasLlmModel(projectRoot, "ollama", llama.id)
 
         expect(before).toBe(false)
         expect(after).toBe(true)
@@ -109,7 +109,7 @@ describe("llmModelExists", () => {
     test("only looks in the given provider", async () => {
         await saveLlmModel(projectRoot, llama)
 
-        expect(await llmModelExists(projectRoot, "groq", llama.id)).toBe(false)
+        expect(await hasLlmModel(projectRoot, "groq", llama.id)).toBe(false)
     })
 })
 
@@ -131,7 +131,7 @@ describe("listLlmModels", () => {
     })
 })
 
-describe("deleteLlmModel", () => {
+describe("deleteLlmModelFolder", () => {
     test("removes the model's folder, not its provider's other models", async () => {
         await Promise.all([
             saveLlmModel(projectRoot, opus),
@@ -140,7 +140,7 @@ describe("deleteLlmModel", () => {
 
         const before = await listLlmModels(projectRoot, "anthropic")
 
-        await deleteLlmModel(projectRoot, "anthropic", opus.id)
+        await deleteLlmModelFolder(projectRoot, "anthropic", opus.id)
         const after = await listLlmModels(projectRoot, "anthropic")
 
         expect(before).toEqual([haiku, opus])
@@ -148,12 +148,12 @@ describe("deleteLlmModel", () => {
     })
 })
 
-describe("copyLlmModel", () => {
+describe("copyLlmModelFolder", () => {
     test("copies the model's folder under its new id", async () => {
         await saveLlmModel(projectRoot, opus)
         const before = await listLlmModels(projectRoot, "anthropic")
 
-        await copyLlmModel(projectRoot, "anthropic", opus.id, "opus-5-5")
+        await copyLlmModelFolder(projectRoot, "anthropic", opus.id, "opus-5-5")
         const after = await listLlmModels(projectRoot, "anthropic")
 
         expect(before).toEqual([opus])

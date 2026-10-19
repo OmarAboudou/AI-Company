@@ -5,32 +5,40 @@ import { readJsonFile } from "../../files/read-json-file.ts"
 import { getLlmProviderFolderPath } from "../provider/storage.ts"
 import { type LlmModel, LlmModelConfigSchema } from "./schema.ts"
 
-function llmModelsDir(projectRoot: string, providerId: string): string {
+function getLlmModelsFolderPath(
+    projectRoot: string,
+    providerId: string,
+): string {
     return join(getLlmProviderFolderPath(projectRoot, providerId), "models")
 }
 
-function llmModelDir(
+function getLlmModelFolderPath(
     projectRoot: string,
     providerId: string,
     id: string,
 ): string {
-    return join(llmModelsDir(projectRoot, providerId), id)
+    return join(getLlmModelsFolderPath(projectRoot, providerId), id)
 }
 
-function llmModelConfigPath(
+function getLlmModelConfigFilePath(
     projectRoot: string,
     providerId: string,
     id: string,
 ): string {
-    return join(llmModelDir(projectRoot, providerId, id), "config.json")
+    return join(
+        getLlmModelFolderPath(projectRoot, providerId, id),
+        "config.json",
+    )
 }
 
-export async function llmModelExists(
+export async function hasLlmModel(
     projectRoot: string,
     providerId: string,
     id: string,
 ): Promise<boolean> {
-    return Bun.file(llmModelConfigPath(projectRoot, providerId, id)).exists()
+    return Bun.file(
+        getLlmModelConfigFilePath(projectRoot, providerId, id),
+    ).exists()
 }
 
 export async function loadLlmModel(
@@ -40,7 +48,7 @@ export async function loadLlmModel(
 ): Promise<LlmModel> {
     const config = await readJsonFile(
         projectRoot,
-        llmModelConfigPath(projectRoot, providerId, id),
+        getLlmModelConfigFilePath(projectRoot, providerId, id),
         LlmModelConfigSchema,
     )
     return { providerId, id, ...config }
@@ -50,9 +58,11 @@ export async function listLlmModels(
     projectRoot: string,
     providerId: string,
 ): Promise<LlmModel[]> {
-    const ids = await listSubdirectories(llmModelsDir(projectRoot, providerId))
+    const modelIds = await listSubdirectories(
+        getLlmModelsFolderPath(projectRoot, providerId),
+    )
     return Promise.all(
-        ids.map((id) => loadLlmModel(projectRoot, providerId, id)),
+        modelIds.map((id) => loadLlmModel(projectRoot, providerId, id)),
     )
 }
 
@@ -62,28 +72,30 @@ export async function saveLlmModel(
 ): Promise<void> {
     const { providerId, id, ...config } = model
     await Bun.write(
-        llmModelConfigPath(projectRoot, providerId, id),
+        getLlmModelConfigFilePath(projectRoot, providerId, id),
         `${JSON.stringify(config, null, 4)}\n`,
     )
 }
 
-export async function deleteLlmModel(
+export async function deleteLlmModelFolder(
     projectRoot: string,
     providerId: string,
     id: string,
 ): Promise<void> {
-    await rm(llmModelDir(projectRoot, providerId, id), { recursive: true })
+    await rm(getLlmModelFolderPath(projectRoot, providerId, id), {
+        recursive: true,
+    })
 }
 
-export async function copyLlmModel(
+export async function copyLlmModelFolder(
     projectRoot: string,
     providerId: string,
     id: string,
     newId: string,
 ): Promise<void> {
     await cp(
-        llmModelDir(projectRoot, providerId, id),
-        llmModelDir(projectRoot, providerId, newId),
+        getLlmModelFolderPath(projectRoot, providerId, id),
+        getLlmModelFolderPath(projectRoot, providerId, newId),
         { recursive: true, errorOnExist: true, force: false },
     )
 }
