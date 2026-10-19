@@ -7,7 +7,7 @@ import { formatIdArgumentDescription } from "../../format-id-argument-descriptio
 import { formatNewIdArgumentDescription } from "../../format-new-id-argument-description.ts"
 import { projectRoot } from "../../project-root.ts"
 import { requireDirector } from "../../require-director.ts"
-import { reuseIdOption } from "./reuse-id-option.ts"
+import { createReuseIdOption } from "./create-reuse-id-option.ts"
 
 function formatRenamedMessage({
     employee,
@@ -41,7 +41,7 @@ export function registerEmployeeUpdateIdCommand(
             "<new-employee-id>",
             formatNewIdArgumentDescription("employee", "claude-lead"),
         )
-        .addOption(reuseIdOption())
+        .addOption(createReuseIdOption())
         .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId, { reuseId }) => {
             const renaming = await updateEmployeeId(

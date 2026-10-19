@@ -1,10 +1,12 @@
 import { getPositionsFilledBy } from "../../../organization/employee/get-positions-filled-by.ts"
 import type { Position } from "../../../organization/position/schema.ts"
 
-export function positionsFilledBy(
+export function formatPositionsFilledBy(
     positions: Position[],
     employeeId: string,
 ): string {
-    const ids = getPositionsFilledBy(positions, employeeId).map(({ id }) => id)
-    return ids.length > 0 ? ids.join(", ") : "(none)"
+    const positionIds = getPositionsFilledBy(positions, employeeId).map(
+        ({ id }) => id,
+    )
+    return positionIds.length > 0 ? positionIds.join(", ") : "(none)"
 }

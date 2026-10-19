@@ -6,7 +6,7 @@ import { registerMessageCommands } from "../message/commands.ts"
 import { registerThreadCommands } from "../thread/commands.ts"
 import { registerEmployeeCommands } from "./commands/employee/employee.ts"
 import { registerPositionCommands } from "./commands/position/position.ts"
-import { registerHumanCommands } from "./commands/whoami.ts"
+import { registerWhoamiCommand } from "./commands/whoami.ts"
 
 export function createProgram(): Command {
     const program = new Command()
@@ -20,6 +20,6 @@ export function createProgram(): Command {
     registerLlmModelCommands(program)
     registerThreadCommands(program)
     registerMessageCommands(program)
-    registerHumanCommands(program)
+    registerWhoamiCommand(program)
     return program
 }

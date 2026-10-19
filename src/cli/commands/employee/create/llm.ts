@@ -2,7 +2,7 @@ import type { Command } from "@commander-js/extra-typings"
 import { createEmployee } from "../../../../organization/employee/create-employee.ts"
 import { formatIdArgumentDescription } from "../../../format-id-argument-description.ts"
 import { projectRoot } from "../../../project-root.ts"
-import { reuseIdOption } from "../reuse-id-option.ts"
+import { createReuseIdOption } from "../create-reuse-id-option.ts"
 
 export function registerEmployeeCreateLlmCommand(
     createEmployeeCommand: Command,
@@ -23,7 +23,7 @@ export function registerEmployeeCreateLlmCommand(
             "-m, --model <model-id>",
             "id of one of the provider's models in llmco, e.g. claude-opus-5-5 (see llmco model list), not its api id",
         )
-        .addOption(reuseIdOption())
+        .addOption(createReuseIdOption())
         .action(async (rawId, { name, provider, model, reuseId }) => {
             const employee = await createEmployee(
                 projectRoot,

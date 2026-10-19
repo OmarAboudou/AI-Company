@@ -4,7 +4,7 @@ import { listEmployees } from "../../../organization/employee/storage.ts"
 import { listPositions } from "../../../organization/position/storage.ts"
 import { printColumns } from "../../print-columns.ts"
 import { projectRoot } from "../../project-root.ts"
-import { positionsFilledBy } from "./positions-filled-by.ts"
+import { formatPositionsFilledBy } from "./format-positions-filled-by.ts"
 
 export function registerEmployeeListCommand(employeeCommand: Command): void {
     employeeCommand
@@ -14,11 +14,11 @@ export function registerEmployeeListCommand(employeeCommand: Command): void {
             "-p, --positions",
             "also list the positions each employee fills",
         )
-        .action(async ({ positions: withPositions }) => {
+        .action(async ({ positions: shouldListPositions }) => {
             await requireCompany(projectRoot)
             const [employees, positions] = await Promise.all([
                 listEmployees(projectRoot),
-                withPositions ? listPositions(projectRoot) : [],
+                shouldListPositions ? listPositions(projectRoot) : [],
             ])
             if (employees.length === 0) {
                 console.log("No employees yet. Run `llmco employee create`.")
@@ -33,8 +33,11 @@ export function registerEmployeeListCommand(employeeCommand: Command): void {
                             ? `${employee.providerId}/${employee.modelId}`
                             : "human",
                     ]
-                    return withPositions
-                        ? [...row, positionsFilledBy(positions, employee.id)]
+                    return shouldListPositions
+                        ? [
+                              ...row,
+                              formatPositionsFilledBy(positions, employee.id),
+                          ]
                         : row
                 }),
             )
