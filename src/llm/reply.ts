@@ -3,7 +3,7 @@ import { projectRoot } from "../cli-helpers.ts"
 import { loadCompany } from "../company/storage.ts"
 import type { Employee } from "../employee/employee.ts"
 import { loadEmployee } from "../employee/storage.ts"
-import { committer } from "../git/read-git-committer.ts"
+import { readGitCommitter } from "../git/read-git-committer.ts"
 import { isAuthorOf } from "../ids/is-author-of.ts"
 import type { LlmModel } from "../llm-model/llm-model.ts"
 import { loadLlmModel } from "../llm-model/storage.ts"
@@ -104,7 +104,7 @@ async function answerAs(
     const id = await sendDraft(threadId, {
         position: { id: position.id, title: position.title },
         employee: { id: employee.id, name: employee.name },
-        committer: committer(projectRoot),
+        committer: readGitCommitter(projectRoot),
         body,
         ...(await readMentions(body, position.id)),
     })
