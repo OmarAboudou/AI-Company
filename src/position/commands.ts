@@ -1,5 +1,4 @@
 import { type Command, Option } from "@commander-js/extra-typings"
-import { z } from "zod"
 import { createDescriptionFileOption } from "../cli/create-description-file-option.ts"
 import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
 import { formatNewIdArgumentDescription } from "../cli/format-new-id-argument-description.ts"
@@ -7,7 +6,6 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
-import { withoutUndefined } from "../cli-helpers.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { loadCompany, saveCompany } from "../company/storage.ts"
 import { loadExistingEmployee } from "../employee/load-existing-employee.ts"
@@ -16,11 +14,10 @@ import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { createPosition } from "../organization/position/create-position.ts"
 import { loadExistingPosition } from "../organization/position/load-existing-position.ts"
-import {
-    type Position,
-    PositionConfigSchema,
-    type PositionState,
-    type Worker,
+import type {
+    Position,
+    PositionState,
+    Worker,
 } from "../organization/position/schema.ts"
 import {
     copyPositionFolder,
@@ -32,6 +29,7 @@ import {
     savePosition,
     savePositionState,
 } from "../organization/position/storage.ts"
+import { updatePosition } from "../organization/position/update-position.ts"
 import { readArchives } from "../thread/archives.ts"
 import { awaitedIds } from "../thread/members.ts"
 import { UserError } from "../user-error.ts"
@@ -252,28 +250,15 @@ export function registerPositionCommands(program: Command): void {
         .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
             requireAtLeastOneOption(options)
-            await requireCompany(projectRoot)
-            const { id, description, createdAt, formerIds, ...current } =
-                await loadExistingPosition(projectRoot, rawId)
-            const newDescription = await readTextOrFile(
+            const description = await readTextOrFile(
                 options.description,
                 options.descriptionFile,
             )
-            const config = PositionConfigSchema.safeParse({
-                ...current,
-                ...withoutUndefined({ title: options.title }),
+            const position = await updatePosition(projectRoot, rawId, {
+                title: options.title,
+                description,
             })
-            if (!config.success) {
-                throw new UserError(z.prettifyError(config.error))
-            }
-            await savePosition(projectRoot, {
-                id,
-                ...config.data,
-                createdAt,
-                formerIds,
-                description: newDescription ?? description,
-            })
-            console.log(`Updated position "${id}".`)
+            console.log(`Updated position "${position.id}".`)
         })
 
     positionCommand
