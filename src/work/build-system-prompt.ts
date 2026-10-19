@@ -10,14 +10,14 @@ export type PromptContext = {
     thread: Thread
 }
 
-function section(title: string, tag: string, text: string): string[] {
-    const trimmed = text.trim()
-    return trimmed === ""
+function buildSection(title: string, tag: string, text: string): string[] {
+    const trimmedText = text.trim()
+    return trimmedText === ""
         ? []
-        : [`# ${title}`, "", `<${tag}>`, trimmed, `</${tag}>`, ""]
+        : [`# ${title}`, "", `<${tag}>`, trimmedText, `</${tag}>`, ""]
 }
 
-export function systemPrompt({
+export function buildSystemPrompt({
     company,
     position,
     employee,
@@ -26,8 +26,12 @@ export function systemPrompt({
     return [
         `You are ${employee.name}, ${position.title} at ${company.name}.`,
         "",
-        ...section(company.name, "company_description", company.description),
-        ...section(
+        ...buildSection(
+            company.name,
+            "company_description",
+            company.description,
+        ),
+        ...buildSection(
             `Your position: ${position.title}`,
             "position_description",
             position.description,

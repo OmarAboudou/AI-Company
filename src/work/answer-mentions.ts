@@ -30,24 +30,26 @@ import {
     loadPositionState,
 } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
-import { systemPrompt } from "./build-system-prompt.ts"
+import { buildSystemPrompt } from "./build-system-prompt.ts"
 
 type LlmEmployee = Extract<Employee, { kind: "llm" }>
 
-async function replays(
+async function loadReplays(
     messages: Message[],
     employee: LlmEmployee,
     model: LlmModel,
 ): Promise<Replays> {
-    const own = messages.filter((message) => isAuthorOf(employee, message))
-    const entries = await Promise.all(
-        own.map(async (message) => {
+    const ownMessages = messages.filter((message) =>
+        isAuthorOf(employee, message),
+    )
+    const replayEntries = await Promise.all(
+        ownMessages.map(async (message) => {
             const response = await loadProviderResponse(projectRoot, message)
-            const sameModel =
+            const isSameModel =
                 response?.protocol === "anthropic-messages" &&
                 response.providerId === model.providerId &&
                 response.apiId === model.apiId
-            if (!sameModel) {
+            if (!isSameModel) {
                 return []
             }
             // llmco wrote it from the SDK's own response, in answerAs.
@@ -55,7 +57,7 @@ async function replays(
             return [[message.id, content] as const]
         }),
     )
-    return new Map(entries.flat())
+    return new Map(replayEntries.flat())
 }
 
 async function answerAs(
@@ -83,7 +85,7 @@ async function answerAs(
     }
     const [apiKey, ownReplays] = await Promise.all([
         readApiKey(projectRoot, provider),
-        replays(messages, employee, model),
+        loadReplays(messages, employee, model),
     ])
     console.error(
         `${employee.name} answers as ${position.title} (@${position.id}):`,
@@ -92,7 +94,12 @@ async function answerAs(
         connection,
         apiKey,
         apiId: model.apiId,
-        systemPrompt: systemPrompt({ company, position, employee, thread }),
+        systemPrompt: buildSystemPrompt({
+            company,
+            position,
+            employee,
+            thread,
+        }),
         turns: getAnthropicTurns(messages, employee, ownReplays),
         onText: (text) => process.stdout.write(text),
     })
@@ -133,14 +140,18 @@ export async function answerMentions(
     threadId: string,
     positionIds: string[],
 ): Promise<void> {
-    const failures: string[] = []
+    const failureMessages: string[] = []
     const { directorPositionId } = await loadCompany(projectRoot)
     for (const positionId of positionIds) {
-        const [position, state] = await Promise.all([
+        const [position, positionState] = await Promise.all([
             loadPosition(projectRoot, positionId),
             loadPositionState(projectRoot, positionId),
         ])
-        const worker = getCurrentWorker(position, state, directorPositionId)
+        const worker = getCurrentWorker(
+            position,
+            positionState,
+            directorPositionId,
+        )
         if (worker === undefined) {
             console.error(
                 `@${position.id} is vacant: the message waits until someone is assigned.`,
@@ -166,12 +177,14 @@ export async function answerMentions(
             if (!(error instanceof UserError)) {
                 throw error
             }
-            failures.push(`@${position.id} didn't answer: ${error.message}`)
+            failureMessages.push(
+                `@${position.id} didn't answer: ${error.message}`,
+            )
         }
     }
-    if (failures.length > 0) {
+    if (failureMessages.length > 0) {
         throw new UserError(
-            `${failures.join("\n")}\nThe message was sent, and stays awaited by these positions.`,
+            `${failureMessages.join("\n")}\nThe message was sent, and stays awaited by these positions.`,
         )
     }
 }

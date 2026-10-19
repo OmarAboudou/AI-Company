@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { type PromptContext, systemPrompt } from "./build-system-prompt.ts"
+import { buildSystemPrompt, type PromptContext } from "./build-system-prompt.ts"
 
 const context: PromptContext = {
     company: {
@@ -30,16 +30,16 @@ const context: PromptContext = {
     },
 }
 
-describe("systemPrompt", () => {
+describe("buildSystemPrompt", () => {
     test("starts with who the employee is, where and as what", () => {
-        const prompt = systemPrompt(context)
+        const prompt = buildSystemPrompt(context)
         const identity = "You are Claude Senior, Backend Developer at Acme."
 
         expect(prompt.split("\n")[0]).toBe(identity)
     })
 
     test("gives the company's and the position's descriptions", () => {
-        const prompt = systemPrompt(context)
+        const prompt = buildSystemPrompt(context)
 
         const company = [
             "# Acme",
@@ -64,7 +64,7 @@ describe("systemPrompt", () => {
         const description = "# Goals\n\nShip the API."
         const position = { ...context.position, description }
 
-        const prompt = systemPrompt({ ...context, position })
+        const prompt = buildSystemPrompt({ ...context, position })
 
         expect(prompt).toContain(
             `<position_description>\n${description}\n</position_description>`,
@@ -74,14 +74,14 @@ describe("systemPrompt", () => {
     test("leaves out a section whose description is empty", () => {
         const company = { ...context.company, description: "  \n" }
 
-        const prompt = systemPrompt({ ...context, company })
+        const prompt = buildSystemPrompt({ ...context, company })
 
         expect(prompt).not.toContain("# Acme")
         expect(prompt).toContain("# Your position: Backend Developer")
     })
 
     test("names the thread, the message tag, the director and mentions", () => {
-        const prompt = systemPrompt(context)
+        const prompt = buildSystemPrompt(context)
 
         expect(prompt).toContain('This thread is "Choice of framework".')
         expect(prompt).toContain("comes inside a <message> tag")
