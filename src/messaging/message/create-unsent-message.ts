@@ -1,13 +1,13 @@
 import { UserError } from "../../user-error.ts"
 import { findMentions } from "./find-mentions.ts"
 import { resolveMentions } from "./resolve-mentions.ts"
-import type { Author, Draft } from "./schema.ts"
+import type { Author, UnsentMessage } from "./schema.ts"
 
-export async function createDraft(
+export async function createUnsentMessage(
     projectRoot: string,
     author: Author,
     body: string,
-): Promise<Draft> {
+): Promise<UnsentMessage> {
     if (body.trim() === "") {
         throw new UserError("The message's body is empty.")
     }

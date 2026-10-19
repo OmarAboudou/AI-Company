@@ -1,9 +1,9 @@
 import { requireCompany } from "../../organization/company/require-company.ts"
 import { loadExistingThread } from "../thread/load-existing-thread.ts"
-import { createDraft } from "./create-draft.ts"
+import { createUnsentMessage } from "./create-unsent-message.ts"
 import { readCurrentAuthor } from "./read-current-author.ts"
 import type { Message } from "./schema.ts"
-import { sendDraft } from "./send-draft.ts"
+import { sendUnsentMessage } from "./send-unsent-message.ts"
 import { listMessages } from "./storage.ts"
 
 export type SendMessageResult = {
@@ -23,9 +23,9 @@ export async function sendMessage(
         archive: { thread, messages },
         asPositionId,
     })
-    const draft = await createDraft(projectRoot, author, body)
+    const unsentMessage = await createUnsentMessage(projectRoot, author, body)
     return {
-        message: await sendDraft(projectRoot, thread.id, draft),
-        unknownMentionIds: draft.unknownMentionIds,
+        message: await sendUnsentMessage(projectRoot, thread.id, unsentMessage),
+        unknownMentionIds: unsentMessage.unknownMentionIds,
     }
 }

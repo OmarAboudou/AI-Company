@@ -1,10 +1,10 @@
 import { z } from "zod"
 import { requireCompany } from "../../organization/company/require-company.ts"
 import { UserError } from "../../user-error.ts"
-import { createDraft } from "../message/create-draft.ts"
+import { createUnsentMessage } from "../message/create-unsent-message.ts"
 import { readCurrentAuthor } from "../message/read-current-author.ts"
 import type { Message } from "../message/schema.ts"
-import { sendDraft } from "../message/send-draft.ts"
+import { sendUnsentMessage } from "../message/send-unsent-message.ts"
 import { createThreadId } from "./create-thread-id.ts"
 import { type Thread, ThreadConfigSchema } from "./schema.ts"
 import { saveThread } from "./storage.ts"
@@ -25,10 +25,10 @@ export async function createThread(
 ): Promise<CreateThreadResult> {
     await requireCompany(projectRoot)
     const author = await readCurrentAuthor(projectRoot, { asPositionId })
-    const draft =
+    const unsentFirstMessage =
         body === undefined
             ? undefined
-            : await createDraft(projectRoot, author, body)
+            : await createUnsentMessage(projectRoot, author, body)
     const createdAt = new Date().toISOString()
     const validation = ThreadConfigSchema.safeParse({
         subject,
@@ -47,12 +47,16 @@ export async function createThread(
         ...validation.data,
     }
     await saveThread(projectRoot, thread)
-    if (draft === undefined) {
+    if (unsentFirstMessage === undefined) {
         return { thread, firstMessage: undefined, unknownMentionIds: [] }
     }
     return {
         thread,
-        firstMessage: await sendDraft(projectRoot, thread.id, draft),
-        unknownMentionIds: draft.unknownMentionIds,
+        firstMessage: await sendUnsentMessage(
+            projectRoot,
+            thread.id,
+            unsentFirstMessage,
+        ),
+        unknownMentionIds: unsentFirstMessage.unknownMentionIds,
     }
 }
