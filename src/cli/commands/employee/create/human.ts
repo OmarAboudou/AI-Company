@@ -2,7 +2,7 @@ import type { Command } from "@commander-js/extra-typings"
 import { createEmployee } from "../../../../organization/employee/create-employee.ts"
 import { formatIdArgumentDescription } from "../../../format-id-argument-description.ts"
 import { projectRoot } from "../../../project-root.ts"
-import { reuseIdOption } from "../reuse-id-option.ts"
+import { createReuseIdOption } from "../create-reuse-id-option.ts"
 
 export function registerEmployeeCreateHumanCommand(
     createEmployeeCommand: Command,
@@ -15,7 +15,7 @@ export function registerEmployeeCreateHumanCommand(
             formatIdArgumentDescription("employee", "omar"),
         )
         .requiredOption("-n, --name <name>", "employee name")
-        .addOption(reuseIdOption())
+        .addOption(createReuseIdOption())
         .action(async (rawId, { name, reuseId }) => {
             const employee = await createEmployee(
                 projectRoot,

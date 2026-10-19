@@ -7,7 +7,7 @@ import { readCurrentHuman } from "../../organization/human/read-current-human.ts
 import { listPositions } from "../../organization/position/storage.ts"
 import { projectRoot } from "../project-root.ts"
 
-export function registerHumanCommands(program: Command): void {
+export function registerWhoamiCommand(program: Command): void {
     program
         .command("whoami")
         .description(
@@ -20,24 +20,25 @@ export function registerHumanCommands(program: Command): void {
                 listPositions(projectRoot),
                 loadCompany(projectRoot),
             ])
-            const worked = await listPositionsWorkedBy(
+            const workedPositions = await listPositionsWorkedBy(
                 projectRoot,
                 human,
                 positions,
                 company.directorPositionId,
             )
             const { name, email } = readGitCommitter(projectRoot)
-            const who =
+            const identityMessage =
                 human.kind === "director"
                     ? `${name}, a director`
                     : `${human.employee.name} (${human.employee.id}), a human employee`
-            const workedIds = worked.map(({ position, isTemporary }) =>
-                isTemporary ? `${position.id} (temporarily)` : position.id,
+            const workedPositionLabels = workedPositions.map(
+                ({ position, isTemporary }) =>
+                    isTemporary ? `${position.id} (temporarily)` : position.id,
             )
             console.log(
                 [
-                    who,
-                    `positions: ${workedIds.length > 0 ? workedIds.join(", ") : "(none)"}`,
+                    identityMessage,
+                    `positions: ${workedPositionLabels.length > 0 ? workedPositionLabels.join(", ") : "(none)"}`,
                     `committer: ${name} <${email}>`,
                 ].join("\n"),
             )
