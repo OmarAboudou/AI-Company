@@ -12,17 +12,18 @@ const anthropic = {
 
 describe("requireProviderConnection", () => {
     test("accepts a protocol the provider has a connection through", () => {
-        const check = () =>
+        const requireMessagesConnection = () =>
             requireProviderConnection(anthropic, "anthropic-messages")
 
-        expect(check).not.toThrow()
+        expect(requireMessagesConnection).not.toThrow()
     })
 
     test("refuses a protocol the provider has no connection through", () => {
-        const check = () =>
+        const requireResponsesConnection = () =>
             requireProviderConnection(anthropic, "openai-responses")
+        const refusalMessage = "Run `llmco provider connection create` first."
 
-        expect(check).toThrow(UserError)
-        expect(check).toThrow("Run `llmco provider connection create` first.")
+        expect(requireResponsesConnection).toThrow(UserError)
+        expect(requireResponsesConnection).toThrow(refusalMessage)
     })
 })

@@ -44,43 +44,48 @@ function updateOpus(changes: { name?: string; protocol?: Protocol }) {
 
 describe("updateLlmModel", () => {
     test("changes only what it is given, and returns the model", async () => {
-        const updated = await updateOpus({ name: "Claude Opus" })
+        const updatedModel = await updateOpus({ name: "Claude Opus" })
 
         const model = await loadLlmModel(projectRoot, "openrouter", "opus")
         expect(model).toEqual({ ...opus, name: "Claude Opus" })
-        expect(updated).toEqual(model)
+        expect(updatedModel).toEqual(model)
     })
 
     test("moves the model to another of its provider's connections", async () => {
-        const updated = await updateOpus({ protocol: "openai-responses" })
+        const updatedModel = await updateOpus({ protocol: "openai-responses" })
 
-        expect(updated.protocol).toBe("openai-responses")
+        expect(updatedModel.protocol).toBe("openai-responses")
     })
 
     test("refuses a protocol the provider has no connection through", async () => {
-        const update = updateOpus({ protocol: "openai-chat-completions" })
+        const updating = updateOpus({ protocol: "openai-chat-completions" })
 
-        await expect(update).rejects.toThrow(UserError)
-        await expect(update).rejects.toThrow("no openai-chat-completions")
+        await expect(updating).rejects.toThrow(UserError)
+        await expect(updating).rejects.toThrow("no openai-chat-completions")
     })
 
     test("refuses a blank name", async () => {
-        const update = updateOpus({ name: " " })
+        const updating = updateOpus({ name: " " })
 
-        await expect(update).rejects.toThrow(UserError)
+        await expect(updating).rejects.toThrow(UserError)
     })
 
     test("refuses a model the provider doesn't have", async () => {
-        const update = updateLlmModel(projectRoot, "openrouter", "haiku", {})
+        const updating = updateLlmModel(projectRoot, "openrouter", "haiku", {})
 
-        await expect(update).rejects.toThrow('has no model "haiku"')
+        await expect(updating).rejects.toThrow('has no model "haiku"')
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const update = updateLlmModel(elsewhere, "openrouter", "opus", {})
+        const updating = updateLlmModel(
+            folderWithoutCompany,
+            "openrouter",
+            "opus",
+            {},
+        )
 
-        await expect(update).rejects.toThrow("Run `llmco init` first.")
+        await expect(updating).rejects.toThrow("Run `llmco init` first.")
     })
 })

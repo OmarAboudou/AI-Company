@@ -43,7 +43,7 @@ function createOpus(providerId: string, protocol?: Protocol) {
 
 describe("createLlmModel", () => {
     test("calls the model through the provider's only connection", async () => {
-        const created = await createOpus("anthropic")
+        const createdModel = await createOpus("anthropic")
 
         const model = await loadLlmModel(projectRoot, "anthropic", "opus")
         expect(model).toEqual({
@@ -53,7 +53,7 @@ describe("createLlmModel", () => {
             apiId: "claude-opus-5-5",
             protocol: "anthropic-messages",
         })
-        expect(created).toEqual(model)
+        expect(createdModel).toEqual(model)
     })
 
     test("calls the model through the protocol it is given", async () => {
@@ -104,10 +104,15 @@ describe("createLlmModel", () => {
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
         const opus = { name: "Opus", apiId: "claude-opus-5-5" }
 
-        const creation = createLlmModel(elsewhere, "anthropic", "opus", opus)
+        const creation = createLlmModel(
+            folderWithoutCompany,
+            "anthropic",
+            "opus",
+            opus,
+        )
 
         await expect(creation).rejects.toThrow("Run `llmco init` first.")
     })
