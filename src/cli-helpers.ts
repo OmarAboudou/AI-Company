@@ -9,10 +9,7 @@ import { llmModelExists, loadLlmModel } from "./llm-model/storage.ts"
 import type { LlmProvider } from "./llm-provider/llm-provider.ts"
 import { llmProviderExists, loadLlmProvider } from "./llm-provider/storage.ts"
 import type { Position } from "./organization/position/schema.ts"
-import {
-    loadPosition,
-    positionExists,
-} from "./organization/position/storage.ts"
+import { hasPosition, loadPosition } from "./organization/position/storage.ts"
 import { loadThread, threadExists } from "./thread/storage.ts"
 import type { Thread } from "./thread/thread.ts"
 import { UserError } from "./user-error.ts"
@@ -45,7 +42,7 @@ export function parseId(entity: string, id: string): string {
 
 export async function loadExistingPosition(rawId: string): Promise<Position> {
     const id = parseId("position", rawId)
-    if (!(await positionExists(projectRoot, id))) {
+    if (!(await hasPosition(projectRoot, id))) {
         throw new UserError(`No position "${id}". Run \`llmco position list\`.`)
     }
     return loadPosition(projectRoot, id)

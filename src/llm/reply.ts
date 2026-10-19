@@ -11,7 +11,7 @@ import { loadLlmProvider } from "../llm-provider/storage.ts"
 import { readMentions, sendDraft } from "../message/commands.ts"
 import type { Message } from "../message/message.ts"
 import { listMessages, loadResponse, saveResponse } from "../message/storage.ts"
-import { currentWorker } from "../organization/position/get-current-worker.ts"
+import { getCurrentWorker } from "../organization/position/get-current-worker.ts"
 import type { Position } from "../organization/position/schema.ts"
 import {
     loadPosition,
@@ -135,7 +135,7 @@ export async function answerMentions(
             loadPosition(projectRoot, positionId),
             loadPositionState(projectRoot, positionId),
         ])
-        const worker = currentWorker(position, state, directorPositionId)
+        const worker = getCurrentWorker(position, state, directorPositionId)
         if (worker === undefined) {
             console.error(
                 `@${position.id} is vacant: the message waits until someone is assigned.`,

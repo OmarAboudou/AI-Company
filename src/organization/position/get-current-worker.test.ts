@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { currentWorker } from "./get-current-worker.ts"
+import { getCurrentWorker } from "./get-current-worker.ts"
 
 const developer = {
     id: "developer",
@@ -10,9 +10,9 @@ const developer = {
 const julie = { kind: "employee", employeeId: "julie" } as const
 const directors = { kind: "directors" } as const
 
-describe("currentWorker", () => {
+describe("getCurrentWorker", () => {
     test("is the default employee without a temporary assignment", () => {
-        const worker = currentWorker(developer, {}, "director")
+        const worker = getCurrentWorker(developer, {}, "director")
 
         expect(worker).toEqual({ kind: "employee", employeeId: "claude" })
     })
@@ -22,7 +22,7 @@ describe("currentWorker", () => {
         (assignee) => {
             const state = { temporaryAssignment: assignee }
 
-            const worker = currentWorker(developer, state, "director")
+            const worker = getCurrentWorker(developer, state, "director")
 
             expect(worker).toEqual(assignee)
         },
@@ -31,12 +31,12 @@ describe("currentWorker", () => {
     test("is nobody for a vacant position", () => {
         const { defaultEmployeeId, ...vacant } = developer
 
-        expect(currentWorker(vacant, {}, "director")).toBeUndefined()
+        expect(getCurrentWorker(vacant, {}, "director")).toBeUndefined()
     })
 
     test("is the directors for the director's position", () => {
         const director = { id: "director", title: "Director", description: "" }
 
-        expect(currentWorker(director, {}, "director")).toEqual(directors)
+        expect(getCurrentWorker(director, {}, "director")).toEqual(directors)
     })
 })

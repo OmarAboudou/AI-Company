@@ -1,6 +1,6 @@
 import type { Position, PositionState, Worker } from "./schema.ts"
 
-export function currentWorker(
+export function getCurrentWorker(
     position: Position,
     { temporaryAssignment }: PositionState,
     directorPositionId: string,
