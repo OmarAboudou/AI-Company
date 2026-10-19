@@ -23,8 +23,8 @@ import { UserError } from "../user-error.ts"
 import { type AnswerEvent, answerMentions } from "./answer-mentions.ts"
 
 const fakeServer = useFakeAnthropicServer()
-const variables = ["LLMCO_CURRENT_HUMAN_ID", "TEST_ANTHROPIC_KEY"] as const
-const shellValues = variables.map((variable) => process.env[variable])
+const variableNames = ["LLMCO_CURRENT_HUMAN_ID", "TEST_ANTHROPIC_KEY"] as const
+const shellValues = variableNames.map((name) => process.env[name])
 const committer = { name: "Test User", email: "test@example.com" }
 const question = "@backend-developer Hono or Express?"
 let projectRoot: string
@@ -64,12 +64,12 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-    for (const [index, variable] of variables.entries()) {
+    for (const [index, name] of variableNames.entries()) {
         const shellValue = shellValues[index]
         if (shellValue === undefined) {
-            delete process.env[variable]
+            delete process.env[name]
         } else {
-            process.env[variable] = shellValue
+            process.env[name] = shellValue
         }
     }
     await rm(projectRoot, { recursive: true, force: true })
