@@ -10,6 +10,7 @@ import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { type Protocol, protocols } from "../llm/connection/schema.ts"
 import { loadExistingLlmModel } from "../llm/model/load-existing-llm-model.ts"
+import { requireProviderConnection } from "../llm/model/require-provider-connection.ts"
 import { LlmModelConfigSchema } from "../llm/model/schema.ts"
 import {
     copyLlmModelFolder,
@@ -35,20 +36,12 @@ function protocolOption() {
     ).choices(protocols)
 }
 
-function requireConnection(provider: LlmProvider, protocol: Protocol): void {
-    if (provider.connections?.[protocol] === undefined) {
-        throw new UserError(
-            `Provider "${provider.id}" has no ${protocol} connection. Run \`llmco provider connection create\` first.`,
-        )
-    }
-}
-
 function chooseProtocol(
     provider: LlmProvider,
     requested: Protocol | undefined,
 ): Protocol {
     if (requested !== undefined) {
-        requireConnection(provider, requested)
+        requireProviderConnection(provider, requested)
         return requested
     }
     const available = protocols.filter(
@@ -196,7 +189,7 @@ export function registerLlmModelCommands(program: Command): void {
             )
             if (options.protocol !== undefined) {
                 const provider = await loadLlmProvider(projectRoot, providerId)
-                requireConnection(provider, options.protocol)
+                requireProviderConnection(provider, options.protocol)
             }
             const config = LlmModelConfigSchema.safeParse({
                 ...current,
