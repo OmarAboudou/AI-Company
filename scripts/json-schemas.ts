@@ -1,6 +1,5 @@
 import { z } from "zod"
 import { CompanyConfigSchema } from "../src/company/company.ts"
-import { EmployeeConfigSchema } from "../src/employee/employee.ts"
 import { IdHistorySchema } from "../src/ids/id-history-schema.ts"
 import { LlmModelConfigSchema } from "../src/llm-model/llm-model.ts"
 import { LlmProviderConfigSchema } from "../src/llm-provider/llm-provider.ts"
@@ -8,6 +7,7 @@ import {
     MessageConfigSchema,
     ProviderResponseSchema,
 } from "../src/message/message.ts"
+import { EmployeeConfigSchema } from "../src/organization/employee/schema.ts"
 import {
     PositionConfigSchema,
     PositionStateSchema,

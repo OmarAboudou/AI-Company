@@ -1,6 +1,6 @@
 import { z } from "zod"
-import type { IdHistoryRecord } from "../ids/id-history-schema.ts"
-import { IdSchema } from "../ids/id-schema.ts"
+import type { IdHistoryRecord } from "../../ids/id-history-schema.ts"
+import { IdSchema } from "../../ids/id-schema.ts"
 
 const NameSchema = z
     .string()

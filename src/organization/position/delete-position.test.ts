@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { createTemporaryCompany } from "../../company/create-temporary-company.ts"
-import { employeeExists, saveEmployee } from "../../employee/storage.ts"
 import { saveMessage } from "../../message/storage.ts"
 import { saveThread } from "../../thread/storage.ts"
 import { UserError } from "../../user-error.ts"
+import { employeeExists, saveEmployee } from "../employee/storage.ts"
 import { deletePosition } from "./delete-position.ts"
 import {
     hasPosition,
