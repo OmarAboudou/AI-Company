@@ -25,3 +25,43 @@ export type Position = PositionConfig &
         id: string
         description: string
     }
+
+export const WorkerSchema = z
+    .discriminatedUnion("kind", [
+        z.strictObject({
+            kind: z.literal("employee").meta({
+                description: "employee: an employee works the position.",
+            }),
+            employeeId: IdSchema.meta({
+                description:
+                    "Id of the employee working the position, i.e. the name of its folder in .llmco/employees.",
+            }),
+        }),
+        z.strictObject({
+            kind: z.literal("directors").meta({
+                description:
+                    "directors: the people working on the repository, identified by git, work the position themselves, without an employee.",
+            }),
+        }),
+    ])
+    .meta({
+        description:
+            "Who works a position: an employee, or the directors themselves.",
+    })
+
+export type Worker = z.infer<typeof WorkerSchema>
+
+export const PositionStateSchema = z
+    .strictObject({
+        temporaryAssignment: WorkerSchema.optional().meta({
+            description:
+                "Who works the position instead of its default employee, until unassign-temporarily. Never its default employee.",
+        }),
+    })
+    .meta({
+        title: "llmco position state",
+        description:
+            "What happens to a position while the company runs, in .llmco/state/positions/<position-id>.json. Written by llmco and ignored by git; absent while the position's default employee works it, or nobody if it is vacant.",
+    })
+
+export type PositionState = z.infer<typeof PositionStateSchema>
