@@ -3,7 +3,7 @@ import { projectRoot } from "../cli-helpers.ts"
 import { loadCompany } from "../company/storage.ts"
 import type { Employee } from "../employee/employee.ts"
 import { loadEmployee } from "../employee/storage.ts"
-import { wrote } from "../ids/is-author-of.ts"
+import { isAuthorOf } from "../ids/is-author-of.ts"
 import type { LlmModel } from "../llm-model/llm-model.ts"
 import { loadLlmModel } from "../llm-model/storage.ts"
 import { loadLlmProvider } from "../llm-provider/storage.ts"
@@ -31,7 +31,7 @@ async function replays(
     employee: LlmEmployee,
     model: LlmModel,
 ): Promise<Replays> {
-    const own = messages.filter((message) => wrote(employee, message))
+    const own = messages.filter((message) => isAuthorOf(employee, message))
     const entries = await Promise.all(
         own.map(async (message) => {
             const response = await loadResponse(projectRoot, message)

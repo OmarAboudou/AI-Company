@@ -1,10 +1,10 @@
-import { hadId } from "./had-id-at.ts"
+import { hadIdAt } from "./had-id-at.ts"
 import type { IdHistory } from "./id-history-schema.ts"
 
-export function currentId(
+export function getCurrentId(
     entities: IdHistory[],
     id: string,
     at: string,
 ): string {
-    return entities.find((entity) => hadId(entity, id, at))?.id ?? id
+    return entities.find((entity) => hadIdAt(entity, id, at))?.id ?? id
 }
