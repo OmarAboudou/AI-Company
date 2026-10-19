@@ -26,9 +26,12 @@ import type {
 import {
     listPositions,
     loadPositionState,
-    savePosition,
     savePositionState,
 } from "../organization/position/storage.ts"
+import {
+    type PositionUnassignment,
+    unassignPosition,
+} from "../organization/position/unassign-position.ts"
 import { updatePosition } from "../organization/position/update-position.ts"
 import { updatePositionId } from "../organization/position/update-position-id.ts"
 import { UserError } from "../user-error.ts"
@@ -62,6 +65,17 @@ function formatAssignedMessage({
     return hasEndedTemporaryAssignment
         ? `${assignedMessage}, which ends its temporary assignment.`
         : `${assignedMessage}.${stillTemporary(temporaryAssignment)}`
+}
+
+function formatUnassignedMessage({
+    positionId,
+    previousEmployeeId,
+    temporaryAssignment,
+}: PositionUnassignment): string {
+    if (previousEmployeeId === undefined) {
+        return `Position "${positionId}" is already vacant.`
+    }
+    return `Position "${positionId}" is now vacant: "${previousEmployeeId}" is no longer its default employee.${stillTemporary(temporaryAssignment)}`
 }
 
 function currentEmployeeInList(
@@ -340,22 +354,8 @@ export function registerPositionCommands(program: Command): void {
         )
         .hook("preAction", requireDirector)
         .action(async (rawId) => {
-            await requireCompany(projectRoot)
-            const [
-                { defaultEmployeeId, ...position },
-                { temporaryAssignment },
-            ] = await Promise.all([
-                loadExistingPosition(projectRoot, rawId),
-                loadPositionState(projectRoot, parseId("position", rawId)),
-            ])
-            if (defaultEmployeeId === undefined) {
-                console.log(`Position "${position.id}" is already vacant.`)
-                return
-            }
-            await savePosition(projectRoot, position)
-            console.log(
-                `Position "${position.id}" is now vacant: "${defaultEmployeeId}" is no longer its default employee.${stillTemporary(temporaryAssignment)}`,
-            )
+            const unassignment = await unassignPosition(projectRoot, rawId)
+            console.log(formatUnassignedMessage(unassignment))
         })
 
     const assignTemporarilyCommand = positionCommand
