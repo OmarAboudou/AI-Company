@@ -23,12 +23,12 @@ describe("llmco provider connection create", () => {
         createConnection("anthropic", "anthropic-messages", "-u", anthropicUrl)
 
         const list = runCli("provider", "connection", "list").stdout
-        const names = list
+        const connectionNames = list
             .trimEnd()
             .split("\n")
             .map((row) => row.split(" ")[0])
 
-        expect(names).toEqual([
+        expect(connectionNames).toEqual([
             "anthropic/anthropic-messages",
             "openrouter/openai-chat-completions",
             "openrouter/openai-responses",

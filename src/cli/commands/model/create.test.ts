@@ -44,19 +44,19 @@ describe("llmco model", () => {
     test("create refuses an id the provider already has", () => {
         createOpus()
 
-        const second = createOpus()
+        const duplicate = createOpus()
 
-        expect(second.exitCode).toBe(1)
-        expect(second.stderr).toContain("already has a model")
+        expect(duplicate.exitCode).toBe(1)
+        expect(duplicate.stderr).toContain("already has a model")
     })
 
     test("create requires an api id", () => {
         const create = ["model", "create", "anthropic", "claude-opus-5-5"]
 
-        const withoutApiId = runCli(...create, "-n", "Claude Opus 5.5")
+        const creationWithoutApiId = runCli(...create, "-n", "Claude Opus 5.5")
 
-        expect(withoutApiId.exitCode).toBe(1)
-        expect(withoutApiId.stderr).toContain("--api-id")
+        expect(creationWithoutApiId.exitCode).toBe(1)
+        expect(creationWithoutApiId.stderr).toContain("--api-id")
     })
 })
 

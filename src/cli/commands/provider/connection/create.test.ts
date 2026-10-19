@@ -17,7 +17,7 @@ function createConnection(...args: string[]) {
 
 describe("llmco provider connection create", () => {
     test("create then list shows the URL and how the key is sent", () => {
-        const create = createConnection(
+        const creation = createConnection(
             "anthropic",
             "anthropic-messages",
             "-u",
@@ -25,7 +25,7 @@ describe("llmco provider connection create", () => {
         )
         const list = runCli("provider", "connection", "list").stdout
 
-        expect(create.stdout).toBe(
+        expect(creation.stdout).toBe(
             'Created the anthropic-messages connection of provider "anthropic".\n',
         )
         expect(list).toBe(
@@ -52,7 +52,7 @@ describe("llmco provider connection create", () => {
     test("create refuses a protocol the provider already has", () => {
         createConnection("anthropic", "anthropic-messages", "-u", anthropicUrl)
 
-        const second = createConnection(
+        const duplicate = createConnection(
             "anthropic",
             "anthropic-messages",
             "-u",
@@ -60,22 +60,22 @@ describe("llmco provider connection create", () => {
         )
         const list = runCli("provider", "connection", "list").stdout
 
-        expect(second.exitCode).toBe(1)
-        expect(second.stderr).toContain(
+        expect(duplicate.exitCode).toBe(1)
+        expect(duplicate.stderr).toContain(
             "already has a connection through anthropic",
         )
         expect(list).toContain(anthropicUrl)
     })
 
     test("create refuses an unknown protocol", () => {
-        const create = createConnection(
+        const creation = createConnection(
             "anthropic",
             "gemini",
             "-u",
             anthropicUrl,
         )
 
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain("anthropic-messages")
+        expect(creation.exitCode).toBe(1)
+        expect(creation.stderr).toContain("anthropic-messages")
     })
 })
