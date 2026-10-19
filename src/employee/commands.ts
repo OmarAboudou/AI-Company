@@ -13,6 +13,7 @@ import {
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
+import { requireDirector } from "../human/current-human.ts"
 import { withNewId, wrote } from "../id-history.ts"
 import type { Position, PositionState } from "../position/position.ts"
 import {
@@ -157,6 +158,7 @@ export function registerEmployeeCommands(program: Command): void {
         .command("create")
         .alias("hire")
         .description("Create (hire) an employee: an LLM or a human.")
+        .hook("preAction", requireDirector)
 
     createEmployeeCommand
         .command("llm")
@@ -261,6 +263,7 @@ export function registerEmployeeCommands(program: Command): void {
             "-m, --model <model-id>",
             "id of one of the provider's models in llmco, e.g. claude-opus-5-5 (see llmco model list), for an LLM employee",
         )
+        .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
             requireAnOption(options)
             await requireCompany()
@@ -307,6 +310,7 @@ export function registerEmployeeCommands(program: Command): void {
             newIdDescription("employee", "claude-lead"),
         )
         .addOption(reuseIdOption())
+        .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId, { reuseId }) => {
             await requireCompany()
             const newId = parseId("employee", rawNewId)
@@ -375,6 +379,7 @@ export function registerEmployeeCommands(program: Command): void {
             "id of the employee taking its positions over (e.g. omar)",
         )
         .option("-t, --temporary", "also hand over its temporary assignments")
+        .hook("preAction", requireDirector)
         .action(async (rawId, rawReplacementId, { temporary }) => {
             await requireCompany()
             const [employee, replacement, positions] = await Promise.all([
@@ -459,6 +464,7 @@ export function registerEmployeeCommands(program: Command): void {
             "-f, --force",
             "delete it even if it fills positions, leaving them vacant, or works them temporarily, ending these assignments",
         )
+        .hook("preAction", requireDirector)
         .action(async (rawId, { force }) => {
             await requireCompany()
             const [employee, positions] = await Promise.all([

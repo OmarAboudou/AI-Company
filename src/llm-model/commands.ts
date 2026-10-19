@@ -14,6 +14,7 @@ import {
 } from "../cli-helpers.ts"
 import { listEmployees, saveEmployee } from "../employee/storage.ts"
 import { UserError } from "../errors.ts"
+import { requireDirector } from "../human/current-human.ts"
 import { type Protocol, protocols } from "../llm-connection/llm-connection.ts"
 import type { LlmProvider } from "../llm-provider/llm-provider.ts"
 import { listLlmProviders, loadLlmProvider } from "../llm-provider/storage.ts"
@@ -82,6 +83,7 @@ export function registerLlmModelCommands(program: Command): void {
             "id of the model on the provider's side, as its API expects it, e.g. claude-opus-5-5 or llama3.1:8b",
         )
         .addOption(protocolOption())
+        .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, options) => {
             await requireCompany()
             const provider = await loadExistingLlmProvider(rawProviderId)
@@ -157,6 +159,7 @@ export function registerLlmModelCommands(program: Command): void {
             "id of the model on the provider's side, as its API expects it, e.g. claude-opus-5-5 or llama3.1:8b",
         )
         .addOption(protocolOption())
+        .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, options) => {
             requireAnOption(options)
             await requireCompany()
@@ -187,6 +190,7 @@ export function registerLlmModelCommands(program: Command): void {
         .argument("<provider-id>", idDescription("provider", "anthropic"))
         .argument("<model-id>", idDescription("model", "claude-opus-5-5"))
         .argument("<new-model-id>", newIdDescription("model", "opus"))
+        .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, rawNewId) => {
             await requireCompany()
             const [model, employees] = await Promise.all([
@@ -228,6 +232,7 @@ export function registerLlmModelCommands(program: Command): void {
         .description("Delete a model no employee runs on.")
         .argument("<provider-id>", idDescription("provider", "anthropic"))
         .argument("<model-id>", idDescription("model", "claude-opus-5-5"))
+        .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId) => {
             await requireCompany()
             const [model, employees] = await Promise.all([

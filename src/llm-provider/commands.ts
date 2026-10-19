@@ -13,6 +13,7 @@ import {
 } from "../cli-helpers.ts"
 import { listEmployees, saveEmployee } from "../employee/storage.ts"
 import { UserError } from "../errors.ts"
+import { requireDirector } from "../human/current-human.ts"
 import { registerLlmConnectionCommands } from "../llm-connection/commands.ts"
 import { protocols } from "../llm-connection/llm-connection.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
@@ -73,6 +74,7 @@ export function registerLlmProviderCommands(program: Command): void {
         .requiredOption("-n, --name <name>", "provider name")
         .addOption(apiKeyEnvOption())
         .addOption(apiKeyFileOption())
+        .hook("preAction", requireDirector)
         .action(async (rawId, { name, ...apiKeyOptions }) => {
             await requireCompany()
             const id = parseId("provider", rawId)
@@ -137,6 +139,7 @@ export function registerLlmProviderCommands(program: Command): void {
         .option("-n, --name <name>", "provider name")
         .addOption(apiKeyEnvOption())
         .addOption(apiKeyFileOption())
+        .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
             requireAnOption(options)
             await requireCompany()
@@ -165,6 +168,7 @@ export function registerLlmProviderCommands(program: Command): void {
             "<new-provider-id>",
             newIdDescription("provider", "anthropic-api"),
         )
+        .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId) => {
             await requireCompany()
             const newId = parseId("provider", rawNewId)
@@ -206,6 +210,7 @@ export function registerLlmProviderCommands(program: Command): void {
         )
         .argument("<provider-id>", idDescription("provider", "anthropic"))
         .option("-f, --force", "delete it even if it has models, deleting them")
+        .hook("preAction", requireDirector)
         .action(async (rawId, { force }) => {
             await requireCompany()
             const provider = await loadExistingLlmProvider(rawId)

@@ -16,6 +16,7 @@ import {
 } from "../cli-helpers.ts"
 import { loadCompany, saveCompany } from "../company/storage.ts"
 import { UserError } from "../errors.ts"
+import { requireDirector } from "../human/current-human.ts"
 import { withNewId } from "../id-history.ts"
 import { readArchives } from "../thread/archives.ts"
 import { awaitedIds } from "../thread/members.ts"
@@ -165,6 +166,7 @@ export function registerPositionCommands(program: Command): void {
             "",
         )
         .addOption(descriptionFileOption())
+        .hook("preAction", requireDirector)
         .action(async (rawId, { title, description, descriptionFile }) => {
             await requireCompany()
             const id = parseId("position", rawId)
@@ -259,6 +261,7 @@ export function registerPositionCommands(program: Command): void {
             "what the position is responsible for",
         )
         .addOption(descriptionFileOption())
+        .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
             requireAnOption(options)
             await requireCompany()
@@ -298,6 +301,7 @@ export function registerPositionCommands(program: Command): void {
             "<new-position-id>",
             newIdDescription("position", "api-developer"),
         )
+        .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId) => {
             await requireCompany()
             const newId = parseId("position", rawNewId)
@@ -344,6 +348,7 @@ export function registerPositionCommands(program: Command): void {
         )
         .argument("<employee-id>", idDescription("employee", "claude-senior"))
         .option("-r, --replace", "replace the current default employee")
+        .hook("preAction", requireDirector)
         .action(async (rawPositionId, rawEmployeeId, { replace }) => {
             await requireCompany()
             const [position, employee, company, state] = await Promise.all([
@@ -405,6 +410,7 @@ export function registerPositionCommands(program: Command): void {
             "<position-id>",
             idDescription("position", "backend-developer"),
         )
+        .hook("preAction", requireDirector)
         .action(async (rawId) => {
             await requireCompany()
             const [
@@ -430,6 +436,7 @@ export function registerPositionCommands(program: Command): void {
         .description(
             "Assign a position temporarily, until unassign-temporarily: to an employee, or to the directors themselves. Its default employee doesn't change.",
         )
+        .hook("preAction", requireDirector)
 
     assignTemporarilyCommand
         .command("employee")
@@ -476,6 +483,7 @@ export function registerPositionCommands(program: Command): void {
             "<position-id>",
             idDescription("position", "backend-developer"),
         )
+        .hook("preAction", requireDirector)
         .action(async (rawId) => {
             await requireCompany()
             const [position, { temporaryAssignment, ...state }] =
@@ -510,6 +518,7 @@ export function registerPositionCommands(program: Command): void {
             idDescription("position", "backend-developer"),
         )
         .option("-f, --force", "delete it even if threads await it")
+        .hook("preAction", requireDirector)
         .action(async (rawId, { force }) => {
             await requireCompany()
             const [position, company, positions, archives] = await Promise.all([

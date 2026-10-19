@@ -11,6 +11,7 @@ import {
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
+import { requireDirector } from "../human/current-human.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import {
     type LlmProvider,
@@ -100,6 +101,7 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
             "URL the protocol's paths are appended to, e.g. https://api.anthropic.com",
         )
         .addOption(authOption())
+        .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol, { baseUrl, auth }) => {
             await requireCompany()
             const provider = await loadExistingLlmProvider(rawProviderId)
@@ -158,6 +160,7 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
             "URL the protocol's paths are appended to, e.g. https://api.anthropic.com",
         )
         .addOption(authOption())
+        .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol, options) => {
             requireAnOption(options)
             await requireCompany()
@@ -183,6 +186,7 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
         .description("Delete a provider's connection no model is called with.")
         .argument("<provider-id>", idDescription("provider", "anthropic"))
         .addArgument(protocolArgument())
+        .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol) => {
             await requireCompany()
             const [provider, models] = await Promise.all([
