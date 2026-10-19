@@ -1,18 +1,18 @@
 import { z } from "zod"
-import { CompanyConfigSchema } from "./company/company.ts"
-import { EmployeeConfigSchema } from "./employee/employee.ts"
-import { IdHistorySchema } from "./id-history.ts"
-import { LlmModelConfigSchema } from "./llm-model/llm-model.ts"
-import { LlmProviderConfigSchema } from "./llm-provider/llm-provider.ts"
+import { CompanyConfigSchema } from "../src/company/company.ts"
+import { EmployeeConfigSchema } from "../src/employee/employee.ts"
+import { IdHistorySchema } from "../src/id-history.ts"
+import { LlmModelConfigSchema } from "../src/llm-model/llm-model.ts"
+import { LlmProviderConfigSchema } from "../src/llm-provider/llm-provider.ts"
 import {
     MessageConfigSchema,
     ProviderResponseSchema,
-} from "./message/message.ts"
+} from "../src/message/message.ts"
 import {
     PositionConfigSchema,
     PositionStateSchema,
-} from "./position/position.ts"
-import { ThreadConfigSchema } from "./thread/thread.ts"
+} from "../src/position/position.ts"
+import { ThreadConfigSchema } from "../src/thread/thread.ts"
 
 const publishedAt =
     "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas"
