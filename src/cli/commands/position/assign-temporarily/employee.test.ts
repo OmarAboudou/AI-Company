@@ -5,12 +5,12 @@ const { runCli, getProjectPath } = useTemporaryProject()
 
 const interimEmployee = ["position", "interim", "employee"]
 
-function positionStatePath(id: string): string {
+function getPositionStatePath(id: string): string {
     return getProjectPath(".llmco", ".state", "positions", `${id}.json`)
 }
 
-async function positionState(id: string): Promise<unknown> {
-    const file = Bun.file(positionStatePath(id))
+async function loadPositionStateFile(id: string): Promise<unknown> {
+    const file = Bun.file(getPositionStatePath(id))
     return (await file.exists()) ? file.json() : undefined
 }
 
@@ -25,10 +25,10 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
         runCli("position", "assign", "developer", "omar")
     })
 
-    const julie = { kind: "employee", employeeId: "julie" }
+    const julieWorker = { kind: "employee", employeeId: "julie" }
 
     test("assign-temporarily gives the position to an employee and keeps its default employee", async () => {
-        const before = await positionState("developer")
+        const before = await loadPositionStateFile("developer")
 
         const interim = runCli(
             "position",
@@ -43,8 +43,8 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
         expect(interim.stdout).toBe(
             'Position "developer" is now assigned temporarily to "julie".\n',
         )
-        expect(await positionState("developer")).toEqual({
-            temporaryAssignment: julie,
+        expect(await loadPositionStateFile("developer")).toEqual({
+            temporaryAssignment: julieWorker,
         })
         expect(runCli("position", "show", "developer").stdout).toContain(
             "default employee: omar",
@@ -56,7 +56,7 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
 
         expect(interim.exitCode).toBe(1)
         expect(interim.stderr).toContain("missing required argument")
-        expect(await positionState("developer")).toBeUndefined()
+        expect(await loadPositionStateFile("developer")).toBeUndefined()
     })
 
     test("assign-temporarily refuses to replace a temporary assignment without --replace", async () => {
@@ -68,18 +68,18 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
         expect(interim.stderr).toContain(
             'already assigned temporarily to "julie". Add --replace',
         )
-        expect(await positionState("developer")).toEqual({
-            temporaryAssignment: julie,
+        expect(await loadPositionStateFile("developer")).toEqual({
+            temporaryAssignment: julieWorker,
         })
     })
 
     test("assign-temporarily accepts the same temporary assignment again", () => {
         runCli(...interimEmployee, "developer", "julie")
 
-        const again = runCli(...interimEmployee, "developer", "julie")
+        const sameInterim = runCli(...interimEmployee, "developer", "julie")
 
-        expect(again.exitCode).toBe(0)
-        expect(again.stdout).toContain("already assigned temporarily")
+        expect(sameInterim.exitCode).toBe(0)
+        expect(sameInterim.stdout).toContain("already assigned temporarily")
     })
 
     test("assign-temporarily writes nothing for the default employee", async () => {
@@ -89,6 +89,6 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
         expect(interim.stdout).toBe(
             '"omar" already works position "developer", as its default employee.\n',
         )
-        expect(await positionState("developer")).toBeUndefined()
+        expect(await loadPositionStateFile("developer")).toBeUndefined()
     })
 })

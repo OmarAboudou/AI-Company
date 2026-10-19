@@ -43,7 +43,7 @@ describe("llmco position assign and unassign", () => {
         )
     })
 
-    async function positionConfig(id: string): Promise<unknown> {
+    async function loadPositionConfigFile(id: string): Promise<unknown> {
         const path = getProjectPath(".llmco", "positions", id, "config.json")
         return Bun.file(path).json()
     }
@@ -51,21 +51,21 @@ describe("llmco position assign and unassign", () => {
     test("unassign makes the position vacant", async () => {
         runCli("position", "assign", "developer", "omar")
 
-        const unassign = runCli("position", "unassign", "developer")
+        const unassignment = runCli("position", "unassign", "developer")
 
-        expect(unassign.exitCode).toBe(0)
-        expect(unassign.stdout).toContain(
+        expect(unassignment.exitCode).toBe(0)
+        expect(unassignment.stdout).toContain(
             '"omar" is no longer its default employee',
         )
-        expect(await positionConfig("developer")).toEqual({
+        expect(await loadPositionConfigFile("developer")).toEqual({
             title: "Developer",
         })
     })
 
     test("unassign says so when the position is already vacant", () => {
-        const unassign = runCli("position", "unassign", "developer")
+        const unassignment = runCli("position", "unassign", "developer")
 
-        expect(unassign.exitCode).toBe(0)
-        expect(unassign.stdout).toContain("already vacant")
+        expect(unassignment.exitCode).toBe(0)
+        expect(unassignment.stdout).toContain("already vacant")
     })
 })

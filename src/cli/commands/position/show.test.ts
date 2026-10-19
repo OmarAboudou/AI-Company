@@ -31,13 +31,13 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
         runCli(...interimEmployee, "developer", "julie")
         runCli(...interimDirectors, "designer")
 
-        const developer = runCli("position", "show", "developer").stdout
-        const designer = runCli("position", "show", "designer").stdout
+        const developerShow = runCli("position", "show", "developer").stdout
+        const designerShow = runCli("position", "show", "designer").stdout
 
-        expect(developer).toBe(
+        expect(developerShow).toBe(
             "# Developer\n\ncurrent employee: julie (temporarily)\ndefault employee: omar\n\n\n",
         )
-        expect(designer).toBe(
+        expect(designerShow).toBe(
             "# Designer\n\ncurrent employee: the repository's git users (temporarily)\ndefault employee: (none)\n\n\n",
         )
     })

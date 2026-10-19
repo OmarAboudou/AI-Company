@@ -36,8 +36,8 @@ describe("llmco position delete", () => {
 
     test("delete refuses a position threads await, listing them", () => {
         const ask = ["-b", "@developer Can you check?"]
-        const thread = runCli("thread", "create", "-s", "Release", ...ask)
-        const threadId = thread.stdout.trim()
+        const creation = runCli("thread", "create", "-s", "Release", ...ask)
+        const threadId = creation.stdout.trim()
 
         const deletion = runCli("position", "delete", "developer")
 
@@ -51,8 +51,8 @@ describe("llmco position delete", () => {
         "delete %s deletes a position threads await",
         (flag) => {
             const ask = ["-b", "@developer Can you check?"]
-            const thread = runCli("thread", "create", "-s", "Release", ...ask)
-            const threadId = thread.stdout.trim()
+            const creation = runCli("thread", "create", "-s", "Release", ...ask)
+            const threadId = creation.stdout.trim()
 
             const deletion = runCli("position", "delete", "developer", flag)
             const list = runCli("thread", "list").stdout
