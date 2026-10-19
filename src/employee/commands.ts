@@ -1,5 +1,4 @@
 import { type Command, Option } from "@commander-js/extra-typings"
-import { z } from "zod"
 import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
 import { formatNewIdArgumentDescription } from "../cli/format-new-id-argument-description.ts"
 import { printColumns } from "../cli/print-columns.ts"
@@ -7,7 +6,6 @@ import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
 import { requireCompany } from "../company/require-company.ts"
-import { getDefinedValues } from "../get-defined-values.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { createEmployee } from "../organization/employee/create-employee.ts"
@@ -17,9 +15,7 @@ import {
     type TemporaryPosition,
 } from "../organization/employee/list-positions-worked-temporarily-by.ts"
 import { loadExistingEmployee } from "../organization/employee/load-existing-employee.ts"
-import { requireEmployeeModel } from "../organization/employee/require-employee-model.ts"
 import { requireUnusedEmployeeId } from "../organization/employee/require-unused-employee-id.ts"
-import { EmployeeConfigSchema } from "../organization/employee/schema.ts"
 import {
     copyEmployeeFolder,
     deleteEmployeeFolder,
@@ -27,6 +23,7 @@ import {
     listEmployees,
     saveEmployee,
 } from "../organization/employee/storage.ts"
+import { updateEmployee } from "../organization/employee/update-employee.ts"
 import type { Position } from "../organization/position/schema.ts"
 import {
     listPositions,
@@ -184,37 +181,12 @@ export function registerEmployeeCommands(program: Command): void {
         .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
             requireAtLeastOneOption(options)
-            await requireCompany(projectRoot)
-            const { id, createdAt, formerIds, ...current } =
-                await loadExistingEmployee(projectRoot, rawId)
-            const llmOptions = [options.provider, options.model]
-            if (
-                current.kind === "human" &&
-                llmOptions.some((option) => option !== undefined)
-            ) {
-                throw new UserError(
-                    `Employee "${id}" is a human: it has no provider or model.`,
-                )
-            }
-            const result = EmployeeConfigSchema.safeParse({
-                ...current,
-                ...getDefinedValues({
-                    name: options.name,
-                    providerId: options.provider,
-                    modelId: options.model,
-                }),
+            const employee = await updateEmployee(projectRoot, rawId, {
+                name: options.name,
+                providerId: options.provider,
+                modelId: options.model,
             })
-            if (!result.success) {
-                throw new UserError(z.prettifyError(result.error))
-            }
-            await requireEmployeeModel(projectRoot, result.data)
-            await saveEmployee(projectRoot, {
-                id,
-                ...result.data,
-                createdAt,
-                formerIds,
-            })
-            console.log(`Updated employee "${id}".`)
+            console.log(`Updated employee "${employee.id}".`)
         })
 
     employeeCommand
