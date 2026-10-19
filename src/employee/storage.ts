@@ -1,13 +1,13 @@
 import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
-import { llmcoDir } from "../files/get-llmco-folder-path.ts"
+import { getLlmcoFolderPath } from "../files/get-llmco-folder-path.ts"
 import { listSubdirectories } from "../files/list-subdirectories.ts"
-import { readConfig } from "../files/read-json-file.ts"
+import { readJsonFile } from "../files/read-json-file.ts"
 import { loadIdHistory, saveIdHistory } from "../id-history.ts"
 import { type Employee, EmployeeConfigSchema } from "./employee.ts"
 
 function employeesDir(projectRoot: string): string {
-    return join(llmcoDir(projectRoot), "employees")
+    return join(getLlmcoFolderPath(projectRoot), "employees")
 }
 
 function employeeDir(projectRoot: string, id: string): string {
@@ -34,7 +34,7 @@ export async function loadEmployee(
     id: string,
 ): Promise<Employee> {
     const [config, history] = await Promise.all([
-        readConfig(
+        readJsonFile(
             projectRoot,
             employeeConfigPath(projectRoot, id),
             EmployeeConfigSchema,

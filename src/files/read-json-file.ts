@@ -1,22 +1,22 @@
 import { relative } from "node:path"
 import { z } from "zod"
 import { UserError } from "../user-error.ts"
-import { readText } from "./read-text-file.ts"
+import { readTextFile } from "./read-text-file.ts"
 
-export async function readConfig<T>(
+export async function readJsonFile<T>(
     projectRoot: string,
     path: string,
     schema: z.ZodType<T>,
 ): Promise<T> {
     const displayPath = relative(projectRoot, path)
-    const json = parseJson(await readText(projectRoot, path), displayPath)
-    const result = schema.safeParse(json)
-    if (!result.success) {
+    const json = parseJson(await readTextFile(projectRoot, path), displayPath)
+    const validation = schema.safeParse(json)
+    if (!validation.success) {
         throw new UserError(
-            `Invalid ${displayPath}:\n${z.prettifyError(result.error)}`,
+            `Invalid ${displayPath}:\n${z.prettifyError(validation.error)}`,
         )
     }
-    return result.data
+    return validation.data
 }
 
 function parseJson(text: string, displayPath: string): unknown {

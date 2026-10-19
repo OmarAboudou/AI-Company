@@ -1,7 +1,7 @@
 import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
 import { listSubdirectories } from "../files/list-subdirectories.ts"
-import { readConfig } from "../files/read-json-file.ts"
+import { readJsonFile } from "../files/read-json-file.ts"
 import { llmProviderDir } from "../llm-provider/storage.ts"
 import { type LlmModel, LlmModelConfigSchema } from "./llm-model.ts"
 
@@ -38,7 +38,7 @@ export async function loadLlmModel(
     providerId: string,
     id: string,
 ): Promise<LlmModel> {
-    const config = await readConfig(
+    const config = await readJsonFile(
         projectRoot,
         llmModelConfigPath(projectRoot, providerId, id),
         LlmModelConfigSchema,

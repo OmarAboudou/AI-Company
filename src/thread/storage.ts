@@ -1,13 +1,13 @@
 import { join } from "node:path"
-import { llmcoDir } from "../files/get-llmco-folder-path.ts"
+import { getLlmcoFolderPath } from "../files/get-llmco-folder-path.ts"
 import { listSubdirectories } from "../files/list-subdirectories.ts"
-import { readConfig } from "../files/read-json-file.ts"
+import { readJsonFile } from "../files/read-json-file.ts"
 import { type Thread, ThreadConfigSchema } from "./thread.ts"
 
 const maxSlugLength = 50
 
 function threadsDir(projectRoot: string): string {
-    return join(llmcoDir(projectRoot), "threads")
+    return join(getLlmcoFolderPath(projectRoot), "threads")
 }
 
 export function threadDir(projectRoot: string, id: string): string {
@@ -29,7 +29,7 @@ export async function loadThread(
     projectRoot: string,
     id: string,
 ): Promise<Thread> {
-    const config = await readConfig(
+    const config = await readJsonFile(
         projectRoot,
         threadConfigPath(projectRoot, id),
         ThreadConfigSchema,

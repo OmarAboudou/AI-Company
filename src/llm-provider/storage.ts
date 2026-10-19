@@ -1,12 +1,12 @@
 import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
-import { llmcoDir } from "../files/get-llmco-folder-path.ts"
+import { getLlmcoFolderPath } from "../files/get-llmco-folder-path.ts"
 import { listSubdirectories } from "../files/list-subdirectories.ts"
-import { readConfig } from "../files/read-json-file.ts"
+import { readJsonFile } from "../files/read-json-file.ts"
 import { type LlmProvider, LlmProviderConfigSchema } from "./llm-provider.ts"
 
 function llmProvidersDir(projectRoot: string): string {
-    return join(llmcoDir(projectRoot), "llm-providers")
+    return join(getLlmcoFolderPath(projectRoot), "llm-providers")
 }
 
 export function llmProviderDir(projectRoot: string, id: string): string {
@@ -28,7 +28,7 @@ export async function loadLlmProvider(
     projectRoot: string,
     id: string,
 ): Promise<LlmProvider> {
-    const config = await readConfig(
+    const config = await readJsonFile(
         projectRoot,
         llmProviderConfigPath(projectRoot, id),
         LlmProviderConfigSchema,

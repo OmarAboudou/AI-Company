@@ -1,11 +1,11 @@
 import { join } from "node:path"
-import { llmcoDir } from "../files/get-llmco-folder-path.ts"
-import { readConfig } from "../files/read-json-file.ts"
-import { readText } from "../files/read-text-file.ts"
+import { getLlmcoFolderPath } from "../files/get-llmco-folder-path.ts"
+import { readJsonFile } from "../files/read-json-file.ts"
+import { readTextFile } from "../files/read-text-file.ts"
 import { type Company, CompanyConfigSchema } from "./company.ts"
 
 function companyPaths(projectRoot: string) {
-    const dir = join(llmcoDir(projectRoot), "company")
+    const dir = join(getLlmcoFolderPath(projectRoot), "company")
     return {
         config: join(dir, "config.json"),
         description: join(dir, "description.md"),
@@ -19,8 +19,8 @@ export async function companyExists(projectRoot: string): Promise<boolean> {
 export async function loadCompany(projectRoot: string): Promise<Company> {
     const paths = companyPaths(projectRoot)
     const [config, description] = await Promise.all([
-        readConfig(projectRoot, paths.config, CompanyConfigSchema),
-        readText(projectRoot, paths.description),
+        readJsonFile(projectRoot, paths.config, CompanyConfigSchema),
+        readTextFile(projectRoot, paths.description),
     ])
     return { ...config, description }
 }

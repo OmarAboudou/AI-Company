@@ -1,7 +1,7 @@
 import { relative } from "node:path"
 import { UserError } from "../user-error.ts"
 
-export async function readText(
+export async function readTextFile(
     projectRoot: string,
     path: string,
 ): Promise<string> {
