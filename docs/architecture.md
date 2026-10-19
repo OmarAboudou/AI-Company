@@ -2,7 +2,7 @@
 
 The rules that decide where code and documentation go, and how big they grow. They never list the files: the tree shows them.
 
-The code is being reorganized to follow these rules (#86).
+`bun run lint` checks the boundaries, the import cycles and the length of files, and `bun test` the length of folders.
 
 ## The command line mirrors the commands
 
