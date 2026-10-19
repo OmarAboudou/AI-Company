@@ -29,7 +29,7 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const julie = { kind: "employee", employeeId: "julie" } as const
+const julieWorker = { kind: "employee", employeeId: "julie" } as const
 
 async function loadDefaultEmployeeId(positionId: string) {
     const position = await loadPosition(projectRoot, positionId)
@@ -92,7 +92,7 @@ describe("assignPosition", () => {
     })
 
     test("ends the temporary assignment of the employee it assigns", async () => {
-        const state = { temporaryAssignment: julie }
+        const state = { temporaryAssignment: julieWorker }
         await savePositionState(projectRoot, "dev", state)
         const before = await loadPositionState(projectRoot, "dev")
 
@@ -105,14 +105,14 @@ describe("assignPosition", () => {
     })
 
     test("keeps the temporary assignment of another employee", async () => {
-        const state = { temporaryAssignment: julie }
+        const state = { temporaryAssignment: julieWorker }
         await savePositionState(projectRoot, "dev", state)
 
         const assignment = await assignPosition(projectRoot, "dev", "bob")
 
         expect(await loadPositionState(projectRoot, "dev")).toEqual(state)
         expect(assignment.hasEndedTemporaryAssignment).toBe(false)
-        expect(assignment.temporaryAssignment).toEqual(julie)
+        expect(assignment.temporaryAssignment).toEqual(julieWorker)
     })
 
     test("refuses an unknown position", async () => {
@@ -128,9 +128,9 @@ describe("assignPosition", () => {
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const assignment = assignPosition(elsewhere, "dev", "omar")
+        const assignment = assignPosition(folderWithoutCompany, "dev", "omar")
 
         await expect(assignment).rejects.toThrow("Run `llmco init` first.")
     })

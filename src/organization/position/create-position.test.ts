@@ -49,14 +49,14 @@ describe("createPosition", () => {
 
     test("refuses an id another position has, and keeps that one", async () => {
         await createPosition(projectRoot, "developer", developer)
-        const other = { title: "Other", description: "" }
+        const otherPosition = { title: "Other", description: "" }
 
-        const creation = createPosition(projectRoot, "developer", other)
+        const creation = createPosition(projectRoot, "developer", otherPosition)
 
         await expect(creation).rejects.toThrow(UserError)
         await expect(creation).rejects.toThrow('"developer" already exists.')
-        const kept = await loadPosition(projectRoot, "developer")
-        expect(kept.title).toBe("Developer")
+        const keptPosition = await loadPosition(projectRoot, "developer")
+        expect(keptPosition.title).toBe("Developer")
     })
 
     test("refuses an id that is not kebab-case", async () => {
@@ -66,30 +66,38 @@ describe("createPosition", () => {
     })
 
     test("refuses a blank title", async () => {
-        const blank = { ...developer, title: "  " }
+        const developerWithBlankTitle = { ...developer, title: "  " }
 
-        const creation = createPosition(projectRoot, "developer", blank)
+        const creation = createPosition(
+            projectRoot,
+            "developer",
+            developerWithBlankTitle,
+        )
 
         await expect(creation).rejects.toThrow(UserError)
     })
 
     test("drops a state left behind by a former position of that id", async () => {
-        const directors = {
+        const directorsState = {
             temporaryAssignment: { kind: "directors" },
         } as const
-        await savePositionState(projectRoot, "developer", directors)
+        await savePositionState(projectRoot, "developer", directorsState)
         const before = await loadPositionState(projectRoot, "developer")
 
         await createPosition(projectRoot, "developer", developer)
 
-        expect(before).toEqual(directors)
+        expect(before).toEqual(directorsState)
         expect(await loadPositionState(projectRoot, "developer")).toEqual({})
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const creation = createPosition(elsewhere, "developer", developer)
+        const creation = createPosition(
+            folderWithoutCompany,
+            "developer",
+            developer,
+        )
 
         await expect(creation).rejects.toThrow("Run `llmco init` first.")
     })

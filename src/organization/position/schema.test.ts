@@ -24,9 +24,14 @@ describe("PositionConfigSchema", () => {
     })
 
     test("accepts the id of the default employee", () => {
-        const filled = { ...developer, defaultEmployeeId: "claude-senior" }
+        const filledDeveloper = {
+            ...developer,
+            defaultEmployeeId: "claude-senior",
+        }
 
-        expect(PositionConfigSchema.parse(filled)).toEqual(filled)
+        const config = PositionConfigSchema.parse(filledDeveloper)
+
+        expect(config).toEqual(filledDeveloper)
     })
 
     test("rejects a default employee id that is not kebab-case", () => {
@@ -78,18 +83,26 @@ describe("PositionStateSchema", () => {
     })
 
     test("requires an employee id for an employee only", () => {
-        const employee = { kind: "employee" }
-        const directors = { kind: "directors", employeeId: "julie" }
+        const employeeWithoutId = { kind: "employee" }
+        const directorsWithEmployeeId = {
+            kind: "directors",
+            employeeId: "julie",
+        }
 
-        expect(acceptsState({ temporaryAssignment: employee })).toBe(false)
-        expect(acceptsState({ temporaryAssignment: directors })).toBe(false)
+        const employeeState = { temporaryAssignment: employeeWithoutId }
+        const directorsState = { temporaryAssignment: directorsWithEmployeeId }
+
+        expect(acceptsState(employeeState)).toBe(false)
+        expect(acceptsState(directorsState)).toBe(false)
     })
 
     test("rejects an unknown kind or key", () => {
-        const team = { temporaryAssignment: { kind: "team" } }
-        const since = { temporaryAssignment: { kind: "directors", since: "" } }
+        const unknownKindState = { temporaryAssignment: { kind: "team" } }
+        const datedState = {
+            temporaryAssignment: { kind: "directors", since: "" },
+        }
 
-        expect(acceptsState(team)).toBe(false)
-        expect(acceptsState(since)).toBe(false)
+        expect(acceptsState(unknownKindState)).toBe(false)
+        expect(acceptsState(datedState)).toBe(false)
     })
 })

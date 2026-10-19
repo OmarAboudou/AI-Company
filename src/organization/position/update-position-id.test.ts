@@ -37,8 +37,14 @@ describe("updatePositionId", () => {
 
         await updatePositionId(projectRoot, "developer", "api-developer")
 
-        const renamed = await loadPosition(projectRoot, "api-developer")
-        expect(renamed).toMatchObject({ ...developer, id: "api-developer" })
+        const renamedDeveloper = await loadPosition(
+            projectRoot,
+            "api-developer",
+        )
+        expect(renamedDeveloper).toMatchObject({
+            ...developer,
+            id: "api-developer",
+        })
         expect(await hasPosition(projectRoot, "developer")).toBe(false)
     })
 
@@ -47,9 +53,9 @@ describe("updatePositionId", () => {
 
         const renaming = await updatePositionId(projectRoot, "developer", "api")
 
-        const renamed = await loadPosition(projectRoot, "api")
+        const renamedDeveloper = await loadPosition(projectRoot, "api")
         expect(renaming.position).toEqual(developer)
-        expect(renaming.renamedPosition).toEqual(renamed)
+        expect(renaming.renamedPosition).toEqual(renamedDeveloper)
     })
 
     test("records each former id, oldest first, with when it stopped", async () => {
@@ -60,14 +66,14 @@ describe("updatePositionId", () => {
         await updatePositionId(projectRoot, "api-developer", "backend")
         const after = Date.now()
 
-        const renamed = await loadPosition(projectRoot, "backend")
-        const formerIds = renamed.formerIds ?? []
-        const ids = formerIds.map(({ id }) => id)
-        const untils = formerIds.map(({ until }) => Date.parse(until))
-        expect(renamed.createdAt).toBe(developer.createdAt)
-        expect(ids).toEqual(["developer", "api-developer"])
-        expect(Math.min(...untils)).toBeGreaterThanOrEqual(before)
-        expect(Math.max(...untils)).toBeLessThanOrEqual(after)
+        const renamedDeveloper = await loadPosition(projectRoot, "backend")
+        const formerIds = renamedDeveloper.formerIds ?? []
+        const recordedIds = formerIds.map(({ id }) => id)
+        const untilTimes = formerIds.map(({ until }) => Date.parse(until))
+        expect(renamedDeveloper.createdAt).toBe(developer.createdAt)
+        expect(recordedIds).toEqual(["developer", "api-developer"])
+        expect(Math.min(...untilTimes)).toBeGreaterThanOrEqual(before)
+        expect(Math.max(...untilTimes)).toBeLessThanOrEqual(after)
     })
 
     test("starts a history for a position without one", async () => {
@@ -76,17 +82,22 @@ describe("updatePositionId", () => {
 
         await updatePositionId(projectRoot, "developer", "api-developer")
 
-        const renamed = await loadPosition(projectRoot, "api-developer")
-        expect(renamed.createdAt).toBeUndefined()
-        expect(renamed.formerIds?.map(({ id }) => id)).toEqual(["developer"])
+        const renamedDeveloper = await loadPosition(
+            projectRoot,
+            "api-developer",
+        )
+        expect(renamedDeveloper.createdAt).toBeUndefined()
+        expect(renamedDeveloper.formerIds?.map(({ id }) => id)).toEqual([
+            "developer",
+        ])
     })
 
     test("moves the state with the position", async () => {
-        const julie = {
+        const julieState = {
             temporaryAssignment: { kind: "employee", employeeId: "julie" },
         } as const
         await savePosition(projectRoot, developer)
-        await savePositionState(projectRoot, "developer", julie)
+        await savePositionState(projectRoot, "developer", julieState)
 
         await updatePositionId(projectRoot, "developer", "api-developer")
 
@@ -95,7 +106,7 @@ describe("updatePositionId", () => {
             loadPositionState(projectRoot, "api-developer"),
         ])
         expect(formerState).toEqual({})
-        expect(movedState).toEqual(julie)
+        expect(movedState).toEqual(julieState)
     })
 
     test("makes the company follow its director's position", async () => {
@@ -115,10 +126,10 @@ describe("updatePositionId", () => {
             savePosition(projectRoot, tester),
         ])
 
-        const update = updatePositionId(projectRoot, "developer", "qa-tester")
+        const updating = updatePositionId(projectRoot, "developer", "qa-tester")
 
-        await expect(update).rejects.toThrow(UserError)
-        await expect(update).rejects.toThrow('"qa-tester" already exists.')
+        await expect(updating).rejects.toThrow(UserError)
+        await expect(updating).rejects.toThrow('"qa-tester" already exists.')
         expect(await loadPosition(projectRoot, "qa-tester")).toEqual(tester)
         expect(await hasPosition(projectRoot, "developer")).toBe(true)
     })
@@ -126,22 +137,26 @@ describe("updatePositionId", () => {
     test("refuses a new id that is not kebab-case", async () => {
         await savePosition(projectRoot, developer)
 
-        const update = updatePositionId(projectRoot, "developer", "Dev")
+        const updating = updatePositionId(projectRoot, "developer", "Dev")
 
-        await expect(update).rejects.toThrow('Invalid position id "Dev"')
+        await expect(updating).rejects.toThrow('Invalid position id "Dev"')
     })
 
     test("refuses an unknown position", async () => {
-        const update = updatePositionId(projectRoot, "designer", "ux")
+        const updating = updatePositionId(projectRoot, "designer", "ux")
 
-        await expect(update).rejects.toThrow('No position "designer".')
+        await expect(updating).rejects.toThrow('No position "designer".')
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const update = updatePositionId(elsewhere, "developer", "dev")
+        const updating = updatePositionId(
+            folderWithoutCompany,
+            "developer",
+            "dev",
+        )
 
-        await expect(update).rejects.toThrow("Run `llmco init` first.")
+        await expect(updating).rejects.toThrow("Run `llmco init` first.")
     })
 })

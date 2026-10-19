@@ -23,11 +23,11 @@ function getPositionFolderPath(projectRoot: string, id: string): string {
 }
 
 function getPositionFilePaths(projectRoot: string, id: string) {
-    const dir = getPositionFolderPath(projectRoot, id)
+    const positionFolderPath = getPositionFolderPath(projectRoot, id)
     return {
-        config: join(dir, "config.json"),
-        description: join(dir, "description.md"),
-        history: join(dir, "history.json"),
+        config: join(positionFolderPath, "config.json"),
+        description: join(positionFolderPath, "description.md"),
+        history: join(positionFolderPath, "history.json"),
     }
 }
 

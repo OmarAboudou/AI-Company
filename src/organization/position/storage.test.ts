@@ -34,18 +34,19 @@ describe("savePosition", () => {
     test("writes config.json and description.md in a folder named after the id", async () => {
         await savePosition(projectRoot, developer)
 
-        const dir = join(
+        const positionFolderPath = join(
             projectRoot,
             ".llmco",
             "positions",
             "backend-developer",
         )
-        expect(await Bun.file(join(dir, "config.json")).text()).toBe(
-            '{\n    "title": "Backend Developer"\n}\n',
-        )
-        expect(await Bun.file(join(dir, "description.md")).text()).toBe(
-            "You build the API.",
-        )
+        const [configText, descriptionText] = await Promise.all([
+            Bun.file(join(positionFolderPath, "config.json")).text(),
+            Bun.file(join(positionFolderPath, "description.md")).text(),
+        ])
+
+        expect(configText).toBe('{\n    "title": "Backend Developer"\n}\n')
+        expect(descriptionText).toBe("You build the API.")
     })
 
     test("writes the id history to history.json, out of config.json", async () => {
@@ -54,10 +55,15 @@ describe("savePosition", () => {
 
         await savePosition(projectRoot, { ...developer, createdAt, formerIds })
 
-        const dir = join(projectRoot, ".llmco", "positions", developer.id)
+        const positionFolderPath = join(
+            projectRoot,
+            ".llmco",
+            "positions",
+            developer.id,
+        )
         const [config, history] = await Promise.all([
-            Bun.file(join(dir, "config.json")).json(),
-            Bun.file(join(dir, "history.json")).json(),
+            Bun.file(join(positionFolderPath, "config.json")).json(),
+            Bun.file(join(positionFolderPath, "history.json")).json(),
         ])
         expect(config).toEqual({ title: "Backend Developer" })
         expect(history).toEqual({ createdAt, formerIds })
@@ -68,34 +74,45 @@ describe("loadPosition", () => {
     test("reads back what savePosition wrote", async () => {
         await savePosition(projectRoot, developer)
 
-        expect(await loadPosition(projectRoot, "backend-developer")).toEqual(
-            developer,
-        )
+        const loadedPosition = await loadPosition(projectRoot, developer.id)
+
+        expect(loadedPosition).toEqual(developer)
     })
 
     test("reads back the default employee", async () => {
-        const filled = { ...developer, defaultEmployeeId: "claude-senior" }
-        await savePosition(projectRoot, filled)
+        const filledDeveloper = {
+            ...developer,
+            defaultEmployeeId: "claude-senior",
+        }
+        await savePosition(projectRoot, filledDeveloper)
 
-        expect(await loadPosition(projectRoot, "backend-developer")).toEqual(
-            filled,
-        )
+        const loadedPosition = await loadPosition(projectRoot, developer.id)
+
+        expect(loadedPosition).toEqual(filledDeveloper)
     })
 
     test("rejects an invalid config.json", async () => {
-        const dir = join(projectRoot, ".llmco", "positions", "developer")
-        await Bun.write(join(dir, "config.json"), JSON.stringify({ title: "" }))
-        await Bun.write(join(dir, "description.md"), "")
-
-        await expect(loadPosition(projectRoot, "developer")).rejects.toThrow(
-            UserError,
+        const positionFolderPath = join(
+            projectRoot,
+            ".llmco",
+            "positions",
+            "developer",
         )
+        await Bun.write(
+            join(positionFolderPath, "config.json"),
+            JSON.stringify({ title: "" }),
+        )
+        await Bun.write(join(positionFolderPath, "description.md"), "")
+
+        const loading = loadPosition(projectRoot, "developer")
+
+        await expect(loading).rejects.toThrow(UserError)
     })
 
     test("fails when the position does not exist", async () => {
-        await expect(loadPosition(projectRoot, "developer")).rejects.toThrow(
-            UserError,
-        )
+        const loading = loadPosition(projectRoot, "developer")
+
+        await expect(loading).rejects.toThrow(UserError)
     })
 })
 
@@ -156,48 +173,52 @@ describe("copyPositionFolder", () => {
     })
 })
 
-function statePath(...segments: string[]): string {
+function getStatePath(...segments: string[]): string {
     return join(projectRoot, ".llmco", ".state", ...segments)
 }
 
 describe("savePositionState", () => {
-    const interim = {
+    const interimState = {
         temporaryAssignment: { kind: "employee", employeeId: "julie" },
     } as const
 
     test("writes the state in .llmco/.state/positions, named after the id", async () => {
-        await savePositionState(projectRoot, developer.id, interim)
+        await savePositionState(projectRoot, developer.id, interimState)
 
-        const file = Bun.file(statePath("positions", `${developer.id}.json`))
-        expect(await file.json()).toEqual(interim)
+        const stateFile = Bun.file(
+            getStatePath("positions", `${developer.id}.json`),
+        )
+        expect(await stateFile.json()).toEqual(interimState)
     })
 
     test("writes a .gitignore ignoring the whole state folder", async () => {
-        await savePositionState(projectRoot, developer.id, interim)
+        await savePositionState(projectRoot, developer.id, interimState)
 
-        const gitignoreContent = await Bun.file(statePath(".gitignore")).text()
+        const gitignoreContent = await Bun.file(
+            getStatePath(".gitignore"),
+        ).text()
         expect(gitignoreContent.split("\n")).toContain("*")
     })
 
     test("leaves nothing for git to commit", async () => {
         Bun.spawnSync(["git", "init", "-q"], { cwd: projectRoot })
 
-        await savePositionState(projectRoot, developer.id, interim)
+        await savePositionState(projectRoot, developer.id, interimState)
 
-        const status = Bun.spawnSync(
+        const gitStatus = Bun.spawnSync(
             ["git", "status", "--porcelain", "--untracked-files=all"],
             { cwd: projectRoot },
         )
-        expect(status.stdout.toString()).toBe("")
+        expect(gitStatus.stdout.toString()).toBe("")
     })
 
     test("removes the file of an empty state", async () => {
-        const path = statePath("positions", `${developer.id}.json`)
-        await savePositionState(projectRoot, developer.id, interim)
-        const before = await Bun.file(path).exists()
+        const stateFilePath = getStatePath("positions", `${developer.id}.json`)
+        await savePositionState(projectRoot, developer.id, interimState)
+        const before = await Bun.file(stateFilePath).exists()
 
         await savePositionState(projectRoot, developer.id, {})
-        const after = await Bun.file(path).exists()
+        const after = await Bun.file(stateFilePath).exists()
 
         expect(before).toBe(true)
         expect(after).toBe(false)
@@ -206,14 +227,14 @@ describe("savePositionState", () => {
 
 describe("loadPositionState", () => {
     test("reads back what savePositionState wrote", async () => {
-        const directors = {
+        const directorsState = {
             temporaryAssignment: { kind: "directors" },
         } as const
-        await savePositionState(projectRoot, developer.id, directors)
+        await savePositionState(projectRoot, developer.id, directorsState)
 
         const state = await loadPositionState(projectRoot, developer.id)
 
-        expect(state).toEqual(directors)
+        expect(state).toEqual(directorsState)
     })
 
     test("is empty when the position has no state", async () => {
@@ -221,11 +242,14 @@ describe("loadPositionState", () => {
     })
 
     test("rejects an invalid state file", async () => {
-        const path = statePath("positions", `${developer.id}.json`)
-        await Bun.write(path, JSON.stringify({ temporaryAssignment: {} }))
+        const stateFilePath = getStatePath("positions", `${developer.id}.json`)
+        await Bun.write(
+            stateFilePath,
+            JSON.stringify({ temporaryAssignment: {} }),
+        )
 
-        const load = loadPositionState(projectRoot, developer.id)
+        const loading = loadPositionState(projectRoot, developer.id)
 
-        await expect(load).rejects.toThrow(UserError)
+        await expect(loading).rejects.toThrow(UserError)
     })
 })
