@@ -1,5 +1,4 @@
 import type { Command } from "@commander-js/extra-typings"
-import { z } from "zod"
 import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
 import { printAnswerEvent } from "../cli/print-answer-event.ts"
 import { printColumns } from "../cli/print-columns.ts"
@@ -12,22 +11,16 @@ import {
     bodyOption,
     readBody,
 } from "../message/commands.ts"
-import { createDraft } from "../messaging/message/create-draft.ts"
 import { getAuthorName } from "../messaging/message/get-author-name.ts"
-import { readCurrentAuthor } from "../messaging/message/read-current-author.ts"
 import type { Author } from "../messaging/message/schema.ts"
-import { sendDraft } from "../messaging/message/send-draft.ts"
 import { listMessages } from "../messaging/message/storage.ts"
-import { createThreadId } from "../messaging/thread/create-thread-id.ts"
+import { createThread } from "../messaging/thread/create-thread.ts"
 import { getAwaitedIds } from "../messaging/thread/get-awaited-ids.ts"
 import { getMemberIds } from "../messaging/thread/get-member-ids.ts"
 import { listArchives } from "../messaging/thread/list-archives.ts"
 import { loadExistingThread } from "../messaging/thread/load-existing-thread.ts"
-import { ThreadConfigSchema } from "../messaging/thread/schema.ts"
-import { saveThread } from "../messaging/thread/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
 import { listPositions } from "../organization/position/storage.ts"
-import { UserError } from "../user-error.ts"
 import { answerMentions } from "../work/answer-mentions.ts"
 
 function signature(author: Author): string {
@@ -56,38 +49,20 @@ export function registerThreadCommands(program: Command): void {
         .addOption(bodyFileOption("the thread's first message"))
         .addOption(asPositionOption())
         .action(async (options) => {
-            await requireCompany(projectRoot)
-            const author = await readCurrentAuthor(projectRoot, {
-                asPositionId: options.asPosition,
-            })
             const body = await readBody(options)
-            const draft =
-                body === undefined
-                    ? undefined
-                    : await createDraft(projectRoot, author, body)
-            const createdAt = new Date().toISOString()
-            const config = ThreadConfigSchema.safeParse({
-                subject: options.subject,
-                createdAt,
-                createdBy: author,
-            })
-            if (!config.success) {
-                throw new UserError(z.prettifyError(config.error))
-            }
-            const id = await createThreadId(
-                projectRoot,
-                config.data.subject,
-                createdAt,
-            )
-            await saveThread(projectRoot, { id, ...config.data })
-            console.log(id)
-            if (draft !== undefined) {
-                await sendDraft(projectRoot, id, draft)
-                printUnknownMentions(draft.unknownMentionIds)
+            const { thread, firstMessage, unknownMentionIds } =
+                await createThread(projectRoot, {
+                    subject: options.subject,
+                    body,
+                    asPositionId: options.asPosition,
+                })
+            console.log(thread.id)
+            printUnknownMentions(unknownMentionIds)
+            if (firstMessage !== undefined) {
                 await answerMentions(
                     projectRoot,
-                    id,
-                    draft.mentions,
+                    thread.id,
+                    firstMessage.mentions,
                     printAnswerEvent,
                 )
             }
