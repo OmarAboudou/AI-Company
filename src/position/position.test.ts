@@ -65,6 +65,14 @@ describe("PositionStateSchema", () => {
         expect(PositionStateSchema.parse(state)).toEqual(state)
     })
 
+    test("accepts an employee whose id is directors", () => {
+        const state = {
+            temporaryAssignment: { kind: "employee", employeeId: "directors" },
+        } as const
+
+        expect(PositionStateSchema.parse(state)).toEqual(state)
+    })
+
     test("accepts a state without temporary assignment", () => {
         expect(PositionStateSchema.parse({})).toEqual({})
     })
