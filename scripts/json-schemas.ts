@@ -14,10 +14,10 @@ import {
     PositionStateSchema,
 } from "../src/organization/position/schema.ts"
 
-const publishedAt =
+const publicationUrl =
     "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas"
 
-const configSchemas = {
+const zodSchemas = {
     company: CompanyConfigSchema,
     position: PositionConfigSchema,
     employee: EmployeeConfigSchema,
@@ -31,11 +31,11 @@ const configSchemas = {
 }
 
 export const jsonSchemas = Object.fromEntries(
-    Object.entries(configSchemas).map(([name, schema]) => {
+    Object.entries(zodSchemas).map(([name, schema]) => {
         const { $schema, ...jsonSchema } = z.toJSONSchema(schema)
         return [
             name,
-            { $schema, $id: `${publishedAt}/${name}.json`, ...jsonSchema },
+            { $schema, $id: `${publicationUrl}/${name}.json`, ...jsonSchema },
         ]
     }),
 )
