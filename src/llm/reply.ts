@@ -3,11 +3,11 @@ import { projectRoot } from "../cli-helpers.ts"
 import { loadCompany } from "../company/storage.ts"
 import type { Employee } from "../employee/employee.ts"
 import { loadEmployee } from "../employee/storage.ts"
+import { committer } from "../git/read-git-committer.ts"
 import { isAuthorOf } from "../ids/is-author-of.ts"
 import type { LlmModel } from "../llm-model/llm-model.ts"
 import { loadLlmModel } from "../llm-model/storage.ts"
 import { loadLlmProvider } from "../llm-provider/storage.ts"
-import { committer } from "../message/author.ts"
 import { readMentions, sendDraft } from "../message/commands.ts"
 import type { Message } from "../message/message.ts"
 import { listMessages, loadResponse, saveResponse } from "../message/storage.ts"
@@ -104,7 +104,7 @@ async function answerAs(
     const id = await sendDraft(threadId, {
         position: { id: position.id, title: position.title },
         employee: { id: employee.id, name: employee.name },
-        committer: committer(),
+        committer: committer(projectRoot),
         body,
         ...(await readMentions(body, position.id)),
     })

@@ -2,7 +2,7 @@ import { loadExistingPosition, projectRoot } from "../cli-helpers.ts"
 import { loadCompany } from "../company/storage.ts"
 import type { Employee } from "../employee/employee.ts"
 import { loadEmployee } from "../employee/storage.ts"
-import { gitConfig } from "../git.ts"
+import { committer } from "../git/read-git-committer.ts"
 import {
     type CurrentHuman,
     currentHuman,
@@ -21,17 +21,6 @@ import { UserError } from "../user-error.ts"
 import type { MessageConfig } from "./message.ts"
 
 export type Author = Pick<MessageConfig, "position" | "employee" | "committer">
-
-export function committer(): MessageConfig["committer"] {
-    const name = gitConfig(projectRoot, "user.name")
-    const email = gitConfig(projectRoot, "user.email")
-    if (name === undefined || email === undefined) {
-        throw new UserError(
-            "Messages record who typed them, as commits do: set `git config user.name` and `git config user.email`.",
-        )
-    }
-    return { name, email }
-}
 
 function only<Item>(items: Item[]): Item | undefined {
     return items.length === 1 ? items[0] : undefined
@@ -149,6 +138,6 @@ export async function currentAuthor({
         ...(human.kind === "employee" && {
             employee: { id: human.employee.id, name: human.employee.name },
         }),
-        committer: committer(),
+        committer: committer(projectRoot),
     }
 }

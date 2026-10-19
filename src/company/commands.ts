@@ -8,7 +8,7 @@ import {
     requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
-import { requireGitRepository } from "../git.ts"
+import { requireGitRepository } from "../git/require-git-repository.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { savePosition } from "../position/storage.ts"
 import { UserError } from "../user-error.ts"
