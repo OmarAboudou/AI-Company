@@ -1,8 +1,9 @@
 import type Anthropic from "@anthropic-ai/sdk"
+import { minutes } from "../../format-date-time.ts"
 import type { IdHistory } from "../../ids/id-history-schema.ts"
 import { isAuthorOf } from "../../ids/is-author-of.ts"
-import type { Message } from "../../message/message.ts"
-import { authorName, minutes } from "../../message/signature.ts"
+import { authorName } from "../../messaging/message/get-author-name.ts"
+import type { Message } from "../../messaging/message/schema.ts"
 
 export type Replays = ReadonlyMap<string, Anthropic.ContentBlockParam[]>
 

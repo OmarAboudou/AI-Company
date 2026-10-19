@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import type Anthropic from "@anthropic-ai/sdk"
-import type { Message } from "../../message/message.ts"
+import type { Message } from "../../messaging/message/schema.ts"
 import { getAnthropicTurns } from "./get-anthropic-turns.ts"
 
 const director = { id: "director", title: "Director" }

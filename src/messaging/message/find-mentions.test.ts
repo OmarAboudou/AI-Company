@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { findMentions } from "./mentions.ts"
+import { findMentions } from "./find-mentions.ts"
 
 function positionIds(body: string): string[] {
     return findMentions(body).positionIds

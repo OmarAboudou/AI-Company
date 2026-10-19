@@ -2,13 +2,10 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { IdSchema } from "../ids/id-schema.ts"
-import type { Message } from "./message.ts"
+import type { Message } from "./schema.ts"
 import {
     listMessages,
     loadResponse,
-    newMessageId,
-    nextSentAt,
     saveMessage,
     saveResponse,
 } from "./storage.ts"
@@ -93,36 +90,5 @@ describe("saveResponse and loadResponse", () => {
         await saveMessage(projectRoot, question)
 
         expect(await loadResponse(projectRoot, question)).toBeUndefined()
-    })
-})
-
-describe("newMessageId", () => {
-    test("is the time of sending with a random suffix", () => {
-        const id = newMessageId("2026-10-18T14:03:22.123Z")
-
-        expect(id).toMatch(/^20261018-140322-123-[0-9a-f]{4}$/)
-        expect(IdSchema.safeParse(id).success).toBe(true)
-    })
-
-    test("differs between two messages sent at the same time", () => {
-        const ids = new Set(
-            Array.from({ length: 20 }, () => newMessageId(question.sentAt)),
-        )
-
-        expect(ids.size).toBeGreaterThan(1)
-    })
-})
-
-describe("nextSentAt", () => {
-    test("is now in a thread without messages", () => {
-        const now = new Date("2026-10-18T14:03:22.123Z")
-
-        expect(nextSentAt([], now)).toBe("2026-10-18T14:03:22.123Z")
-    })
-
-    test("comes after the last message, even within its millisecond", () => {
-        const now = new Date(question.sentAt)
-
-        expect(nextSentAt([question], now)).toBe("2026-10-18T14:03:22.124Z")
     })
 })

@@ -4,17 +4,15 @@ import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
 import { loadExistingThread } from "../cli-helpers.ts"
 import { answerMentions } from "../llm/reply.ts"
+import { newMessageId } from "../messaging/message/create-message-id.ts"
+import { findMentions } from "../messaging/message/find-mentions.ts"
+import { nextSentAt } from "../messaging/message/get-next-sent-at.ts"
+import { currentAuthor } from "../messaging/message/read-current-author.ts"
+import type { Author } from "../messaging/message/schema.ts"
+import { listMessages, saveMessage } from "../messaging/message/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
 import { listPositions } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
-import { type Author, currentAuthor } from "./author.ts"
-import { findMentions } from "./mentions.ts"
-import {
-    listMessages,
-    newMessageId,
-    nextSentAt,
-    saveMessage,
-} from "./storage.ts"
 
 export function bodyOption(what = "the message") {
     return new Option("-b, --body <text>", `${what}, in Markdown`)

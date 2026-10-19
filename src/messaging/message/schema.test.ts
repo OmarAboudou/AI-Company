@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { MessageConfigSchema } from "./message.ts"
+import { MessageConfigSchema } from "./schema.ts"
 
 const question = {
     position: { id: "director", title: "Director" },

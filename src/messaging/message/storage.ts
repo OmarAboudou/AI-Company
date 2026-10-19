@@ -1,15 +1,14 @@
-import { randomBytes } from "node:crypto"
 import { join } from "node:path"
-import { listSubdirectories } from "../files/list-subdirectories.ts"
-import { readJsonFile } from "../files/read-json-file.ts"
-import { readTextFile } from "../files/read-text-file.ts"
-import { getThreadFolderPath } from "../messaging/thread/storage.ts"
+import { listSubdirectories } from "../../files/list-subdirectories.ts"
+import { readJsonFile } from "../../files/read-json-file.ts"
+import { readTextFile } from "../../files/read-text-file.ts"
+import { getThreadFolderPath } from "../thread/storage.ts"
 import {
     type Message,
     MessageConfigSchema,
     type ProviderResponse,
     ProviderResponseSchema,
-} from "./message.ts"
+} from "./schema.ts"
 
 function messagesDir(projectRoot: string, threadId: string): string {
     return join(getThreadFolderPath(projectRoot, threadId), "messages")
@@ -77,20 +76,4 @@ export async function loadResponse(
         return undefined
     }
     return readJsonFile(projectRoot, path, ProviderResponseSchema)
-}
-
-export function newMessageId(sentAt: string): string {
-    const digits = sentAt.replace(/\D/g, "")
-    const [date, time, milliseconds] = [
-        digits.slice(0, 8),
-        digits.slice(8, 14),
-        digits.slice(14, 17).padEnd(3, "0"),
-    ]
-    return `${date}-${time}-${milliseconds}-${randomBytes(2).toString("hex")}`
-}
-
-export function nextSentAt(messages: Message[], now: Date): string {
-    const last = messages.at(-1)
-    const notBefore = last === undefined ? 0 : Date.parse(last.sentAt) + 1
-    return new Date(Math.max(now.getTime(), notBefore)).toISOString()
 }

@@ -1,5 +1,5 @@
-import type { Message } from "../../message/message.ts"
-import { listMessages } from "../../message/storage.ts"
+import type { Message } from "../message/schema.ts"
+import { listMessages } from "../message/storage.ts"
 import type { Thread } from "./schema.ts"
 import { listThreads } from "./storage.ts"
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test"
-import { saveMessage } from "../../../../message/storage.ts"
+import { saveMessage } from "../../../../messaging/message/storage.ts"
 import { saveThread } from "../../../../messaging/thread/storage.ts"
 import { useTemporaryProject } from "../../../use-temporary-project.ts"
 
