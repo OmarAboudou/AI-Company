@@ -1,6 +1,7 @@
 import { join } from "node:path"
-import { listSubdirectories, readConfig } from "../files.ts"
-import { llmcoDir } from "../project.ts"
+import { llmcoDir } from "../files/get-llmco-folder-path.ts"
+import { listSubdirectories } from "../files/list-subdirectories.ts"
+import { readConfig } from "../files/read-json-file.ts"
 import { type Thread, ThreadConfigSchema } from "./thread.ts"
 
 const maxSlugLength = 50

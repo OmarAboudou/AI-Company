@@ -1,18 +1,7 @@
-import { readdir } from "node:fs/promises"
 import { relative } from "node:path"
 import { z } from "zod"
-import { UserError } from "./user-error.ts"
-
-export async function readText(
-    projectRoot: string,
-    path: string,
-): Promise<string> {
-    const file = Bun.file(path)
-    if (!(await file.exists())) {
-        throw new UserError(`Missing file: ${relative(projectRoot, path)}`)
-    }
-    return file.text()
-}
+import { UserError } from "../user-error.ts"
+import { readText } from "./read-text-file.ts"
 
 export async function readConfig<T>(
     projectRoot: string,
@@ -41,19 +30,4 @@ function parseJson(text: string, displayPath: string): unknown {
         }
         throw error
     }
-}
-
-export async function listSubdirectories(dir: string): Promise<string[]> {
-    const entries = await readdir(dir, { withFileTypes: true }).catch(
-        (error: NodeJS.ErrnoException) => {
-            if (error.code === "ENOENT") {
-                return []
-            }
-            throw error
-        },
-    )
-    return entries
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => entry.name)
-        .sort()
 }

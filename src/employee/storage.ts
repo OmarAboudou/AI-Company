@@ -1,8 +1,9 @@
 import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
-import { listSubdirectories, readConfig } from "../files.ts"
+import { llmcoDir } from "../files/get-llmco-folder-path.ts"
+import { listSubdirectories } from "../files/list-subdirectories.ts"
+import { readConfig } from "../files/read-json-file.ts"
 import { loadIdHistory, saveIdHistory } from "../id-history.ts"
-import { llmcoDir } from "../project.ts"
 import { type Employee, EmployeeConfigSchema } from "./employee.ts"
 
 function employeesDir(projectRoot: string): string {
