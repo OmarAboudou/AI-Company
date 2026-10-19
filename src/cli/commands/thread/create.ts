@@ -1,9 +1,11 @@
 import type { Command } from "@commander-js/extra-typings"
 import { createThread } from "../../../messaging/thread/create-thread.ts"
 import { answerMentions } from "../../../work/answer-mentions.ts"
-import { createAsPositionOption } from "../../create-as-position-option.ts"
-import { createBodyFileOption } from "../../create-body-file-option.ts"
-import { createBodyOption } from "../../create-body-option.ts"
+import {
+    createAsPositionOption,
+    createBodyFileOption,
+    createBodyOption,
+} from "../../options.ts"
 import { printAnswerEvent } from "../../print-answer-event.ts"
 import { printUnknownMentions } from "../../print-unknown-mentions.ts"
 import { projectRoot } from "../../project-root.ts"

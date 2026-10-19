@@ -1,6 +1,6 @@
 import type { Command } from "@commander-js/extra-typings"
 import { updateCompany } from "../../../organization/company/update-company.ts"
-import { createDescriptionFileOption } from "../../create-description-file-option.ts"
+import { createDescriptionFileOption } from "../../options.ts"
 import { projectRoot } from "../../project-root.ts"
 import { readTextOrFile } from "../../read-text-or-file.ts"
 import { requireAtLeastOneOption } from "../../require-at-least-one-option.ts"

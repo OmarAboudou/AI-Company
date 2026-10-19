@@ -1,6 +1,6 @@
 import type { Command } from "@commander-js/extra-typings"
 import { createCompany } from "../../organization/company/create-company.ts"
-import { createDescriptionFileOption } from "../create-description-file-option.ts"
+import { createDescriptionFileOption } from "../options.ts"
 import { projectRoot } from "../project-root.ts"
 import { readTextOrFile } from "../read-text-or-file.ts"
 import { requireDirector } from "../require-director.ts"

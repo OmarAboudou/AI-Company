@@ -1,7 +1,7 @@
 import type { Command } from "@commander-js/extra-typings"
 import { createPosition } from "../../../organization/position/create-position.ts"
-import { createDescriptionFileOption } from "../../create-description-file-option.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
+import { createDescriptionFileOption } from "../../options.ts"
 import { projectRoot } from "../../project-root.ts"
 import { readTextOrFile } from "../../read-text-or-file.ts"
 import { requireDirector } from "../../require-director.ts"
