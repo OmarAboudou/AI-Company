@@ -1,11 +1,11 @@
 import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
-import { llmcoDir } from "../files/get-llmco-folder-path.ts"
-import { stateDir } from "../files/get-state-folder-path.ts"
+import { getLlmcoFolderPath } from "../files/get-llmco-folder-path.ts"
+import { getStateFolderPath } from "../files/get-state-folder-path.ts"
 import { listSubdirectories } from "../files/list-subdirectories.ts"
-import { readConfig } from "../files/read-json-file.ts"
-import { readText } from "../files/read-text-file.ts"
-import { writeState } from "../files/save-state.ts"
+import { readJsonFile } from "../files/read-json-file.ts"
+import { readTextFile } from "../files/read-text-file.ts"
+import { saveState } from "../files/save-state.ts"
 import { loadIdHistory, saveIdHistory } from "../id-history.ts"
 import {
     type Position,
@@ -15,7 +15,7 @@ import {
 } from "./position.ts"
 
 function positionsDir(projectRoot: string): string {
-    return join(llmcoDir(projectRoot), "positions")
+    return join(getLlmcoFolderPath(projectRoot), "positions")
 }
 
 function positionDir(projectRoot: string, id: string): string {
@@ -32,7 +32,7 @@ function positionPaths(projectRoot: string, id: string) {
 }
 
 function positionStatePath(projectRoot: string, id: string): string {
-    return join(stateDir(projectRoot), "positions", `${id}.json`)
+    return join(getStateFolderPath(projectRoot), "positions", `${id}.json`)
 }
 
 export async function positionExists(
@@ -48,8 +48,8 @@ export async function loadPosition(
 ): Promise<Position> {
     const paths = positionPaths(projectRoot, id)
     const [config, description, history] = await Promise.all([
-        readConfig(projectRoot, paths.config, PositionConfigSchema),
-        readText(projectRoot, paths.description),
+        readJsonFile(projectRoot, paths.config, PositionConfigSchema),
+        readTextFile(projectRoot, paths.description),
         loadIdHistory(projectRoot, paths.history),
     ])
     return { id, ...config, ...history, description }
@@ -100,7 +100,7 @@ export async function loadPositionState(
     if (!(await Bun.file(path).exists())) {
         return {}
     }
-    return readConfig(projectRoot, path, PositionStateSchema)
+    return readJsonFile(projectRoot, path, PositionStateSchema)
 }
 
 export async function savePositionState(
@@ -112,7 +112,7 @@ export async function savePositionState(
         await deletePositionState(projectRoot, id)
         return
     }
-    await writeState(projectRoot, positionStatePath(projectRoot, id), state)
+    await saveState(projectRoot, positionStatePath(projectRoot, id), state)
 }
 
 export async function deletePositionState(

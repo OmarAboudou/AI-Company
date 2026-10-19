@@ -1,8 +1,8 @@
 import { randomBytes } from "node:crypto"
 import { join } from "node:path"
 import { listSubdirectories } from "../files/list-subdirectories.ts"
-import { readConfig } from "../files/read-json-file.ts"
-import { readText } from "../files/read-text-file.ts"
+import { readJsonFile } from "../files/read-json-file.ts"
+import { readTextFile } from "../files/read-text-file.ts"
 import { threadDir } from "../thread/storage.ts"
 import {
     type Message,
@@ -31,8 +31,8 @@ async function loadMessage(
 ): Promise<Message> {
     const paths = messagePaths(projectRoot, threadId, id)
     const [config, body] = await Promise.all([
-        readConfig(projectRoot, paths.config, MessageConfigSchema),
-        readText(projectRoot, paths.body),
+        readJsonFile(projectRoot, paths.config, MessageConfigSchema),
+        readTextFile(projectRoot, paths.body),
     ])
     return { threadId, id, ...config, body }
 }
@@ -76,7 +76,7 @@ export async function loadResponse(
     if (!(await Bun.file(path).exists())) {
         return undefined
     }
-    return readConfig(projectRoot, path, ProviderResponseSchema)
+    return readJsonFile(projectRoot, path, ProviderResponseSchema)
 }
 
 export function newMessageId(sentAt: string): string {

@@ -3,7 +3,7 @@ import { z } from "zod"
 import { companyExists } from "./company/storage.ts"
 import type { Employee } from "./employee/employee.ts"
 import { employeeExists, loadEmployee } from "./employee/storage.ts"
-import { readText } from "./files/read-text-file.ts"
+import { readTextFile } from "./files/read-text-file.ts"
 import { IdSchema } from "./id.ts"
 import type { LlmModel } from "./llm-model/llm-model.ts"
 import { llmModelExists, loadLlmModel } from "./llm-model/storage.ts"
@@ -42,7 +42,7 @@ export async function readTextOrFile<Text extends string | undefined>(
     if (file === "-") {
         return Bun.stdin.text()
     }
-    return readText(projectRoot, file)
+    return readTextFile(projectRoot, file)
 }
 
 export function requireAnOption(options: object): void {

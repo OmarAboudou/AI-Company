@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { readConfig } from "./files/read-json-file.ts"
+import { readJsonFile } from "./files/read-json-file.ts"
 import { IdSchema } from "./id.ts"
 
 export const IdHistorySchema = z
@@ -38,7 +38,7 @@ export async function loadIdHistory(
     if (!(await Bun.file(path).exists())) {
         return {}
     }
-    return readConfig(projectRoot, path, IdHistorySchema)
+    return readJsonFile(projectRoot, path, IdHistorySchema)
 }
 
 export async function saveIdHistory(
