@@ -1,6 +1,6 @@
 import type { Command } from "@commander-js/extra-typings"
 import {
-    type PositionUnassignment,
+    type UnassignPositionResult,
     unassignPosition,
 } from "../../../organization/position/unassign-position.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
@@ -12,7 +12,7 @@ function formatUnassignedMessage({
     positionId,
     previousEmployeeId,
     temporaryAssignment,
-}: PositionUnassignment): string {
+}: UnassignPositionResult): string {
     if (previousEmployeeId === undefined) {
         return `Position "${positionId}" is already vacant.`
     }

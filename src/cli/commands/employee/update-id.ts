@@ -1,6 +1,6 @@
 import type { Command } from "@commander-js/extra-typings"
 import {
-    type EmployeeRenaming,
+    type UpdateEmployeeIdResult,
     updateEmployeeId,
 } from "../../../organization/employee/update-employee-id.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
@@ -14,7 +14,7 @@ function formatRenamedMessage({
     renamedEmployee,
     filledPositionIds,
     temporarilyWorkedPositionIds,
-}: EmployeeRenaming): string {
+}: UpdateEmployeeIdResult): string {
     const updatedPositionIds = [
         ...filledPositionIds,
         ...temporarilyWorkedPositionIds.map((id) => `${id} (temporarily)`),

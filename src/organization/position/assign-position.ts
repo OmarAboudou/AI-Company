@@ -11,7 +11,7 @@ import {
     savePositionState,
 } from "./storage.ts"
 
-export type PositionAssignment = {
+export type AssignPositionResult = {
     positionId: string
     employeeId: string
     previousEmployeeId: string | undefined
@@ -24,7 +24,7 @@ export async function assignPosition(
     rawPositionId: string,
     rawEmployeeId: string,
     { shouldReplace = false }: { shouldReplace?: boolean } = {},
-): Promise<PositionAssignment> {
+): Promise<AssignPositionResult> {
     await requireCompany(projectRoot)
     const [position, employee, company, state] = await Promise.all([
         loadExistingPosition(projectRoot, rawPositionId),

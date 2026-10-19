@@ -19,7 +19,7 @@ import {
     saveEmployee,
 } from "./storage.ts"
 
-export type EmployeeRenaming = {
+export type UpdateEmployeeIdResult = {
     employee: Employee
     renamedEmployee: Employee
     filledPositionIds: string[]
@@ -31,7 +31,7 @@ export async function updateEmployeeId(
     rawId: string,
     rawNewId: string,
     { shouldReuseId = false }: { shouldReuseId?: boolean } = {},
-): Promise<EmployeeRenaming> {
+): Promise<UpdateEmployeeIdResult> {
     await requireCompany(projectRoot)
     const newId = parseId("employee", rawNewId)
     const [employee, isTaken, positions] = await Promise.all([

@@ -32,6 +32,7 @@ A name says what its value is, so that code reads at first sight. The code is be
 - **Booleans** read as assertions: `isConfirmed`, `hasTemporaryAssignment`, `shouldReplace`. An option read from the command line is renamed where it is destructured: `{ replace: shouldReplace }`.
 - **Texts** say they are texts: `assignedMessage`, `refusalMessage`.
 - **Collections** are plural and say what they hold: `filledPositions`, `keptPositionIds`.
+- **What an operation returns**, beyond the entity it saves, has a type named after the operation: `deletePosition` returns a `DeletePositionResult`.
 - No articles (`getAwaitedPositionIds`, not `getTheAwaitedPositionIds`), and no vague names such as `data`, `info`, `back` or `done`.
 
 ## Where knowledge lives

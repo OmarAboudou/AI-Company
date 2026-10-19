@@ -15,11 +15,16 @@ import {
     savePositionState,
 } from "./storage.ts"
 
+export type UpdatePositionIdResult = {
+    position: Position
+    renamedPosition: Position
+}
+
 export async function updatePositionId(
     projectRoot: string,
     rawId: string,
     rawNewId: string,
-): Promise<{ position: Position; renamedPosition: Position }> {
+): Promise<UpdatePositionIdResult> {
     await requireCompany(projectRoot)
     const newId = parseId("position", rawNewId)
     const [position, isTaken, company, state] = await Promise.all([

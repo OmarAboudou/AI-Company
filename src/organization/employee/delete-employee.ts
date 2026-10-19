@@ -11,7 +11,7 @@ import { loadExistingEmployee } from "./load-existing-employee.ts"
 import type { Employee } from "./schema.ts"
 import { deleteEmployeeFolder } from "./storage.ts"
 
-export type EmployeeDeletion = {
+export type DeleteEmployeeResult = {
     employee: Employee
     vacatedPositionIds: string[]
     endedTemporaryPositionIds: string[]
@@ -21,7 +21,7 @@ export async function deleteEmployee(
     projectRoot: string,
     rawId: string,
     { shouldForce = false }: { shouldForce?: boolean } = {},
-): Promise<EmployeeDeletion> {
+): Promise<DeleteEmployeeResult> {
     await requireCompany(projectRoot)
     const [employee, positions] = await Promise.all([
         loadExistingEmployee(projectRoot, rawId),
