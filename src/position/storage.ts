@@ -105,10 +105,16 @@ export async function savePositionState(
     id: string,
     state: PositionState,
 ): Promise<void> {
-    const path = positionStatePath(projectRoot, id)
     if (Object.values(state).every((value) => value === undefined)) {
-        await rm(path, { force: true })
+        await deletePositionState(projectRoot, id)
         return
     }
-    await writeState(projectRoot, path, state)
+    await writeState(projectRoot, positionStatePath(projectRoot, id), state)
+}
+
+export async function deletePositionState(
+    projectRoot: string,
+    id: string,
+): Promise<void> {
+    await rm(positionStatePath(projectRoot, id), { force: true })
 }

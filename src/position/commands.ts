@@ -28,6 +28,7 @@ import {
 import {
     copyPosition,
     deletePosition,
+    deletePositionState,
     listPositions,
     loadPositionState,
     positionExists,
@@ -168,12 +169,16 @@ export function registerPositionCommands(program: Command): void {
             if (!config.success) {
                 throw new UserError(z.prettifyError(config.error))
             }
-            await savePosition(projectRoot, {
-                id,
-                ...config.data,
-                createdAt: new Date().toISOString(),
-                description: await readTextOrFile(description, descriptionFile),
-            })
+            const text = await readTextOrFile(description, descriptionFile)
+            await Promise.all([
+                savePosition(projectRoot, {
+                    id,
+                    ...config.data,
+                    createdAt: new Date().toISOString(),
+                    description: text,
+                }),
+                deletePositionState(projectRoot, id),
+            ])
             console.log(`Created position "${id}".`)
         })
 
@@ -290,10 +295,11 @@ export function registerPositionCommands(program: Command): void {
         .action(async (rawId, rawNewId) => {
             await requireCompany()
             const newId = parseId("position", rawNewId)
-            const [position, taken, company] = await Promise.all([
+            const [position, taken, company, state] = await Promise.all([
                 loadExistingPosition(rawId),
                 positionExists(projectRoot, newId),
                 loadCompany(projectRoot),
+                loadPositionState(projectRoot, parseId("position", rawId)),
             ])
             if (taken) {
                 throw new UserError(`Position "${newId}" already exists.`)
@@ -301,17 +307,23 @@ export function registerPositionCommands(program: Command): void {
             // Copy, repoint, then delete rather than move, as for employees:
             // the company must never name a missing director's position.
             await copyPosition(projectRoot, position.id, newId)
-            await savePosition(
-                projectRoot,
-                withNewId(position, newId, new Date().toISOString()),
-            )
+            await Promise.all([
+                savePosition(
+                    projectRoot,
+                    withNewId(position, newId, new Date().toISOString()),
+                ),
+                savePositionState(projectRoot, newId, state),
+            ])
             if (company.directorPositionId === position.id) {
                 await saveCompany(projectRoot, {
                     ...company,
                     directorPositionId: newId,
                 })
             }
-            await deletePosition(projectRoot, position.id)
+            await Promise.all([
+                deletePosition(projectRoot, position.id),
+                deletePositionState(projectRoot, position.id),
+            ])
             console.log(`Position "${position.id}" is now "${newId}".`)
         })
 
@@ -496,7 +508,10 @@ export function registerPositionCommands(program: Command): void {
                     `Position "${position.id}" is awaited in these threads: ${awaiting}. Add --force to delete it anyway; they will keep awaiting it.`,
                 )
             }
-            await deletePosition(projectRoot, position.id)
+            await Promise.all([
+                deletePosition(projectRoot, position.id),
+                deletePositionState(projectRoot, position.id),
+            ])
             const deleted =
                 position.defaultEmployeeId === undefined
                     ? `Deleted position "${position.id}"`
