@@ -1,6 +1,6 @@
 # Architecture
 
-The rules that decide where code goes and how big it grows. They never list the files: the tree shows them.
+The rules that decide where code and documentation go, and how big they grow. They never list the files: the tree shows them.
 
 The code is being reorganized to follow these rules (#86).
 
@@ -41,3 +41,8 @@ The code is being reorganized to follow these rules (#86).
 - Only `src/cli/` imports commander, and nothing outside `src/cli/` imports from it.
 - The core receives the project's root as a parameter: only `src/cli/` knows the current directory.
 - No module imports a module that imports it back, directly or not.
+
+## Documentation
+
+- Documents live in `docs/`, except `README.md` and `AGENTS.md`, which GitHub and coding agents look for at the root.
+- A document holds what is read together, such as these rules, which apply to every change. Beyond 300 lines, it splits by topic. A document whose parts are read separately, such as one page per command group, is split from the start.
