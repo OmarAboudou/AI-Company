@@ -5,8 +5,8 @@ import { registerHumanCommands } from "../human/commands.ts"
 import { registerLlmModelCommands } from "../llm-model/commands.ts"
 import { registerLlmProviderCommands } from "../llm-provider/commands.ts"
 import { registerMessageCommands } from "../message/commands.ts"
-import { registerPositionCommands } from "../position/commands.ts"
 import { registerThreadCommands } from "../thread/commands.ts"
+import { registerPositionCommands } from "./commands/position/position.ts"
 
 export function createProgram(): Command {
     const program = new Command()
