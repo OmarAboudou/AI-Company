@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { type PromptContext, systemPrompt } from "./system-prompt.ts"
+import { type PromptContext, systemPrompt } from "./build-system-prompt.ts"
 
 const context: PromptContext = {
     company: {

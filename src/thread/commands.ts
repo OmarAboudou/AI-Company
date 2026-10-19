@@ -5,7 +5,6 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { loadExistingThread } from "../cli-helpers.ts"
 import { formatDateTime } from "../format-date-time.ts"
-import { answerMentions } from "../llm/reply.ts"
 import {
     asPositionOption,
     bodyFileOption,
@@ -27,6 +26,7 @@ import { saveThread } from "../messaging/thread/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
 import { listPositions } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
+import { answerMentions } from "../work/answer-mentions.ts"
 
 function signature(author: Author): string {
     const { position } = author
