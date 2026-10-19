@@ -5,23 +5,15 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { parseId } from "../ids/parse-id.ts"
 import { protocols } from "../llm/connection/schema.ts"
 import { createLlmModel } from "../llm/model/create-llm-model.ts"
 import { loadExistingLlmModel } from "../llm/model/load-existing-llm-model.ts"
-import {
-    copyLlmModelFolder,
-    deleteLlmModelFolder,
-    hasLlmModel,
-    listLlmModels,
-} from "../llm/model/storage.ts"
+import { deleteLlmModelFolder, listLlmModels } from "../llm/model/storage.ts"
 import { updateLlmModel } from "../llm/model/update-llm-model.ts"
+import { updateLlmModelId } from "../llm/model/update-llm-model-id.ts"
 import { listLlmProviders } from "../llm/provider/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
-import {
-    listEmployees,
-    saveEmployee,
-} from "../organization/employee/storage.ts"
+import { listEmployees } from "../organization/employee/storage.ts"
 import { UserError } from "../user-error.ts"
 
 function protocolOption() {
@@ -171,43 +163,18 @@ export function registerLlmModelCommands(program: Command): void {
         )
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, rawNewId) => {
-            await requireCompany(projectRoot)
-            const [model, employees] = await Promise.all([
-                loadExistingLlmModel(projectRoot, rawProviderId, rawModelId),
-                listEmployees(projectRoot),
-            ])
-            const newId = parseId("model", rawNewId)
-            if (await hasLlmModel(projectRoot, model.providerId, newId)) {
-                throw new UserError(
-                    `Provider "${model.providerId}" already has a model "${newId}".`,
+            const { model, renamedModel, updatedEmployeeIds } =
+                await updateLlmModelId(
+                    projectRoot,
+                    rawProviderId,
+                    rawModelId,
+                    rawNewId,
                 )
-            }
-            const users = employees
-                .filter((employee) => employee.kind === "llm")
-                .filter(
-                    (employee) =>
-                        employee.providerId === model.providerId &&
-                        employee.modelId === model.id,
-                )
-            // Copy, repoint, then delete rather than move, as for employees:
-            // an employee must never run on a missing model.
-            await copyLlmModelFolder(
-                projectRoot,
-                model.providerId,
-                model.id,
-                newId,
-            )
-            await Promise.all(
-                users.map((employee) =>
-                    saveEmployee(projectRoot, { ...employee, modelId: newId }),
-                ),
-            )
-            await deleteLlmModelFolder(projectRoot, model.providerId, model.id)
-            const renamed = `Model "${model.id}" of provider "${model.providerId}" is now "${newId}"`
+            const renamedMessage = `Model "${model.id}" of provider "${model.providerId}" is now "${renamedModel.id}"`
             console.log(
-                users.length === 0
-                    ? `${renamed}.`
-                    : `${renamed}; updated employees: ${users.map(({ id }) => id).join(", ")}.`,
+                updatedEmployeeIds.length === 0
+                    ? `${renamedMessage}.`
+                    : `${renamedMessage}; updated employees: ${updatedEmployeeIds.join(", ")}.`,
             )
         })
 
