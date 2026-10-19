@@ -19,7 +19,12 @@ import { UserError } from "../errors.ts"
 import { withNewId } from "../id-history.ts"
 import { readArchives } from "../thread/archives.ts"
 import { awaitedIds } from "../thread/members.ts"
-import { PositionConfigSchema, type Worker } from "./position.ts"
+import {
+    type Position,
+    PositionConfigSchema,
+    type PositionState,
+    type Worker,
+} from "./position.ts"
 import {
     copyPosition,
     deletePosition,
@@ -36,8 +41,32 @@ function workerName(assignment: Worker): string {
         : `"${assignment.employeeId}"`
 }
 
-function temporaryHolder(assignment: Worker, directors: string): string {
-    return assignment.kind === "directors" ? directors : assignment.employeeId
+function currentEmployeeInList(
+    { defaultEmployeeId }: Position,
+    { temporaryAssignment }: PositionState,
+): string {
+    if (temporaryAssignment === undefined) {
+        return defaultEmployeeId ?? "(vacant)"
+    }
+    const temporarily =
+        defaultEmployeeId === undefined
+            ? "temporarily"
+            : `temporarily; default: ${defaultEmployeeId}`
+    return temporaryAssignment.kind === "directors"
+        ? `(git users, ${temporarily})`
+        : `${temporaryAssignment.employeeId} (${temporarily})`
+}
+
+function currentEmployeeInShow(
+    { defaultEmployeeId }: Position,
+    temporaryAssignment: Worker | undefined,
+): string {
+    if (temporaryAssignment === undefined) {
+        return defaultEmployeeId ?? "(vacant)"
+    }
+    return temporaryAssignment.kind === "directors"
+        ? "the repository's git users (temporarily)"
+        : `${temporaryAssignment.employeeId} (temporarily)`
 }
 
 function replaceTemporaryOption() {
@@ -151,7 +180,7 @@ export function registerPositionCommands(program: Command): void {
     positionCommand
         .command("list")
         .description(
-            "List the positions, their default employees and their temporary assignments.",
+            "List the positions and who works each now: its default employee, or whoever it is assigned to temporarily.",
         )
         .action(async () => {
             await requireCompany()
@@ -160,24 +189,16 @@ export function registerPositionCommands(program: Command): void {
                 loadCompany(projectRoot),
             ])
             const rows = await Promise.all(
-                positions.map(async ({ id, title, defaultEmployeeId }) => {
-                    const row = [
-                        id,
-                        title,
-                        id === company.directorPositionId
-                            ? "(git users)"
-                            : (defaultEmployeeId ?? "(vacant)"),
-                    ]
-                    const { temporaryAssignment } = await loadPositionState(
+                positions.map(async (position) => {
+                    const state = await loadPositionState(
                         projectRoot,
-                        id,
+                        position.id,
                     )
-                    return temporaryAssignment === undefined
-                        ? row
-                        : [
-                              ...row,
-                              `temporarily: ${temporaryHolder(temporaryAssignment, "(git users)")}`,
-                          ]
+                    const current =
+                        position.id === company.directorPositionId
+                            ? "(git users)"
+                            : currentEmployeeInList(position, state)
+                    return [position.id, position.title, current]
                 }),
             )
             printColumns(rows)
@@ -186,7 +207,7 @@ export function registerPositionCommands(program: Command): void {
     positionCommand
         .command("show")
         .description(
-            "Display a position: title, default employee, temporary assignment and description.",
+            "Display a position: title, current and default employees, and description.",
         )
         .argument(
             "<position-id>",
@@ -200,16 +221,13 @@ export function registerPositionCommands(program: Command): void {
                     loadCompany(projectRoot),
                     loadPositionState(projectRoot, parseId("position", rawId)),
                 ])
-            const holders = [
+            const holders =
                 position.id === company.directorPositionId
-                    ? "held by: the repository's git users"
-                    : `default employee: ${position.defaultEmployeeId ?? "(vacant)"}`,
-            ]
-            if (temporaryAssignment !== undefined) {
-                holders.push(
-                    `temporarily worked by: ${temporaryHolder(temporaryAssignment, "the repository's git users")}`,
-                )
-            }
+                    ? ["held by: the repository's git users"]
+                    : [
+                          `current employee: ${currentEmployeeInShow(position, temporaryAssignment)}`,
+                          `default employee: ${position.defaultEmployeeId ?? "(none)"}`,
+                      ]
             console.log(
                 `# ${position.title}\n\n${holders.join("\n")}\n\n${position.description}`,
             )
