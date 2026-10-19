@@ -6,8 +6,6 @@ import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
 import { requireCompany } from "../company/require-company.ts"
-import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
-import { parseId } from "../ids/parse-id.ts"
 import { createEmployee } from "../organization/employee/create-employee.ts"
 import { getPositionsFilledBy } from "../organization/employee/get-positions-filled-by.ts"
 import {
@@ -15,15 +13,15 @@ import {
     type TemporaryPosition,
 } from "../organization/employee/list-positions-worked-temporarily-by.ts"
 import { loadExistingEmployee } from "../organization/employee/load-existing-employee.ts"
-import { requireUnusedEmployeeId } from "../organization/employee/require-unused-employee-id.ts"
 import {
-    copyEmployeeFolder,
     deleteEmployeeFolder,
-    hasEmployee,
     listEmployees,
-    saveEmployee,
 } from "../organization/employee/storage.ts"
 import { updateEmployee } from "../organization/employee/update-employee.ts"
+import {
+    type EmployeeRenaming,
+    updateEmployeeId,
+} from "../organization/employee/update-employee-id.ts"
 import type { Position } from "../organization/position/schema.ts"
 import {
     listPositions,
@@ -35,6 +33,22 @@ import { UserError } from "../user-error.ts"
 function positionsFilledBy(positions: Position[], employeeId: string): string {
     const ids = getPositionsFilledBy(positions, employeeId).map(({ id }) => id)
     return ids.length > 0 ? ids.join(", ") : "(none)"
+}
+
+function formatRenamedMessage({
+    employee,
+    renamedEmployee,
+    filledPositionIds,
+    temporarilyWorkedPositionIds,
+}: EmployeeRenaming): string {
+    const updatedPositionIds = [
+        ...filledPositionIds,
+        ...temporarilyWorkedPositionIds.map((id) => `${id} (temporarily)`),
+    ]
+    const renamedMessage = `Employee "${employee.id}" is now "${renamedEmployee.id}"`
+    return updatedPositionIds.length === 0
+        ? `${renamedMessage}.`
+        : `${renamedMessage}; updated positions: ${updatedPositionIds.join(", ")}.`
 }
 
 function reuseIdOption() {
@@ -205,66 +219,13 @@ export function registerEmployeeCommands(program: Command): void {
         .addOption(reuseIdOption())
         .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId, { reuseId }) => {
-            await requireCompany(projectRoot)
-            const newId = parseId("employee", rawNewId)
-            const [employee, taken, positions] = await Promise.all([
-                loadExistingEmployee(projectRoot, rawId),
-                hasEmployee(projectRoot, newId),
-                listPositions(projectRoot),
-            ])
-            if (taken) {
-                throw new UserError(`Employee "${newId}" already exists.`)
-            }
-            const [, temporary] = await Promise.all([
-                requireUnusedEmployeeId(projectRoot, newId, {
-                    shouldReuseId: reuseId,
-                    renamedEmployee: employee,
-                }),
-                listPositionsWorkedTemporarilyBy(
-                    projectRoot,
-                    positions,
-                    employee.id,
-                ),
-            ])
-            const filled = getPositionsFilledBy(positions, employee.id)
-            // Copy, repoint, then delete rather than move, so that an
-            // interrupted command never leaves a position naming a missing
-            // employee: at worst, the employee exists twice.
-            await copyEmployeeFolder(projectRoot, employee.id, newId)
-            await saveEmployee(
+            const renaming = await updateEmployeeId(
                 projectRoot,
-                getRenamedEntity(employee, newId, new Date().toISOString()),
+                rawId,
+                rawNewId,
+                { shouldReuseId: reuseId },
             )
-            await Promise.all([
-                ...filled.map((position) =>
-                    savePosition(projectRoot, {
-                        ...position,
-                        defaultEmployeeId: newId,
-                    }),
-                ),
-                ...temporary.map(({ position, state }) =>
-                    savePositionState(projectRoot, position.id, {
-                        ...state,
-                        temporaryAssignment: {
-                            kind: "employee",
-                            employeeId: newId,
-                        },
-                    }),
-                ),
-            ])
-            await deleteEmployeeFolder(projectRoot, employee.id)
-            const updated = [
-                ...filled.map(({ id }) => id),
-                ...temporary.map(
-                    ({ position }) => `${position.id} (temporarily)`,
-                ),
-            ]
-            const renamed = `Employee "${employee.id}" is now "${newId}"`
-            console.log(
-                updated.length === 0
-                    ? `${renamed}.`
-                    : `${renamed}; updated positions: ${updated.join(", ")}.`,
-            )
+            console.log(formatRenamedMessage(renaming))
         })
 
     employeeCommand
