@@ -1,7 +1,7 @@
 import type { Command } from "@commander-js/extra-typings"
 import { projectRoot, requireCompany } from "../cli-helpers.ts"
 import { loadCompany } from "../company/storage.ts"
-import { committer } from "../git/read-git-committer.ts"
+import { readGitCommitter } from "../git/read-git-committer.ts"
 import { listPositions } from "../position/storage.ts"
 import { currentHuman, positionsWorkedBy } from "./current-human.ts"
 
@@ -23,7 +23,7 @@ export function registerHumanCommands(program: Command): void {
                 positions,
                 company.directorPositionId,
             )
-            const { name, email } = committer(projectRoot)
+            const { name, email } = readGitCommitter(projectRoot)
             const who =
                 human.kind === "director"
                     ? `${name}, a director`
