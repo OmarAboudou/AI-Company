@@ -6,27 +6,27 @@ import { join } from "node:path"
 const biomePath = join(import.meta.dir, "..", "node_modules", ".bin", "biome")
 const pluginPath = join(import.meta.dir, "require-async.grit")
 
-let dir: string
+let sampleFolderPath: string
 
 beforeAll(async () => {
-    dir = await mkdtemp(join(tmpdir(), "llmco-lint-"))
+    sampleFolderPath = await mkdtemp(join(tmpdir(), "llmco-lint-"))
     await Bun.write(
-        join(dir, "biome.json"),
+        join(sampleFolderPath, "biome.json"),
         JSON.stringify({ plugins: [pluginPath] }),
     )
 })
 
 afterAll(async () => {
-    await rm(dir, { recursive: true, force: true })
+    await rm(sampleFolderPath, { recursive: true, force: true })
 })
 
 async function isReported(code: string): Promise<boolean> {
-    await Bun.write(join(dir, "sample.ts"), code)
-    const result = Bun.spawnSync(
+    await Bun.write(join(sampleFolderPath, "sample.ts"), code)
+    const lintProcess = Bun.spawnSync(
         [biomePath, "lint", "--only=plugin", "--reporter=json", "sample.ts"],
-        { cwd: dir },
+        { cwd: sampleFolderPath },
     )
-    return JSON.parse(result.stdout.toString()).diagnostics.length > 0
+    return JSON.parse(lintProcess.stdout.toString()).diagnostics.length > 0
 }
 
 describe("require-async", () => {

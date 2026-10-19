@@ -29,20 +29,20 @@ describe("listCrowdedFolders", () => {
         await rm(folderPath, { recursive: true, force: true })
     })
 
-    async function createFiles(subfolder: string, fileNames: string[]) {
+    async function createFiles(subfolderPath: string, fileNames: string[]) {
         await Promise.all(
             fileNames.map((fileName) =>
-                Bun.write(join(folderPath, subfolder, fileName), ""),
+                Bun.write(join(folderPath, subfolderPath, fileName), ""),
             ),
         )
     }
 
-    function listFileNames(count: number): string[] {
+    function createFileNames(count: number): string[] {
         return Array.from({ length: count }, (_, index) => `file-${index}.ts`)
     }
 
     test("lists a folder of more than 15 files and subfolders", async () => {
-        await createFiles("", listFileNames(14))
+        await createFiles("", createFileNames(14))
         await createFiles("subfolder", ["file.ts"])
         const before = await listCrowdedFolders(folderPath)
         await createFiles("", ["one-more.ts"])
@@ -55,7 +55,7 @@ describe("listCrowdedFolders", () => {
 
     test("doesn't count the tests nor the file named after the folder", async () => {
         const eponymousFileName = `${basename(folderPath)}.ts`
-        await createFiles("", [...listFileNames(15), "file-0.test.ts"])
+        await createFiles("", [...createFileNames(15), "file-0.test.ts"])
         await createFiles("", [eponymousFileName])
 
         const crowdedFolders = await listCrowdedFolders(folderPath)
@@ -65,7 +65,7 @@ describe("listCrowdedFolders", () => {
     })
 
     test("looks into every subfolder", async () => {
-        await createFiles("commands/thread", listFileNames(16))
+        await createFiles("commands/thread", createFileNames(16))
 
         const crowdedFolders = await listCrowdedFolders(folderPath)
 

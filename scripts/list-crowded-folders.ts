@@ -24,10 +24,10 @@ export async function listCrowdedFolders(
     const subfolderPaths = entries
         .filter((entry) => entry.isDirectory())
         .map((entry) => join(folderPath, entry.name))
-    const crowdedSubfolders = await Promise.all(
+    const crowdedFoldersBySubfolder = await Promise.all(
         subfolderPaths.map(listCrowdedFolders),
     )
-    const crowdedFolders = crowdedSubfolders.flat()
+    const crowdedFolders = crowdedFoldersBySubfolder.flat()
     return sourceEntryCount > maxSourceEntryCount
         ? [{ path: folderPath, sourceEntryCount }, ...crowdedFolders]
         : crowdedFolders
