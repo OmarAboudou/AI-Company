@@ -1,9 +1,8 @@
-import { z } from "zod"
 import { projectRoot } from "./cli/project-root.ts"
 import { companyExists } from "./company/storage.ts"
 import type { Employee } from "./employee/employee.ts"
 import { employeeExists, loadEmployee } from "./employee/storage.ts"
-import { IdSchema } from "./ids/id-schema.ts"
+import { parseId } from "./ids/parse-id.ts"
 import type { LlmModel } from "./llm-model/llm-model.ts"
 import { llmModelExists, loadLlmModel } from "./llm-model/storage.ts"
 import type { LlmProvider } from "./llm-provider/llm-provider.ts"
@@ -28,16 +27,6 @@ export function withoutUndefined<Values extends object>(
     return Object.fromEntries(
         Object.entries(values).filter(([, value]) => value !== undefined),
     ) as Partial<Values>
-}
-
-export function parseId(entity: string, id: string): string {
-    const result = IdSchema.safeParse(id)
-    if (!result.success) {
-        throw new UserError(
-            `Invalid ${entity} id "${id}".\n${z.prettifyError(result.error)}`,
-        )
-    }
-    return result.data
 }
 
 export async function loadExistingPosition(rawId: string): Promise<Position> {

@@ -8,12 +8,12 @@ import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import {
     loadExistingLlmModel,
     loadExistingLlmProvider,
-    parseId,
     requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { listEmployees, saveEmployee } from "../employee/storage.ts"
 import { requireDirector } from "../human/current-human.ts"
+import { parseId } from "../ids/parse-id.ts"
 import { type Protocol, protocols } from "../llm-connection/llm-connection.ts"
 import type { LlmProvider } from "../llm-provider/llm-provider.ts"
 import { listLlmProviders, loadLlmProvider } from "../llm-provider/storage.ts"

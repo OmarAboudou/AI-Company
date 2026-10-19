@@ -10,13 +10,13 @@ import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import {
     loadExistingEmployee,
     loadExistingPosition,
-    parseId,
     requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { loadCompany, saveCompany } from "../company/storage.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
+import { parseId } from "../ids/parse-id.ts"
 import {
     type Position,
     PositionConfigSchema,
