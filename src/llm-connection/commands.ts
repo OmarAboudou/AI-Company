@@ -4,10 +4,8 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { parseId } from "../ids/parse-id.ts"
 import { createLlmConnection } from "../llm/connection/create-llm-connection.ts"
-import { loadLlmProviderWithConnection } from "../llm/connection/load-llm-provider-with-connection.ts"
-import { saveLlmConnections } from "../llm/connection/save-llm-connections.ts"
+import { deleteLlmConnection } from "../llm/connection/delete-llm-connection.ts"
 import {
     authSchemes,
     type Connection,
@@ -16,9 +14,7 @@ import {
 } from "../llm/connection/schema.ts"
 import { updateLlmConnection } from "../llm/connection/update-llm-connection.ts"
 import { listLlmProviders } from "../llm/provider/storage.ts"
-import { listLlmModels } from "../llm-model/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
-import { UserError } from "../user-error.ts"
 
 function protocolArgument() {
     return new Argument(
@@ -141,28 +137,10 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
         .addArgument(protocolArgument())
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol) => {
-            await requireCompany(projectRoot)
-            const [provider, models] = await Promise.all([
-                loadLlmProviderWithConnection(
-                    projectRoot,
-                    rawProviderId,
-                    protocol,
-                ),
-                listLlmModels(projectRoot, parseId("provider", rawProviderId)),
-            ])
-            const users = models.filter((model) => model.protocol === protocol)
-            if (users.length > 0) {
-                throw new UserError(
-                    `The ${protocol} connection of provider "${provider.id}" is used by models ${users.map(({ id }) => id).join(", ")}. Give them another protocol with \`llmco model update -p\`, or delete them, first.`,
-                )
-            }
-            const remaining = Object.entries(provider.connections ?? {}).filter(
-                ([name]) => name !== protocol,
-            )
-            await saveLlmConnections(
+            const provider = await deleteLlmConnection(
                 projectRoot,
-                provider,
-                Object.fromEntries(remaining),
+                rawProviderId,
+                protocol,
             )
             console.log(
                 `Deleted the ${protocol} connection of provider "${provider.id}".`,
