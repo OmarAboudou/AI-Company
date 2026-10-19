@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../cli/use-temporary-project.ts"
-import { useFakeAnthropic } from "./fake-anthropic.ts"
+import { useFakeAnthropic } from "./anthropic-messages/use-fake-anthropic-server.ts"
 
 const { runCli, runCliAsync, projectPath, homePath } = useTemporaryProject()
 
