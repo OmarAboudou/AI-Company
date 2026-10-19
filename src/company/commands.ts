@@ -6,18 +6,11 @@ import { readTextOrFile } from "../cli/read-text-or-file.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
 import { getDefinedValues } from "../get-defined-values.ts"
-import { requireGitRepository } from "../git/require-git-repository.ts"
+import { createCompany } from "../organization/company/create-company.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
 import { CompanyConfigSchema } from "../organization/company/schema.ts"
-import {
-    hasCompany,
-    loadCompany,
-    saveCompany,
-} from "../organization/company/storage.ts"
-import { savePosition } from "../organization/position/storage.ts"
+import { loadCompany, saveCompany } from "../organization/company/storage.ts"
 import { UserError } from "../user-error.ts"
-
-const directorPositionId = "director"
 
 export function registerCompanyCommands(program: Command): void {
     program
@@ -30,34 +23,16 @@ export function registerCompanyCommands(program: Command): void {
         .addOption(createDescriptionFileOption())
         .hook("preAction", requireDirector)
         .action(async (options) => {
-            requireGitRepository(projectRoot)
-            if (await hasCompany(projectRoot)) {
-                throw new UserError(
-                    "A company already exists in this directory.",
-                )
-            }
-            const config = CompanyConfigSchema.safeParse({
-                name: options.name,
-                directorPositionId,
-            })
-            if (!config.success) {
-                throw new UserError(z.prettifyError(config.error))
-            }
             const description = await readTextOrFile(
                 options.description,
                 options.descriptionFile,
             )
-            await savePosition(projectRoot, {
-                id: directorPositionId,
-                title: "Director",
-                createdAt: new Date().toISOString(),
-                description: "",
+            const company = await createCompany(projectRoot, {
+                name: options.name,
+                description,
             })
-            // The company comes last: until its config.json exists, llmco
-            // sees no company, so an interrupted init can be run again.
-            await saveCompany(projectRoot, { ...config.data, description })
             console.log(
-                `Created company "${config.data.name}" and its director's position "${directorPositionId}".`,
+                `Created company "${company.name}" and its director's position "${company.directorPositionId}".`,
             )
         })
 
