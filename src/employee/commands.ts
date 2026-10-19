@@ -14,8 +14,13 @@ import {
 } from "../cli-helpers.ts"
 import { UserError } from "../errors.ts"
 import { withNewId, wrote } from "../id-history.ts"
-import type { Position } from "../position/position.ts"
-import { listPositions, savePosition } from "../position/storage.ts"
+import type { Position, PositionState } from "../position/position.ts"
+import {
+    listPositions,
+    loadPositionState,
+    savePosition,
+    savePositionState,
+} from "../position/storage.ts"
 import { readArchives } from "../thread/archives.ts"
 import {
     type Employee,
@@ -36,6 +41,24 @@ function filledPositions(
 ): Position[] {
     return positions.filter(
         ({ defaultEmployeeId }) => defaultEmployeeId === employeeId,
+    )
+}
+
+type TemporaryPosition = { position: Position; state: PositionState }
+
+async function positionsWorkedTemporarily(
+    positions: Position[],
+    employeeId: string,
+): Promise<TemporaryPosition[]> {
+    const states = await Promise.all(
+        positions.map(async (position) => ({
+            position,
+            state: await loadPositionState(projectRoot, position.id),
+        })),
+    )
+    return states.filter(
+        ({ state: { temporaryAssignment: worker } }) =>
+            worker?.kind === "employee" && worker.employeeId === employeeId,
     )
 }
 
@@ -295,7 +318,10 @@ export function registerEmployeeCommands(program: Command): void {
             if (taken) {
                 throw new UserError(`Employee "${newId}" already exists.`)
             }
-            await requireUnusedId(newId, reuseId, employee)
+            const [, temporary] = await Promise.all([
+                requireUnusedId(newId, reuseId, employee),
+                positionsWorkedTemporarily(positions, employee.id),
+            ])
             const filled = filledPositions(positions, employee.id)
             // Copy, repoint, then delete rather than move, so that an
             // interrupted command never leaves a position naming a missing
@@ -305,20 +331,35 @@ export function registerEmployeeCommands(program: Command): void {
                 projectRoot,
                 withNewId(employee, newId, new Date().toISOString()),
             )
-            await Promise.all(
-                filled.map((position) =>
+            await Promise.all([
+                ...filled.map((position) =>
                     savePosition(projectRoot, {
                         ...position,
                         defaultEmployeeId: newId,
                     }),
                 ),
-            )
+                ...temporary.map(({ position, state }) =>
+                    savePositionState(projectRoot, position.id, {
+                        ...state,
+                        temporaryAssignment: {
+                            kind: "employee",
+                            employeeId: newId,
+                        },
+                    }),
+                ),
+            ])
             await deleteEmployee(projectRoot, employee.id)
+            const updated = [
+                ...filled.map(({ id }) => id),
+                ...temporary.map(
+                    ({ position }) => `${position.id} (temporarily)`,
+                ),
+            ]
             const renamed = `Employee "${employee.id}" is now "${newId}"`
             console.log(
-                filled.length === 0
+                updated.length === 0
                     ? `${renamed}.`
-                    : `${renamed}; updated positions: ${filled.map(({ id }) => id).join(", ")}.`,
+                    : `${renamed}; updated positions: ${updated.join(", ")}.`,
             )
         })
 
