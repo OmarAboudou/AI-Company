@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { useTemporaryProject } from "./cli-test-helpers.ts"
+import { useTemporaryProject } from "./use-temporary-project.ts"
 
 const { runCli } = useTemporaryProject()
 
