@@ -8,13 +8,16 @@ import { readTextOrFile } from "../cli/read-text-or-file.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { loadCompany } from "../company/storage.ts"
-import { loadExistingEmployee } from "../employee/load-existing-employee.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { parseId } from "../ids/parse-id.ts"
 import {
     assignPosition,
     type PositionAssignment,
 } from "../organization/position/assign-position.ts"
+import {
+    assignPositionTemporarily,
+    type TemporaryAssignmentOutcome,
+} from "../organization/position/assign-position-temporarily.ts"
 import { createPosition } from "../organization/position/create-position.ts"
 import { deletePosition } from "../organization/position/delete-position.ts"
 import { formatWorkerName } from "../organization/position/format-worker-name.ts"
@@ -35,7 +38,6 @@ import {
 } from "../organization/position/unassign-position.ts"
 import { updatePosition } from "../organization/position/update-position.ts"
 import { updatePositionId } from "../organization/position/update-position-id.ts"
-import { UserError } from "../user-error.ts"
 
 function stillTemporary(worker: Worker | undefined): string {
     return worker === undefined
@@ -108,66 +110,20 @@ function replaceTemporaryOption() {
     )
 }
 
-type Assignee =
-    | { kind: "employee"; rawEmployeeId: string }
-    | { kind: "directors" }
-
-async function assignTemporarily(
-    rawPositionId: string,
-    assignee: Assignee,
-    replace: boolean | undefined,
-): Promise<void> {
-    await requireCompany(projectRoot)
-    const [position, employee, company, state] = await Promise.all([
-        loadExistingPosition(projectRoot, rawPositionId),
-        assignee.kind === "employee"
-            ? loadExistingEmployee(projectRoot, assignee.rawEmployeeId)
-            : undefined,
-        loadCompany(projectRoot),
-        loadPositionState(projectRoot, parseId("position", rawPositionId)),
-    ])
-    if (position.id === company.directorPositionId) {
-        throw new UserError(
-            `Position "${position.id}" is the director's position: the people working on this repository always hold it.`,
-        )
+function formatTemporarilyAssignedMessage(
+    outcome: TemporaryAssignmentOutcome,
+): string {
+    if (outcome.kind === "worked-by-default-employee") {
+        return `"${outcome.employeeId}" already works position "${outcome.positionId}", as its default employee.`
     }
-    const current = state.temporaryAssignment
-    if (employee !== undefined && employee.id === position.defaultEmployeeId) {
-        if (current !== undefined) {
-            throw new UserError(
-                `"${employee.id}" is the default employee of position "${position.id}": run \`llmco position unassign-temporarily ${position.id}\` to give the position back to it.`,
-            )
-        }
-        console.log(
-            `"${employee.id}" already works position "${position.id}", as its default employee.`,
-        )
-        return
+    const workerName = formatWorkerName(outcome.temporaryAssignment)
+    if (outcome.kind === "already-assigned") {
+        return `Position "${outcome.positionId}" is already assigned temporarily to ${workerName}.`
     }
-    const assignment: Worker =
-        employee === undefined
-            ? { kind: "directors" }
-            : { kind: "employee", employeeId: employee.id }
-    if (current !== undefined && Bun.deepEquals(current, assignment)) {
-        console.log(
-            `Position "${position.id}" is already assigned temporarily to ${formatWorkerName(assignment)}.`,
-        )
-        return
-    }
-    if (current !== undefined && !replace) {
-        throw new UserError(
-            `Position "${position.id}" is already assigned temporarily to ${formatWorkerName(current)}. Add --replace to replace it.`,
-        )
-    }
-    await savePositionState(projectRoot, position.id, {
-        ...state,
-        temporaryAssignment: assignment,
-    })
-    const assigned = `Position "${position.id}" is now assigned temporarily to ${formatWorkerName(assignment)}`
-    console.log(
-        current === undefined
-            ? `${assigned}.`
-            : `${assigned} instead of ${formatWorkerName(current)}.`,
-    )
+    const assignedMessage = `Position "${outcome.positionId}" is now assigned temporarily to ${workerName}`
+    return outcome.replacedTemporaryAssignment === undefined
+        ? `${assignedMessage}.`
+        : `${assignedMessage} instead of ${formatWorkerName(outcome.replacedTemporaryAssignment)}.`
 }
 
 export function registerPositionCommands(program: Command): void {
@@ -373,12 +329,14 @@ export function registerPositionCommands(program: Command): void {
             formatIdArgumentDescription("employee", "julie"),
         )
         .addOption(replaceTemporaryOption())
-        .action(async (rawPositionId, rawEmployeeId, { replace }) => {
-            await assignTemporarily(
+        .action(async (rawPositionId, rawEmployeeId, options) => {
+            const outcome = await assignPositionTemporarily(
+                projectRoot,
                 rawPositionId,
                 { kind: "employee", rawEmployeeId },
-                replace,
+                { shouldReplace: options.replace },
             )
+            console.log(formatTemporarilyAssignedMessage(outcome))
         })
 
     assignTemporarilyCommand
@@ -391,12 +349,14 @@ export function registerPositionCommands(program: Command): void {
             formatIdArgumentDescription("position", "backend-developer"),
         )
         .addOption(replaceTemporaryOption())
-        .action(async (rawPositionId, { replace }) => {
-            await assignTemporarily(
+        .action(async (rawPositionId, options) => {
+            const outcome = await assignPositionTemporarily(
+                projectRoot,
                 rawPositionId,
                 { kind: "directors" },
-                replace,
+                { shouldReplace: options.replace },
             )
+            console.log(formatTemporarilyAssignedMessage(outcome))
         })
 
     positionCommand
