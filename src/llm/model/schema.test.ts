@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { type LlmModelConfig, LlmModelConfigSchema } from "./llm-model.ts"
+import { type LlmModelConfig, LlmModelConfigSchema } from "./schema.ts"
 
 const llama: LlmModelConfig = {
     name: "Llama 3.1 8B",

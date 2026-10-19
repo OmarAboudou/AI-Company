@@ -9,6 +9,15 @@ import { requireDirector } from "../cli/require-director.ts"
 import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { type Protocol, protocols } from "../llm/connection/schema.ts"
+import { loadExistingLlmModel } from "../llm/model/load-existing-llm-model.ts"
+import { LlmModelConfigSchema } from "../llm/model/schema.ts"
+import {
+    copyLlmModel,
+    deleteLlmModel,
+    listLlmModels,
+    llmModelExists,
+    saveLlmModel,
+} from "../llm/model/storage.ts"
 import { loadExistingLlmProvider } from "../llm/provider/load-existing-llm-provider.ts"
 import type { LlmProvider } from "../llm/provider/schema.ts"
 import { listLlmProviders, loadLlmProvider } from "../llm/provider/storage.ts"
@@ -18,15 +27,6 @@ import {
     saveEmployee,
 } from "../organization/employee/storage.ts"
 import { UserError } from "../user-error.ts"
-import { LlmModelConfigSchema } from "./llm-model.ts"
-import { loadExistingLlmModel } from "./load-existing-llm-model.ts"
-import {
-    copyLlmModel,
-    deleteLlmModel,
-    listLlmModels,
-    llmModelExists,
-    saveLlmModel,
-} from "./storage.ts"
 
 function protocolOption() {
     return new Option(

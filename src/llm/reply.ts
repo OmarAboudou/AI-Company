@@ -2,8 +2,6 @@ import type Anthropic from "@anthropic-ai/sdk"
 import { projectRoot } from "../cli/project-root.ts"
 import { readGitCommitter } from "../git/read-git-committer.ts"
 import { isAuthorOf } from "../ids/is-author-of.ts"
-import type { LlmModel } from "../llm-model/llm-model.ts"
-import { loadLlmModel } from "../llm-model/storage.ts"
 import { readMentions, sendDraft } from "../message/commands.ts"
 import type { Message } from "../message/message.ts"
 import { listMessages, loadResponse, saveResponse } from "../message/storage.ts"
@@ -23,6 +21,8 @@ import {
     callAnthropicMessages,
     type Replays,
 } from "./anthropic-messages.ts"
+import type { LlmModel } from "./model/schema.ts"
+import { loadLlmModel } from "./model/storage.ts"
 import { readApiKey } from "./provider/read-api-key.ts"
 import { loadLlmProvider } from "./provider/storage.ts"
 import { systemPrompt } from "./system-prompt.ts"

@@ -1,7 +1,7 @@
-import { listLlmModels } from "../../llm-model/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
 import { listEmployees } from "../../organization/employee/storage.ts"
 import { UserError } from "../../user-error.ts"
+import { listLlmModels } from "../model/storage.ts"
 import { loadExistingLlmProvider } from "./load-existing-llm-provider.ts"
 import type { LlmProvider } from "./schema.ts"
 import { deleteLlmProviderFolder } from "./storage.ts"
