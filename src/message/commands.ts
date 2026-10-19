@@ -1,5 +1,5 @@
 import { type Command, Option } from "@commander-js/extra-typings"
-import { idDescription } from "../cli/format-id-argument-description.ts"
+import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
 import { loadExistingThread, requireCompany } from "../cli-helpers.ts"
@@ -110,7 +110,10 @@ export function registerMessageCommands(program: Command): void {
         )
         .argument(
             "<thread-id>",
-            idDescription("thread", "2026-10-18-choice-of-framework"),
+            formatIdArgumentDescription(
+                "thread",
+                "2026-10-18-choice-of-framework",
+            ),
         )
         .addOption(bodyOption())
         .addOption(bodyFileOption())

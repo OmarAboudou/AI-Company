@@ -1,12 +1,12 @@
 import { type Command, Option } from "@commander-js/extra-typings"
 import { z } from "zod"
-import { descriptionFileOption } from "../cli/create-description-file-option.ts"
-import { idDescription } from "../cli/format-id-argument-description.ts"
-import { newIdDescription } from "../cli/format-new-id-argument-description.ts"
+import { createDescriptionFileOption } from "../cli/create-description-file-option.ts"
+import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
+import { formatNewIdArgumentDescription } from "../cli/format-new-id-argument-description.ts"
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
-import { requireAnOption } from "../cli/require-at-least-one-option.ts"
+import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import {
     loadExistingEmployee,
     loadExistingPosition,
@@ -157,7 +157,7 @@ export function registerPositionCommands(program: Command): void {
         .description("Create (open) a position.")
         .argument(
             "<position-id>",
-            idDescription("position", "backend-developer"),
+            formatIdArgumentDescription("position", "backend-developer"),
         )
         .requiredOption("-t, --title <title>", "position title")
         .option(
@@ -165,7 +165,7 @@ export function registerPositionCommands(program: Command): void {
             "what the position is responsible for",
             "",
         )
-        .addOption(descriptionFileOption())
+        .addOption(createDescriptionFileOption())
         .hook("preAction", requireDirector)
         .action(async (rawId, { title, description, descriptionFile }) => {
             await requireCompany()
@@ -224,7 +224,7 @@ export function registerPositionCommands(program: Command): void {
         )
         .argument(
             "<position-id>",
-            idDescription("position", "backend-developer"),
+            formatIdArgumentDescription("position", "backend-developer"),
         )
         .action(async (rawId) => {
             await requireCompany()
@@ -253,17 +253,17 @@ export function registerPositionCommands(program: Command): void {
         )
         .argument(
             "<position-id>",
-            idDescription("position", "backend-developer"),
+            formatIdArgumentDescription("position", "backend-developer"),
         )
         .option("-t, --title <title>", "position title")
         .option(
             "-d, --description <text>",
             "what the position is responsible for",
         )
-        .addOption(descriptionFileOption())
+        .addOption(createDescriptionFileOption())
         .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
-            requireAnOption(options)
+            requireAtLeastOneOption(options)
             await requireCompany()
             const { id, description, createdAt, formerIds, ...current } =
                 await loadExistingPosition(rawId)
@@ -295,11 +295,11 @@ export function registerPositionCommands(program: Command): void {
         )
         .argument(
             "<position-id>",
-            idDescription("position", "backend-developer"),
+            formatIdArgumentDescription("position", "backend-developer"),
         )
         .argument(
             "<new-position-id>",
-            newIdDescription("position", "api-developer"),
+            formatNewIdArgumentDescription("position", "api-developer"),
         )
         .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId) => {
@@ -344,9 +344,12 @@ export function registerPositionCommands(program: Command): void {
         )
         .argument(
             "<position-id>",
-            idDescription("position", "backend-developer"),
+            formatIdArgumentDescription("position", "backend-developer"),
         )
-        .argument("<employee-id>", idDescription("employee", "claude-senior"))
+        .argument(
+            "<employee-id>",
+            formatIdArgumentDescription("employee", "claude-senior"),
+        )
         .option("-r, --replace", "replace the current default employee")
         .hook("preAction", requireDirector)
         .action(async (rawPositionId, rawEmployeeId, { replace }) => {
@@ -408,7 +411,7 @@ export function registerPositionCommands(program: Command): void {
         )
         .argument(
             "<position-id>",
-            idDescription("position", "backend-developer"),
+            formatIdArgumentDescription("position", "backend-developer"),
         )
         .hook("preAction", requireDirector)
         .action(async (rawId) => {
@@ -443,9 +446,12 @@ export function registerPositionCommands(program: Command): void {
         .description("Assign a position temporarily to an employee.")
         .argument(
             "<position-id>",
-            idDescription("position", "backend-developer"),
+            formatIdArgumentDescription("position", "backend-developer"),
         )
-        .argument("<employee-id>", idDescription("employee", "julie"))
+        .argument(
+            "<employee-id>",
+            formatIdArgumentDescription("employee", "julie"),
+        )
         .addOption(replaceTemporaryOption())
         .action(async (rawPositionId, rawEmployeeId, { replace }) => {
             await assignTemporarily(
@@ -462,7 +468,7 @@ export function registerPositionCommands(program: Command): void {
         )
         .argument(
             "<position-id>",
-            idDescription("position", "backend-developer"),
+            formatIdArgumentDescription("position", "backend-developer"),
         )
         .addOption(replaceTemporaryOption())
         .action(async (rawPositionId, { replace }) => {
@@ -481,7 +487,7 @@ export function registerPositionCommands(program: Command): void {
         )
         .argument(
             "<position-id>",
-            idDescription("position", "backend-developer"),
+            formatIdArgumentDescription("position", "backend-developer"),
         )
         .hook("preAction", requireDirector)
         .action(async (rawId) => {
@@ -515,7 +521,7 @@ export function registerPositionCommands(program: Command): void {
         )
         .argument(
             "<position-id>",
-            idDescription("position", "backend-developer"),
+            formatIdArgumentDescription("position", "backend-developer"),
         )
         .option("-f, --force", "delete it even if threads await it")
         .hook("preAction", requireDirector)

@@ -1,10 +1,10 @@
 import { type Command, Option } from "@commander-js/extra-typings"
 import { z } from "zod"
-import { idDescription } from "../cli/format-id-argument-description.ts"
-import { newIdDescription } from "../cli/format-new-id-argument-description.ts"
+import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
+import { formatNewIdArgumentDescription } from "../cli/format-new-id-argument-description.ts"
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
-import { requireAnOption } from "../cli/require-at-least-one-option.ts"
+import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import {
     loadExistingLlmModel,
     loadExistingLlmProvider,
@@ -75,8 +75,14 @@ export function registerLlmModelCommands(program: Command): void {
     modelCommand
         .command("create")
         .description("Create a model served by an LLM provider.")
-        .argument("<provider-id>", idDescription("provider", "anthropic"))
-        .argument("<model-id>", idDescription("model", "claude-opus-5-5"))
+        .argument(
+            "<provider-id>",
+            formatIdArgumentDescription("provider", "anthropic"),
+        )
+        .argument(
+            "<model-id>",
+            formatIdArgumentDescription("model", "claude-opus-5-5"),
+        )
         .requiredOption("-n, --name <name>", "model name")
         .requiredOption(
             "-a, --api-id <api-id>",
@@ -138,8 +144,14 @@ export function registerLlmModelCommands(program: Command): void {
         .description(
             "Display a model, its id on the provider's side and its protocol.",
         )
-        .argument("<provider-id>", idDescription("provider", "anthropic"))
-        .argument("<model-id>", idDescription("model", "claude-opus-5-5"))
+        .argument(
+            "<provider-id>",
+            formatIdArgumentDescription("provider", "anthropic"),
+        )
+        .argument(
+            "<model-id>",
+            formatIdArgumentDescription("model", "claude-opus-5-5"),
+        )
         .action(async (rawProviderId, rawModelId) => {
             await requireCompany()
             const model = await loadExistingLlmModel(rawProviderId, rawModelId)
@@ -151,8 +163,14 @@ export function registerLlmModelCommands(program: Command): void {
     modelCommand
         .command("update")
         .description("Update a model: only the options given change.")
-        .argument("<provider-id>", idDescription("provider", "anthropic"))
-        .argument("<model-id>", idDescription("model", "claude-opus-5-5"))
+        .argument(
+            "<provider-id>",
+            formatIdArgumentDescription("provider", "anthropic"),
+        )
+        .argument(
+            "<model-id>",
+            formatIdArgumentDescription("model", "claude-opus-5-5"),
+        )
         .option("-n, --name <name>", "model name")
         .option(
             "-a, --api-id <api-id>",
@@ -161,7 +179,7 @@ export function registerLlmModelCommands(program: Command): void {
         .addOption(protocolOption())
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, options) => {
-            requireAnOption(options)
+            requireAtLeastOneOption(options)
             await requireCompany()
             const { providerId, id, ...current } = await loadExistingLlmModel(
                 rawProviderId,
@@ -187,9 +205,18 @@ export function registerLlmModelCommands(program: Command): void {
         .description(
             "Change the id of a model and of the employees running on it.",
         )
-        .argument("<provider-id>", idDescription("provider", "anthropic"))
-        .argument("<model-id>", idDescription("model", "claude-opus-5-5"))
-        .argument("<new-model-id>", newIdDescription("model", "opus"))
+        .argument(
+            "<provider-id>",
+            formatIdArgumentDescription("provider", "anthropic"),
+        )
+        .argument(
+            "<model-id>",
+            formatIdArgumentDescription("model", "claude-opus-5-5"),
+        )
+        .argument(
+            "<new-model-id>",
+            formatNewIdArgumentDescription("model", "opus"),
+        )
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, rawNewId) => {
             await requireCompany()
@@ -230,8 +257,14 @@ export function registerLlmModelCommands(program: Command): void {
     modelCommand
         .command("delete")
         .description("Delete a model no employee runs on.")
-        .argument("<provider-id>", idDescription("provider", "anthropic"))
-        .argument("<model-id>", idDescription("model", "claude-opus-5-5"))
+        .argument(
+            "<provider-id>",
+            formatIdArgumentDescription("provider", "anthropic"),
+        )
+        .argument(
+            "<model-id>",
+            formatIdArgumentDescription("model", "claude-opus-5-5"),
+        )
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId) => {
             await requireCompany()
