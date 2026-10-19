@@ -40,25 +40,27 @@ describe("unassignPosition", () => {
     })
 
     test("changes nothing for a vacant position", async () => {
-        const { defaultEmployeeId, ...vacant } = developer
-        await savePosition(projectRoot, vacant)
+        const { defaultEmployeeId, ...vacantDeveloper } = developer
+        await savePosition(projectRoot, vacantDeveloper)
 
         const unassignment = await unassignPosition(projectRoot, "developer")
 
-        expect(await loadPosition(projectRoot, "developer")).toEqual(vacant)
+        const savedPosition = await loadPosition(projectRoot, "developer")
+
+        expect(savedPosition).toEqual(vacantDeveloper)
         expect(unassignment.previousEmployeeId).toBeUndefined()
     })
 
     test("keeps the temporary assignment", async () => {
-        const julie = { kind: "employee", employeeId: "julie" } as const
-        const state = { temporaryAssignment: julie }
+        const julieWorker = { kind: "employee", employeeId: "julie" } as const
+        const state = { temporaryAssignment: julieWorker }
         await savePosition(projectRoot, developer)
         await savePositionState(projectRoot, "developer", state)
 
         const unassignment = await unassignPosition(projectRoot, "developer")
 
         expect(await loadPositionState(projectRoot, "developer")).toEqual(state)
-        expect(unassignment.temporaryAssignment).toEqual(julie)
+        expect(unassignment.temporaryAssignment).toEqual(julieWorker)
     })
 
     test("refuses an unknown position", async () => {
@@ -69,9 +71,9 @@ describe("unassignPosition", () => {
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const unassigning = unassignPosition(elsewhere, "developer")
+        const unassigning = unassignPosition(folderWithoutCompany, "developer")
 
         await expect(unassigning).rejects.toThrow("Run `llmco init` first.")
     })

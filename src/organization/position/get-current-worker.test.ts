@@ -7,7 +7,7 @@ const developer = {
     description: "",
     defaultEmployeeId: "claude",
 }
-const julie = { kind: "employee", employeeId: "julie" } as const
+const julieWorker = { kind: "employee", employeeId: "julie" } as const
 const directors = { kind: "directors" } as const
 
 describe("getCurrentWorker", () => {
@@ -17,7 +17,7 @@ describe("getCurrentWorker", () => {
         expect(worker).toEqual({ kind: "employee", employeeId: "claude" })
     })
 
-    test.each([julie, directors])(
+    test.each([julieWorker, directors])(
         "is the temporary assignee %j",
         (assignee) => {
             const state = { temporaryAssignment: assignee }
@@ -29,14 +29,22 @@ describe("getCurrentWorker", () => {
     )
 
     test("is nobody for a vacant position", () => {
-        const { defaultEmployeeId, ...vacant } = developer
+        const { defaultEmployeeId, ...vacantDeveloper } = developer
 
-        expect(getCurrentWorker(vacant, {}, "director")).toBeUndefined()
+        const worker = getCurrentWorker(vacantDeveloper, {}, "director")
+
+        expect(worker).toBeUndefined()
     })
 
     test("is the directors for the director's position", () => {
-        const director = { id: "director", title: "Director", description: "" }
+        const directorPosition = {
+            id: "director",
+            title: "Director",
+            description: "",
+        }
 
-        expect(getCurrentWorker(director, {}, "director")).toEqual(directors)
+        const worker = getCurrentWorker(directorPosition, {}, "director")
+
+        expect(worker).toEqual(directors)
     })
 })

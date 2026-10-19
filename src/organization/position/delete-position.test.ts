@@ -68,8 +68,8 @@ describe("deletePosition", () => {
     test("keeps its default employee hired, and returns it", async () => {
         const omar = { id: "omar", name: "Omar", kind: "human" } as const
         await saveEmployee(projectRoot, omar)
-        const filled = { ...developer, defaultEmployeeId: "omar" }
-        await savePosition(projectRoot, filled)
+        const filledDeveloper = { ...developer, defaultEmployeeId: "omar" }
+        await savePosition(projectRoot, filledDeveloper)
 
         const { position } = await deletePosition(projectRoot, "developer")
 
@@ -101,9 +101,13 @@ describe("deletePosition", () => {
         await savePosition(projectRoot, developer)
         const threadId = await saveThreadAwaiting("developer")
 
-        const forced = { shouldForce: true }
+        const forceOptions = { shouldForce: true }
 
-        const deletion = await deletePosition(projectRoot, "developer", forced)
+        const deletion = await deletePosition(
+            projectRoot,
+            "developer",
+            forceOptions,
+        )
 
         expect(deletion.awaitingThreadIds).toEqual([threadId])
         expect(await hasPosition(projectRoot, "developer")).toBe(false)
@@ -116,9 +120,9 @@ describe("deletePosition", () => {
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const deletion = deletePosition(elsewhere, "developer")
+        const deletion = deletePosition(folderWithoutCompany, "developer")
 
         await expect(deletion).rejects.toThrow("Run `llmco init` first.")
     })

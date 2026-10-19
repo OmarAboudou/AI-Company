@@ -46,47 +46,59 @@ describe("updatePosition", () => {
         await savePosition(projectRoot, developer)
         const changes = { title: "Lead" }
 
-        const updated = await updatePosition(projectRoot, "developer", changes)
+        const updatedPosition = await updatePosition(
+            projectRoot,
+            "developer",
+            changes,
+        )
 
-        expect(updated).toEqual(await loadPosition(projectRoot, "developer"))
+        const savedPosition = await loadPosition(projectRoot, "developer")
+
+        expect(updatedPosition).toEqual(savedPosition)
     })
 
     test("keeps the default employee and the id history", async () => {
-        const renamed = {
+        const renamedDeveloper = {
             ...developer,
             defaultEmployeeId: "omar",
             createdAt: "2026-10-18T14:00:00.000Z",
             formerIds: [{ id: "dev", until: "2026-10-19T09:00:00.000Z" }],
         }
-        await savePosition(projectRoot, renamed)
+        await savePosition(projectRoot, renamedDeveloper)
 
         await updatePosition(projectRoot, "developer", { title: "Lead" })
 
         const position = await loadPosition(projectRoot, "developer")
-        expect(position).toEqual({ ...renamed, title: "Lead" })
+        expect(position).toEqual({ ...renamedDeveloper, title: "Lead" })
     })
 
     test("refuses a blank title", async () => {
         await savePosition(projectRoot, developer)
 
-        const update = updatePosition(projectRoot, "developer", { title: " " })
+        const updating = updatePosition(projectRoot, "developer", {
+            title: " ",
+        })
 
-        await expect(update).rejects.toThrow(UserError)
+        await expect(updating).rejects.toThrow(UserError)
         const position = await loadPosition(projectRoot, "developer")
         expect(position.title).toBe("Developer")
     })
 
     test("refuses an unknown position", async () => {
-        const update = updatePosition(projectRoot, "qa-tester", { title: "QA" })
+        const updating = updatePosition(projectRoot, "qa-tester", {
+            title: "QA",
+        })
 
-        await expect(update).rejects.toThrow('No position "qa-tester".')
+        await expect(updating).rejects.toThrow('No position "qa-tester".')
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const update = updatePosition(elsewhere, "developer", { title: "QA" })
+        const updating = updatePosition(folderWithoutCompany, "developer", {
+            title: "QA",
+        })
 
-        await expect(update).rejects.toThrow("Run `llmco init` first.")
+        await expect(updating).rejects.toThrow("Run `llmco init` first.")
     })
 })
