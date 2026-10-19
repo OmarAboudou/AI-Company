@@ -16,11 +16,11 @@ import {
 } from "../organization/position/storage.ts"
 import { loadThread } from "../thread/storage.ts"
 import { UserError } from "../user-error.ts"
+import { callAnthropicMessages } from "./anthropic-messages/call-anthropic-messages.ts"
 import {
     anthropicTurns,
-    callAnthropicMessages,
     type Replays,
-} from "./anthropic-messages.ts"
+} from "./anthropic-messages/get-anthropic-turns.ts"
 import type { LlmModel } from "./model/schema.ts"
 import { loadLlmModel } from "./model/storage.ts"
 import { readApiKey } from "./provider/read-api-key.ts"
