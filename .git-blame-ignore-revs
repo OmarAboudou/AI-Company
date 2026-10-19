@@ -1,0 +1,161 @@
+# Commits that only move or rename code, which `git blame` can skip:
+# GitHub reads this file by itself; locally, run once
+# git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# The refactoring series decided in #86, as it landed on main
+
+# Move the JSON Schemas' catalog next to the script using it
+703324503a4f8b6b4af5f6d22c2d9b1eef178b5c
+
+# Name the user error's module after it: user-error.ts
+33872d2ac9b3b5377e25372b579992f36ac17e82
+
+# Gather the file helpers in src/files/, one file per function
+5478df81ea4b835146901e8946f395c428972ef5
+
+# Name the file helpers after what they do
+83f721aec640063f0444c9dcd031af99924739dd
+
+# Gather the ids in src/ids/, one file per function
+cb5be8b6e93a82b0648b8d8a86d8722dfec2f774
+
+# Name the id helpers after what they do
+59c93290939289c2340084a2deb52ba5c027ed2e
+
+# Name the git readers after what they do
+55ac25859908ed67e918c6058ece5a7d1d293d02
+
+# Move the command line's entry point and program into src/cli/
+8b6a4338d627c02ba5b81d0207e8fd81e8e7f58f
+
+# Move what only the command line uses out of cli-helpers.ts
+8670fa12bba49c5486776e2c02022cf695b9d575
+
+# Name the command line's helpers after what they do
+6dc1df72686f604ccc0e617cfbbd7d1956358265
+
+# Move the position's schema, storage and current worker into src/organization/position/
+b06492667ed142d3af2cb60a1db822cf5e973e45
+
+# Name the position's storage and current worker after what they do
+d080112fdc204fbcd4f52b29142df51f142e3091
+
+# Give each position command a file of its own in src/cli/commands/
+7da002fa675647dba4f79a84877e00b56d0d4d41
+
+# Name the position commands' helpers after what they do
+a563e2834de93d690dad8cb9bb5d7d70da34dc7e
+
+# Split the position commands' end-to-end tests by command
+08cb8dc9517fa37a3963611767534d12988d1ba0
+
+# Move the employee's schema, storage and lookup into src/organization/employee/
+a1d2bfef7ffa2141289721b4a0746808e4bf5a76
+
+# Name the employee's storage after what it does
+5a9762f1b84d680bf39c404014dda816aed4caaa
+
+# Split the human at the keyboard between the core and the command line
+82c63f92eb27b04c01a23d83a83b537da86f02dd
+
+# Name the human at the keyboard's functions after what they do
+dd12fdb726ac5ac5da1ab2b4296d89bf9214f3be
+
+# Give each employee command, and whoami, a file of its own in src/cli/commands/
+b9890f40f951934c9d79dd80a8e6310e8d711bd2
+
+# Name the employee commands' helpers, and whoami's, after what they do
+1e9bf73a2505f566a5458601cd365505ff367904
+
+# Name what an operation returns after the operation, with Result
+f20cb75c8c0cafcb56888a20331df027e93d4e73
+
+# Split the employee commands' and whoami's end-to-end tests by command
+d108da7384c0e4fe138882bcd6256bc90c04cc77
+
+# Move the company's schema and storage into src/organization/company/
+5e3912d5426f23c66ccc89bedf7fba6f2b2cd4c5
+
+# Name the company's storage after what it does
+822932c9bb45a75829cb336200967ba05c70ff21
+
+# Give init and the company commands files of their own in src/cli/commands/
+ceda408bb331ab161a6076458818a3ce18192758
+
+# Split init's and the company commands' end-to-end tests by command
+af6bb380baa2d5c5e4617cbc550531007042b478
+
+# Move the provider's and connections' schemas and storage into src/llm/
+5fbb3df101b4f31d8a6c2484aec1f4ba53649b72
+
+# Name the provider's storage and API key reading after what they do
+ebad8b6b394ed6b5ea3b2e573505b10f02940a1e
+
+# Give each provider and connection command a file of its own
+5e568d5e31d01ac6a76743df0c71760ee0695cd0
+
+# Name the provider and connection commands' helpers after what they do
+7a6ae04ff113e0bb01e36a3ebe08e2572b34ba54
+
+# Split the provider and connection commands' end-to-end tests by command
+0e515065883712d768709a7630c0d5d26f69f141
+
+# Move the model's schema and storage into src/llm/model/
+f6281f2fb2188aeaea02a5cf29916bfa9351252d
+
+# Name the model's storage after what it does
+a98c26354420fb7be2f14a646fd52cbaa2179bc0
+
+# Give each model command a file of its own in src/cli/commands/model/
+ff165c0a9999c83ecd60b85356e2fa4ab8e179f5
+
+# Name the model commands' helpers after what they do
+186396ad325e8cb8b0781d1a8d2e826626cbed54
+
+# Split the model commands' end-to-end tests by command
+490c93ec4cef67db44d4f2897bc5a133974ad6e7
+
+# Move the Anthropic Messages protocol into src/llm/anthropic-messages/
+f81344a1fe77081a8b52efa6ae0b7a5174b066e8
+
+# Name the Anthropic protocol's functions after what they do
+c53257046704f2be2022d69174f1baa739661056
+
+# Move the thread's schema and storage into src/messaging/thread/
+27b52a76eb4045248eaff63f56d7048e654de6cf
+
+# Name the thread's storage and members after what they do
+c5bced5a38198d61c885b87ee60360a4d5f6399d
+
+# Move the message's schema, storage, mentions and author into src/messaging/message/
+d10a08bd7bdba65cd2b3022b18ece24a654739c1
+
+# Split the message commands between the core and the command line
+ab924331744602027908310b911a17f874917d54
+
+# Name the message's storage, mentions and author after what they do
+2bbbad260a9f5f2337df3b9f18ed91fd65428cf8
+
+# Move the LLMs' answers and system prompt into src/work/
+4a11cc21b67d01e8af0178ff3520eabf59dee213
+
+# Name the work's functions after what they do
+532dae97d8f0f481d75122b744d7aec1618c078d
+
+# Give each thread and message command a file of its own
+37ad84d2d5eec6f98204fddf0b680377a455e881
+
+# Name the thread and message commands' helpers after what they do
+dce763cbae1dbf1d7955ad461f47fc8d21297e39
+
+# Split the thread and message commands' end-to-end tests by command
+550be8cacc462097d4f9c5a2f2200e3d4375f500
+
+# Group the id arguments' descriptions in one file
+089e2bde31bf2af827b0f536c355c57c014eb4f1
+
+# Group the options that several commands share in one file
+f81e728803ae1e69d24148ad329ee12d364dcbac
+
+# Name a message not sent yet an UnsentMessage
+57a5004ac2bf524f2a9cfa8dfe40668ecbb332f5
