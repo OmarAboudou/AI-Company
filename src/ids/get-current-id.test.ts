@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { getCurrentId } from "./get-current-id.ts"
 import type { IdHistory } from "./id-history-schema.ts"
 
-const renamed: IdHistory = {
+const renamedPosition: IdHistory = {
     id: "backend-developer",
     createdAt: "2026-10-18T14:00:00.000Z",
     formerIds: [
@@ -12,19 +12,19 @@ const renamed: IdHistory = {
 }
 
 describe("getCurrentId", () => {
-    const positions = [renamed, { id: "qa-tester" }]
+    const positions = [renamedPosition, { id: "qa-tester" }]
 
     test("is the id of whoever had the id then", () => {
-        const at = "2026-10-18T15:00:00.000Z"
+        const moment = "2026-10-18T15:00:00.000Z"
 
-        expect(getCurrentId(positions, "developer", at)).toBe(
-            "backend-developer",
-        )
+        const currentId = getCurrentId(positions, "developer", moment)
+
+        expect(currentId).toBe("backend-developer")
     })
 
     test("is the id itself when nobody had it then", () => {
-        const at = "2026-10-18T15:00:00.000Z"
+        const moment = "2026-10-18T15:00:00.000Z"
 
-        expect(getCurrentId(positions, "designer", at)).toBe("designer")
+        expect(getCurrentId(positions, "designer", moment)).toBe("designer")
     })
 })

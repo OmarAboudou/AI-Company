@@ -10,10 +10,11 @@ describe("parseId", () => {
     })
 
     test("refuses an id that is not kebab-case, naming its entity", () => {
-        const parse = () => parseId("position", "Backend Developer")
+        const parseInvalidId = () => parseId("position", "Backend Developer")
+        const refusalMessage = 'Invalid position id "Backend Developer".'
 
-        expect(parse).toThrow(UserError)
-        expect(parse).toThrow('Invalid position id "Backend Developer".')
-        expect(parse).toThrow("kebab-case")
+        expect(parseInvalidId).toThrow(UserError)
+        expect(parseInvalidId).toThrow(refusalMessage)
+        expect(parseInvalidId).toThrow("kebab-case")
     })
 })

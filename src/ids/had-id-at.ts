@@ -1,17 +1,25 @@
 import type { IdHistory } from "./id-history-schema.ts"
 
-export function hadIdAt(entity: IdHistory, id: string, at: string): boolean {
-    const moment = Date.parse(at)
-    let since =
+export function hadIdAt(
+    entity: IdHistory,
+    id: string,
+    moment: string,
+): boolean {
+    const momentTime = Date.parse(moment)
+    let periodStart =
         entity.createdAt === undefined
             ? Number.NEGATIVE_INFINITY
             : Date.parse(entity.createdAt)
-    for (const former of entity.formerIds ?? []) {
-        const until = Date.parse(former.until)
-        if (former.id === id && since <= moment && moment < until) {
+    for (const { id: formerId, until } of entity.formerIds ?? []) {
+        const periodEnd = Date.parse(until)
+        if (
+            formerId === id &&
+            periodStart <= momentTime &&
+            momentTime < periodEnd
+        ) {
             return true
         }
-        since = until
+        periodStart = periodEnd
     }
-    return entity.id === id && since <= moment
+    return entity.id === id && periodStart <= momentTime
 }
