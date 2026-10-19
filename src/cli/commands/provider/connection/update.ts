@@ -4,8 +4,8 @@ import { formatIdArgumentDescription } from "../../../format-id-argument-descrip
 import { projectRoot } from "../../../project-root.ts"
 import { requireAtLeastOneOption } from "../../../require-at-least-one-option.ts"
 import { requireDirector } from "../../../require-director.ts"
-import { authOption } from "./auth-option.ts"
-import { protocolArgument } from "./protocol-argument.ts"
+import { createAuthOption } from "./create-auth-option.ts"
+import { createProtocolArgument } from "./create-protocol-argument.ts"
 
 export function registerProviderConnectionUpdateCommand(
     connectionCommand: Command,
@@ -17,12 +17,12 @@ export function registerProviderConnectionUpdateCommand(
             "<provider-id>",
             formatIdArgumentDescription("provider", "anthropic"),
         )
-        .addArgument(protocolArgument())
+        .addArgument(createProtocolArgument())
         .option(
             "-u, --base-url <url>",
             "URL the protocol's paths are appended to, e.g. https://api.anthropic.com",
         )
-        .addOption(authOption())
+        .addOption(createAuthOption())
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol, options) => {
             requireAtLeastOneOption(options)

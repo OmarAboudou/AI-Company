@@ -9,7 +9,7 @@ import { requireCompany } from "../../../../organization/company/require-company
 import { printColumns } from "../../../print-columns.ts"
 import { projectRoot } from "../../../project-root.ts"
 
-function sentAuth(protocol: Protocol, connection: Connection): string {
+function getSentAuth(protocol: Protocol, connection: Connection): string {
     if (protocol !== "anthropic-messages") {
         return "bearer"
     }
@@ -35,7 +35,7 @@ export function registerProviderConnectionListCommand(
                         [
                             `${id}/${protocol}`,
                             connection.baseUrl,
-                            sentAuth(protocol, connection),
+                            getSentAuth(protocol, connection),
                         ],
                     ]
                 }),

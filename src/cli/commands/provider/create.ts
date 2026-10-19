@@ -3,9 +3,9 @@ import { createLlmProvider } from "../../../llm/provider/create-llm-provider.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
 import { projectRoot } from "../../project-root.ts"
 import { requireDirector } from "../../require-director.ts"
-import { apiKeyEnvOption } from "./api-key-env-option.ts"
-import { apiKeyFileOption } from "./api-key-file-option.ts"
-import { apiKeySource } from "./api-key-source.ts"
+import { createApiKeyEnvOption } from "./create-api-key-env-option.ts"
+import { createApiKeyFileOption } from "./create-api-key-file-option.ts"
+import { getApiKeySource } from "./get-api-key-source.ts"
 
 export function registerProviderCreateCommand(providerCommand: Command): void {
     providerCommand
@@ -16,13 +16,13 @@ export function registerProviderCreateCommand(providerCommand: Command): void {
             formatIdArgumentDescription("provider", "anthropic"),
         )
         .requiredOption("-n, --name <name>", "provider name")
-        .addOption(apiKeyEnvOption())
-        .addOption(apiKeyFileOption())
+        .addOption(createApiKeyEnvOption())
+        .addOption(createApiKeyFileOption())
         .hook("preAction", requireDirector)
         .action(async (rawId, { name, ...apiKeyOptions }) => {
             const provider = await createLlmProvider(projectRoot, rawId, {
                 name,
-                apiKey: apiKeySource(apiKeyOptions),
+                apiKey: getApiKeySource(apiKeyOptions),
             })
             console.log(`Created provider "${provider.id}".`)
         })

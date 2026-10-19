@@ -4,9 +4,9 @@ import { formatIdArgumentDescription } from "../../format-id-argument-descriptio
 import { projectRoot } from "../../project-root.ts"
 import { requireAtLeastOneOption } from "../../require-at-least-one-option.ts"
 import { requireDirector } from "../../require-director.ts"
-import { apiKeyEnvOption } from "./api-key-env-option.ts"
-import { apiKeyFileOption } from "./api-key-file-option.ts"
-import { apiKeySource } from "./api-key-source.ts"
+import { createApiKeyEnvOption } from "./create-api-key-env-option.ts"
+import { createApiKeyFileOption } from "./create-api-key-file-option.ts"
+import { getApiKeySource } from "./get-api-key-source.ts"
 
 export function registerProviderUpdateCommand(providerCommand: Command): void {
     providerCommand
@@ -17,14 +17,14 @@ export function registerProviderUpdateCommand(providerCommand: Command): void {
             formatIdArgumentDescription("provider", "anthropic"),
         )
         .option("-n, --name <name>", "provider name")
-        .addOption(apiKeyEnvOption())
-        .addOption(apiKeyFileOption())
+        .addOption(createApiKeyEnvOption())
+        .addOption(createApiKeyFileOption())
         .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
             requireAtLeastOneOption(options)
             const provider = await updateLlmProvider(projectRoot, rawId, {
                 name: options.name,
-                apiKey: apiKeySource(options),
+                apiKey: getApiKeySource(options),
             })
             console.log(`Updated provider "${provider.id}".`)
         })
