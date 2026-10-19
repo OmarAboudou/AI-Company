@@ -9,12 +9,11 @@ import { requireDirector } from "../cli/require-director.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { getDefinedValues } from "../get-defined-values.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
-import { isAuthorOf } from "../ids/is-author-of.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { loadExistingLlmModel } from "../llm-model/load-existing-llm-model.ts"
 import { loadExistingEmployee } from "../organization/employee/load-existing-employee.ts"
+import { requireUnusedEmployeeId } from "../organization/employee/require-unused-employee-id.ts"
 import {
-    type Employee,
     type EmployeeConfig,
     EmployeeConfigSchema,
 } from "../organization/employee/schema.ts"
@@ -35,7 +34,6 @@ import {
     savePosition,
     savePositionState,
 } from "../organization/position/storage.ts"
-import { readArchives } from "../thread/archives.ts"
 import { UserError } from "../user-error.ts"
 
 function filledPositions(
@@ -80,47 +78,6 @@ async function requireLlmModel(config: EmployeeConfig): Promise<void> {
     }
 }
 
-async function earlierUses(id: string, renamed?: Employee): Promise<string[]> {
-    const [employees, archives] = await Promise.all([
-        listEmployees(projectRoot),
-        readArchives(projectRoot),
-    ])
-    const formerIdOf = employees
-        .filter(
-            (employee) =>
-                employee.id !== renamed?.id &&
-                employee.formerIds?.some((former) => former.id === id),
-        )
-        .map((employee) => `as a former id of employee "${employee.id}"`)
-    const threads = archives
-        .filter(({ thread, messages }) => {
-            const creator = {
-                employee: thread.createdBy.employee,
-                sentAt: thread.createdAt,
-            }
-            return [creator, ...messages].some(
-                (author) =>
-                    author.employee?.id === id &&
-                    !(renamed !== undefined && isAuthorOf(renamed, author)),
-            )
-        })
-        .map(({ thread }) => `in thread "${thread.id}"`)
-    return [...formerIdOf, ...threads]
-}
-
-async function requireUnusedId(
-    id: string,
-    reuseId: boolean | undefined,
-    renamed?: Employee,
-): Promise<void> {
-    const uses = reuseId ? [] : await earlierUses(id, renamed)
-    if (uses.length > 0) {
-        throw new UserError(
-            `Employee id "${id}" was used before: ${uses.join(", ")}. An employee is a person, and the archives would name two people the same way: add --reuse-id to reuse it anyway.`,
-        )
-    }
-}
-
 function reuseIdOption() {
     return new Option(
         "-r, --reuse-id",
@@ -146,7 +103,7 @@ async function createEmployee(
     if (exists) {
         throw new UserError(`Employee "${id}" already exists.`)
     }
-    await requireUnusedId(id, reuseId)
+    await requireUnusedEmployeeId(projectRoot, id, { shouldReuseId: reuseId })
     await saveEmployee(projectRoot, {
         id,
         ...result.data,
@@ -344,7 +301,10 @@ export function registerEmployeeCommands(program: Command): void {
                 throw new UserError(`Employee "${newId}" already exists.`)
             }
             const [, temporary] = await Promise.all([
-                requireUnusedId(newId, reuseId, employee),
+                requireUnusedEmployeeId(projectRoot, newId, {
+                    shouldReuseId: reuseId,
+                    renamedEmployee: employee,
+                }),
                 positionsWorkedTemporarily(positions, employee.id),
             ])
             const filled = filledPositions(positions, employee.id)
