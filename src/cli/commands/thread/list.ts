@@ -5,7 +5,7 @@ import { requireCompany } from "../../../organization/company/require-company.ts
 import { listPositions } from "../../../organization/position/storage.ts"
 import { printColumns } from "../../print-columns.ts"
 import { projectRoot } from "../../project-root.ts"
-import { mentionsOf } from "./format-mentions.ts"
+import { formatMentions } from "./format-mentions.ts"
 
 export function registerThreadListCommand(threadCommand: Command): void {
     threadCommand
@@ -25,12 +25,16 @@ export function registerThreadListCommand(threadCommand: Command): void {
             }
             printColumns(
                 archives.map(({ thread, messages }) => {
-                    const awaited = getAwaitedIds(thread, messages, positions)
+                    const awaitedIds = getAwaitedIds(
+                        thread,
+                        messages,
+                        positions,
+                    )
                     return [
                         thread.id,
                         thread.subject,
-                        awaited.length > 0
-                            ? `awaiting ${mentionsOf(awaited)}`
+                        awaitedIds.length > 0
+                            ? `awaiting ${formatMentions(awaitedIds)}`
                             : "",
                     ]
                 }),
