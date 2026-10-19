@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { PositionConfigSchema } from "./position.ts"
+import { PositionConfigSchema, PositionStateSchema } from "./position.ts"
 
 const developer = { title: "Developer" }
 
@@ -43,5 +43,45 @@ describe("PositionConfigSchema", () => {
 
     test("rejects an unknown key", () => {
         expect(accepts({ ...developer, id: "dev" })).toBe(false)
+    })
+})
+
+describe("PositionStateSchema", () => {
+    function acceptsState(state: unknown): boolean {
+        return PositionStateSchema.safeParse(state).success
+    }
+
+    test("accepts a position temporarily assigned to an employee", () => {
+        const state = {
+            temporaryAssignment: { kind: "employee", employeeId: "julie" },
+        } as const
+
+        expect(PositionStateSchema.parse(state)).toEqual(state)
+    })
+
+    test("accepts a position temporarily assigned to the directors", () => {
+        const state = { temporaryAssignment: { kind: "directors" } } as const
+
+        expect(PositionStateSchema.parse(state)).toEqual(state)
+    })
+
+    test("accepts a state without temporary assignment", () => {
+        expect(PositionStateSchema.parse({})).toEqual({})
+    })
+
+    test("requires an employee id for an employee only", () => {
+        const employee = { kind: "employee" }
+        const directors = { kind: "directors", employeeId: "julie" }
+
+        expect(acceptsState({ temporaryAssignment: employee })).toBe(false)
+        expect(acceptsState({ temporaryAssignment: directors })).toBe(false)
+    })
+
+    test("rejects an unknown kind or key", () => {
+        const team = { temporaryAssignment: { kind: "team" } }
+        const since = { temporaryAssignment: { kind: "directors", since: "" } }
+
+        expect(acceptsState(team)).toBe(false)
+        expect(acceptsState(since)).toBe(false)
     })
 })

@@ -8,7 +8,10 @@ import {
     MessageConfigSchema,
     ProviderResponseSchema,
 } from "./message/message.ts"
-import { PositionConfigSchema } from "./position/position.ts"
+import {
+    PositionConfigSchema,
+    PositionStateSchema,
+} from "./position/position.ts"
 import { ThreadConfigSchema } from "./thread/thread.ts"
 
 const publishedAt =
@@ -24,6 +27,7 @@ const configSchemas = {
     message: MessageConfigSchema,
     "provider-response": ProviderResponseSchema,
     "id-history": IdHistorySchema,
+    "position-state": PositionStateSchema,
 }
 
 export const jsonSchemas = Object.fromEntries(
