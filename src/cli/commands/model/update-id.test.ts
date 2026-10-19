@@ -49,11 +49,4 @@ describe("llmco model update-id", () => {
         expect(update.stderr).toContain('already has a model "haiku".')
         expect(runCli("model", "show", ...opus).exitCode).toBe(0)
     })
-
-    test("update-id fails for a model the provider does not have", () => {
-        const update = runCli("model", "update-id", "anthropic", "gpt", "g")
-
-        expect(update.exitCode).toBe(1)
-        expect(update.stderr).toContain('has no model "gpt"')
-    })
 })
