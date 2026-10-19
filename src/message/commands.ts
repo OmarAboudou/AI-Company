@@ -2,7 +2,8 @@ import { type Command, Option } from "@commander-js/extra-typings"
 import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
-import { loadExistingThread, requireCompany } from "../cli-helpers.ts"
+import { loadExistingThread } from "../cli-helpers.ts"
+import { requireCompany } from "../company/require-company.ts"
 import { answerMentions } from "../llm/reply.ts"
 import { listPositions } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
@@ -119,7 +120,7 @@ export function registerMessageCommands(program: Command): void {
         .addOption(bodyFileOption())
         .addOption(asPositionOption())
         .action(async (rawThreadId, options) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const thread = await loadExistingThread(rawThreadId)
             const body = await readBody(options)
             if (body === undefined) {

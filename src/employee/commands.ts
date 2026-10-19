@@ -8,9 +8,9 @@ import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import {
     loadExistingEmployee,
     loadExistingLlmModel,
-    requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
+import { requireCompany } from "../company/require-company.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
 import { isAuthorOf } from "../ids/is-author-of.ts"
@@ -131,7 +131,7 @@ async function createEmployee(
     config: unknown,
     reuseId: boolean | undefined,
 ): Promise<void> {
-    await requireCompany()
+    await requireCompany(projectRoot)
     const id = parseId("employee", rawId)
     const result = EmployeeConfigSchema.safeParse(config)
     if (!result.success) {
@@ -210,7 +210,7 @@ export function registerEmployeeCommands(program: Command): void {
             "also list the positions each employee fills",
         )
         .action(async ({ positions: withPositions }) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [employees, positions] = await Promise.all([
                 listEmployees(projectRoot),
                 withPositions ? listPositions(projectRoot) : [],
@@ -243,7 +243,7 @@ export function registerEmployeeCommands(program: Command): void {
             formatIdArgumentDescription("employee", "claude-senior"),
         )
         .action(async (rawId) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [employee, positions] = await Promise.all([
                 loadExistingEmployee(rawId),
                 listPositions(projectRoot),
@@ -282,7 +282,7 @@ export function registerEmployeeCommands(program: Command): void {
         .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
             requireAtLeastOneOption(options)
-            await requireCompany()
+            await requireCompany(projectRoot)
             const { id, createdAt, formerIds, ...current } =
                 await loadExistingEmployee(rawId)
             const llmOptions = [options.provider, options.model]
@@ -331,7 +331,7 @@ export function registerEmployeeCommands(program: Command): void {
         .addOption(reuseIdOption())
         .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId, { reuseId }) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const newId = parseId("employee", rawNewId)
             const [employee, taken, positions] = await Promise.all([
                 loadExistingEmployee(rawId),
@@ -403,7 +403,7 @@ export function registerEmployeeCommands(program: Command): void {
         .option("-t, --temporary", "also hand over its temporary assignments")
         .hook("preAction", requireDirector)
         .action(async (rawId, rawReplacementId, { temporary }) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [employee, replacement, positions] = await Promise.all([
                 loadExistingEmployee(rawId),
                 loadExistingEmployee(rawReplacementId),
@@ -491,7 +491,7 @@ export function registerEmployeeCommands(program: Command): void {
         )
         .hook("preAction", requireDirector)
         .action(async (rawId, { force }) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [employee, positions] = await Promise.all([
                 loadExistingEmployee(rawId),
                 listPositions(projectRoot),

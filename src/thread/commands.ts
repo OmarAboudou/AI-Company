@@ -3,7 +3,8 @@ import { z } from "zod"
 import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
-import { loadExistingThread, requireCompany } from "../cli-helpers.ts"
+import { loadExistingThread } from "../cli-helpers.ts"
+import { requireCompany } from "../company/require-company.ts"
 import { answerMentions } from "../llm/reply.ts"
 import { currentAuthor } from "../message/author.ts"
 import {
@@ -44,7 +45,7 @@ export function registerThreadCommands(program: Command): void {
         .addOption(bodyFileOption("the thread's first message"))
         .addOption(asPositionOption())
         .action(async (options) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const author = await currentAuthor({
                 asPositionId: options.asPosition,
             })
@@ -81,7 +82,7 @@ export function registerThreadCommands(program: Command): void {
             "List the threads, oldest first, with the positions they await.",
         )
         .action(async () => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [archives, positions] = await Promise.all([
                 readArchives(projectRoot),
                 listPositions(projectRoot),
@@ -118,7 +119,7 @@ export function registerThreadCommands(program: Command): void {
         )
         .option("-j, --json", "print one JSON object per message and line")
         .action(async (rawId, { json }) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const thread = await loadExistingThread(rawId)
             const [messages, positions] = await Promise.all([
                 listMessages(projectRoot, thread.id),

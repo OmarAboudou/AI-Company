@@ -5,11 +5,8 @@ import { formatNewIdArgumentDescription } from "../cli/format-new-id-argument-de
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
-import {
-    loadExistingLlmProvider,
-    requireCompany,
-    withoutUndefined,
-} from "../cli-helpers.ts"
+import { loadExistingLlmProvider, withoutUndefined } from "../cli-helpers.ts"
+import { requireCompany } from "../company/require-company.ts"
 import { listEmployees, saveEmployee } from "../employee/storage.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { parseId } from "../ids/parse-id.ts"
@@ -79,7 +76,7 @@ export function registerLlmProviderCommands(program: Command): void {
         .addOption(apiKeyFileOption())
         .hook("preAction", requireDirector)
         .action(async (rawId, { name, ...apiKeyOptions }) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const id = parseId("provider", rawId)
             if (await llmProviderExists(projectRoot, id)) {
                 throw new UserError(`Provider "${id}" already exists.`)
@@ -99,7 +96,7 @@ export function registerLlmProviderCommands(program: Command): void {
         .command("list")
         .description("List the LLM providers.")
         .action(async () => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const providers = await listLlmProviders(projectRoot)
             if (providers.length === 0) {
                 console.log("No providers yet. Run `llmco provider create`.")
@@ -118,7 +115,7 @@ export function registerLlmProviderCommands(program: Command): void {
             formatIdArgumentDescription("provider", "anthropic"),
         )
         .action(async (rawId) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const provider = await loadExistingLlmProvider(rawId)
             const models = await listLlmModels(projectRoot, provider.id)
             const modelIds =
@@ -151,7 +148,7 @@ export function registerLlmProviderCommands(program: Command): void {
         .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
             requireAtLeastOneOption(options)
-            await requireCompany()
+            await requireCompany(projectRoot)
             const { id, ...current } = await loadExistingLlmProvider(rawId)
             const config = LlmProviderConfigSchema.safeParse({
                 ...current,
@@ -182,7 +179,7 @@ export function registerLlmProviderCommands(program: Command): void {
         )
         .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const newId = parseId("provider", rawNewId)
             const [provider, taken, employees] = await Promise.all([
                 loadExistingLlmProvider(rawId),
@@ -227,7 +224,7 @@ export function registerLlmProviderCommands(program: Command): void {
         .option("-f, --force", "delete it even if it has models, deleting them")
         .hook("preAction", requireDirector)
         .action(async (rawId, { force }) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const provider = await loadExistingLlmProvider(rawId)
             const [models, employees] = await Promise.all([
                 listLlmModels(projectRoot, provider.id),

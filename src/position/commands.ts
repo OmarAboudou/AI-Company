@@ -10,9 +10,9 @@ import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import {
     loadExistingEmployee,
     loadExistingPosition,
-    requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
+import { requireCompany } from "../company/require-company.ts"
 import { loadCompany, saveCompany } from "../company/storage.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
@@ -93,7 +93,7 @@ async function assignTemporarily(
     assignee: Assignee,
     replace: boolean | undefined,
 ): Promise<void> {
-    await requireCompany()
+    await requireCompany(projectRoot)
     const [position, employee, company, state] = await Promise.all([
         loadExistingPosition(rawPositionId),
         assignee.kind === "employee"
@@ -168,7 +168,7 @@ export function registerPositionCommands(program: Command): void {
         .addOption(createDescriptionFileOption())
         .hook("preAction", requireDirector)
         .action(async (rawId, { title, description, descriptionFile }) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const id = parseId("position", rawId)
             if (await hasPosition(projectRoot, id)) {
                 throw new UserError(`Position "${id}" already exists.`)
@@ -196,7 +196,7 @@ export function registerPositionCommands(program: Command): void {
             "List the positions and who works each now: its default employee, or whoever it is assigned to temporarily.",
         )
         .action(async () => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [positions, company] = await Promise.all([
                 listPositions(projectRoot),
                 loadCompany(projectRoot),
@@ -227,7 +227,7 @@ export function registerPositionCommands(program: Command): void {
             formatIdArgumentDescription("position", "backend-developer"),
         )
         .action(async (rawId) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [position, company, { temporaryAssignment }] =
                 await Promise.all([
                     loadExistingPosition(rawId),
@@ -264,7 +264,7 @@ export function registerPositionCommands(program: Command): void {
         .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
             requireAtLeastOneOption(options)
-            await requireCompany()
+            await requireCompany(projectRoot)
             const { id, description, createdAt, formerIds, ...current } =
                 await loadExistingPosition(rawId)
             const newDescription = await readTextOrFile(
@@ -303,7 +303,7 @@ export function registerPositionCommands(program: Command): void {
         )
         .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const newId = parseId("position", rawNewId)
             const [position, taken, company, state] = await Promise.all([
                 loadExistingPosition(rawId),
@@ -353,7 +353,7 @@ export function registerPositionCommands(program: Command): void {
         .option("-r, --replace", "replace the current default employee")
         .hook("preAction", requireDirector)
         .action(async (rawPositionId, rawEmployeeId, { replace }) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [position, employee, company, state] = await Promise.all([
                 loadExistingPosition(rawPositionId),
                 loadExistingEmployee(rawEmployeeId),
@@ -415,7 +415,7 @@ export function registerPositionCommands(program: Command): void {
         )
         .hook("preAction", requireDirector)
         .action(async (rawId) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [
                 { defaultEmployeeId, ...position },
                 { temporaryAssignment },
@@ -491,7 +491,7 @@ export function registerPositionCommands(program: Command): void {
         )
         .hook("preAction", requireDirector)
         .action(async (rawId) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [position, { temporaryAssignment, ...state }] =
                 await Promise.all([
                     loadExistingPosition(rawId),
@@ -526,7 +526,7 @@ export function registerPositionCommands(program: Command): void {
         .option("-f, --force", "delete it even if threads await it")
         .hook("preAction", requireDirector)
         .action(async (rawId, { force }) => {
-            await requireCompany()
+            await requireCompany(projectRoot)
             const [position, company, positions, archives] = await Promise.all([
                 loadExistingPosition(rawId),
                 loadCompany(projectRoot),
