@@ -4,7 +4,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { UserError } from "../../user-error.ts"
 import type { Company } from "./schema.ts"
-import { companyExists, loadCompany, saveCompany } from "./storage.ts"
+import { hasCompany, loadCompany, saveCompany } from "./storage.ts"
 
 let projectRoot: string
 
@@ -70,12 +70,12 @@ describe("saveCompany", () => {
     })
 })
 
-describe("companyExists", () => {
+describe("hasCompany", () => {
     test("is false before saving and true after", async () => {
-        expect(await companyExists(projectRoot)).toBe(false)
+        expect(await hasCompany(projectRoot)).toBe(false)
 
         await saveCompany(projectRoot, acme)
 
-        expect(await companyExists(projectRoot)).toBe(true)
+        expect(await hasCompany(projectRoot)).toBe(true)
     })
 })
