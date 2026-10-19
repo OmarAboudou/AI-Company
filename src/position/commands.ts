@@ -7,10 +7,9 @@ import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireCompany } from "../company/require-company.ts"
-import { loadCompany, saveCompany } from "../company/storage.ts"
+import { loadCompany } from "../company/storage.ts"
 import { loadExistingEmployee } from "../employee/load-existing-employee.ts"
 import { requireDirector } from "../human/current-human.ts"
-import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { createPosition } from "../organization/position/create-position.ts"
 import { loadExistingPosition } from "../organization/position/load-existing-position.ts"
@@ -20,16 +19,15 @@ import type {
     Worker,
 } from "../organization/position/schema.ts"
 import {
-    copyPositionFolder,
     deletePositionFolder,
     deletePositionState,
-    hasPosition,
     listPositions,
     loadPositionState,
     savePosition,
     savePositionState,
 } from "../organization/position/storage.ts"
 import { updatePosition } from "../organization/position/update-position.ts"
+import { updatePositionId } from "../organization/position/update-position-id.ts"
 import { readArchives } from "../thread/archives.ts"
 import { awaitedIds } from "../thread/members.ts"
 import { UserError } from "../user-error.ts"
@@ -276,38 +274,14 @@ export function registerPositionCommands(program: Command): void {
         )
         .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId) => {
-            await requireCompany(projectRoot)
-            const newId = parseId("position", rawNewId)
-            const [position, taken, company, state] = await Promise.all([
-                loadExistingPosition(projectRoot, rawId),
-                hasPosition(projectRoot, newId),
-                loadCompany(projectRoot),
-                loadPositionState(projectRoot, parseId("position", rawId)),
-            ])
-            if (taken) {
-                throw new UserError(`Position "${newId}" already exists.`)
-            }
-            // Copy, repoint, then delete rather than move, as for employees:
-            // the company must never name a missing director's position.
-            await copyPositionFolder(projectRoot, position.id, newId)
-            await Promise.all([
-                savePosition(
-                    projectRoot,
-                    getRenamedEntity(position, newId, new Date().toISOString()),
-                ),
-                savePositionState(projectRoot, newId, state),
-            ])
-            if (company.directorPositionId === position.id) {
-                await saveCompany(projectRoot, {
-                    ...company,
-                    directorPositionId: newId,
-                })
-            }
-            await Promise.all([
-                deletePositionFolder(projectRoot, position.id),
-                deletePositionState(projectRoot, position.id),
-            ])
-            console.log(`Position "${position.id}" is now "${newId}".`)
+            const { position, renamedPosition } = await updatePositionId(
+                projectRoot,
+                rawId,
+                rawNewId,
+            )
+            console.log(
+                `Position "${position.id}" is now "${renamedPosition.id}".`,
+            )
         })
 
     positionCommand
