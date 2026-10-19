@@ -5,7 +5,7 @@ import { createTemporaryCompany } from "../../company/create-temporary-company.t
 import { saveMessage } from "../../message/storage.ts"
 import { saveThread } from "../../thread/storage.ts"
 import { UserError } from "../../user-error.ts"
-import { employeeExists, saveEmployee } from "../employee/storage.ts"
+import { hasEmployee, saveEmployee } from "../employee/storage.ts"
 import { deletePosition } from "./delete-position.ts"
 import {
     hasPosition,
@@ -74,7 +74,7 @@ describe("deletePosition", () => {
         const { position } = await deletePosition(projectRoot, "developer")
 
         expect(position.defaultEmployeeId).toBe("omar")
-        expect(await employeeExists(projectRoot, "omar")).toBe(true)
+        expect(await hasEmployee(projectRoot, "omar")).toBe(true)
     })
 
     test("refuses the director's position", async () => {

@@ -6,27 +6,27 @@ import { readJsonFile } from "../../files/read-json-file.ts"
 import { loadIdHistory, saveIdHistory } from "../../ids/id-history-storage.ts"
 import { type Employee, EmployeeConfigSchema } from "./schema.ts"
 
-function employeesDir(projectRoot: string): string {
+function getEmployeesFolderPath(projectRoot: string): string {
     return join(getLlmcoFolderPath(projectRoot), "employees")
 }
 
-function employeeDir(projectRoot: string, id: string): string {
-    return join(employeesDir(projectRoot), id)
+function getEmployeeFolderPath(projectRoot: string, id: string): string {
+    return join(getEmployeesFolderPath(projectRoot), id)
 }
 
-function employeeConfigPath(projectRoot: string, id: string): string {
-    return join(employeeDir(projectRoot, id), "config.json")
+function getEmployeeConfigFilePath(projectRoot: string, id: string): string {
+    return join(getEmployeeFolderPath(projectRoot, id), "config.json")
 }
 
-function employeeHistoryPath(projectRoot: string, id: string): string {
-    return join(employeeDir(projectRoot, id), "history.json")
+function getEmployeeHistoryFilePath(projectRoot: string, id: string): string {
+    return join(getEmployeeFolderPath(projectRoot, id), "history.json")
 }
 
-export async function employeeExists(
+export async function hasEmployee(
     projectRoot: string,
     id: string,
 ): Promise<boolean> {
-    return Bun.file(employeeConfigPath(projectRoot, id)).exists()
+    return Bun.file(getEmployeeConfigFilePath(projectRoot, id)).exists()
 }
 
 export async function loadEmployee(
@@ -36,17 +36,19 @@ export async function loadEmployee(
     const [config, history] = await Promise.all([
         readJsonFile(
             projectRoot,
-            employeeConfigPath(projectRoot, id),
+            getEmployeeConfigFilePath(projectRoot, id),
             EmployeeConfigSchema,
         ),
-        loadIdHistory(projectRoot, employeeHistoryPath(projectRoot, id)),
+        loadIdHistory(projectRoot, getEmployeeHistoryFilePath(projectRoot, id)),
     ])
     return { id, ...config, ...history }
 }
 
 export async function listEmployees(projectRoot: string): Promise<Employee[]> {
-    const ids = await listSubdirectories(employeesDir(projectRoot))
-    return Promise.all(ids.map((id) => loadEmployee(projectRoot, id)))
+    const employeeIds = await listSubdirectories(
+        getEmployeesFolderPath(projectRoot),
+    )
+    return Promise.all(employeeIds.map((id) => loadEmployee(projectRoot, id)))
 }
 
 export async function saveEmployee(
@@ -56,31 +58,35 @@ export async function saveEmployee(
     const { id, createdAt, formerIds, ...config } = employee
     await Promise.all([
         Bun.write(
-            employeeConfigPath(projectRoot, id),
+            getEmployeeConfigFilePath(projectRoot, id),
             `${JSON.stringify(config, null, 4)}\n`,
         ),
-        saveIdHistory(employeeHistoryPath(projectRoot, id), {
+        saveIdHistory(getEmployeeHistoryFilePath(projectRoot, id), {
             createdAt,
             formerIds,
         }),
     ])
 }
 
-export async function deleteEmployee(
+export async function deleteEmployeeFolder(
     projectRoot: string,
     id: string,
 ): Promise<void> {
-    await rm(employeeDir(projectRoot, id), { recursive: true })
+    await rm(getEmployeeFolderPath(projectRoot, id), { recursive: true })
 }
 
-export async function copyEmployee(
+export async function copyEmployeeFolder(
     projectRoot: string,
     id: string,
     newId: string,
 ): Promise<void> {
-    await cp(employeeDir(projectRoot, id), employeeDir(projectRoot, newId), {
-        recursive: true,
-        errorOnExist: true,
-        force: false,
-    })
+    await cp(
+        getEmployeeFolderPath(projectRoot, id),
+        getEmployeeFolderPath(projectRoot, newId),
+        {
+            recursive: true,
+            errorOnExist: true,
+            force: false,
+        },
+    )
 }

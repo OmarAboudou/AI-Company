@@ -2,10 +2,7 @@ import type { CommandUnknownOpts } from "@commander-js/extra-typings"
 import { projectRoot } from "../cli/project-root.ts"
 import { IdSchema } from "../ids/id-schema.ts"
 import type { Employee } from "../organization/employee/schema.ts"
-import {
-    employeeExists,
-    loadEmployee,
-} from "../organization/employee/storage.ts"
+import { hasEmployee, loadEmployee } from "../organization/employee/storage.ts"
 import { getCurrentWorker } from "../organization/position/get-current-worker.ts"
 import type { Position, Worker } from "../organization/position/schema.ts"
 import { loadPositionState } from "../organization/position/storage.ts"
@@ -59,7 +56,7 @@ export async function currentHuman(): Promise<CurrentHuman> {
     if (id === undefined) {
         return { kind: "director" }
     }
-    if (!(await employeeExists(projectRoot, id))) {
+    if (!(await hasEmployee(projectRoot, id))) {
         throw new UserError(
             `LLMCO_CURRENT_HUMAN_ID names no employee: "${id}". Run \`llmco employee list\`, or unset it to act as a director.`,
         )
