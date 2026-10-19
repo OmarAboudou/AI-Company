@@ -30,12 +30,12 @@ import type {
 import {
     listPositions,
     loadPositionState,
-    savePositionState,
 } from "../organization/position/storage.ts"
 import {
     type PositionUnassignment,
     unassignPosition,
 } from "../organization/position/unassign-position.ts"
+import { unassignPositionTemporarily } from "../organization/position/unassign-position-temporarily.ts"
 import { updatePosition } from "../organization/position/update-position.ts"
 import { updatePositionId } from "../organization/position/update-position-id.ts"
 
@@ -371,25 +371,20 @@ export function registerPositionCommands(program: Command): void {
         )
         .hook("preAction", requireDirector)
         .action(async (rawId) => {
-            await requireCompany(projectRoot)
-            const [position, { temporaryAssignment, ...state }] =
-                await Promise.all([
-                    loadExistingPosition(projectRoot, rawId),
-                    loadPositionState(projectRoot, parseId("position", rawId)),
-                ])
-            if (temporaryAssignment === undefined) {
+            const { position, endedTemporaryAssignment } =
+                await unassignPositionTemporarily(projectRoot, rawId)
+            if (endedTemporaryAssignment === undefined) {
                 console.log(
                     `Position "${position.id}" isn't assigned temporarily.`,
                 )
                 return
             }
-            await savePositionState(projectRoot, position.id, state)
-            const back =
+            const nowWorkedByMessage =
                 position.defaultEmployeeId === undefined
                     ? "it is vacant again"
                     : `its default employee "${position.defaultEmployeeId}" works it again`
             console.log(
-                `Position "${position.id}" is no longer assigned temporarily to ${formatWorkerName(temporaryAssignment)}: ${back}.`,
+                `Position "${position.id}" is no longer assigned temporarily to ${formatWorkerName(endedTemporaryAssignment)}: ${nowWorkedByMessage}.`,
             )
         })
 
