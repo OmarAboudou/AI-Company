@@ -8,11 +8,12 @@ import { requireDirector } from "../cli/require-director.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { createEmployee } from "../organization/employee/create-employee.ts"
 import { getPositionsFilledBy } from "../organization/employee/get-positions-filled-by.ts"
-import {
-    listPositionsWorkedTemporarilyBy,
-    type TemporaryPosition,
-} from "../organization/employee/list-positions-worked-temporarily-by.ts"
+import { listPositionsWorkedTemporarilyBy } from "../organization/employee/list-positions-worked-temporarily-by.ts"
 import { loadExistingEmployee } from "../organization/employee/load-existing-employee.ts"
+import {
+    type EmployeeReplacement,
+    replaceEmployee,
+} from "../organization/employee/replace-employee.ts"
 import {
     deleteEmployeeFolder,
     listEmployees,
@@ -49,6 +50,48 @@ function formatRenamedMessage({
     return updatedPositionIds.length === 0
         ? `${renamedMessage}.`
         : `${renamedMessage}; updated positions: ${updatedPositionIds.join(", ")}.`
+}
+
+function formatReplacedMessage({
+    employeeId,
+    replacementId,
+    filledPositionIds,
+    handedOverPositionIds,
+    endedTemporaryPositionIds,
+    keptTemporaryPositionIds,
+}: EmployeeReplacement): string {
+    const keptMessage =
+        keptTemporaryPositionIds.length === 0
+            ? ""
+            : ` "${employeeId}" stays assigned temporarily to ${keptTemporaryPositionIds.join(", ")}.`
+    const changedPositionIds = [
+        ...filledPositionIds,
+        ...handedOverPositionIds,
+        ...endedTemporaryPositionIds,
+    ]
+    if (changedPositionIds.length === 0) {
+        return `"${employeeId}" fills no position: nothing to replace.${keptMessage}`
+    }
+    const roleMessages: string[] = []
+    if (filledPositionIds.length > 0) {
+        roleMessages.push(
+            `as default employee of ${filledPositionIds.join(", ")}`,
+        )
+    }
+    if (handedOverPositionIds.length > 0) {
+        roleMessages.push(
+            `as temporary assignee of ${handedOverPositionIds.join(", ")}`,
+        )
+    }
+    const replacedMessage =
+        roleMessages.length === 0
+            ? `"${replacementId}" already works by default what "${employeeId}" covered`
+            : `"${replacementId}" replaces "${employeeId}" ${roleMessages.join(" and ")}`
+    const endedMessage =
+        endedTemporaryPositionIds.length === 0
+            ? ""
+            : ` Temporary assignments ended: ${endedTemporaryPositionIds.join(", ")}.`
+    return `${replacedMessage}; "${employeeId}" stays hired.${endedMessage}${keptMessage}`
 }
 
 function reuseIdOption() {
@@ -244,87 +287,14 @@ export function registerEmployeeCommands(program: Command): void {
         )
         .option("-t, --temporary", "also hand over its temporary assignments")
         .hook("preAction", requireDirector)
-        .action(async (rawId, rawReplacementId, { temporary }) => {
-            await requireCompany(projectRoot)
-            const [employee, replacement, positions] = await Promise.all([
-                loadExistingEmployee(projectRoot, rawId),
-                loadExistingEmployee(projectRoot, rawReplacementId),
-                listPositions(projectRoot),
-            ])
-            if (replacement.id === employee.id) {
-                throw new UserError(`"${employee.id}" can't replace itself.`)
-            }
-            const filled = getPositionsFilledBy(positions, employee.id)
-            const [kept, confirmed] = await Promise.all([
-                listPositionsWorkedTemporarilyBy(
-                    projectRoot,
-                    positions,
-                    employee.id,
-                ),
-                listPositionsWorkedTemporarilyBy(
-                    projectRoot,
-                    filled,
-                    replacement.id,
-                ),
-            ])
-            const handedOver = temporary ? kept : []
-            const isDefault = ({ position }: TemporaryPosition) =>
-                position.defaultEmployeeId === replacement.id
-            const ending = [...confirmed, ...handedOver.filter(isDefault)]
-            const moving = handedOver.filter((handed) => !isDefault(handed))
-            const ids = (temporaries: TemporaryPosition[]) =>
-                temporaries.map(({ position }) => position.id).join(", ")
-            const stillTemporary =
-                kept.length === 0 || temporary
-                    ? ""
-                    : ` "${employee.id}" stays assigned temporarily to ${ids(kept)}.`
-            if (filled.length === 0 && handedOver.length === 0) {
-                console.log(
-                    `"${employee.id}" fills no position: nothing to replace.${stillTemporary}`,
-                )
-                return
-            }
-            await Promise.all([
-                ...filled.map((position) =>
-                    savePosition(projectRoot, {
-                        ...position,
-                        defaultEmployeeId: replacement.id,
-                    }),
-                ),
-                ...ending.map(
-                    ({ position, state: { temporaryAssignment, ...state } }) =>
-                        savePositionState(projectRoot, position.id, state),
-                ),
-                ...moving.map(({ position, state }) =>
-                    savePositionState(projectRoot, position.id, {
-                        ...state,
-                        temporaryAssignment: {
-                            kind: "employee",
-                            employeeId: replacement.id,
-                        },
-                    }),
-                ),
-            ])
-            const roles: string[] = []
-            if (filled.length > 0) {
-                roles.push(
-                    `as default employee of ${filled.map(({ id }) => id).join(", ")}`,
-                )
-            }
-            if (moving.length > 0) {
-                roles.push(`as temporary assignee of ${ids(moving)}`)
-            }
-            const replaced =
-                roles.length === 0
-                    ? `"${replacement.id}" already works by default what "${employee.id}" covered`
-                    : `"${replacement.id}" replaces "${employee.id}" ${roles.join(" and ")}`
-            const ended =
-                ending.length === 0
-                    ? ""
-                    : ` Temporary assignments ended: ${ids(ending)}.`
-            console.log(
-                `${replaced}; "${employee.id}" stays hired.${ended}${stillTemporary}`,
+        .action(async (rawId, rawReplacementId, options) => {
+            const replacement = await replaceEmployee(
+                projectRoot,
+                rawId,
+                rawReplacementId,
+                { shouldHandOverTemporaryAssignments: options.temporary },
             )
+            console.log(formatReplacedMessage(replacement))
         })
 
     employeeCommand
