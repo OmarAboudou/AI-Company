@@ -2,11 +2,11 @@ import { type Command, Option } from "@commander-js/extra-typings"
 import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
-import { loadExistingThread } from "../cli-helpers.ts"
 import { createDraft } from "../messaging/message/create-draft.ts"
 import { readCurrentAuthor } from "../messaging/message/read-current-author.ts"
 import { sendDraft } from "../messaging/message/send-draft.ts"
 import { listMessages } from "../messaging/message/storage.ts"
+import { loadExistingThread } from "../messaging/thread/load-existing-thread.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
 import { UserError } from "../user-error.ts"
 import { answerMentions } from "../work/answer-mentions.ts"
@@ -62,7 +62,7 @@ export function registerMessageCommands(program: Command): void {
         .addOption(asPositionOption())
         .action(async (rawThreadId, options) => {
             await requireCompany(projectRoot)
-            const thread = await loadExistingThread(rawThreadId)
+            const thread = await loadExistingThread(projectRoot, rawThreadId)
             const body = await readBody(options)
             if (body === undefined) {
                 throw new UserError(
