@@ -8,6 +8,9 @@ export async function createDraft(
     author: Author,
     body: string,
 ): Promise<Draft> {
+    if (body.trim() === "") {
+        throw new UserError("The message's body is empty.")
+    }
     const { employeeMentions } = findMentions(body)
     if (employeeMentions.length > 0) {
         throw new UserError(
