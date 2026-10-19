@@ -44,6 +44,14 @@ llmco thread show <thread-id> --json | jq -r .body     # one message per line
 
 Mentioning a position with `@<position-id>` asks whoever works it to act: an LLM employee answers right away, the answer printed as it streams; a human, or a vacant position, leaves the thread awaiting it. A message without mention asks nothing of anyone.
 
+Whoever works a position is its default employee, unless the position is assigned temporarily: to another employee, or to the directors, the people working on the repository, so that no LLM answers its mentions meanwhile. The temporary assignment stays on your machine, in `.llmco/.state/`, which git ignores.
+
+```bash
+llmco position interim employee backend-developer claude-junior   # another employee works it
+llmco position interim directors backend-developer                 # the directors work it
+llmco position end-interim backend-developer                       # back to its default employee
+```
+
 ## Connecting to LLM providers
 
 A provider is reached through one **connection** per API protocol it speaks: `anthropic-messages` for now, `openai-chat-completions` and `openai-responses` later. Each model names the protocol it is called with.

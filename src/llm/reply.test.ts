@@ -3,6 +3,10 @@ import { useTemporaryProject } from "../cli-test-helpers.ts"
 import { useFakeAnthropic } from "./fake-anthropic.ts"
 
 const { runCli, runCliAsync, projectPath, homePath } = useTemporaryProject()
+
+const interimEmployee = ["position", "interim", "employee"]
+const interimDirectors = ["position", "interim", "directors"]
+
 const fake = useFakeAnthropic()
 
 const key = { TEST_ANTHROPIC_KEY: "sk-test" }
@@ -283,6 +287,59 @@ describe("when nobody answers", () => {
         expect(sent.exitCode).toBe(1)
         expect(sent.stderr).toContain("which llmco can't call yet")
         expect(fake.requests).toHaveLength(0)
+    })
+})
+
+describe("whoever works the position now answers", () => {
+    beforeEach(() => {
+        runCli("employee", "create", "human", "julie", "-n", "Julie")
+    })
+
+    test("an LLM employee assigned temporarily answers instead of the default employee", async () => {
+        runCli("position", "assign", "backend-developer", "julie", "-r")
+        runCli(...interimEmployee, "backend-developer", "claude")
+        fake.respondWith({ text: "Hono, for Bun." })
+
+        const sent = await send(question)
+        const [, answer] = messages()
+
+        expect(sent.exitCode).toBe(0)
+        expect(sent.stderr).toContain("Claude Senior answers as Backend")
+        expect(answer?.employee?.id).toBe("claude")
+    })
+
+    test("a human employee assigned temporarily leaves the message waiting", async () => {
+        runCli(...interimEmployee, "backend-developer", "julie")
+
+        const sent = await send(question)
+
+        expect(sent.exitCode).toBe(0)
+        expect(sent.stderr).toContain("worked by Julie, a human")
+        expect(fake.requests).toHaveLength(0)
+    })
+
+    test("a position assigned temporarily to the directors leaves the message waiting", async () => {
+        runCli(...interimDirectors, "backend-developer")
+
+        const sent = await send(question)
+        const list = runCli("thread", "list").stdout
+
+        expect(sent.exitCode).toBe(0)
+        expect(sent.stderr).toContain(
+            "@backend-developer is worked by the directors",
+        )
+        expect(fake.requests).toHaveLength(0)
+        expect(list).toContain("awaiting @backend-developer")
+    })
+
+    test("the default employee answers again once the temporary assignment ends", async () => {
+        runCli(...interimDirectors, "backend-developer")
+        runCli("position", "end-interim", "backend-developer")
+
+        const sent = await send(question)
+
+        expect(sent.stderr).toContain("Claude Senior answers as Backend")
+        expect(fake.requests).toHaveLength(1)
     })
 })
 
