@@ -1,6 +1,6 @@
 import { entityFolders } from "./entity-folders.ts"
 
-export function newIdDescription(
+export function formatNewIdArgumentDescription(
     entity: keyof typeof entityFolders,
     example: string,
 ): string {

@@ -1,10 +1,10 @@
 import { type Command, Option } from "@commander-js/extra-typings"
 import { z } from "zod"
-import { idDescription } from "../cli/format-id-argument-description.ts"
-import { newIdDescription } from "../cli/format-new-id-argument-description.ts"
+import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
+import { formatNewIdArgumentDescription } from "../cli/format-new-id-argument-description.ts"
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
-import { requireAnOption } from "../cli/require-at-least-one-option.ts"
+import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import {
     loadExistingEmployee,
     loadExistingLlmModel,
@@ -164,7 +164,10 @@ export function registerEmployeeCommands(program: Command): void {
     createEmployeeCommand
         .command("llm")
         .description("Create an employee run by an LLM.")
-        .argument("<employee-id>", idDescription("employee", "claude-senior"))
+        .argument(
+            "<employee-id>",
+            formatIdArgumentDescription("employee", "claude-senior"),
+        )
         .requiredOption("-n, --name <name>", "employee name")
         .requiredOption(
             "-p, --provider <provider-id>",
@@ -186,7 +189,10 @@ export function registerEmployeeCommands(program: Command): void {
     createEmployeeCommand
         .command("human")
         .description("Create an employee who is a human.")
-        .argument("<employee-id>", idDescription("employee", "omar"))
+        .argument(
+            "<employee-id>",
+            formatIdArgumentDescription("employee", "omar"),
+        )
         .requiredOption("-n, --name <name>", "employee name")
         .addOption(reuseIdOption())
         .action(async (rawId, { name, reuseId }) => {
@@ -229,7 +235,10 @@ export function registerEmployeeCommands(program: Command): void {
     employeeCommand
         .command("show")
         .description("Display an employee.")
-        .argument("<employee-id>", idDescription("employee", "claude-senior"))
+        .argument(
+            "<employee-id>",
+            formatIdArgumentDescription("employee", "claude-senior"),
+        )
         .action(async (rawId) => {
             await requireCompany()
             const [employee, positions] = await Promise.all([
@@ -254,7 +263,10 @@ export function registerEmployeeCommands(program: Command): void {
         .description(
             "Update an employee: only the options given change. Its kind can't change.",
         )
-        .argument("<employee-id>", idDescription("employee", "claude-senior"))
+        .argument(
+            "<employee-id>",
+            formatIdArgumentDescription("employee", "claude-senior"),
+        )
         .option("-n, --name <name>", "employee name")
         .option(
             "-p, --provider <provider-id>",
@@ -266,7 +278,7 @@ export function registerEmployeeCommands(program: Command): void {
         )
         .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
-            requireAnOption(options)
+            requireAtLeastOneOption(options)
             await requireCompany()
             const { id, createdAt, formerIds, ...current } =
                 await loadExistingEmployee(rawId)
@@ -305,10 +317,13 @@ export function registerEmployeeCommands(program: Command): void {
         .description(
             "Change the id of an employee and of the positions it fills.",
         )
-        .argument("<employee-id>", idDescription("employee", "claude-senior"))
+        .argument(
+            "<employee-id>",
+            formatIdArgumentDescription("employee", "claude-senior"),
+        )
         .argument(
             "<new-employee-id>",
-            newIdDescription("employee", "claude-lead"),
+            formatNewIdArgumentDescription("employee", "claude-lead"),
         )
         .addOption(reuseIdOption())
         .hook("preAction", requireDirector)
@@ -374,7 +389,10 @@ export function registerEmployeeCommands(program: Command): void {
         .description(
             "Replace (hand over) an employee by another in every position it fills by default. It stays hired, and keeps its temporary assignments unless --temporary.",
         )
-        .argument("<employee-id>", idDescription("employee", "claude-senior"))
+        .argument(
+            "<employee-id>",
+            formatIdArgumentDescription("employee", "claude-senior"),
+        )
         .argument(
             "<replacement-id>",
             "id of the employee taking its positions over (e.g. omar)",
@@ -460,7 +478,10 @@ export function registerEmployeeCommands(program: Command): void {
         .command("delete")
         .alias("fire")
         .description("Delete (fire) an employee.")
-        .argument("<employee-id>", idDescription("employee", "claude-senior"))
+        .argument(
+            "<employee-id>",
+            formatIdArgumentDescription("employee", "claude-senior"),
+        )
         .option(
             "-f, --force",
             "delete it even if it fills positions, leaving them vacant, or works them temporarily, ending these assignments",

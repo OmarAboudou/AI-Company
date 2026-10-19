@@ -1,9 +1,9 @@
 import type { Command } from "@commander-js/extra-typings"
 import { z } from "zod"
-import { descriptionFileOption } from "../cli/create-description-file-option.ts"
+import { createDescriptionFileOption } from "../cli/create-description-file-option.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
-import { requireAnOption } from "../cli/require-at-least-one-option.ts"
+import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireCompany, withoutUndefined } from "../cli-helpers.ts"
 import { requireGitRepository } from "../git/require-git-repository.ts"
 import { requireDirector } from "../human/current-human.ts"
@@ -22,7 +22,7 @@ export function registerCompanyCommands(program: Command): void {
         )
         .requiredOption("-n, --name <name>", "company name")
         .option("-d, --description <text>", "company description", "")
-        .addOption(descriptionFileOption())
+        .addOption(createDescriptionFileOption())
         .hook("preAction", requireDirector)
         .action(async (options) => {
             requireGitRepository(projectRoot)
@@ -74,10 +74,10 @@ export function registerCompanyCommands(program: Command): void {
         .description("Update the company: only the options given change.")
         .option("-n, --name <name>", "company name")
         .option("-d, --description <text>", "company description")
-        .addOption(descriptionFileOption())
+        .addOption(createDescriptionFileOption())
         .hook("preAction", requireDirector)
         .action(async (options) => {
-            requireAnOption(options)
+            requireAtLeastOneOption(options)
             await requireCompany()
             const [company, newDescription] = await Promise.all([
                 loadCompany(projectRoot),

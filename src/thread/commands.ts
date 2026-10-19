@@ -1,6 +1,6 @@
 import type { Command } from "@commander-js/extra-typings"
 import { z } from "zod"
-import { idDescription } from "../cli/format-id-argument-description.ts"
+import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { loadExistingThread, requireCompany } from "../cli-helpers.ts"
@@ -111,7 +111,10 @@ export function registerThreadCommands(program: Command): void {
         )
         .argument(
             "<thread-id>",
-            idDescription("thread", "2026-10-18-choice-of-framework"),
+            formatIdArgumentDescription(
+                "thread",
+                "2026-10-18-choice-of-framework",
+            ),
         )
         .option("-j, --json", "print one JSON object per message and line")
         .action(async (rawId, { json }) => {

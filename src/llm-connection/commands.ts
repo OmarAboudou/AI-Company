@@ -1,9 +1,9 @@
 import { Argument, type Command, Option } from "@commander-js/extra-typings"
 import { z } from "zod"
-import { idDescription } from "../cli/format-id-argument-description.ts"
+import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
-import { requireAnOption } from "../cli/require-at-least-one-option.ts"
+import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import {
     loadExistingLlmProvider,
     parseId,
@@ -94,7 +94,10 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
     connectionCommand
         .command("create")
         .description("Create a provider's connection through an API protocol.")
-        .argument("<provider-id>", idDescription("provider", "anthropic"))
+        .argument(
+            "<provider-id>",
+            formatIdArgumentDescription("provider", "anthropic"),
+        )
         .addArgument(protocolArgument())
         .requiredOption(
             "-u, --base-url <url>",
@@ -153,7 +156,10 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
     connectionCommand
         .command("update")
         .description("Update a connection: only the options given change.")
-        .argument("<provider-id>", idDescription("provider", "anthropic"))
+        .argument(
+            "<provider-id>",
+            formatIdArgumentDescription("provider", "anthropic"),
+        )
         .addArgument(protocolArgument())
         .option(
             "-u, --base-url <url>",
@@ -162,7 +168,7 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
         .addOption(authOption())
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol, options) => {
-            requireAnOption(options)
+            requireAtLeastOneOption(options)
             await requireCompany()
             const provider = await loadProviderWithConnection(
                 rawProviderId,
@@ -184,7 +190,10 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
     connectionCommand
         .command("delete")
         .description("Delete a provider's connection no model is called with.")
-        .argument("<provider-id>", idDescription("provider", "anthropic"))
+        .argument(
+            "<provider-id>",
+            formatIdArgumentDescription("provider", "anthropic"),
+        )
         .addArgument(protocolArgument())
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol) => {

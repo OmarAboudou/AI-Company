@@ -1,10 +1,10 @@
 import { type Command, Option } from "@commander-js/extra-typings"
 import { z } from "zod"
-import { idDescription } from "../cli/format-id-argument-description.ts"
-import { newIdDescription } from "../cli/format-new-id-argument-description.ts"
+import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
+import { formatNewIdArgumentDescription } from "../cli/format-new-id-argument-description.ts"
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
-import { requireAnOption } from "../cli/require-at-least-one-option.ts"
+import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import {
     loadExistingLlmProvider,
     parseId,
@@ -70,7 +70,10 @@ export function registerLlmProviderCommands(program: Command): void {
     providerCommand
         .command("create")
         .description("Create an LLM provider.")
-        .argument("<provider-id>", idDescription("provider", "anthropic"))
+        .argument(
+            "<provider-id>",
+            formatIdArgumentDescription("provider", "anthropic"),
+        )
         .requiredOption("-n, --name <name>", "provider name")
         .addOption(apiKeyEnvOption())
         .addOption(apiKeyFileOption())
@@ -110,7 +113,10 @@ export function registerLlmProviderCommands(program: Command): void {
         .description(
             "Display an LLM provider: its API key's source, connections and models.",
         )
-        .argument("<provider-id>", idDescription("provider", "anthropic"))
+        .argument(
+            "<provider-id>",
+            formatIdArgumentDescription("provider", "anthropic"),
+        )
         .action(async (rawId) => {
             await requireCompany()
             const provider = await loadExistingLlmProvider(rawId)
@@ -135,13 +141,16 @@ export function registerLlmProviderCommands(program: Command): void {
     providerCommand
         .command("update")
         .description("Update an LLM provider: only the options given change.")
-        .argument("<provider-id>", idDescription("provider", "anthropic"))
+        .argument(
+            "<provider-id>",
+            formatIdArgumentDescription("provider", "anthropic"),
+        )
         .option("-n, --name <name>", "provider name")
         .addOption(apiKeyEnvOption())
         .addOption(apiKeyFileOption())
         .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
-            requireAnOption(options)
+            requireAtLeastOneOption(options)
             await requireCompany()
             const { id, ...current } = await loadExistingLlmProvider(rawId)
             const config = LlmProviderConfigSchema.safeParse({
@@ -163,10 +172,13 @@ export function registerLlmProviderCommands(program: Command): void {
         .description(
             "Change the id of an LLM provider and of the employees running on it.",
         )
-        .argument("<provider-id>", idDescription("provider", "anthropic"))
+        .argument(
+            "<provider-id>",
+            formatIdArgumentDescription("provider", "anthropic"),
+        )
         .argument(
             "<new-provider-id>",
-            newIdDescription("provider", "anthropic-api"),
+            formatNewIdArgumentDescription("provider", "anthropic-api"),
         )
         .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId) => {
@@ -208,7 +220,10 @@ export function registerLlmProviderCommands(program: Command): void {
         .description(
             "Delete an LLM provider no employee runs on, and with --force its models.",
         )
-        .argument("<provider-id>", idDescription("provider", "anthropic"))
+        .argument(
+            "<provider-id>",
+            formatIdArgumentDescription("provider", "anthropic"),
+        )
         .option("-f, --force", "delete it even if it has models, deleting them")
         .hook("preAction", requireDirector)
         .action(async (rawId, { force }) => {

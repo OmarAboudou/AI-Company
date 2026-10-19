@@ -3,13 +3,13 @@ import { projectRoot } from "./project-root.ts"
 
 export async function readTextOrFile<Text extends string | undefined>(
     text: Text,
-    file: string | undefined,
+    filePath: string | undefined,
 ): Promise<Text | string> {
-    if (file === undefined) {
+    if (filePath === undefined) {
         return text
     }
-    if (file === "-") {
+    if (filePath === "-") {
         return Bun.stdin.text()
     }
-    return readTextFile(projectRoot, file)
+    return readTextFile(projectRoot, filePath)
 }
