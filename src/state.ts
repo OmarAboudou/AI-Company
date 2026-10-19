@@ -4,7 +4,7 @@ import { llmcoDir } from "./project.ts"
 const gitignore = "# Created by llmco: its runtime state stays out of git.\n*\n"
 
 export function stateDir(projectRoot: string): string {
-    return join(llmcoDir(projectRoot), "state")
+    return join(llmcoDir(projectRoot), ".state")
 }
 
 export async function writeState(

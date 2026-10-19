@@ -285,7 +285,7 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
     })
 
     async function positionState(id: string): Promise<unknown> {
-        const path = projectPath(".llmco", "state", "positions", `${id}.json`)
+        const path = projectPath(".llmco", ".state", "positions", `${id}.json`)
         const file = Bun.file(path)
         return (await file.exists()) ? file.json() : undefined
     }

@@ -142,7 +142,7 @@ describe("copyPosition", () => {
 })
 
 function statePath(...segments: string[]): string {
-    return join(projectRoot, ".llmco", "state", ...segments)
+    return join(projectRoot, ".llmco", ".state", ...segments)
 }
 
 describe("savePositionState", () => {
@@ -150,7 +150,7 @@ describe("savePositionState", () => {
         temporaryAssignment: { kind: "employee", employeeId: "julie" },
     } as const
 
-    test("writes the state in .llmco/state/positions, named after the id", async () => {
+    test("writes the state in .llmco/.state/positions, named after the id", async () => {
         await savePositionState(projectRoot, developer.id, interim)
 
         const file = Bun.file(statePath("positions", `${developer.id}.json`))
