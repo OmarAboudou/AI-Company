@@ -2,38 +2,38 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { UserError } from "../../user-error.ts"
 import { readCurrentHumanId } from "./read-current-human-id.ts"
 
-const variable = "LLMCO_CURRENT_HUMAN_ID"
-const shellValue = process.env[variable]
+const variableName = "LLMCO_CURRENT_HUMAN_ID"
+const shellValue = process.env[variableName]
 
 beforeEach(() => {
-    delete process.env[variable]
+    delete process.env[variableName]
 })
 
 afterEach(() => {
     if (shellValue === undefined) {
-        delete process.env[variable]
+        delete process.env[variableName]
     } else {
-        process.env[variable] = shellValue
+        process.env[variableName] = shellValue
     }
 })
 
 describe("readCurrentHumanId", () => {
     test("is no one, a director, when the variable is unset or empty", () => {
-        const unset = readCurrentHumanId()
-        process.env[variable] = ""
+        const currentHumanId = readCurrentHumanId()
+        process.env[variableName] = ""
 
-        expect(unset).toBeUndefined()
+        expect(currentHumanId).toBeUndefined()
         expect(readCurrentHumanId()).toBeUndefined()
     })
 
     test("is the employee id the variable holds", () => {
-        process.env[variable] = "julie"
+        process.env[variableName] = "julie"
 
         expect(readCurrentHumanId()).toBe("julie")
     })
 
     test("refuses a value that isn't an employee id", () => {
-        process.env[variable] = "Julie Martin"
+        process.env[variableName] = "Julie Martin"
 
         expect(readCurrentHumanId).toThrow(UserError)
         expect(readCurrentHumanId).toThrow("isn't an employee id")
