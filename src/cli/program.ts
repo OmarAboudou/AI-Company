@@ -5,7 +5,7 @@ import { registerCompanyCommands } from "./commands/company/company.ts"
 import { registerCurrentHumanCommand } from "./commands/current-human.ts"
 import { registerEmployeeCommands } from "./commands/employee/employee.ts"
 import { registerInitCommand } from "./commands/init.ts"
-import { registerLlmModelCommands } from "./commands/model/model.ts"
+import { registerModelCommands } from "./commands/model/model.ts"
 import { registerPositionCommands } from "./commands/position/position.ts"
 import { registerProviderCommands } from "./commands/provider/provider.ts"
 
@@ -19,7 +19,7 @@ export function createProgram(): Command {
     registerPositionCommands(program)
     registerEmployeeCommands(program)
     registerProviderCommands(program)
-    registerLlmModelCommands(program)
+    registerModelCommands(program)
     registerThreadCommands(program)
     registerMessageCommands(program)
     registerCurrentHumanCommand(program)

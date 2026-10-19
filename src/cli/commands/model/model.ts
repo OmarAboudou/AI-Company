@@ -6,7 +6,7 @@ import { registerModelShowCommand } from "./show.ts"
 import { registerModelUpdateCommand } from "./update.ts"
 import { registerModelUpdateIdCommand } from "./update-id.ts"
 
-export function registerLlmModelCommands(program: Command): void {
+export function registerModelCommands(program: Command): void {
     const modelCommand = program
         .command("model")
         .description("Manage the models served by the LLM providers.")
