@@ -17,6 +17,7 @@ import {
 } from "../organization/position/assign-position.ts"
 import { createPosition } from "../organization/position/create-position.ts"
 import { deletePosition } from "../organization/position/delete-position.ts"
+import { formatWorkerName } from "../organization/position/format-worker-name.ts"
 import { loadExistingPosition } from "../organization/position/load-existing-position.ts"
 import type {
     Position,
@@ -36,16 +37,10 @@ import { updatePosition } from "../organization/position/update-position.ts"
 import { updatePositionId } from "../organization/position/update-position-id.ts"
 import { UserError } from "../user-error.ts"
 
-function workerName(assignment: Worker): string {
-    return assignment.kind === "directors"
-        ? "the directors"
-        : `"${assignment.employeeId}"`
-}
-
 function stillTemporary(worker: Worker | undefined): string {
     return worker === undefined
         ? ""
-        : ` It stays assigned temporarily to ${workerName(worker)}.`
+        : ` It stays assigned temporarily to ${formatWorkerName(worker)}.`
 }
 
 function formatAssignedMessage({
@@ -154,24 +149,24 @@ async function assignTemporarily(
             : { kind: "employee", employeeId: employee.id }
     if (current !== undefined && Bun.deepEquals(current, assignment)) {
         console.log(
-            `Position "${position.id}" is already assigned temporarily to ${workerName(assignment)}.`,
+            `Position "${position.id}" is already assigned temporarily to ${formatWorkerName(assignment)}.`,
         )
         return
     }
     if (current !== undefined && !replace) {
         throw new UserError(
-            `Position "${position.id}" is already assigned temporarily to ${workerName(current)}. Add --replace to replace it.`,
+            `Position "${position.id}" is already assigned temporarily to ${formatWorkerName(current)}. Add --replace to replace it.`,
         )
     }
     await savePositionState(projectRoot, position.id, {
         ...state,
         temporaryAssignment: assignment,
     })
-    const assigned = `Position "${position.id}" is now assigned temporarily to ${workerName(assignment)}`
+    const assigned = `Position "${position.id}" is now assigned temporarily to ${formatWorkerName(assignment)}`
     console.log(
         current === undefined
             ? `${assigned}.`
-            : `${assigned} instead of ${workerName(current)}.`,
+            : `${assigned} instead of ${formatWorkerName(current)}.`,
     )
 }
 
@@ -434,7 +429,7 @@ export function registerPositionCommands(program: Command): void {
                     ? "it is vacant again"
                     : `its default employee "${position.defaultEmployeeId}" works it again`
             console.log(
-                `Position "${position.id}" is no longer assigned temporarily to ${workerName(temporaryAssignment)}: ${back}.`,
+                `Position "${position.id}" is no longer assigned temporarily to ${formatWorkerName(temporaryAssignment)}: ${back}.`,
             )
         })
 
