@@ -26,14 +26,14 @@ describe("llmco thread show", () => {
         runCli("message", "send", id, "-b", "Hono, then.")
 
         const lines = runCli("thread", "show", id, "--json").stdout.split("\n")
-        const [first, second] = lines.map((line) => JSON.parse(line || "{}"))
+        const [question, answer] = lines.map((line) => JSON.parse(line || "{}"))
 
         expect(lines).toHaveLength(3)
-        expect(first.body).toBe("Hono or Express?")
-        expect(second.body).toBe("Hono, then.")
-        expect(second.position).toEqual({ id: "director", title: "Director" })
-        expect(second).not.toHaveProperty("employee")
-        expect(second.committer).toEqual({
+        expect(question.body).toBe("Hono or Express?")
+        expect(answer.body).toBe("Hono, then.")
+        expect(answer.position).toEqual({ id: "director", title: "Director" })
+        expect(answer).not.toHaveProperty("employee")
+        expect(answer.committer).toEqual({
             name: "Test User",
             email: "test@example.com",
         })
