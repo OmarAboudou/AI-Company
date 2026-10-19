@@ -10,7 +10,6 @@ import {
     requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
-import { UserError } from "../errors.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import {
@@ -18,6 +17,7 @@ import {
     LlmProviderConfigSchema,
 } from "../llm-provider/llm-provider.ts"
 import { listLlmProviders, saveLlmProvider } from "../llm-provider/storage.ts"
+import { UserError } from "../user-error.ts"
 import {
     authSchemes,
     type Connection,

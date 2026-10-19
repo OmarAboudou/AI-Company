@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import type Anthropic from "@anthropic-ai/sdk"
-import { UserError } from "../errors.ts"
 import type { Message } from "../message/message.ts"
+import { UserError } from "../user-error.ts"
 import { anthropicTurns, callAnthropicMessages } from "./anthropic-messages.ts"
 import { useFakeAnthropic } from "./fake-anthropic.ts"
 

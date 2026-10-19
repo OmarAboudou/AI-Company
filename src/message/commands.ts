@@ -6,9 +6,9 @@ import {
     readTextOrFile,
     requireCompany,
 } from "../cli-helpers.ts"
-import { UserError } from "../errors.ts"
 import { answerMentions } from "../llm/reply.ts"
 import { listPositions } from "../position/storage.ts"
+import { UserError } from "../user-error.ts"
 import { type Author, currentAuthor } from "./author.ts"
 import { findMentions } from "./mentions.ts"
 import {

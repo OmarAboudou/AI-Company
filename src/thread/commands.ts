@@ -7,7 +7,6 @@ import {
     projectRoot,
     requireCompany,
 } from "../cli-helpers.ts"
-import { UserError } from "../errors.ts"
 import { answerMentions } from "../llm/reply.ts"
 import { currentAuthor } from "../message/author.ts"
 import {
@@ -21,6 +20,7 @@ import {
 import { minutes, signature } from "../message/signature.ts"
 import { listMessages } from "../message/storage.ts"
 import { listPositions } from "../position/storage.ts"
+import { UserError } from "../user-error.ts"
 import { readArchives } from "./archives.ts"
 import { awaitedIds, memberIds } from "./members.ts"
 import { newThreadId, saveThread } from "./storage.ts"

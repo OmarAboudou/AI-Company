@@ -2,11 +2,11 @@ import type { CommandUnknownOpts } from "@commander-js/extra-typings"
 import { projectRoot } from "../cli-helpers.ts"
 import type { Employee } from "../employee/employee.ts"
 import { employeeExists, loadEmployee } from "../employee/storage.ts"
-import { UserError } from "../errors.ts"
 import { IdSchema } from "../id.ts"
 import type { Position, Worker } from "../position/position.ts"
 import { loadPositionState } from "../position/storage.ts"
 import { currentWorker } from "../position/worker.ts"
+import { UserError } from "../user-error.ts"
 
 export type CurrentHuman =
     | { kind: "director" }

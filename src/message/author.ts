@@ -2,7 +2,6 @@ import { loadExistingPosition, projectRoot } from "../cli-helpers.ts"
 import { loadCompany } from "../company/storage.ts"
 import type { Employee } from "../employee/employee.ts"
 import { loadEmployee } from "../employee/storage.ts"
-import { UserError } from "../errors.ts"
 import { gitConfig } from "../git.ts"
 import {
     type CurrentHuman,
@@ -18,6 +17,7 @@ import {
 import { currentWorker } from "../position/worker.ts"
 import type { Archive } from "../thread/archives.ts"
 import { memberIds } from "../thread/members.ts"
+import { UserError } from "../user-error.ts"
 import type { MessageConfig } from "./message.ts"
 
 export type Author = Pick<MessageConfig, "position" | "employee" | "committer">

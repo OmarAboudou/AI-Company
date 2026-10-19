@@ -3,8 +3,8 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { z } from "zod"
-import { UserError } from "./errors.ts"
 import { listSubdirectories, readConfig, readText } from "./files.ts"
+import { UserError } from "./user-error.ts"
 
 let projectRoot: string
 
