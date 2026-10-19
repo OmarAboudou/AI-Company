@@ -9,7 +9,7 @@ import {
     currentHuman,
     positionsWorkedBy,
 } from "../human/current-human.ts"
-import { currentWorker } from "../organization/position/get-current-worker.ts"
+import { getCurrentWorker } from "../organization/position/get-current-worker.ts"
 import type { Position, Worker } from "../organization/position/schema.ts"
 import {
     listPositions,
@@ -82,7 +82,7 @@ async function chosenPosition(
         )
     }
     const state = await loadPositionState(projectRoot, position.id)
-    const worker = currentWorker(position, state, directorPositionId)
+    const worker = getCurrentWorker(position, state, directorPositionId)
     throw new UserError(
         `You don't work position "${position.id}": ${await workerDescription(worker)}. ${howToWorkIt(human, position)}`,
     )

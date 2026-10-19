@@ -24,12 +24,12 @@ import {
     type Worker,
 } from "../organization/position/schema.ts"
 import {
-    copyPosition,
-    deletePosition,
+    copyPositionFolder,
+    deletePositionFolder,
     deletePositionState,
+    hasPosition,
     listPositions,
     loadPositionState,
-    positionExists,
     savePosition,
     savePositionState,
 } from "../organization/position/storage.ts"
@@ -170,7 +170,7 @@ export function registerPositionCommands(program: Command): void {
         .action(async (rawId, { title, description, descriptionFile }) => {
             await requireCompany()
             const id = parseId("position", rawId)
-            if (await positionExists(projectRoot, id)) {
+            if (await hasPosition(projectRoot, id)) {
                 throw new UserError(`Position "${id}" already exists.`)
             }
             const config = PositionConfigSchema.safeParse({ title })
@@ -307,7 +307,7 @@ export function registerPositionCommands(program: Command): void {
             const newId = parseId("position", rawNewId)
             const [position, taken, company, state] = await Promise.all([
                 loadExistingPosition(rawId),
-                positionExists(projectRoot, newId),
+                hasPosition(projectRoot, newId),
                 loadCompany(projectRoot),
                 loadPositionState(projectRoot, parseId("position", rawId)),
             ])
@@ -316,7 +316,7 @@ export function registerPositionCommands(program: Command): void {
             }
             // Copy, repoint, then delete rather than move, as for employees:
             // the company must never name a missing director's position.
-            await copyPosition(projectRoot, position.id, newId)
+            await copyPositionFolder(projectRoot, position.id, newId)
             await Promise.all([
                 savePosition(
                     projectRoot,
@@ -331,7 +331,7 @@ export function registerPositionCommands(program: Command): void {
                 })
             }
             await Promise.all([
-                deletePosition(projectRoot, position.id),
+                deletePositionFolder(projectRoot, position.id),
                 deletePositionState(projectRoot, position.id),
             ])
             console.log(`Position "${position.id}" is now "${newId}".`)
@@ -552,7 +552,7 @@ export function registerPositionCommands(program: Command): void {
                 )
             }
             await Promise.all([
-                deletePosition(projectRoot, position.id),
+                deletePositionFolder(projectRoot, position.id),
                 deletePositionState(projectRoot, position.id),
             ])
             const deleted =

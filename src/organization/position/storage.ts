@@ -14,16 +14,16 @@ import {
     PositionStateSchema,
 } from "./schema.ts"
 
-function positionsDir(projectRoot: string): string {
+function getPositionsFolderPath(projectRoot: string): string {
     return join(getLlmcoFolderPath(projectRoot), "positions")
 }
 
-function positionDir(projectRoot: string, id: string): string {
-    return join(positionsDir(projectRoot), id)
+function getPositionFolderPath(projectRoot: string, id: string): string {
+    return join(getPositionsFolderPath(projectRoot), id)
 }
 
-function positionPaths(projectRoot: string, id: string) {
-    const dir = positionDir(projectRoot, id)
+function getPositionFilePaths(projectRoot: string, id: string) {
+    const dir = getPositionFolderPath(projectRoot, id)
     return {
         config: join(dir, "config.json"),
         description: join(dir, "description.md"),
@@ -31,22 +31,22 @@ function positionPaths(projectRoot: string, id: string) {
     }
 }
 
-function positionStatePath(projectRoot: string, id: string): string {
+function getPositionStateFilePath(projectRoot: string, id: string): string {
     return join(getStateFolderPath(projectRoot), "positions", `${id}.json`)
 }
 
-export async function positionExists(
+export async function hasPosition(
     projectRoot: string,
     id: string,
 ): Promise<boolean> {
-    return Bun.file(positionPaths(projectRoot, id).config).exists()
+    return Bun.file(getPositionFilePaths(projectRoot, id).config).exists()
 }
 
 export async function loadPosition(
     projectRoot: string,
     id: string,
 ): Promise<Position> {
-    const paths = positionPaths(projectRoot, id)
+    const paths = getPositionFilePaths(projectRoot, id)
     const [config, description, history] = await Promise.all([
         readJsonFile(projectRoot, paths.config, PositionConfigSchema),
         readTextFile(projectRoot, paths.description),
@@ -56,8 +56,10 @@ export async function loadPosition(
 }
 
 export async function listPositions(projectRoot: string): Promise<Position[]> {
-    const ids = await listSubdirectories(positionsDir(projectRoot))
-    return Promise.all(ids.map((id) => loadPosition(projectRoot, id)))
+    const positionIds = await listSubdirectories(
+        getPositionsFolderPath(projectRoot),
+    )
+    return Promise.all(positionIds.map((id) => loadPosition(projectRoot, id)))
 }
 
 export async function savePosition(
@@ -65,7 +67,7 @@ export async function savePosition(
     position: Position,
 ): Promise<void> {
     const { id, description, createdAt, formerIds, ...config } = position
-    const paths = positionPaths(projectRoot, id)
+    const paths = getPositionFilePaths(projectRoot, id)
     await Promise.all([
         Bun.write(paths.config, `${JSON.stringify(config, null, 4)}\n`),
         Bun.write(paths.description, description),
@@ -73,30 +75,34 @@ export async function savePosition(
     ])
 }
 
-export async function deletePosition(
+export async function deletePositionFolder(
     projectRoot: string,
     id: string,
 ): Promise<void> {
-    await rm(positionDir(projectRoot, id), { recursive: true })
+    await rm(getPositionFolderPath(projectRoot, id), { recursive: true })
 }
 
-export async function copyPosition(
+export async function copyPositionFolder(
     projectRoot: string,
     id: string,
     newId: string,
 ): Promise<void> {
-    await cp(positionDir(projectRoot, id), positionDir(projectRoot, newId), {
-        recursive: true,
-        errorOnExist: true,
-        force: false,
-    })
+    await cp(
+        getPositionFolderPath(projectRoot, id),
+        getPositionFolderPath(projectRoot, newId),
+        {
+            recursive: true,
+            errorOnExist: true,
+            force: false,
+        },
+    )
 }
 
 export async function loadPositionState(
     projectRoot: string,
     id: string,
 ): Promise<PositionState> {
-    const path = positionStatePath(projectRoot, id)
+    const path = getPositionStateFilePath(projectRoot, id)
     if (!(await Bun.file(path).exists())) {
         return {}
     }
@@ -112,12 +118,16 @@ export async function savePositionState(
         await deletePositionState(projectRoot, id)
         return
     }
-    await saveState(projectRoot, positionStatePath(projectRoot, id), state)
+    await saveState(
+        projectRoot,
+        getPositionStateFilePath(projectRoot, id),
+        state,
+    )
 }
 
 export async function deletePositionState(
     projectRoot: string,
     id: string,
 ): Promise<void> {
-    await rm(positionStatePath(projectRoot, id), { force: true })
+    await rm(getPositionStateFilePath(projectRoot, id), { force: true })
 }

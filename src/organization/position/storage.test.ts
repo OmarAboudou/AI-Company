@@ -4,12 +4,12 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { UserError } from "../../user-error.ts"
 import {
-    copyPosition,
-    deletePosition,
+    copyPositionFolder,
+    deletePositionFolder,
+    hasPosition,
     listPositions,
     loadPosition,
     loadPositionState,
-    positionExists,
     savePosition,
     savePositionState,
 } from "./storage.ts"
@@ -84,13 +84,13 @@ describe("loadPosition", () => {
     })
 })
 
-describe("positionExists", () => {
+describe("hasPosition", () => {
     test("is false before saving and true after", async () => {
-        expect(await positionExists(projectRoot, developer.id)).toBe(false)
+        expect(await hasPosition(projectRoot, developer.id)).toBe(false)
 
         await savePosition(projectRoot, developer)
 
-        expect(await positionExists(projectRoot, developer.id)).toBe(true)
+        expect(await hasPosition(projectRoot, developer.id)).toBe(true)
     })
 })
 
@@ -112,12 +112,12 @@ describe("listPositions", () => {
     })
 })
 
-describe("deletePosition", () => {
+describe("deletePositionFolder", () => {
     test("removes the position's folder", async () => {
         await savePosition(projectRoot, developer)
         const before = await listPositions(projectRoot)
 
-        await deletePosition(projectRoot, developer.id)
+        await deletePositionFolder(projectRoot, developer.id)
         const after = await listPositions(projectRoot)
 
         expect(before).toEqual([developer])
@@ -125,12 +125,12 @@ describe("deletePosition", () => {
     })
 })
 
-describe("copyPosition", () => {
+describe("copyPositionFolder", () => {
     test("copies the position's folder under its new id", async () => {
         await savePosition(projectRoot, developer)
         const before = await listPositions(projectRoot)
 
-        await copyPosition(projectRoot, developer.id, "api-developer")
+        await copyPositionFolder(projectRoot, developer.id, "api-developer")
         const after = await listPositions(projectRoot)
 
         expect(before).toEqual([developer])
@@ -160,8 +160,8 @@ describe("savePositionState", () => {
     test("writes a .gitignore ignoring the whole state folder", async () => {
         await savePositionState(projectRoot, developer.id, interim)
 
-        const gitignore = await Bun.file(statePath(".gitignore")).text()
-        expect(gitignore.split("\n")).toContain("*")
+        const gitignoreContent = await Bun.file(statePath(".gitignore")).text()
+        expect(gitignoreContent.split("\n")).toContain("*")
     })
 
     test("leaves nothing for git to commit", async () => {

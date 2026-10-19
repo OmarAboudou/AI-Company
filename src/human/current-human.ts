@@ -3,7 +3,7 @@ import { projectRoot } from "../cli/project-root.ts"
 import type { Employee } from "../employee/employee.ts"
 import { employeeExists, loadEmployee } from "../employee/storage.ts"
 import { IdSchema } from "../ids/id-schema.ts"
-import { currentWorker } from "../organization/position/get-current-worker.ts"
+import { getCurrentWorker } from "../organization/position/get-current-worker.ts"
 import type { Position, Worker } from "../organization/position/schema.ts"
 import { loadPositionState } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
@@ -90,7 +90,7 @@ export async function positionsWorkedBy(
             return {
                 position,
                 temporarily: state.temporaryAssignment !== undefined,
-                worker: currentWorker(position, state, directorPositionId),
+                worker: getCurrentWorker(position, state, directorPositionId),
             }
         }),
     )
