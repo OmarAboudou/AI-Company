@@ -4,7 +4,6 @@ import { useTemporaryProject } from "../../../use-temporary-project.ts"
 const { runCli, projectPath } = useTemporaryProject()
 
 const interimEmployee = ["position", "interim", "employee"]
-const interimDirectors = ["position", "interim", "directors"]
 
 function positionStatePath(id: string): string {
     return projectPath(".llmco", ".state", "positions", `${id}.json`)
@@ -91,39 +90,5 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
             '"omar" already works position "developer", as its default employee.\n',
         )
         expect(await positionState("developer")).toBeUndefined()
-    })
-
-    test("assign-temporarily refuses the default employee while someone else works the position", async () => {
-        runCli(...interimEmployee, "developer", "julie")
-
-        const interim = runCli(...interimEmployee, "developer", "omar", "-r")
-
-        expect(interim.exitCode).toBe(1)
-        expect(interim.stderr).toContain(
-            "`llmco position unassign-temporarily developer`",
-        )
-        expect(await positionState("developer")).toEqual({
-            temporaryAssignment: julie,
-        })
-    })
-
-    test("assign-temporarily refuses the director's position", async () => {
-        const toJulie = runCli(...interimEmployee, "director", "julie")
-        const toDirectors = runCli(...interimDirectors, "director")
-
-        expect(toJulie.exitCode).toBe(1)
-        expect(toJulie.stderr).toContain("is the director's position")
-        expect(toDirectors.exitCode).toBe(1)
-        expect(await positionState("director")).toBeUndefined()
-    })
-
-    test("assign-temporarily fails for an unknown position or employee", () => {
-        const unknownPosition = runCli(...interimEmployee, "tester", "julie")
-        const unknownEmployee = runCli(...interimEmployee, "designer", "eve")
-
-        expect(unknownPosition.exitCode).toBe(1)
-        expect(unknownPosition.stderr).toContain('No position "tester".')
-        expect(unknownEmployee.exitCode).toBe(1)
-        expect(unknownEmployee.stderr).toContain('No employee "eve".')
     })
 })

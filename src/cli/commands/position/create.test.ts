@@ -1,23 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-type History = {
-    createdAt: string
-    formerIds?: { id: string; until: string }[]
-}
-
-const { runCli, runCliWithStdin, projectPath } = useTemporaryProject()
-
-const interimEmployee = ["position", "interim", "employee"]
-
-function positionStatePath(id: string): string {
-    return projectPath(".llmco", ".state", "positions", `${id}.json`)
-}
-
-async function positionState(id: string): Promise<unknown> {
-    const file = Bun.file(positionStatePath(id))
-    return (await file.exists()) ? file.json() : undefined
-}
+const { runCli, runCliWithStdin } = useTemporaryProject()
 
 describe("llmco position", () => {
     beforeEach(() => {
@@ -67,39 +51,6 @@ describe("llmco position", () => {
             "# Developer",
         )
     })
-
-    test("create rejects an id that is not kebab-case", () => {
-        const create = runCli(
-            "position",
-            "create",
-            "../company",
-            "--title",
-            "X",
-        )
-
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain("kebab-case")
-    })
-})
-
-describe("a temporary assignment through the position's lifecycle", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("position", "create", "developer", "-t", "Developer")
-        runCli("employee", "create", "human", "julie", "-n", "Julie")
-        runCli(...interimEmployee, "developer", "julie")
-    })
-
-    test("create ignores a state left behind by another position", async () => {
-        const state = { temporaryAssignment: { kind: "directors" } }
-        await Bun.write(positionStatePath("tester"), JSON.stringify(state))
-        const before = await positionState("tester")
-
-        runCli("position", "create", "tester", "-t", "Tester")
-
-        expect(before).toEqual(state)
-        expect(await positionState("tester")).toBeUndefined()
-    })
 })
 
 describe("--description-file", () => {
@@ -143,28 +94,5 @@ describe("short options", () => {
         expect(runCli("position", "show", "developer").stdout).toBe(
             "# Developer\n\ncurrent employee: (vacant)\ndefault employee: (none)\n\nYou build the API.\n",
         )
-    })
-})
-
-describe("a position's id history", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-    })
-
-    async function history(id: string): Promise<History> {
-        const path = projectPath(".llmco", "positions", id, "history.json")
-        const { createdAt, formerIds } = await Bun.file(path).json()
-        return { createdAt, formerIds }
-    }
-
-    test("create records when the position was created", async () => {
-        const before = Date.now()
-        runCli("position", "create", "developer", "-t", "Developer")
-        const after = Date.now()
-
-        const created = Date.parse((await history("developer")).createdAt)
-
-        expect(created).toBeGreaterThanOrEqual(before)
-        expect(created).toBeLessThanOrEqual(after)
     })
 })

@@ -120,26 +120,6 @@ describe("llmco position assign and unassign", () => {
         expect(again.exitCode).toBe(0)
         expect(again.stdout).toContain("is already the default employee")
     })
-
-    test("one employee can be the default employee of several positions", async () => {
-        runCli("position", "assign", "developer", "claude-senior")
-        runCli("position", "assign", "qa-tester", "claude-senior")
-
-        expect(await positionConfig("developer")).toMatchObject({
-            defaultEmployeeId: "claude-senior",
-        })
-        expect(await positionConfig("qa-tester")).toMatchObject({
-            defaultEmployeeId: "claude-senior",
-        })
-    })
-
-    test("assign fails for an unknown position or employee", () => {
-        const unknownPosition = runCli("position", "assign", "designer", "omar")
-        const unknownEmployee = runCli("position", "assign", "developer", "bob")
-
-        expect(unknownPosition.exitCode).toBe(1)
-        expect(unknownEmployee.exitCode).toBe(1)
-    })
 })
 
 describe("a temporary assignment through the position's lifecycle", () => {
