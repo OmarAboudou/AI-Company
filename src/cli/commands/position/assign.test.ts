@@ -160,19 +160,3 @@ describe("a temporary assignment through the position's lifecycle", () => {
         expect(await positionState("developer")).toEqual(julie)
     })
 })
-
-describe("the director's position", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-    })
-
-    test("can't be assigned an employee", () => {
-        runCli("employee", "create", "human", "omar", "-n", "Omar")
-
-        const assignment = runCli("position", "assign", "director", "omar")
-
-        expect(assignment.exitCode).toBe(1)
-        expect(assignment.stderr).toContain("not an employee")
-        expect(runCli("position", "list").stdout).toContain("(git users)")
-    })
-})

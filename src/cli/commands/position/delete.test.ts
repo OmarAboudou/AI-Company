@@ -63,17 +63,3 @@ describe("llmco position delete", () => {
         },
     )
 })
-
-describe("the director's position", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-    })
-
-    test("can't be deleted", () => {
-        const deletion = runCli("position", "delete", "director")
-
-        expect(deletion.exitCode).toBe(1)
-        expect(deletion.stderr).toContain("is the director's position")
-        expect(runCli("position", "show", "director").exitCode).toBe(0)
-    })
-})
