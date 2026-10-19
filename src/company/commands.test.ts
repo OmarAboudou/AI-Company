@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
-import { useTemporaryProject } from "../cli-test-helpers.ts"
+import { useTemporaryProject } from "../cli/use-temporary-project.ts"
 
 const { runCli, projectPath } = useTemporaryProject()
 

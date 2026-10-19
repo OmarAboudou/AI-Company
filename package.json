@@ -4,7 +4,7 @@
     "type": "module",
     "packageManager": "bun@1.4.2",
     "bin": {
-        "llmco": "./src/cli.ts"
+        "llmco": "./src/cli/main.ts"
     },
     "scripts": {
         "prepare": "git config core.hooksPath .githooks",
