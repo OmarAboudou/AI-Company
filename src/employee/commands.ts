@@ -367,14 +367,15 @@ export function registerEmployeeCommands(program: Command): void {
         .command("replace")
         .alias("hand-over")
         .description(
-            "Replace (hand over) an employee by another in every position it fills by default. It stays hired, and keeps its temporary assignments.",
+            "Replace (hand over) an employee by another in every position it fills by default. It stays hired, and keeps its temporary assignments unless --temporary.",
         )
         .argument("<employee-id>", idDescription("employee", "claude-senior"))
         .argument(
             "<replacement-id>",
             "id of the employee taking its positions over (e.g. omar)",
         )
-        .action(async (rawId, rawReplacementId) => {
+        .option("-t, --temporary", "also hand over its temporary assignments")
+        .action(async (rawId, rawReplacementId, { temporary }) => {
             await requireCompany()
             const [employee, replacement, positions] = await Promise.all([
                 loadExistingEmployee(rawId),
@@ -389,12 +390,18 @@ export function registerEmployeeCommands(program: Command): void {
                 positionsWorkedTemporarily(positions, employee.id),
                 positionsWorkedTemporarily(filled, replacement.id),
             ])
-            const keptIds = kept.map(({ position }) => position.id).join(", ")
+            const handedOver = temporary ? kept : []
+            const isDefault = ({ position }: TemporaryPosition) =>
+                position.defaultEmployeeId === replacement.id
+            const ending = [...confirmed, ...handedOver.filter(isDefault)]
+            const moving = handedOver.filter((handed) => !isDefault(handed))
+            const ids = (temporaries: TemporaryPosition[]) =>
+                temporaries.map(({ position }) => position.id).join(", ")
             const stillTemporary =
-                kept.length === 0
+                kept.length === 0 || temporary
                     ? ""
-                    : ` "${employee.id}" stays assigned temporarily to ${keptIds}.`
-            if (filled.length === 0) {
+                    : ` "${employee.id}" stays assigned temporarily to ${ids(kept)}.`
+            if (filled.length === 0 && handedOver.length === 0) {
                 console.log(
                     `"${employee.id}" fills no position: nothing to replace.${stillTemporary}`,
                 )
@@ -407,17 +414,39 @@ export function registerEmployeeCommands(program: Command): void {
                         defaultEmployeeId: replacement.id,
                     }),
                 ),
-                ...confirmed.map(
+                ...ending.map(
                     ({ position, state: { temporaryAssignment, ...state } }) =>
                         savePositionState(projectRoot, position.id, state),
                 ),
+                ...moving.map(({ position, state }) =>
+                    savePositionState(projectRoot, position.id, {
+                        ...state,
+                        temporaryAssignment: {
+                            kind: "employee",
+                            employeeId: replacement.id,
+                        },
+                    }),
+                ),
             ])
+            const roles: string[] = []
+            if (filled.length > 0) {
+                roles.push(
+                    `as default employee of ${filled.map(({ id }) => id).join(", ")}`,
+                )
+            }
+            if (moving.length > 0) {
+                roles.push(`as temporary assignee of ${ids(moving)}`)
+            }
+            const replaced =
+                roles.length === 0
+                    ? `"${replacement.id}" already works by default what "${employee.id}" covered`
+                    : `"${replacement.id}" replaces "${employee.id}" ${roles.join(" and ")}`
             const ended =
-                confirmed.length === 0
+                ending.length === 0
                     ? ""
-                    : ` Temporary assignments ended: ${confirmed.map(({ position }) => position.id).join(", ")}.`
+                    : ` Temporary assignments ended: ${ids(ending)}.`
             console.log(
-                `"${replacement.id}" replaces "${employee.id}" as default employee of ${filled.map(({ id }) => id).join(", ")}; "${employee.id}" stays hired.${ended}${stillTemporary}`,
+                `${replaced}; "${employee.id}" stays hired.${ended}${stillTemporary}`,
             )
         })
 
