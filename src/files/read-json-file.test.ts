@@ -17,32 +17,32 @@ afterEach(async () => {
 })
 
 const schema = z.strictObject({ title: z.string().min(1) })
-const path = () => join(projectRoot, ".llmco", "config.json")
+const getConfigPath = () => join(projectRoot, ".llmco", "config.json")
 
 describe("readJsonFile", () => {
     test("returns the parsed and validated config", async () => {
-        await Bun.write(path(), '{ "title": "Developer" }')
+        await Bun.write(getConfigPath(), '{ "title": "Developer" }')
 
-        expect(await readJsonFile(projectRoot, path(), schema)).toEqual({
-            title: "Developer",
-        })
+        const config = await readJsonFile(projectRoot, getConfigPath(), schema)
+
+        expect(config).toEqual({ title: "Developer" })
     })
 
     test("reports invalid JSON with the file name", async () => {
-        await Bun.write(path(), "{ title: ")
-        const read = readJsonFile(projectRoot, path(), schema)
+        await Bun.write(getConfigPath(), "{ title: ")
+        const reading = readJsonFile(projectRoot, getConfigPath(), schema)
+        const refusalMessage = "Invalid JSON in .llmco/config.json"
 
-        await expect(read).rejects.toThrow(UserError)
-        await expect(read).rejects.toThrow("Invalid JSON in .llmco/config.json")
+        await expect(reading).rejects.toThrow(UserError)
+        await expect(reading).rejects.toThrow(refusalMessage)
     })
 
     test("reports schema errors with the file name and the field", async () => {
-        await Bun.write(path(), '{ "title": "" }')
-        const read = readJsonFile(projectRoot, path(), schema)
+        await Bun.write(getConfigPath(), '{ "title": "" }')
+        const reading = readJsonFile(projectRoot, getConfigPath(), schema)
+        const refusalPattern = /Invalid \.llmco\/config\.json:\n.*\n.*at title/
 
-        await expect(read).rejects.toThrow(UserError)
-        await expect(read).rejects.toThrow(
-            /Invalid \.llmco\/config\.json:\n.*\n.*at title/,
-        )
+        await expect(reading).rejects.toThrow(UserError)
+        await expect(reading).rejects.toThrow(refusalPattern)
     })
 })

@@ -1,7 +1,9 @@
 import { readdir } from "node:fs/promises"
 
-export async function listSubdirectories(dir: string): Promise<string[]> {
-    const entries = await readdir(dir, { withFileTypes: true }).catch(
+export async function listSubdirectories(
+    folderPath: string,
+): Promise<string[]> {
+    const entries = await readdir(folderPath, { withFileTypes: true }).catch(
         (error: NodeJS.ErrnoException) => {
             if (error.code === "ENOENT") {
                 return []
