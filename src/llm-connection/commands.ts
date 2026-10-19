@@ -4,11 +4,9 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { createLlmConnection } from "../llm/connection/create-llm-connection.ts"
 import { loadLlmProviderWithConnection } from "../llm/connection/load-llm-provider-with-connection.ts"
-import { requireAnthropicForAuth } from "../llm/connection/require-anthropic-for-auth.ts"
 import { saveLlmConnections } from "../llm/connection/save-llm-connections.ts"
 import {
     authSchemes,
@@ -16,6 +14,7 @@ import {
     type Protocol,
     protocols,
 } from "../llm/connection/schema.ts"
+import { updateLlmConnection } from "../llm/connection/update-llm-connection.ts"
 import { listLlmProviders } from "../llm/provider/storage.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
@@ -121,20 +120,12 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol, options) => {
             requireAtLeastOneOption(options)
-            await requireCompany(projectRoot)
-            const provider = await loadLlmProviderWithConnection(
+            const provider = await updateLlmConnection(
                 projectRoot,
                 rawProviderId,
                 protocol,
+                { baseUrl: options.baseUrl, auth: options.auth },
             )
-            requireAnthropicForAuth(protocol, options.auth)
-            await saveLlmConnections(projectRoot, provider, {
-                ...provider.connections,
-                [protocol]: {
-                    ...provider.connections?.[protocol],
-                    ...getDefinedValues(options),
-                },
-            })
             console.log(
                 `Updated the ${protocol} connection of provider "${provider.id}".`,
             )
