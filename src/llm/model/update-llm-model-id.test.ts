@@ -57,31 +57,36 @@ describe("updateLlmModelId", () => {
     })
 
     test("makes the employees running on it follow", async () => {
-        const outcome = await renameLlama("l")
+        const renaming = await renameLlama("l")
 
         const employee = await loadEmployee(projectRoot, "lucie")
         expect(employee).toMatchObject({ modelId: "l" })
-        expect(outcome.updatedEmployeeIds).toEqual(["lucie"])
+        expect(renaming.updatedEmployeeIds).toEqual(["lucie"])
     })
 
     test("refuses an id another model of the provider has", async () => {
-        const update = renameLlama("qwen")
+        const updating = renameLlama("qwen")
 
-        await expect(update).rejects.toThrow(UserError)
-        await expect(update).rejects.toThrow('already has a model "qwen".')
+        await expect(updating).rejects.toThrow(UserError)
+        await expect(updating).rejects.toThrow('already has a model "qwen".')
     })
 
     test("refuses a new id that is not kebab-case", async () => {
-        const update = renameLlama("L")
+        const updating = renameLlama("L")
 
-        await expect(update).rejects.toThrow('Invalid model id "L"')
+        await expect(updating).rejects.toThrow('Invalid model id "L"')
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const update = updateLlmModelId(elsewhere, "ollama", "llama", "l")
+        const updating = updateLlmModelId(
+            folderWithoutCompany,
+            "ollama",
+            "llama",
+            "l",
+        )
 
-        await expect(update).rejects.toThrow("Run `llmco init` first.")
+        await expect(updating).rejects.toThrow("Run `llmco init` first.")
     })
 })

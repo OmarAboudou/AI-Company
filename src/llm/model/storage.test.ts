@@ -51,7 +51,7 @@ describe("saveLlmModel", () => {
     test("writes config.json in the provider's models folder", async () => {
         await saveLlmModel(projectRoot, llama)
 
-        const path = join(
+        const configPath = join(
             projectRoot,
             ".llmco",
             "llm-providers",
@@ -60,11 +60,11 @@ describe("saveLlmModel", () => {
             "llama-3-1-8b",
             "config.json",
         )
-        const config = await Bun.file(path).text()
+        const configText = await Bun.file(configPath).text()
+        const expectedConfigText =
+            '{\n    "name": "Llama 3.1 8B",\n    "apiId": "llama3.1:8b",\n    "protocol": "anthropic-messages"\n}\n'
 
-        expect(config).toBe(
-            '{\n    "name": "Llama 3.1 8B",\n    "apiId": "llama3.1:8b",\n    "protocol": "anthropic-messages"\n}\n',
-        )
+        expect(configText).toBe(expectedConfigText)
     })
 })
 
@@ -72,15 +72,20 @@ describe("loadLlmModel", () => {
     test("reads back what saveLlmModel wrote", async () => {
         await saveLlmModel(projectRoot, llama)
 
-        const loaded = await loadLlmModel(projectRoot, "ollama", llama.id)
+        const loadedModel = await loadLlmModel(projectRoot, "ollama", llama.id)
 
-        expect(loaded).toEqual(llama)
+        expect(loadedModel).toEqual(llama)
     })
 
     test("rejects an invalid config.json", async () => {
-        const dir = join(projectRoot, ".llmco", "llm-providers", "ollama")
+        const providerFolderPath = join(
+            projectRoot,
+            ".llmco",
+            "llm-providers",
+            "ollama",
+        )
         await Bun.write(
-            join(dir, "models", "llama", "config.json"),
+            join(providerFolderPath, "models", "llama", "config.json"),
             JSON.stringify({ name: "Llama" }),
         )
 
