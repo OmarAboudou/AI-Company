@@ -1,6 +1,8 @@
 import { spawnGit } from "./spawn-git.ts"
 
-export function runGit(dir: string, args: string[]): string | undefined {
-    const result = spawnGit(dir, args)
-    return result.exitCode === 0 ? result.stdout.toString().trim() : undefined
+export function runGit(folderPath: string, args: string[]): string | undefined {
+    const gitProcess = spawnGit(folderPath, args)
+    return gitProcess.exitCode === 0
+        ? gitProcess.stdout.toString().trim()
+        : undefined
 }
