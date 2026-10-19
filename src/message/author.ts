@@ -2,7 +2,7 @@ import { loadExistingPosition, projectRoot } from "../cli-helpers.ts"
 import { loadCompany } from "../company/storage.ts"
 import type { Employee } from "../employee/employee.ts"
 import { loadEmployee } from "../employee/storage.ts"
-import { committer } from "../git/read-git-committer.ts"
+import { readGitCommitter } from "../git/read-git-committer.ts"
 import {
     type CurrentHuman,
     currentHuman,
@@ -138,6 +138,6 @@ export async function currentAuthor({
         ...(human.kind === "employee" && {
             employee: { id: human.employee.id, name: human.employee.name },
         }),
-        committer: committer(projectRoot),
+        committer: readGitCommitter(projectRoot),
     }
 }
