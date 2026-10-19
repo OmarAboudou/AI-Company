@@ -1,8 +1,8 @@
 import type { Command } from "@commander-js/extra-typings"
-import { requireDirector } from "../../../human/current-human.ts"
 import { deletePosition } from "../../../organization/position/delete-position.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
 import { projectRoot } from "../../project-root.ts"
+import { requireDirector } from "../../require-director.ts"
 
 export function registerPositionDeleteCommand(positionCommand: Command): void {
     positionCommand

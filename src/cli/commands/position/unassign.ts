@@ -1,11 +1,11 @@
 import type { Command } from "@commander-js/extra-typings"
-import { requireDirector } from "../../../human/current-human.ts"
 import {
     type PositionUnassignment,
     unassignPosition,
 } from "../../../organization/position/unassign-position.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
 import { projectRoot } from "../../project-root.ts"
+import { requireDirector } from "../../require-director.ts"
 import { formatStillTemporaryMessage } from "./format-still-temporary-message.ts"
 
 function formatUnassignedMessage({

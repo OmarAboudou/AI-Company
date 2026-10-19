@@ -1,5 +1,5 @@
 import type { Command } from "@commander-js/extra-typings"
-import { requireDirector } from "../../../../human/current-human.ts"
+import { requireDirector } from "../../../require-director.ts"
 import { registerPositionAssignTemporarilyDirectorsCommand } from "./directors.ts"
 import { registerPositionAssignTemporarilyEmployeeCommand } from "./employee.ts"
 

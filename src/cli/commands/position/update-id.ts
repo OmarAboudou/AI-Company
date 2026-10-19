@@ -1,9 +1,9 @@
 import type { Command } from "@commander-js/extra-typings"
-import { requireDirector } from "../../../human/current-human.ts"
 import { updatePositionId } from "../../../organization/position/update-position-id.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
 import { formatNewIdArgumentDescription } from "../../format-new-id-argument-description.ts"
 import { projectRoot } from "../../project-root.ts"
+import { requireDirector } from "../../require-director.ts"
 
 export function registerPositionUpdateIdCommand(
     positionCommand: Command,

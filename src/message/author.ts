@@ -1,13 +1,13 @@
 import { projectRoot } from "../cli/project-root.ts"
 import { loadCompany } from "../company/storage.ts"
 import { readGitCommitter } from "../git/read-git-committer.ts"
+import type { Employee } from "../organization/employee/schema.ts"
+import { loadEmployee } from "../organization/employee/storage.ts"
+import { positionsWorkedBy } from "../organization/human/list-positions-worked-by.ts"
 import {
     type CurrentHuman,
     currentHuman,
-    positionsWorkedBy,
-} from "../human/current-human.ts"
-import type { Employee } from "../organization/employee/schema.ts"
-import { loadEmployee } from "../organization/employee/storage.ts"
+} from "../organization/human/read-current-human.ts"
 import { getCurrentWorker } from "../organization/position/get-current-worker.ts"
 import { loadExistingPosition } from "../organization/position/load-existing-position.ts"
 import type { Position, Worker } from "../organization/position/schema.ts"

@@ -1,0 +1,36 @@
+import { projectRoot } from "../../cli/project-root.ts"
+import { getCurrentWorker } from "../position/get-current-worker.ts"
+import type { Position, Worker } from "../position/schema.ts"
+import { loadPositionState } from "../position/storage.ts"
+import type { CurrentHuman } from "./read-current-human.ts"
+
+export type WorkedPosition = { position: Position; temporarily: boolean }
+
+function isWorkedBy(human: CurrentHuman, worker: Worker | undefined): boolean {
+    if (human.kind === "director") {
+        return worker?.kind === "directors"
+    }
+    return (
+        worker?.kind === "employee" && worker.employeeId === human.employee.id
+    )
+}
+
+export async function positionsWorkedBy(
+    human: CurrentHuman,
+    positions: Position[],
+    directorPositionId: string,
+): Promise<WorkedPosition[]> {
+    const workers = await Promise.all(
+        positions.map(async (position) => {
+            const state = await loadPositionState(projectRoot, position.id)
+            return {
+                position,
+                temporarily: state.temporaryAssignment !== undefined,
+                worker: getCurrentWorker(position, state, directorPositionId),
+            }
+        }),
+    )
+    return workers
+        .filter(({ worker }) => isWorkedBy(human, worker))
+        .map(({ position, temporarily }) => ({ position, temporarily }))
+}

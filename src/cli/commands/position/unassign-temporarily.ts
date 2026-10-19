@@ -1,9 +1,9 @@
 import type { Command } from "@commander-js/extra-typings"
-import { requireDirector } from "../../../human/current-human.ts"
 import { formatWorkerName } from "../../../organization/position/format-worker-name.ts"
 import { unassignPositionTemporarily } from "../../../organization/position/unassign-position-temporarily.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
 import { projectRoot } from "../../project-root.ts"
+import { requireDirector } from "../../require-director.ts"
 
 export function registerPositionUnassignTemporarilyCommand(
     positionCommand: Command,
