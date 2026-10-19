@@ -1,26 +1,22 @@
 import { type Command, Option } from "@commander-js/extra-typings"
-import { z } from "zod"
 import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
 import { formatNewIdArgumentDescription } from "../cli/format-new-id-argument-description.ts"
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { protocols } from "../llm/connection/schema.ts"
 import { createLlmModel } from "../llm/model/create-llm-model.ts"
 import { loadExistingLlmModel } from "../llm/model/load-existing-llm-model.ts"
-import { requireProviderConnection } from "../llm/model/require-provider-connection.ts"
-import { LlmModelConfigSchema } from "../llm/model/schema.ts"
 import {
     copyLlmModelFolder,
     deleteLlmModelFolder,
     hasLlmModel,
     listLlmModels,
-    saveLlmModel,
 } from "../llm/model/storage.ts"
-import { listLlmProviders, loadLlmProvider } from "../llm/provider/storage.ts"
+import { updateLlmModel } from "../llm/model/update-llm-model.ts"
+import { listLlmProviders } from "../llm/provider/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
 import {
     listEmployees,
@@ -141,25 +137,19 @@ export function registerLlmModelCommands(program: Command): void {
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, options) => {
             requireAtLeastOneOption(options)
-            await requireCompany(projectRoot)
-            const { providerId, id, ...current } = await loadExistingLlmModel(
+            const model = await updateLlmModel(
                 projectRoot,
                 rawProviderId,
                 rawModelId,
+                {
+                    name: options.name,
+                    apiId: options.apiId,
+                    protocol: options.protocol,
+                },
             )
-            if (options.protocol !== undefined) {
-                const provider = await loadLlmProvider(projectRoot, providerId)
-                requireProviderConnection(provider, options.protocol)
-            }
-            const config = LlmModelConfigSchema.safeParse({
-                ...current,
-                ...getDefinedValues(options),
-            })
-            if (!config.success) {
-                throw new UserError(z.prettifyError(config.error))
-            }
-            await saveLlmModel(projectRoot, { providerId, id, ...config.data })
-            console.log(`Updated model "${id}" of provider "${providerId}".`)
+            console.log(
+                `Updated model "${model.id}" of provider "${model.providerId}".`,
+            )
         })
 
     modelCommand
