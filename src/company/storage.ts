@@ -1,6 +1,7 @@
 import { join } from "node:path"
-import { readConfig, readText } from "../files.ts"
-import { llmcoDir } from "../project.ts"
+import { llmcoDir } from "../files/get-llmco-folder-path.ts"
+import { readConfig } from "../files/read-json-file.ts"
+import { readText } from "../files/read-text-file.ts"
 import { type Company, CompanyConfigSchema } from "./company.ts"
 
 function companyPaths(projectRoot: string) {

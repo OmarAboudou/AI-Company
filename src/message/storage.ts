@@ -1,6 +1,8 @@
 import { randomBytes } from "node:crypto"
 import { join } from "node:path"
-import { listSubdirectories, readConfig, readText } from "../files.ts"
+import { listSubdirectories } from "../files/list-subdirectories.ts"
+import { readConfig } from "../files/read-json-file.ts"
+import { readText } from "../files/read-text-file.ts"
 import { threadDir } from "../thread/storage.ts"
 import {
     type Message,

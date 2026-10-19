@@ -1,6 +1,7 @@
 import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
-import { listSubdirectories, readConfig } from "../files.ts"
+import { listSubdirectories } from "../files/list-subdirectories.ts"
+import { readConfig } from "../files/read-json-file.ts"
 import { llmProviderDir } from "../llm-provider/storage.ts"
 import { type LlmModel, LlmModelConfigSchema } from "./llm-model.ts"
 
