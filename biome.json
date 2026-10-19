@@ -19,6 +19,14 @@
     "linter": {
         "rules": {
             "preset": "recommended",
+            "style": {
+                "noExcessiveLinesPerFile": {
+                    "level": "error",
+                    "options": {
+                        "maxLines": 300
+                    }
+                }
+            },
             "suspicious": {
                 "noImportCycles": "error"
             }
