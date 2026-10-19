@@ -1,9 +1,9 @@
 import { UserError } from "../../user-error.ts"
 import { findMentions } from "./find-mentions.ts"
-import { readMentions } from "./resolve-mentions.ts"
+import { resolveMentions } from "./resolve-mentions.ts"
 import type { Author, Draft } from "./schema.ts"
 
-export async function draftMessage(
+export async function createDraft(
     author: Author,
     body: string,
 ): Promise<Draft> {
@@ -16,6 +16,6 @@ export async function draftMessage(
     return {
         ...author,
         body,
-        ...(await readMentions(body, author.position.id)),
+        ...(await resolveMentions(body, author.position.id)),
     }
 }

@@ -5,9 +5,9 @@ import { join } from "node:path"
 import type { Message } from "./schema.ts"
 import {
     listMessages,
-    loadResponse,
+    loadProviderResponse,
     saveMessage,
-    saveResponse,
+    saveProviderResponse,
 } from "./storage.ts"
 
 let projectRoot: string
@@ -69,7 +69,7 @@ describe("saveMessage and listMessages", () => {
     })
 })
 
-describe("saveResponse and loadResponse", () => {
+describe("saveProviderResponse and loadProviderResponse", () => {
     const response = {
         providerId: "anthropic",
         modelId: "claude-opus-5-5",
@@ -81,14 +81,16 @@ describe("saveResponse and loadResponse", () => {
     test("write response.json next to the message, then read it", async () => {
         await saveMessage(projectRoot, answer)
 
-        await saveResponse(projectRoot, answer, response)
+        await saveProviderResponse(projectRoot, answer, response)
 
-        expect(await loadResponse(projectRoot, answer)).toEqual(response)
+        const loadedResponse = await loadProviderResponse(projectRoot, answer)
+        expect(loadedResponse).toEqual(response)
     })
 
     test("load gives nothing for a message without response", async () => {
         await saveMessage(projectRoot, question)
 
-        expect(await loadResponse(projectRoot, question)).toBeUndefined()
+        const loadedResponse = await loadProviderResponse(projectRoot, question)
+        expect(loadedResponse).toBeUndefined()
     })
 })
