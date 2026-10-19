@@ -1,5 +1,4 @@
 import { projectRoot } from "../cli/project-root.ts"
-import { loadExistingPosition } from "../cli-helpers.ts"
 import { loadCompany } from "../company/storage.ts"
 import type { Employee } from "../employee/employee.ts"
 import { loadEmployee } from "../employee/storage.ts"
@@ -10,6 +9,7 @@ import {
     positionsWorkedBy,
 } from "../human/current-human.ts"
 import { getCurrentWorker } from "../organization/position/get-current-worker.ts"
+import { loadExistingPosition } from "../organization/position/load-existing-position.ts"
 import type { Position, Worker } from "../organization/position/schema.ts"
 import {
     listPositions,
@@ -72,7 +72,7 @@ async function chosenPosition(
     rawId: string,
     directorPositionId: string,
 ): Promise<Position> {
-    const position = await loadExistingPosition(rawId)
+    const position = await loadExistingPosition(projectRoot, rawId)
     if (worked.some(({ id }) => id === position.id)) {
         return position
     }
