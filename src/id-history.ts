@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { readConfig } from "./files.ts"
+import { readConfig } from "./files/read-json-file.ts"
 import { IdSchema } from "./id.ts"
 
 export const IdHistorySchema = z

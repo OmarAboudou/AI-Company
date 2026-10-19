@@ -1,9 +1,12 @@
 import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
-import { listSubdirectories, readConfig, readText } from "../files.ts"
+import { llmcoDir } from "../files/get-llmco-folder-path.ts"
+import { stateDir } from "../files/get-state-folder-path.ts"
+import { listSubdirectories } from "../files/list-subdirectories.ts"
+import { readConfig } from "../files/read-json-file.ts"
+import { readText } from "../files/read-text-file.ts"
+import { writeState } from "../files/save-state.ts"
 import { loadIdHistory, saveIdHistory } from "../id-history.ts"
-import { llmcoDir } from "../project.ts"
-import { stateDir, writeState } from "../state.ts"
 import {
     type Position,
     PositionConfigSchema,
