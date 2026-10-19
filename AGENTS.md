@@ -11,6 +11,7 @@ Everything written into the repository or on GitHub is in English: code, comment
 - Answer review comments in their GitHub thread. Resolve a thread only when the maintainer's own last message in it settles it (an agreement, a decision, a thanks); while your reply is the last word, leave it open for the maintainer.
 - Once the maintainer has approved a pull request, its checks pass and every review thread is resolved, the agent that opened it merges it with rebase-merge, unless the maintainer asked to wait. A commit pushed after the approval needs a new approval.
 - A pre-push hook runs lint, typecheck and tests: never bypass it with `--no-verify`.
+- A commit that only moves or renames code says so in its message and changes nothing else. Once it is on `main`, the agent that merged it adds its hash to `.git-blame-ignore-revs`, so that `git blame` skips it.
 
 ## Comments
 
