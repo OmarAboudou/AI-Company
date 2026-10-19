@@ -1,27 +1,22 @@
 import { type Command, Option } from "@commander-js/extra-typings"
-import { z } from "zod"
 import { formatIdArgumentDescription } from "../cli/format-id-argument-description.ts"
 import { formatNewIdArgumentDescription } from "../cli/format-new-id-argument-description.ts"
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { protocols } from "../llm/connection/schema.ts"
 import { createLlmProvider } from "../llm/provider/create-llm-provider.ts"
 import { loadExistingLlmProvider } from "../llm/provider/load-existing-llm-provider.ts"
-import {
-    type ApiKeySource,
-    LlmProviderConfigSchema,
-} from "../llm/provider/schema.ts"
+import type { ApiKeySource } from "../llm/provider/schema.ts"
 import {
     copyLlmProviderFolder,
     deleteLlmProviderFolder,
     hasLlmProvider,
     listLlmProviders,
-    saveLlmProvider,
 } from "../llm/provider/storage.ts"
+import { updateLlmProvider } from "../llm/provider/update-llm-provider.ts"
 import { registerLlmConnectionCommands } from "../llm-connection/commands.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
@@ -147,23 +142,11 @@ export function registerLlmProviderCommands(program: Command): void {
         .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
             requireAtLeastOneOption(options)
-            await requireCompany(projectRoot)
-            const { id, ...current } = await loadExistingLlmProvider(
-                projectRoot,
-                rawId,
-            )
-            const config = LlmProviderConfigSchema.safeParse({
-                ...current,
-                ...getDefinedValues({
-                    name: options.name,
-                    apiKey: apiKeySource(options),
-                }),
+            const provider = await updateLlmProvider(projectRoot, rawId, {
+                name: options.name,
+                apiKey: apiKeySource(options),
             })
-            if (!config.success) {
-                throw new UserError(z.prettifyError(config.error))
-            }
-            await saveLlmProvider(projectRoot, { id, ...config.data })
-            console.log(`Updated provider "${id}".`)
+            console.log(`Updated provider "${provider.id}".`)
         })
 
     providerCommand
