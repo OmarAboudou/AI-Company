@@ -441,6 +441,32 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
         )
     })
 
+    test("list shows who works a position temporarily", () => {
+        runCli("position", "interim", "developer", "julie")
+        runCli("position", "interim", "designer")
+
+        expect(runCli("position", "list").stdout).toBe(
+            "designer   Designer   (vacant)     temporarily: (git users)\n" +
+                "developer  Developer  omar         temporarily: julie\n" +
+                "director   Director   (git users)\n",
+        )
+    })
+
+    test("show says who works the position temporarily", () => {
+        runCli("position", "interim", "developer", "julie")
+        runCli("position", "interim", "designer")
+
+        const developer = runCli("position", "show", "developer").stdout
+        const designer = runCli("position", "show", "designer").stdout
+
+        expect(developer).toBe(
+            "# Developer\n\ndefault employee: omar\ntemporarily worked by: julie\n\n\n",
+        )
+        expect(designer).toBe(
+            "# Designer\n\ndefault employee: (vacant)\ntemporarily worked by: the repository's git users\n\n\n",
+        )
+    })
+
     test("unassign-temporarily says so when the position isn't assigned temporarily", () => {
         const end = runCli("position", "unassign-temporarily", "developer")
 
