@@ -77,7 +77,7 @@ async function answerAs(
         )
     }
     const [apiKey, ownReplays] = await Promise.all([
-        readApiKey(provider),
+        readApiKey(projectRoot, provider),
         replays(messages, employee, model),
     ])
     console.error(

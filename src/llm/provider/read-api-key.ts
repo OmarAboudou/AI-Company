@@ -1,12 +1,11 @@
 import { homedir } from "node:os"
 import { join, resolve } from "node:path"
-import { projectRoot } from "../../cli/project-root.ts"
 import { readTextFile } from "../../files/read-text-file.ts"
 import { isInRepositoryButNotIgnored } from "../../git/is-in-repository-but-not-ignored.ts"
 import { UserError } from "../../user-error.ts"
 import type { LlmProvider } from "./schema.ts"
 
-function getKeyFilePath(path: string): string {
+function getKeyFilePath(projectRoot: string, path: string): string {
     if (path === "~" || path.startsWith("~/")) {
         return join(homedir(), path.slice(1))
     }
@@ -14,6 +13,7 @@ function getKeyFilePath(path: string): string {
 }
 
 export async function readApiKey(
+    projectRoot: string,
     provider: LlmProvider,
 ): Promise<string | undefined> {
     const apiKeySource = provider.apiKey
@@ -29,7 +29,7 @@ export async function readApiKey(
         }
         return apiKey
     }
-    const path = getKeyFilePath(apiKeySource.path)
+    const path = getKeyFilePath(projectRoot, apiKeySource.path)
     if (isInRepositoryButNotIgnored(projectRoot, path)) {
         throw new UserError(
             `Provider "${provider.id}" reads its API key from ${apiKeySource.path}, which is in the repository but not ignored by git: ignore it, or move it out of the repository.`,
