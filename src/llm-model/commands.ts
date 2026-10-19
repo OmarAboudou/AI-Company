@@ -8,7 +8,8 @@ import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
 import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
-import { type Protocol, protocols } from "../llm/connection/schema.ts"
+import { protocols } from "../llm/connection/schema.ts"
+import { createLlmModel } from "../llm/model/create-llm-model.ts"
 import { loadExistingLlmModel } from "../llm/model/load-existing-llm-model.ts"
 import { requireProviderConnection } from "../llm/model/require-provider-connection.ts"
 import { LlmModelConfigSchema } from "../llm/model/schema.ts"
@@ -19,8 +20,6 @@ import {
     listLlmModels,
     saveLlmModel,
 } from "../llm/model/storage.ts"
-import { loadExistingLlmProvider } from "../llm/provider/load-existing-llm-provider.ts"
-import type { LlmProvider } from "../llm/provider/schema.ts"
 import { listLlmProviders, loadLlmProvider } from "../llm/provider/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
 import {
@@ -34,31 +33,6 @@ function protocolOption() {
         "-p, --protocol <protocol>",
         "API protocol the model is called with, one of its provider's connections (see llmco provider connection list)",
     ).choices(protocols)
-}
-
-function chooseProtocol(
-    provider: LlmProvider,
-    requested: Protocol | undefined,
-): Protocol {
-    if (requested !== undefined) {
-        requireProviderConnection(provider, requested)
-        return requested
-    }
-    const available = protocols.filter(
-        (protocol) => provider.connections?.[protocol] !== undefined,
-    )
-    const [only, ...others] = available
-    if (only === undefined) {
-        throw new UserError(
-            `Provider "${provider.id}" has no connection yet. Run \`llmco provider connection create\` first.`,
-        )
-    }
-    if (others.length > 0) {
-        throw new UserError(
-            `Provider "${provider.id}" has several connections (${available.join(", ")}): choose one with --protocol.`,
-        )
-    }
-    return only
 }
 
 export function registerLlmModelCommands(program: Command): void {
@@ -85,32 +59,18 @@ export function registerLlmModelCommands(program: Command): void {
         .addOption(protocolOption())
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, options) => {
-            await requireCompany(projectRoot)
-            const provider = await loadExistingLlmProvider(
+            const model = await createLlmModel(
                 projectRoot,
                 rawProviderId,
+                rawModelId,
+                {
+                    name: options.name,
+                    apiId: options.apiId,
+                    protocol: options.protocol,
+                },
             )
-            const modelId = parseId("model", rawModelId)
-            if (await hasLlmModel(projectRoot, provider.id, modelId)) {
-                throw new UserError(
-                    `Provider "${provider.id}" already has a model "${modelId}".`,
-                )
-            }
-            const config = LlmModelConfigSchema.safeParse({
-                name: options.name,
-                apiId: options.apiId,
-                protocol: chooseProtocol(provider, options.protocol),
-            })
-            if (!config.success) {
-                throw new UserError(z.prettifyError(config.error))
-            }
-            await saveLlmModel(projectRoot, {
-                providerId: provider.id,
-                id: modelId,
-                ...config.data,
-            })
             console.log(
-                `Created model "${modelId}" of provider "${provider.id}".`,
+                `Created model "${model.id}" of provider "${model.providerId}".`,
             )
         })
 
