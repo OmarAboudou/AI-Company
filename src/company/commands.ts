@@ -1,16 +1,13 @@
 import type { Command } from "@commander-js/extra-typings"
-import { z } from "zod"
 import { createDescriptionFileOption } from "../cli/create-description-file-option.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { getDefinedValues } from "../get-defined-values.ts"
 import { createCompany } from "../organization/company/create-company.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
-import { CompanyConfigSchema } from "../organization/company/schema.ts"
-import { loadCompany, saveCompany } from "../organization/company/storage.ts"
-import { UserError } from "../user-error.ts"
+import { loadCompany } from "../organization/company/storage.ts"
+import { updateCompany } from "../organization/company/update-company.ts"
 
 export function registerCompanyCommands(program: Command): void {
     program
@@ -58,23 +55,14 @@ export function registerCompanyCommands(program: Command): void {
         .hook("preAction", requireDirector)
         .action(async (options) => {
             requireAtLeastOneOption(options)
-            await requireCompany(projectRoot)
-            const [company, newDescription] = await Promise.all([
-                loadCompany(projectRoot),
-                readTextOrFile(options.description, options.descriptionFile),
-            ])
-            const { description: currentDescription, ...current } = company
-            const config = CompanyConfigSchema.safeParse({
-                ...current,
-                ...getDefinedValues({ name: options.name }),
+            const description = await readTextOrFile(
+                options.description,
+                options.descriptionFile,
+            )
+            const company = await updateCompany(projectRoot, {
+                name: options.name,
+                description,
             })
-            if (!config.success) {
-                throw new UserError(z.prettifyError(config.error))
-            }
-            await saveCompany(projectRoot, {
-                ...config.data,
-                description: newDescription ?? currentDescription,
-            })
-            console.log(`Updated company "${config.data.name}".`)
+            console.log(`Updated company "${company.name}".`)
         })
 }
