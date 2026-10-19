@@ -25,10 +25,16 @@ describe("llmco provider", () => {
     test("create refuses an existing id", () => {
         createAnthropic()
 
-        const second = runCli("provider", "create", "anthropic", "-n", "Other")
+        const duplicate = runCli(
+            "provider",
+            "create",
+            "anthropic",
+            "-n",
+            "Other",
+        )
         const show = runCli("provider", "show", "anthropic").stdout
 
-        expect(second.exitCode).toBe(1)
+        expect(duplicate.exitCode).toBe(1)
         expect(show).toContain("# Anthropic\n")
     })
 })
@@ -53,7 +59,7 @@ describe("llmco provider API key", () => {
     })
 
     test("create refuses an environment variable and a file at once", () => {
-        const create = runCli(
+        const creation = runCli(
             "provider",
             "create",
             "anthropic",
@@ -65,8 +71,8 @@ describe("llmco provider API key", () => {
             "~/.keys/anthropic",
         )
 
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain("cannot be used with")
+        expect(creation.exitCode).toBe(1)
+        expect(creation.stderr).toContain("cannot be used with")
         expect(runCli("provider", "list").stdout).toContain("No providers")
     })
 })
