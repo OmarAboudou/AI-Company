@@ -18,8 +18,10 @@ Only for a non-obvious *why* that no test can carry (a workaround, an external c
 
 ## Naming
 
-A name says what its value is, so that code reads at first sight.
+A name says what its value is, so that code reads at first sight, and says it from where it is read:
 
+- **In its context**, a local or a parameter of a function `F` reads as "the x that `F` needs", a field of a type `T` as "the x of a `T`". The name doesn't repeat what the context says (`position.title`, not `position.positionTitle`), adds what the context doesn't (`threadMessages` in a function given a thread's id), and tells apart two values of one kind (`rawProviderId` and `rawModelId`).
+- **Exported**, a name is read in the files that import it, without its folder: it names its concept (`loadThread`, not `load`).
 - **Functions** start with a verb saying what they do:
   - `load`, `list`, `save`, `delete`: read or write the disk, for one item, all the items of a kind, writing, removing;
   - `get`: compute a value from data already in memory;
