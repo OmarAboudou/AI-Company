@@ -1,5 +1,5 @@
+import { awaitedIds } from "../../messaging/thread/get-awaited-ids.ts"
 import { readArchives } from "../../messaging/thread/list-archives.ts"
-import { awaitedIds } from "../../thread/members.ts"
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { loadCompany } from "../company/storage.ts"
