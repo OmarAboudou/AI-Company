@@ -55,12 +55,14 @@ export function registerThreadCommands(program: Command): void {
         .addOption(asPositionOption())
         .action(async (options) => {
             await requireCompany(projectRoot)
-            const author = await readCurrentAuthor({
+            const author = await readCurrentAuthor(projectRoot, {
                 asPositionId: options.asPosition,
             })
             const body = await readBody(options)
             const draft =
-                body === undefined ? undefined : await createDraft(author, body)
+                body === undefined
+                    ? undefined
+                    : await createDraft(projectRoot, author, body)
             const createdAt = new Date().toISOString()
             const config = ThreadConfigSchema.safeParse({
                 subject: options.subject,
@@ -78,8 +80,8 @@ export function registerThreadCommands(program: Command): void {
             await saveThread(projectRoot, { id, ...config.data })
             console.log(id)
             if (draft !== undefined) {
-                await sendDraft(id, draft)
-                await answerMentions(id, draft.mentions)
+                await sendDraft(projectRoot, id, draft)
+                await answerMentions(projectRoot, id, draft.mentions)
             }
         })
 
