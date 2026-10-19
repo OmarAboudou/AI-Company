@@ -1,5 +1,5 @@
 import { isAuthorOf } from "../../ids/is-author-of.ts"
-import { readArchives } from "../../thread/archives.ts"
+import { readArchives } from "../../messaging/thread/list-archives.ts"
 import { UserError } from "../../user-error.ts"
 import type { Employee } from "./schema.ts"
 import { listEmployees } from "./storage.ts"

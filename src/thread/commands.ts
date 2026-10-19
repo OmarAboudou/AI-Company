@@ -16,13 +16,14 @@ import {
 } from "../message/commands.ts"
 import { minutes, signature } from "../message/signature.ts"
 import { listMessages } from "../message/storage.ts"
+import { newThreadId } from "../messaging/thread/create-thread-id.ts"
+import { readArchives } from "../messaging/thread/list-archives.ts"
+import { ThreadConfigSchema } from "../messaging/thread/schema.ts"
+import { saveThread } from "../messaging/thread/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
 import { listPositions } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
-import { readArchives } from "./archives.ts"
 import { awaitedIds, memberIds } from "./members.ts"
-import { newThreadId, saveThread } from "./storage.ts"
-import { ThreadConfigSchema } from "./thread.ts"
 
 function mentionsOf(positionIds: string[]): string {
     return positionIds.map((id) => `@${id}`).join(", ")

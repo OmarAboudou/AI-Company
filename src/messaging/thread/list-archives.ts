@@ -1,7 +1,7 @@
-import type { Message } from "../message/message.ts"
-import { listMessages } from "../message/storage.ts"
+import type { Message } from "../../message/message.ts"
+import { listMessages } from "../../message/storage.ts"
+import type { Thread } from "./schema.ts"
 import { listThreads } from "./storage.ts"
-import type { Thread } from "./thread.ts"
 
 export type Archive = { thread: Thread; messages: Message[] }
 

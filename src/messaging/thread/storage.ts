@@ -1,10 +1,8 @@
 import { join } from "node:path"
-import { getLlmcoFolderPath } from "../files/get-llmco-folder-path.ts"
-import { listSubdirectories } from "../files/list-subdirectories.ts"
-import { readJsonFile } from "../files/read-json-file.ts"
-import { type Thread, ThreadConfigSchema } from "./thread.ts"
-
-const maxSlugLength = 50
+import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
+import { listSubdirectories } from "../../files/list-subdirectories.ts"
+import { readJsonFile } from "../../files/read-json-file.ts"
+import { type Thread, ThreadConfigSchema } from "./schema.ts"
 
 function threadsDir(projectRoot: string): string {
     return join(getLlmcoFolderPath(projectRoot), "threads")
@@ -51,35 +49,4 @@ export async function saveThread(
         threadConfigPath(projectRoot, id),
         `${JSON.stringify(config, null, 4)}\n`,
     )
-}
-
-export function slugify(subject: string): string {
-    const words = subject
-        .normalize("NFD")
-        .replace(/\p{Diacritic}/gu, "")
-        .toLowerCase()
-        .split(/[^a-z0-9]+/)
-        .filter((word) => word !== "")
-    let slug = ""
-    for (const word of words) {
-        const longer = slug === "" ? word : `${slug}-${word}`
-        if (longer.length > maxSlugLength) {
-            break
-        }
-        slug = longer
-    }
-    return slug === "" ? "thread" : slug
-}
-
-export async function newThreadId(
-    projectRoot: string,
-    subject: string,
-    createdAt: string,
-): Promise<string> {
-    const base = `${createdAt.slice(0, 10)}-${slugify(subject)}`
-    let id = base
-    for (let suffix = 2; await threadExists(projectRoot, id); suffix++) {
-        id = `${base}-${suffix}`
-    }
-    return id
 }

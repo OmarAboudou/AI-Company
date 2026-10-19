@@ -5,7 +5,7 @@ import {
     CommitterSchema,
     EmployeeSnapshotSchema,
     PositionSnapshotSchema,
-} from "../thread/thread.ts"
+} from "../messaging/thread/schema.ts"
 
 export const MessageConfigSchema = z
     .strictObject({
