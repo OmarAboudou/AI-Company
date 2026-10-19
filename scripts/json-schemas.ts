@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { IdHistorySchema } from "../src/ids/id-history-schema.ts"
+import { LlmModelConfigSchema } from "../src/llm/model/schema.ts"
 import { LlmProviderConfigSchema } from "../src/llm/provider/schema.ts"
-import { LlmModelConfigSchema } from "../src/llm-model/llm-model.ts"
 import {
     MessageConfigSchema,
     ProviderResponseSchema,

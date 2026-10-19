@@ -1,7 +1,7 @@
 import { parseId } from "../../ids/parse-id.ts"
-import { listLlmModels } from "../../llm-model/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
 import { UserError } from "../../user-error.ts"
+import { listLlmModels } from "../model/storage.ts"
 import type { LlmProvider } from "../provider/schema.ts"
 import { loadLlmProviderWithConnection } from "./load-llm-provider-with-connection.ts"
 import { saveLlmConnections } from "./save-llm-connections.ts"

@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { ProtocolSchema } from "../llm/connection/schema.ts"
+import { ProtocolSchema } from "../connection/schema.ts"
 
 export const LlmModelConfigSchema = z
     .strictObject({

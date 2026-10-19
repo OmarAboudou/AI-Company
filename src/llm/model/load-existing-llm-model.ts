@@ -1,7 +1,7 @@
-import { parseId } from "../ids/parse-id.ts"
-import { loadExistingLlmProvider } from "../llm/provider/load-existing-llm-provider.ts"
-import { UserError } from "../user-error.ts"
-import type { LlmModel } from "./llm-model.ts"
+import { parseId } from "../../ids/parse-id.ts"
+import { UserError } from "../../user-error.ts"
+import { loadExistingLlmProvider } from "../provider/load-existing-llm-provider.ts"
+import type { LlmModel } from "./schema.ts"
 import { llmModelExists, loadLlmModel } from "./storage.ts"
 
 export async function loadExistingLlmModel(

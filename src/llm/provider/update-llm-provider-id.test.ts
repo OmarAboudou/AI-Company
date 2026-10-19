@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
-import { listLlmModels, saveLlmModel } from "../../llm-model/storage.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.ts"
 import {
     loadEmployee,
     saveEmployee,
 } from "../../organization/employee/storage.ts"
 import { UserError } from "../../user-error.ts"
+import { listLlmModels, saveLlmModel } from "../model/storage.ts"
 import { hasLlmProvider, loadLlmProvider, saveLlmProvider } from "./storage.ts"
 import { updateLlmProviderId } from "./update-llm-provider-id.ts"
 
