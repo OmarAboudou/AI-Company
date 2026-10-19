@@ -1,6 +1,6 @@
 import { join } from "node:path"
-import { llmcoDir } from "./get-llmco-folder-path.ts"
+import { getLlmcoFolderPath } from "./get-llmco-folder-path.ts"
 
-export function stateDir(projectRoot: string): string {
-    return join(llmcoDir(projectRoot), ".state")
+export function getStateFolderPath(projectRoot: string): string {
+    return join(getLlmcoFolderPath(projectRoot), ".state")
 }
