@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { hadId } from "./had-id-at.ts"
+import { hadIdAt } from "./had-id-at.ts"
 import type { IdHistory } from "./id-history-schema.ts"
 
 const renamed: IdHistory = {
@@ -11,7 +11,7 @@ const renamed: IdHistory = {
     ],
 }
 
-describe("hadId", () => {
+describe("hadIdAt", () => {
     test.each([
         ["developer", "2026-10-18T14:00:00.000Z"],
         ["developer", "2026-10-19T08:59:59.999Z"],
@@ -19,7 +19,7 @@ describe("hadId", () => {
         ["backend-developer", "2026-10-20T09:00:00.000Z"],
         ["backend-developer", "2030-01-01T00:00:00.000Z"],
     ])("is true for %s at %s", (id, at) => {
-        expect(hadId(renamed, id, at)).toBe(true)
+        expect(hadIdAt(renamed, id, at)).toBe(true)
     })
 
     test.each([
@@ -29,19 +29,19 @@ describe("hadId", () => {
         ["backend-developer", "2026-10-19T09:00:00.000Z"],
         ["qa-tester", "2026-10-19T09:00:00.000Z"],
     ])("is false for %s at %s", (id, at) => {
-        expect(hadId(renamed, id, at)).toBe(false)
+        expect(hadIdAt(renamed, id, at)).toBe(false)
     })
 
     test("counts an entity without createdAt as existing since always", () => {
         const legacy = { id: "developer" }
         const longAgo = "2000-01-01T00:00:00.000Z"
 
-        expect(hadId(legacy, "developer", longAgo)).toBe(true)
+        expect(hadIdAt(legacy, "developer", longAgo)).toBe(true)
     })
 
     test("compares instants, whatever their precision", () => {
         const at = "2026-10-19T08:59:59Z"
 
-        expect(hadId(renamed, "developer", at)).toBe(true)
+        expect(hadIdAt(renamed, "developer", at)).toBe(true)
     })
 })

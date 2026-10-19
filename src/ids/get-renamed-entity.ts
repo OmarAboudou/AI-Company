@@ -1,6 +1,6 @@
 import type { IdHistory } from "./id-history-schema.ts"
 
-export function withNewId<Entity extends IdHistory>(
+export function getRenamedEntity<Entity extends IdHistory>(
     entity: Entity,
     newId: string,
     until: string,

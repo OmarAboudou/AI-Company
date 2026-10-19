@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk"
 import type { IdHistory } from "../ids/id-history-schema.ts"
-import { wrote } from "../ids/is-author-of.ts"
+import { isAuthorOf } from "../ids/is-author-of.ts"
 import type { Connections } from "../llm-connection/llm-connection.ts"
 import type { Message } from "../message/message.ts"
 import { authorName, minutes } from "../message/signature.ts"
@@ -37,7 +37,7 @@ export function anthropicTurns(
         content: Anthropic.ContentBlockParam[]
     }[] = []
     for (const message of messages) {
-        const own = wrote(employee, message)
+        const own = isAuthorOf(employee, message)
         const role = own ? "assistant" : "user"
         const content: Anthropic.ContentBlockParam[] = own
             ? (replays.get(message.id) ?? [
