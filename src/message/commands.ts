@@ -70,13 +70,13 @@ export function registerMessageCommands(program: Command): void {
                 )
             }
             const messages = await listMessages(projectRoot, thread.id)
-            const author = await readCurrentAuthor({
+            const author = await readCurrentAuthor(projectRoot, {
                 archive: { thread, messages },
                 asPositionId: options.asPosition,
             })
-            const draft = await createDraft(author, body)
-            const id = await sendDraft(thread.id, draft)
+            const draft = await createDraft(projectRoot, author, body)
+            const id = await sendDraft(projectRoot, thread.id, draft)
             console.error(`Sent message "${id}" in thread "${thread.id}".`)
-            await answerMentions(thread.id, draft.mentions)
+            await answerMentions(projectRoot, thread.id, draft.mentions)
         })
 }

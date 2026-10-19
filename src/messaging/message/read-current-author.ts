@@ -1,4 +1,3 @@
-import { projectRoot } from "../../cli/project-root.ts"
 import { readGitCommitter } from "../../git/read-git-committer.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
 import type { Employee } from "../../organization/employee/schema.ts"
@@ -45,6 +44,7 @@ function requireOnlyPosition(
 }
 
 async function loadWorkerDescription(
+    projectRoot: string,
     worker: Worker | undefined,
 ): Promise<string> {
     if (worker === undefined) {
@@ -70,6 +70,7 @@ function formatHowToWorkIt(human: CurrentHuman, position: Position): string {
 }
 
 async function requireWorkedPosition(
+    projectRoot: string,
     human: CurrentHuman,
     workedPositions: Position[],
     rawId: string,
@@ -87,7 +88,7 @@ async function requireWorkedPosition(
     const positionState = await loadPositionState(projectRoot, position.id)
     const worker = getCurrentWorker(position, positionState, directorPositionId)
     throw new UserError(
-        `You don't work position "${position.id}": ${await loadWorkerDescription(worker)}. ${formatHowToWorkIt(human, position)}`,
+        `You don't work position "${position.id}": ${await loadWorkerDescription(projectRoot, worker)}. ${formatHowToWorkIt(human, position)}`,
     )
 }
 
@@ -99,11 +100,13 @@ type PositionChoice = {
 }
 
 async function loadPositionToWriteFrom(
+    projectRoot: string,
     { human, workedPositions, memberIds, directorPositionId }: PositionChoice,
     asPositionId: string | undefined,
 ): Promise<Position> {
     if (asPositionId !== undefined) {
         return requireWorkedPosition(
+            projectRoot,
             human,
             workedPositions,
             asPositionId,
@@ -121,13 +124,16 @@ async function loadPositionToWriteFrom(
         : requireOnlyPosition(human.employee, workedPositions)
 }
 
-export async function readCurrentAuthor({
-    archive,
-    asPositionId,
-}: {
-    archive?: Archive
-    asPositionId?: string
-} = {}): Promise<Author> {
+export async function readCurrentAuthor(
+    projectRoot: string,
+    {
+        archive,
+        asPositionId,
+    }: {
+        archive?: Archive
+        asPositionId?: string
+    } = {},
+): Promise<Author> {
     const [human, positions, { directorPositionId }] = await Promise.all([
         readCurrentHuman(projectRoot),
         listPositions(projectRoot),
@@ -148,7 +154,11 @@ export async function readCurrentAuthor({
                 : getMemberIds(archive.thread, archive.messages, positions),
         directorPositionId,
     }
-    const position = await loadPositionToWriteFrom(positionChoice, asPositionId)
+    const position = await loadPositionToWriteFrom(
+        projectRoot,
+        positionChoice,
+        asPositionId,
+    )
     return {
         position: { id: position.id, title: position.title },
         ...(human.kind === "employee" && {

@@ -4,6 +4,7 @@ import { resolveMentions } from "./resolve-mentions.ts"
 import type { Author, Draft } from "./schema.ts"
 
 export async function createDraft(
+    projectRoot: string,
     author: Author,
     body: string,
 ): Promise<Draft> {
@@ -16,6 +17,6 @@ export async function createDraft(
     return {
         ...author,
         body,
-        ...(await resolveMentions(body, author.position.id)),
+        ...(await resolveMentions(projectRoot, body, author.position.id)),
     }
 }

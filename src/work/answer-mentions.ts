@@ -1,5 +1,4 @@
 import type Anthropic from "@anthropic-ai/sdk"
-import { projectRoot } from "../cli/project-root.ts"
 import { readGitCommitter } from "../git/read-git-committer.ts"
 import { isAuthorOf } from "../ids/is-author-of.ts"
 import { callAnthropicMessages } from "../llm/anthropic-messages/call-anthropic-messages.ts"
@@ -35,6 +34,7 @@ import { buildSystemPrompt } from "./build-system-prompt.ts"
 type LlmEmployee = Extract<Employee, { kind: "llm" }>
 
 async function loadReplays(
+    projectRoot: string,
     messages: Message[],
     employee: LlmEmployee,
     model: LlmModel,
@@ -61,6 +61,7 @@ async function loadReplays(
 }
 
 async function answerAs(
+    projectRoot: string,
     threadId: string,
     position: Position,
     employee: LlmEmployee,
@@ -85,7 +86,7 @@ async function answerAs(
     }
     const [apiKey, ownReplays] = await Promise.all([
         readApiKey(projectRoot, provider),
-        loadReplays(messages, employee, model),
+        loadReplays(projectRoot, messages, employee, model),
     ])
     console.error(
         `${employee.name} answers as ${position.title} (@${position.id}):`,
@@ -116,12 +117,12 @@ async function answerAs(
     if (response.stop_reason === "max_tokens") {
         console.error(`${employee.name}'s answer was cut at its length limit.`)
     }
-    const id = await sendDraft(threadId, {
+    const id = await sendDraft(projectRoot, threadId, {
         position: { id: position.id, title: position.title },
         employee: { id: employee.id, name: employee.name },
         committer: readGitCommitter(projectRoot),
         body,
-        ...(await resolveMentions(body, position.id)),
+        ...(await resolveMentions(projectRoot, body, position.id)),
     })
     await saveProviderResponse(
         projectRoot,
@@ -137,6 +138,7 @@ async function answerAs(
 }
 
 export async function answerMentions(
+    projectRoot: string,
     threadId: string,
     positionIds: string[],
 ): Promise<void> {
@@ -172,7 +174,7 @@ export async function answerMentions(
             continue
         }
         try {
-            await answerAs(threadId, position, employee)
+            await answerAs(projectRoot, threadId, position, employee)
         } catch (error) {
             if (!(error instanceof UserError)) {
                 throw error
