@@ -13,7 +13,8 @@ import { readMentions, sendDraft } from "../message/commands.ts"
 import type { Message } from "../message/message.ts"
 import { listMessages, loadResponse, saveResponse } from "../message/storage.ts"
 import type { Position } from "../position/position.ts"
-import { loadPosition } from "../position/storage.ts"
+import { loadPosition, loadPositionState } from "../position/storage.ts"
+import { currentWorker } from "../position/worker.ts"
 import { loadThread } from "../thread/storage.ts"
 import {
     anthropicTurns,
@@ -125,18 +126,26 @@ export async function answerMentions(
     positionIds: string[],
 ): Promise<void> {
     const failures: string[] = []
+    const { directorPositionId } = await loadCompany(projectRoot)
     for (const positionId of positionIds) {
-        const position = await loadPosition(projectRoot, positionId)
-        if (position.defaultEmployeeId === undefined) {
+        const [position, state] = await Promise.all([
+            loadPosition(projectRoot, positionId),
+            loadPositionState(projectRoot, positionId),
+        ])
+        const worker = currentWorker(position, state, directorPositionId)
+        if (worker === undefined) {
             console.error(
                 `@${position.id} is vacant: the message waits until someone is assigned.`,
             )
             continue
         }
-        const employee = await loadEmployee(
-            projectRoot,
-            position.defaultEmployeeId,
-        )
+        if (worker.kind === "directors") {
+            console.error(
+                `@${position.id} is worked by the directors: the message waits for their answer.`,
+            )
+            continue
+        }
+        const employee = await loadEmployee(projectRoot, worker.employeeId)
         if (employee.kind === "human") {
             console.error(
                 `@${position.id} is worked by ${employee.name}, a human: the message waits for their answer.`,
