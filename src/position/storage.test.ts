@@ -8,8 +8,10 @@ import {
     deletePosition,
     listPositions,
     loadPosition,
+    loadPositionState,
     positionExists,
     savePosition,
+    savePositionState,
 } from "./storage.ts"
 
 let projectRoot: string
@@ -136,5 +138,79 @@ describe("copyPosition", () => {
             { ...developer, id: "api-developer" },
             developer,
         ])
+    })
+})
+
+function statePath(...segments: string[]): string {
+    return join(projectRoot, ".llmco", "state", ...segments)
+}
+
+describe("savePositionState", () => {
+    const interim = {
+        temporaryAssignment: { kind: "employee", employeeId: "julie" },
+    } as const
+
+    test("writes the state in .llmco/state/positions, named after the id", async () => {
+        await savePositionState(projectRoot, developer.id, interim)
+
+        const file = Bun.file(statePath("positions", `${developer.id}.json`))
+        expect(await file.json()).toEqual(interim)
+    })
+
+    test("writes a .gitignore ignoring the whole state folder", async () => {
+        await savePositionState(projectRoot, developer.id, interim)
+
+        const gitignore = await Bun.file(statePath(".gitignore")).text()
+        expect(gitignore.split("\n")).toContain("*")
+    })
+
+    test("leaves nothing for git to commit", async () => {
+        Bun.spawnSync(["git", "init", "-q"], { cwd: projectRoot })
+
+        await savePositionState(projectRoot, developer.id, interim)
+
+        const status = Bun.spawnSync(
+            ["git", "status", "--porcelain", "--untracked-files=all"],
+            { cwd: projectRoot },
+        )
+        expect(status.stdout.toString()).toBe("")
+    })
+
+    test("removes the file of an empty state", async () => {
+        const path = statePath("positions", `${developer.id}.json`)
+        await savePositionState(projectRoot, developer.id, interim)
+        const before = await Bun.file(path).exists()
+
+        await savePositionState(projectRoot, developer.id, {})
+        const after = await Bun.file(path).exists()
+
+        expect(before).toBe(true)
+        expect(after).toBe(false)
+    })
+})
+
+describe("loadPositionState", () => {
+    test("reads back what savePositionState wrote", async () => {
+        const directors = {
+            temporaryAssignment: { kind: "directors" },
+        } as const
+        await savePositionState(projectRoot, developer.id, directors)
+
+        const state = await loadPositionState(projectRoot, developer.id)
+
+        expect(state).toEqual(directors)
+    })
+
+    test("is empty when the position has no state", async () => {
+        expect(await loadPositionState(projectRoot, developer.id)).toEqual({})
+    })
+
+    test("rejects an invalid state file", async () => {
+        const path = statePath("positions", `${developer.id}.json`)
+        await Bun.write(path, JSON.stringify({ temporaryAssignment: {} }))
+
+        const load = loadPositionState(projectRoot, developer.id)
+
+        await expect(load).rejects.toThrow(UserError)
     })
 })

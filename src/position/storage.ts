@@ -3,7 +3,13 @@ import { join } from "node:path"
 import { listSubdirectories, readConfig, readText } from "../files.ts"
 import { loadIdHistory, saveIdHistory } from "../id-history.ts"
 import { llmcoDir } from "../project.ts"
-import { type Position, PositionConfigSchema } from "./position.ts"
+import { stateDir, writeState } from "../state.ts"
+import {
+    type Position,
+    PositionConfigSchema,
+    type PositionState,
+    PositionStateSchema,
+} from "./position.ts"
 
 function positionsDir(projectRoot: string): string {
     return join(llmcoDir(projectRoot), "positions")
@@ -20,6 +26,10 @@ function positionPaths(projectRoot: string, id: string) {
         description: join(dir, "description.md"),
         history: join(dir, "history.json"),
     }
+}
+
+function positionStatePath(projectRoot: string, id: string): string {
+    return join(stateDir(projectRoot), "positions", `${id}.json`)
 }
 
 export async function positionExists(
@@ -77,4 +87,28 @@ export async function copyPosition(
         errorOnExist: true,
         force: false,
     })
+}
+
+export async function loadPositionState(
+    projectRoot: string,
+    id: string,
+): Promise<PositionState> {
+    const path = positionStatePath(projectRoot, id)
+    if (!(await Bun.file(path).exists())) {
+        return {}
+    }
+    return readConfig(projectRoot, path, PositionStateSchema)
+}
+
+export async function savePositionState(
+    projectRoot: string,
+    id: string,
+    state: PositionState,
+): Promise<void> {
+    const path = positionStatePath(projectRoot, id)
+    if (Object.values(state).every((value) => value === undefined)) {
+        await rm(path, { force: true })
+        return
+    }
+    await writeState(projectRoot, path, state)
 }
