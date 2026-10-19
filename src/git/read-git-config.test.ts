@@ -4,31 +4,31 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { readGitConfig } from "./read-git-config.ts"
 
-let dir: string
+let folderPath: string
 
 beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), "llmco-"))
+    folderPath = await mkdtemp(join(tmpdir(), "llmco-"))
 })
 
 afterEach(async () => {
-    await rm(dir, { recursive: true, force: true })
+    await rm(folderPath, { recursive: true, force: true })
 })
 
-function git(...args: string[]) {
-    Bun.spawnSync(["git", ...args], { cwd: dir })
+function runGitInFolder(...args: string[]) {
+    Bun.spawnSync(["git", ...args], { cwd: folderPath })
 }
 
 describe("readGitConfig", () => {
     test("reads a value set in the repository", () => {
-        git("init", "-q")
-        git("config", "user.name", "Test User")
+        runGitInFolder("init", "-q")
+        runGitInFolder("config", "user.name", "Test User")
 
-        expect(readGitConfig(dir, "user.name")).toBe("Test User")
+        expect(readGitConfig(folderPath, "user.name")).toBe("Test User")
     })
 
     test("is undefined for a key that isn't set", () => {
-        git("init", "-q")
+        runGitInFolder("init", "-q")
 
-        expect(readGitConfig(dir, "llmco.nothing")).toBeUndefined()
+        expect(readGitConfig(folderPath, "llmco.nothing")).toBeUndefined()
     })
 })

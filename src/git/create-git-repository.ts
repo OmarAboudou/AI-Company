@@ -2,10 +2,10 @@ import type { GitCommitter } from "./read-git-committer.ts"
 import { spawnGit } from "./spawn-git.ts"
 
 export function createGitRepository(
-    dir: string,
+    folderPath: string,
     committer: GitCommitter,
 ): void {
-    spawnGit(dir, ["init", "-q"])
-    spawnGit(dir, ["config", "user.name", committer.name])
-    spawnGit(dir, ["config", "user.email", committer.email])
+    spawnGit(folderPath, ["init", "-q"])
+    spawnGit(folderPath, ["config", "user.name", committer.name])
+    spawnGit(folderPath, ["config", "user.email", committer.email])
 }

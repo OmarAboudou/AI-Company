@@ -4,40 +4,46 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { isInRepositoryButNotIgnored } from "./is-in-repository-but-not-ignored.ts"
 
-let dir: string
+let folderPath: string
 
 beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), "llmco-"))
+    folderPath = await mkdtemp(join(tmpdir(), "llmco-"))
 })
 
 afterEach(async () => {
-    await rm(dir, { recursive: true, force: true })
+    await rm(folderPath, { recursive: true, force: true })
 })
 
-function git(...args: string[]) {
-    Bun.spawnSync(["git", ...args], { cwd: dir })
+function runGitInFolder(...args: string[]) {
+    Bun.spawnSync(["git", ...args], { cwd: folderPath })
 }
 
 describe("isInRepositoryButNotIgnored", () => {
     test("is true for a file the repository doesn't ignore", async () => {
-        git("init", "-q")
-        await Bun.write(join(dir, "key"), "sk")
+        runGitInFolder("init", "-q")
+        const keyPath = join(folderPath, "key")
+        await Bun.write(keyPath, "sk")
 
-        expect(isInRepositoryButNotIgnored(dir, join(dir, "key"))).toBe(true)
+        expect(isInRepositoryButNotIgnored(folderPath, keyPath)).toBe(true)
     })
 
     test("is false for an ignored file", async () => {
-        git("init", "-q")
-        await Bun.write(join(dir, ".gitignore"), "secrets/\n")
-        const path = join(dir, "secrets", "key")
+        runGitInFolder("init", "-q")
+        await Bun.write(join(folderPath, ".gitignore"), "secrets/\n")
+        const path = join(folderPath, "secrets", "key")
 
-        expect(isInRepositoryButNotIgnored(dir, path)).toBe(false)
+        expect(isInRepositoryButNotIgnored(folderPath, path)).toBe(false)
     })
 
     test("is false for a file outside the repository", async () => {
-        git("init", "-q", "repository")
-        const repository = join(dir, "repository")
+        runGitInFolder("init", "-q", "repository")
+        const repositoryPath = join(folderPath, "repository")
 
-        expect(isInRepositoryButNotIgnored(repository, dir)).toBe(false)
+        const isInRepository = isInRepositoryButNotIgnored(
+            repositoryPath,
+            folderPath,
+        )
+
+        expect(isInRepository).toBe(false)
     })
 })
