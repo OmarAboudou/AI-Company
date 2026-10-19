@@ -1,5 +1,5 @@
 import { join } from "node:path"
-import { jsonSchemas } from "../src/json-schemas.ts"
+import { jsonSchemas } from "./json-schemas.ts"
 
 const dir = join(import.meta.dir, "..", "schemas")
 
