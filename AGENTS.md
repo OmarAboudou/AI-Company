@@ -18,7 +18,7 @@ Only for a non-obvious *why* that no test can carry (a workaround, an external c
 
 ## Naming
 
-A name says what its value is, so that code reads at first sight. The code is being renamed to follow these rules (#86).
+A name says what its value is, so that code reads at first sight.
 
 - **Functions** start with a verb saying what they do:
   - `load`, `list`, `save`, `delete`: read or write the disk, for one item, all the items of a kind, writing, removing;
