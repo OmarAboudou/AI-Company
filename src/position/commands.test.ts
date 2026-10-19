@@ -11,6 +11,15 @@ const { runCli, runCliWithStdin, projectPath } = useTemporaryProject()
 const interimEmployee = ["position", "interim", "employee"]
 const interimDirectors = ["position", "interim", "directors"]
 
+function positionStatePath(id: string): string {
+    return projectPath(".llmco", ".state", "positions", `${id}.json`)
+}
+
+async function positionState(id: string): Promise<unknown> {
+    const file = Bun.file(positionStatePath(id))
+    return (await file.exists()) ? file.json() : undefined
+}
+
 describe("llmco position", () => {
     beforeEach(() => {
         runCli("init", "--name", "Acme")
@@ -284,12 +293,6 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
         runCli("position", "assign", "developer", "omar")
     })
 
-    async function positionState(id: string): Promise<unknown> {
-        const path = projectPath(".llmco", ".state", "positions", `${id}.json`)
-        const file = Bun.file(path)
-        return (await file.exists()) ? file.json() : undefined
-    }
-
     const julie = { kind: "employee", employeeId: "julie" }
 
     test("assign-temporarily gives the position to an employee and keeps its default employee", async () => {
@@ -499,6 +502,52 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
         expect(end.stdout).toBe(
             'Position "developer" isn\'t assigned temporarily.\n',
         )
+    })
+})
+
+describe("a temporary assignment through the position's lifecycle", () => {
+    const julie = {
+        temporaryAssignment: { kind: "employee", employeeId: "julie" },
+    }
+
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+        runCli("position", "create", "developer", "-t", "Developer")
+        runCli("employee", "create", "human", "julie", "-n", "Julie")
+        runCli(...interimEmployee, "developer", "julie")
+    })
+
+    test("update-id moves the state with the position", async () => {
+        const before = await positionState("developer")
+
+        runCli("position", "update-id", "developer", "api-developer")
+
+        expect(before).toEqual(julie)
+        expect(await positionState("developer")).toBeUndefined()
+        expect(await positionState("api-developer")).toEqual(julie)
+    })
+
+    test("delete removes the state, so a reopened position starts without it", async () => {
+        const before = await positionState("developer")
+
+        runCli("position", "delete", "developer")
+        const deleted = await positionState("developer")
+        runCli("position", "create", "developer", "-t", "Developer")
+
+        expect(before).toEqual(julie)
+        expect(deleted).toBeUndefined()
+        expect(await positionState("developer")).toBeUndefined()
+    })
+
+    test("create ignores a state left behind by another position", async () => {
+        const state = { temporaryAssignment: { kind: "directors" } }
+        await Bun.write(positionStatePath("tester"), JSON.stringify(state))
+        const before = await positionState("tester")
+
+        runCli("position", "create", "tester", "-t", "Tester")
+
+        expect(before).toEqual(state)
+        expect(await positionState("tester")).toBeUndefined()
     })
 })
 
