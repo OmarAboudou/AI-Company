@@ -2,9 +2,9 @@ import type { Command } from "@commander-js/extra-typings"
 import { sendMessage } from "../../../messaging/message/send-message.ts"
 import { UserError } from "../../../user-error.ts"
 import { answerMentions } from "../../../work/answer-mentions.ts"
-import { asPositionOption } from "../../create-as-position-option.ts"
-import { bodyFileOption } from "../../create-body-file-option.ts"
-import { bodyOption } from "../../create-body-option.ts"
+import { createAsPositionOption } from "../../create-as-position-option.ts"
+import { createBodyFileOption } from "../../create-body-file-option.ts"
+import { createBodyOption } from "../../create-body-option.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
 import { printAnswerEvent } from "../../print-answer-event.ts"
 import { printUnknownMentions } from "../../print-unknown-mentions.ts"
@@ -24,9 +24,9 @@ export function registerMessageSendCommand(messageCommand: Command): void {
                 "2026-10-18-choice-of-framework",
             ),
         )
-        .addOption(bodyOption())
-        .addOption(bodyFileOption())
-        .addOption(asPositionOption())
+        .addOption(createBodyOption())
+        .addOption(createBodyFileOption())
+        .addOption(createAsPositionOption())
         .action(async (rawThreadId, options) => {
             const body = await readBody(options)
             if (body === undefined) {

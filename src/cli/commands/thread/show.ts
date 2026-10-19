@@ -10,9 +10,9 @@ import { requireCompany } from "../../../organization/company/require-company.ts
 import { listPositions } from "../../../organization/position/storage.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
 import { projectRoot } from "../../project-root.ts"
-import { mentionsOf } from "./format-mentions.ts"
+import { formatMentions } from "./format-mentions.ts"
 
-function signature(author: Author): string {
+function formatSignature(author: Author): string {
     const { position } = author
     return `${getAuthorName(author)}, ${position.title} (@${position.id})`
 }
@@ -31,37 +31,37 @@ export function registerThreadShowCommand(threadCommand: Command): void {
             ),
         )
         .option("-j, --json", "print one JSON object per message and line")
-        .action(async (rawId, { json }) => {
+        .action(async (rawId, { json: shouldPrintJson }) => {
             await requireCompany(projectRoot)
             const thread = await loadExistingThread(projectRoot, rawId)
             const [messages, positions] = await Promise.all([
                 listMessages(projectRoot, thread.id),
                 listPositions(projectRoot),
             ])
-            if (json) {
+            if (shouldPrintJson) {
                 for (const { threadId, ...message } of messages) {
                     console.log(JSON.stringify(message))
                 }
                 return
             }
-            const awaited = getAwaitedIds(thread, messages, positions)
-            const lines = [
+            const awaitedIds = getAwaitedIds(thread, messages, positions)
+            const markdownLines = [
                 `# ${thread.subject}`,
                 "",
-                `Created by ${signature(thread.createdBy)}, ${formatDateTime(thread.createdAt)}.`,
-                `Members: ${mentionsOf(getMemberIds(thread, messages, positions))}.`,
+                `Created by ${formatSignature(thread.createdBy)}, ${formatDateTime(thread.createdAt)}.`,
+                `Members: ${formatMentions(getMemberIds(thread, messages, positions))}.`,
             ]
-            if (awaited.length > 0) {
-                lines.push(`Awaiting: ${mentionsOf(awaited)}.`)
+            if (awaitedIds.length > 0) {
+                markdownLines.push(`Awaiting: ${formatMentions(awaitedIds)}.`)
             }
             for (const message of messages) {
-                lines.push(
+                markdownLines.push(
                     "",
-                    `## ${signature(message)} · ${formatDateTime(message.sentAt)}`,
+                    `## ${formatSignature(message)} · ${formatDateTime(message.sentAt)}`,
                     "",
                     message.body.trimEnd(),
                 )
             }
-            console.log(lines.join("\n"))
+            console.log(markdownLines.join("\n"))
         })
 }
