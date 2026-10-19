@@ -2,8 +2,9 @@ import type Anthropic from "@anthropic-ai/sdk"
 import { projectRoot } from "../cli/project-root.ts"
 import { readGitCommitter } from "../git/read-git-committer.ts"
 import { isAuthorOf } from "../ids/is-author-of.ts"
-import { readMentions, sendDraft } from "../message/commands.ts"
+import { readMentions } from "../messaging/message/resolve-mentions.ts"
 import type { Message } from "../messaging/message/schema.ts"
+import { sendDraft } from "../messaging/message/send-draft.ts"
 import {
     listMessages,
     loadResponse,
