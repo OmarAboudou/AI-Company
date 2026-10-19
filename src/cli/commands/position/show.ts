@@ -5,7 +5,7 @@ import { loadCompany } from "../../../organization/company/storage.ts"
 import { loadExistingPosition } from "../../../organization/position/load-existing-position.ts"
 import type { Position, Worker } from "../../../organization/position/schema.ts"
 import { loadPositionState } from "../../../organization/position/storage.ts"
-import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
+import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 
 function formatCurrentEmployee(

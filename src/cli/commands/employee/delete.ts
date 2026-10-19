@@ -3,7 +3,7 @@ import {
     type DeleteEmployeeResult,
     deleteEmployee,
 } from "../../../organization/employee/delete-employee.ts"
-import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
+import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { requireDirector } from "../../require-director.ts"
 

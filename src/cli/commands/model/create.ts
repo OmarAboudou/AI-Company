@@ -1,6 +1,6 @@
 import type { Command } from "@commander-js/extra-typings"
 import { createLlmModel } from "../../../llm/model/create-llm-model.ts"
-import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
+import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { requireDirector } from "../../require-director.ts"
 import { createProtocolOption } from "./create-protocol-option.ts"

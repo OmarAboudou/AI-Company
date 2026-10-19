@@ -1,6 +1,6 @@
 import type { Command } from "@commander-js/extra-typings"
 import { updateLlmProvider } from "../../../llm/provider/update-llm-provider.ts"
-import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
+import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { requireAtLeastOneOption } from "../../require-at-least-one-option.ts"
 import { requireDirector } from "../../require-director.ts"

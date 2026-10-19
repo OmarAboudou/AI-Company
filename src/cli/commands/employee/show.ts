@@ -2,7 +2,7 @@ import type { Command } from "@commander-js/extra-typings"
 import { requireCompany } from "../../../organization/company/require-company.ts"
 import { loadExistingEmployee } from "../../../organization/employee/load-existing-employee.ts"
 import { listPositions } from "../../../organization/position/storage.ts"
-import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
+import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { formatPositionsFilledBy } from "./format-positions-filled-by.ts"
 

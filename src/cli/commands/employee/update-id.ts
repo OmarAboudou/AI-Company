@@ -3,8 +3,10 @@ import {
     type UpdateEmployeeIdResult,
     updateEmployeeId,
 } from "../../../organization/employee/update-employee-id.ts"
-import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
-import { formatNewIdArgumentDescription } from "../../format-new-id-argument-description.ts"
+import {
+    formatIdArgumentDescription,
+    formatNewIdArgumentDescription,
+} from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { requireDirector } from "../../require-director.ts"
 import { createReuseIdOption } from "./create-reuse-id-option.ts"

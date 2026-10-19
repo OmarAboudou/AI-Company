@@ -8,7 +8,7 @@ import { getMemberIds } from "../../../messaging/thread/get-member-ids.ts"
 import { loadExistingThread } from "../../../messaging/thread/load-existing-thread.ts"
 import { requireCompany } from "../../../organization/company/require-company.ts"
 import { listPositions } from "../../../organization/position/storage.ts"
-import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
+import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { formatMentions } from "./format-mentions.ts"
 

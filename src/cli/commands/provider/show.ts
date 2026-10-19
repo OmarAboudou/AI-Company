@@ -4,7 +4,7 @@ import { listLlmModels } from "../../../llm/model/storage.ts"
 import { loadExistingLlmProvider } from "../../../llm/provider/load-existing-llm-provider.ts"
 import type { ApiKeySource } from "../../../llm/provider/schema.ts"
 import { requireCompany } from "../../../organization/company/require-company.ts"
-import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
+import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 
 function formatApiKeySource(apiKey: ApiKeySource | undefined): string {

@@ -1,7 +1,7 @@
 import type { Command } from "@commander-js/extra-typings"
 import { loadExistingLlmModel } from "../../../llm/model/load-existing-llm-model.ts"
 import { requireCompany } from "../../../organization/company/require-company.ts"
-import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"
+import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 
 export function registerModelShowCommand(modelCommand: Command): void {
