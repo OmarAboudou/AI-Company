@@ -367,7 +367,7 @@ export function registerEmployeeCommands(program: Command): void {
         .command("replace")
         .alias("hand-over")
         .description(
-            "Replace (hand over) an employee by another in every position it fills. It stays hired.",
+            "Replace (hand over) an employee by another in every position it fills by default. It stays hired, and keeps its temporary assignments.",
         )
         .argument("<employee-id>", idDescription("employee", "claude-senior"))
         .argument(
@@ -385,22 +385,39 @@ export function registerEmployeeCommands(program: Command): void {
                 throw new UserError(`"${employee.id}" can't replace itself.`)
             }
             const filled = filledPositions(positions, employee.id)
+            const [kept, confirmed] = await Promise.all([
+                positionsWorkedTemporarily(positions, employee.id),
+                positionsWorkedTemporarily(filled, replacement.id),
+            ])
+            const keptIds = kept.map(({ position }) => position.id).join(", ")
+            const stillTemporary =
+                kept.length === 0
+                    ? ""
+                    : ` "${employee.id}" stays assigned temporarily to ${keptIds}.`
             if (filled.length === 0) {
                 console.log(
-                    `"${employee.id}" fills no position: nothing to replace.`,
+                    `"${employee.id}" fills no position: nothing to replace.${stillTemporary}`,
                 )
                 return
             }
-            await Promise.all(
-                filled.map((position) =>
+            await Promise.all([
+                ...filled.map((position) =>
                     savePosition(projectRoot, {
                         ...position,
                         defaultEmployeeId: replacement.id,
                     }),
                 ),
-            )
+                ...confirmed.map(
+                    ({ position, state: { temporaryAssignment, ...state } }) =>
+                        savePositionState(projectRoot, position.id, state),
+                ),
+            ])
+            const ended =
+                confirmed.length === 0
+                    ? ""
+                    : ` Temporary assignments ended: ${confirmed.map(({ position }) => position.id).join(", ")}.`
             console.log(
-                `"${replacement.id}" replaces "${employee.id}" as default employee of ${filled.map(({ id }) => id).join(", ")}; "${employee.id}" stays hired.`,
+                `"${replacement.id}" replaces "${employee.id}" as default employee of ${filled.map(({ id }) => id).join(", ")}; "${employee.id}" stays hired.${ended}${stillTemporary}`,
             )
         })
 

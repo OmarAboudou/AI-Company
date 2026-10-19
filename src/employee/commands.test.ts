@@ -402,6 +402,33 @@ describe("llmco employee replace", () => {
         expect(replace.stdout).toContain("nothing to replace")
     })
 
+    test("replace keeps the employee's temporary assignments, and says so", async () => {
+        runCli("position", "create", "support", "-t", "Support")
+        runCli(...interimEmployee, "support", "omar")
+
+        const replace = runCli("employee", "replace", "omar", "alice")
+
+        expect(replace.stdout).toEndWith(
+            '"omar" stays assigned temporarily to support.\n',
+        )
+        const after = await temporaryAssignee("support")
+        expect(after).toEqual(employeeWorker("omar"))
+    })
+
+    test("replace ends the replacement's temporary assignment of a position it now fills", async () => {
+        runCli(...interimEmployee, "developer", "alice")
+        const before = await temporaryAssignee("developer")
+
+        const replace = runCli("employee", "replace", "omar", "alice")
+        const after = await temporaryAssignee("developer")
+
+        expect(before).toEqual(employeeWorker("alice"))
+        expect(replace.stdout).toContain(
+            "Temporary assignments ended: developer.",
+        )
+        expect(after).toBeUndefined()
+    })
+
     test("replace refuses an employee replacing itself", () => {
         const replace = runCli("employee", "replace", "omar", "omar")
 
