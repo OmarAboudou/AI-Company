@@ -1,4 +1,3 @@
-import { projectRoot } from "../../cli/project-root.ts"
 import { UserError } from "../../user-error.ts"
 import type { Employee } from "../employee/schema.ts"
 import { hasEmployee, loadEmployee } from "../employee/storage.ts"
@@ -8,7 +7,9 @@ export type CurrentHuman =
     | { kind: "director" }
     | { kind: "employee"; employee: Extract<Employee, { kind: "human" }> }
 
-export async function readCurrentHuman(): Promise<CurrentHuman> {
+export async function readCurrentHuman(
+    projectRoot: string,
+): Promise<CurrentHuman> {
     const id = readCurrentHumanId()
     if (id === undefined) {
         return { kind: "director" }

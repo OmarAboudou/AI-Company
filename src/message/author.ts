@@ -119,11 +119,12 @@ export async function currentAuthor({
     asPositionId?: string
 } = {}): Promise<Author> {
     const [human, positions, { directorPositionId }] = await Promise.all([
-        readCurrentHuman(),
+        readCurrentHuman(projectRoot),
         listPositions(projectRoot),
         loadCompany(projectRoot),
     ])
     const worked = await listPositionsWorkedBy(
+        projectRoot,
         human,
         positions,
         directorPositionId,
