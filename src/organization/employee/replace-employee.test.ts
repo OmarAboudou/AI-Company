@@ -51,19 +51,19 @@ async function loadTemporaryAssignment(positionId: string) {
     return state.temporaryAssignment
 }
 
-const handingOver = { shouldHandOverTemporaryAssignments: true }
+const handOverOptions = { shouldHandOverTemporaryAssignments: true }
 
-function replaceOmarByAlice(options?: typeof handingOver) {
+function replaceOmarByAlice(options?: typeof handOverOptions) {
     return replaceEmployee(projectRoot, "omar", "alice", options)
 }
 
 describe("replaceEmployee", () => {
     test("gives the replacement every position the employee fills", async () => {
-        const replacement = await replaceOmarByAlice()
+        const handover = await replaceOmarByAlice()
 
         expect(await loadDefaultEmployeeId("dev")).toBe("alice")
         expect(await loadDefaultEmployeeId("qa")).toBe("alice")
-        expect(replacement.filledPositionIds).toEqual(["dev", "qa"])
+        expect(handover.filledPositionIds).toEqual(["dev", "qa"])
     })
 
     test("keeps both employees and the replacement's own positions", async () => {
@@ -74,49 +74,49 @@ describe("replaceEmployee", () => {
     })
 
     test("changes nothing for an employee who fills no position", async () => {
-        const replacement = await replaceEmployee(projectRoot, "bob", "alice")
+        const handover = await replaceEmployee(projectRoot, "bob", "alice")
 
-        expect(replacement.filledPositionIds).toEqual([])
-        expect(replacement.endedTemporaryPositionIds).toEqual([])
+        expect(handover.filledPositionIds).toEqual([])
+        expect(handover.endedTemporaryPositionIds).toEqual([])
     })
 
     test("keeps the employee's temporary assignments", async () => {
         await assignTemporarily("support", "omar")
 
-        const replacement = await replaceOmarByAlice()
+        const handover = await replaceOmarByAlice()
 
         const assignment = await loadTemporaryAssignment("support")
         expect(assignment).toEqual({ kind: "employee", employeeId: "omar" })
-        expect(replacement.keptTemporaryPositionIds).toEqual(["support"])
+        expect(handover.keptTemporaryPositionIds).toEqual(["support"])
     })
 
     test("ends the replacement's temporary assignment of a position it now fills", async () => {
         await assignTemporarily("dev", "alice")
 
-        const replacement = await replaceOmarByAlice()
+        const handover = await replaceOmarByAlice()
 
         expect(await loadTemporaryAssignment("dev")).toBeUndefined()
-        expect(replacement.endedTemporaryPositionIds).toEqual(["dev"])
+        expect(handover.endedTemporaryPositionIds).toEqual(["dev"])
     })
 
     test("hands over the employee's temporary assignments when told to", async () => {
         await assignTemporarily("support", "omar")
 
-        const replacement = await replaceOmarByAlice(handingOver)
+        const handover = await replaceOmarByAlice(handOverOptions)
 
         const assignment = await loadTemporaryAssignment("support")
         expect(assignment).toEqual({ kind: "employee", employeeId: "alice" })
-        expect(replacement.handedOverPositionIds).toEqual(["support"])
-        expect(replacement.keptTemporaryPositionIds).toEqual([])
+        expect(handover.handedOverPositionIds).toEqual(["support"])
+        expect(handover.keptTemporaryPositionIds).toEqual([])
     })
 
     test("ends a handed over temporary assignment where the replacement is the default employee", async () => {
         await assignTemporarily("ux", "omar")
 
-        const replacement = await replaceOmarByAlice(handingOver)
+        const handover = await replaceOmarByAlice(handOverOptions)
 
         expect(await loadTemporaryAssignment("ux")).toBeUndefined()
-        expect(replacement.endedTemporaryPositionIds).toEqual(["ux"])
+        expect(handover.endedTemporaryPositionIds).toEqual(["ux"])
     })
 
     test("refuses an employee replacing itself", async () => {
@@ -134,9 +134,9 @@ describe("replaceEmployee", () => {
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const replacing = replaceEmployee(elsewhere, "omar", "alice")
+        const replacing = replaceEmployee(folderWithoutCompany, "omar", "alice")
 
         await expect(replacing).rejects.toThrow("Run `llmco init` first.")
     })

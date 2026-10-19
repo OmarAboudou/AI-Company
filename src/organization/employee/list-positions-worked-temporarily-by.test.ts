@@ -25,15 +25,15 @@ afterEach(async () => {
 
 describe("listPositionsWorkedTemporarilyBy", () => {
     test("lists the positions assigned temporarily to the employee, with their state", async () => {
-        const julie = {
+        const julieState = {
             temporaryAssignment: { kind: "employee", employeeId: "julie" },
         } as const
-        const directors = {
+        const directorsState = {
             temporaryAssignment: { kind: "directors" },
         } as const
         await Promise.all([
-            savePositionState(projectRoot, "dev", julie),
-            savePositionState(projectRoot, "qa", directors),
+            savePositionState(projectRoot, "dev", julieState),
+            savePositionState(projectRoot, "qa", directorsState),
         ])
         const positions = await listPositions(projectRoot)
 
@@ -43,8 +43,10 @@ describe("listPositionsWorkedTemporarilyBy", () => {
             "julie",
         )
 
-        const ids = temporaryPositions.map(({ position }) => position.id)
-        expect(ids).toEqual(["dev"])
-        expect(temporaryPositions[0]?.state).toEqual(julie)
+        const positionIds = temporaryPositions.map(
+            ({ position }) => position.id,
+        )
+        expect(positionIds).toEqual(["dev"])
+        expect(temporaryPositions[0]?.state).toEqual(julieState)
     })
 })

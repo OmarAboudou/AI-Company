@@ -64,8 +64,8 @@ describe("updateEmployeeId", () => {
     test("moves the employee to its new id", async () => {
         await updateEmployeeId(projectRoot, "omar", "omar-a")
 
-        const renamed = await loadEmployee(projectRoot, "omar-a")
-        expect(renamed).toMatchObject({ ...omar, id: "omar-a" })
+        const renamedOmar = await loadEmployee(projectRoot, "omar-a")
+        expect(renamedOmar).toMatchObject({ ...omar, id: "omar-a" })
         expect(await hasEmployee(projectRoot, "omar")).toBe(false)
     })
 
@@ -75,14 +75,14 @@ describe("updateEmployeeId", () => {
         await updateEmployeeId(projectRoot, "omar-a", "omar-b")
         const after = Date.now()
 
-        const renamed = await loadEmployee(projectRoot, "omar-b")
-        const formerIds = renamed.formerIds ?? []
-        const ids = formerIds.map(({ id }) => id)
-        const untils = formerIds.map(({ until }) => Date.parse(until))
-        expect(renamed.createdAt).toBe(omar.createdAt)
-        expect(ids).toEqual(["omar", "omar-a"])
-        expect(Math.min(...untils)).toBeGreaterThanOrEqual(before)
-        expect(Math.max(...untils)).toBeLessThanOrEqual(after)
+        const renamedOmar = await loadEmployee(projectRoot, "omar-b")
+        const formerIds = renamedOmar.formerIds ?? []
+        const recordedIds = formerIds.map(({ id }) => id)
+        const untilTimes = formerIds.map(({ until }) => Date.parse(until))
+        expect(renamedOmar.createdAt).toBe(omar.createdAt)
+        expect(recordedIds).toEqual(["omar", "omar-a"])
+        expect(Math.min(...untilTimes)).toBeGreaterThanOrEqual(before)
+        expect(Math.max(...untilTimes)).toBeLessThanOrEqual(after)
     })
 
     test("rewrites the positions it fills and its temporary assignments", async () => {
@@ -117,19 +117,19 @@ describe("updateEmployeeId", () => {
     })
 
     test("refuses an id another employee has", async () => {
-        const update = updateEmployeeId(projectRoot, "omar", "julie")
+        const updating = updateEmployeeId(projectRoot, "omar", "julie")
 
-        await expect(update).rejects.toThrow(UserError)
-        await expect(update).rejects.toThrow('"julie" already exists.')
+        await expect(updating).rejects.toThrow(UserError)
+        await expect(updating).rejects.toThrow('"julie" already exists.')
         expect(await hasEmployee(projectRoot, "omar")).toBe(true)
     })
 
     test("refuses an id an earlier employee wrote under", async () => {
         await archiveMessageBy("claude", "2026-10-18T14:01:00.000Z")
 
-        const update = updateEmployeeId(projectRoot, "omar", "claude")
+        const updating = updateEmployeeId(projectRoot, "omar", "claude")
 
-        await expect(update).rejects.toThrow("add --reuse-id")
+        await expect(updating).rejects.toThrow("add --reuse-id")
     })
 
     test("gives an employee back its own former id", async () => {
@@ -142,22 +142,26 @@ describe("updateEmployeeId", () => {
     })
 
     test("refuses a new id that is not kebab-case", async () => {
-        const update = updateEmployeeId(projectRoot, "omar", "Omar")
+        const updating = updateEmployeeId(projectRoot, "omar", "Omar")
 
-        await expect(update).rejects.toThrow('Invalid employee id "Omar"')
+        await expect(updating).rejects.toThrow('Invalid employee id "Omar"')
     })
 
     test("refuses an unknown employee", async () => {
-        const update = updateEmployeeId(projectRoot, "bob", "robert")
+        const updating = updateEmployeeId(projectRoot, "bob", "robert")
 
-        await expect(update).rejects.toThrow('No employee "bob".')
+        await expect(updating).rejects.toThrow('No employee "bob".')
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const update = updateEmployeeId(elsewhere, "omar", "omar-a")
+        const updating = updateEmployeeId(
+            folderWithoutCompany,
+            "omar",
+            "omar-a",
+        )
 
-        await expect(update).rejects.toThrow("Run `llmco init` first.")
+        await expect(updating).rejects.toThrow("Run `llmco init` first.")
     })
 })

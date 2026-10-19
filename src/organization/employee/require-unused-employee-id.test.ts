@@ -44,19 +44,19 @@ async function archiveMessageBy(employeeId: string, sentAt: string) {
 
 describe("requireUnusedEmployeeId", () => {
     test("accepts an id nobody used", async () => {
-        const check = requireUnusedEmployeeId(projectRoot, "claude")
+        const checking = requireUnusedEmployeeId(projectRoot, "claude")
 
-        await expect(check).resolves.toBeUndefined()
+        await expect(checking).resolves.toBeUndefined()
     })
 
     test("refuses an id an earlier employee wrote under", async () => {
         await archiveMessageBy("claude", "2026-10-18T14:01:00.000Z")
 
-        const check = requireUnusedEmployeeId(projectRoot, "claude")
+        const checking = requireUnusedEmployeeId(projectRoot, "claude")
 
-        await expect(check).rejects.toThrow(UserError)
-        await expect(check).rejects.toThrow(`in thread "${threadId}".`)
-        await expect(check).rejects.toThrow("add --reuse-id")
+        await expect(checking).rejects.toThrow(UserError)
+        await expect(checking).rejects.toThrow(`in thread "${threadId}".`)
+        await expect(checking).rejects.toThrow("add --reuse-id")
     })
 
     test("refuses another employee's former id", async () => {
@@ -64,18 +64,22 @@ describe("requireUnusedEmployeeId", () => {
         const omar = { id: "omar-a", name: "Omar", kind: "human" } as const
         await saveEmployee(projectRoot, { ...omar, formerIds })
 
-        const check = requireUnusedEmployeeId(projectRoot, "omar")
+        const checking = requireUnusedEmployeeId(projectRoot, "omar")
 
-        await expect(check).rejects.toThrow('former id of employee "omar-a"')
+        await expect(checking).rejects.toThrow('former id of employee "omar-a"')
     })
 
     test("accepts an id used before when told to reuse it", async () => {
         await archiveMessageBy("claude", "2026-10-18T14:01:00.000Z")
-        const reusing = { shouldReuseId: true }
+        const reuseOptions = { shouldReuseId: true }
 
-        const check = requireUnusedEmployeeId(projectRoot, "claude", reusing)
+        const checking = requireUnusedEmployeeId(
+            projectRoot,
+            "claude",
+            reuseOptions,
+        )
 
-        await expect(check).resolves.toBeUndefined()
+        await expect(checking).resolves.toBeUndefined()
     })
 
     test("gives an employee back its own former id", async () => {
@@ -85,10 +89,10 @@ describe("requireUnusedEmployeeId", () => {
         const renamedEmployee = { ...omar, formerIds }
         await saveEmployee(projectRoot, renamedEmployee)
 
-        const check = requireUnusedEmployeeId(projectRoot, "omar", {
+        const checking = requireUnusedEmployeeId(projectRoot, "omar", {
             renamedEmployee,
         })
 
-        await expect(check).resolves.toBeUndefined()
+        await expect(checking).resolves.toBeUndefined()
     })
 })
