@@ -1,10 +1,12 @@
 import { describe, expect, test } from "bun:test"
-import type { IdHistory } from "../ids/id-history-schema.ts"
-import type { Message } from "../message/message.ts"
-import type { Thread } from "../messaging/thread/schema.ts"
-import { awaitedIds, memberIds } from "./members.ts"
+import type { IdHistory } from "../../ids/id-history-schema.ts"
+import type { Message } from "../../message/message.ts"
+import { awaitedIds } from "./get-awaited-ids.ts"
+import { memberIds } from "./get-member-ids.ts"
+import type { Thread } from "./schema.ts"
 
 const director = { id: "director", title: "Director" }
+
 const committer = { name: "Omar Aboudou", email: "omar@example.com" }
 
 const thread: Thread = {
@@ -37,27 +39,6 @@ function members(messages: Message[], positions: IdHistory[] = []) {
 function awaited(messages: Message[], positions: IdHistory[] = []) {
     return awaitedIds(thread, messages, positions)
 }
-
-describe("memberIds", () => {
-    test("is the creator's position in a thread without messages", () => {
-        expect(members([])).toEqual(["director"])
-    })
-
-    test("adds authors and mentioned positions, in order", () => {
-        const messages = [
-            message("director", ["backend-developer"]),
-            message("qa-tester"),
-            message("backend-developer", ["director", "designer"]),
-        ]
-
-        expect(members(messages)).toEqual([
-            "director",
-            "backend-developer",
-            "qa-tester",
-            "designer",
-        ])
-    })
-})
 
 describe("awaitedIds", () => {
     test("awaits a mentioned position until it writes", () => {
@@ -124,9 +105,5 @@ describe("through the positions' id history", () => {
         const question = message("director", ["designer"])
 
         expect(awaited([question], positions)).toEqual(["designer"])
-    })
-
-    test("names a renamed creator by its new id", () => {
-        expect(members([], positions)).toEqual(["ceo"])
     })
 })
