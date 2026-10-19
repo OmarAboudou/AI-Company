@@ -16,7 +16,7 @@ import {
 } from "../cli-helpers.ts"
 import { loadCompany, saveCompany } from "../company/storage.ts"
 import { requireDirector } from "../human/current-human.ts"
-import { withNewId } from "../id-history.ts"
+import { withNewId } from "../ids/get-renamed-entity.ts"
 import { readArchives } from "../thread/archives.ts"
 import { awaitedIds } from "../thread/members.ts"
 import { UserError } from "../user-error.ts"

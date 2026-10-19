@@ -3,7 +3,7 @@ import { join } from "node:path"
 import { getLlmcoFolderPath } from "../files/get-llmco-folder-path.ts"
 import { listSubdirectories } from "../files/list-subdirectories.ts"
 import { readJsonFile } from "../files/read-json-file.ts"
-import { loadIdHistory, saveIdHistory } from "../id-history.ts"
+import { loadIdHistory, saveIdHistory } from "../ids/id-history-storage.ts"
 import { type Employee, EmployeeConfigSchema } from "./employee.ts"
 
 function employeesDir(projectRoot: string): string {

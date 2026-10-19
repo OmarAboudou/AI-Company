@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test"
-import { IdSchema } from "./id.ts"
+import { IdSchema } from "./id-schema.ts"
 
 test.each(["developer", "backend-developer", "level-2-support"])(
     "accepts %s",
