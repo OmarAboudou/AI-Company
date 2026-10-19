@@ -18,6 +18,7 @@ Only for a non-obvious *why* that no test can carry (a workaround, an external c
 
 ## Where knowledge lives
 
+- **Where code goes**: the rules in [ARCHITECTURE.md](ARCHITECTURE.md). Read them before adding, moving or splitting a file.
 - **Ideas for later**: GitHub issues labelled `idea` (`gh issue list --label idea`). Check them before designing a new concept; record new ones there instead of implementing them.
 - **Structural decisions** (data model, `.llmco/` layout, concepts): GitHub issues labelled `decision`, closed by the pull request that implements them (`gh issue list --label decision --state all`). Read them before changing what they cover.
 - **Smaller decisions**: commit messages and pull request descriptions (`git log`, `git blame`).
