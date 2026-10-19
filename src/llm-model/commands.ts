@@ -7,14 +7,13 @@ import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
 import { protocols } from "../llm/connection/schema.ts"
 import { createLlmModel } from "../llm/model/create-llm-model.ts"
+import { deleteLlmModel } from "../llm/model/delete-llm-model.ts"
 import { loadExistingLlmModel } from "../llm/model/load-existing-llm-model.ts"
-import { deleteLlmModelFolder, listLlmModels } from "../llm/model/storage.ts"
+import { listLlmModels } from "../llm/model/storage.ts"
 import { updateLlmModel } from "../llm/model/update-llm-model.ts"
 import { updateLlmModelId } from "../llm/model/update-llm-model-id.ts"
 import { listLlmProviders } from "../llm/provider/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
-import { listEmployees } from "../organization/employee/storage.ts"
-import { UserError } from "../user-error.ts"
 
 function protocolOption() {
     return new Option(
@@ -191,23 +190,11 @@ export function registerLlmModelCommands(program: Command): void {
         )
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId) => {
-            await requireCompany(projectRoot)
-            const [model, employees] = await Promise.all([
-                loadExistingLlmModel(projectRoot, rawProviderId, rawModelId),
-                listEmployees(projectRoot),
-            ])
-            const users = employees.filter(
-                (employee) =>
-                    employee.kind === "llm" &&
-                    employee.providerId === model.providerId &&
-                    employee.modelId === model.id,
+            const model = await deleteLlmModel(
+                projectRoot,
+                rawProviderId,
+                rawModelId,
             )
-            if (users.length > 0) {
-                throw new UserError(
-                    `Model "${model.id}" of provider "${model.providerId}" is used by ${users.map(({ id }) => id).join(", ")}. Give these employees another model with \`llmco employee update\`, or delete them, first.`,
-                )
-            }
-            await deleteLlmModelFolder(projectRoot, model.providerId, model.id)
             console.log(
                 `Deleted model "${model.id}" of provider "${model.providerId}".`,
             )
