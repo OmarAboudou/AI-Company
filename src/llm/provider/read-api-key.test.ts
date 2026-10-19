@@ -6,12 +6,12 @@ import { UserError } from "../../user-error.ts"
 import { readApiKey } from "./read-api-key.ts"
 import type { LlmProvider } from "./schema.ts"
 
-const variable = "LLMCO_TEST_API_KEY"
+const variableName = "LLMCO_TEST_API_KEY"
 let projectRoot: string
-let outside: string
+let outsideFolderPath: string
 
 beforeEach(async () => {
-    ;[projectRoot, outside] = await Promise.all([
+    ;[projectRoot, outsideFolderPath] = await Promise.all([
         mkdtemp(join(tmpdir(), "llmco-")),
         mkdtemp(join(tmpdir(), "llmco-keys-")),
     ])
@@ -19,53 +19,70 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-    delete process.env[variable]
+    delete process.env[variableName]
     await Promise.all(
-        [projectRoot, outside].map((dir) =>
-            rm(dir, { recursive: true, force: true }),
+        [projectRoot, outsideFolderPath].map((folderPath) =>
+            rm(folderPath, { recursive: true, force: true }),
         ),
     )
 })
 
-function readingFrom(apiKey: LlmProvider["apiKey"]): LlmProvider {
+function createProviderReadingFrom(apiKey: LlmProvider["apiKey"]): LlmProvider {
     return { id: "anthropic", name: "Anthropic", apiKey }
 }
 
 describe("readApiKey", () => {
     test("is none for a provider without API key", async () => {
-        const apiKey = await readApiKey(projectRoot, readingFrom(undefined))
+        const apiKey = await readApiKey(
+            projectRoot,
+            createProviderReadingFrom(undefined),
+        )
 
         expect(apiKey).toBeUndefined()
     })
 
     test("reads the environment variable the provider names", async () => {
-        process.env[variable] = " sk-from-env\n"
-        const provider = readingFrom({ kind: "env", variable })
+        process.env[variableName] = " sk-from-env\n"
+        const provider = createProviderReadingFrom({
+            kind: "env",
+            variable: variableName,
+        })
 
         expect(await readApiKey(projectRoot, provider)).toBe("sk-from-env")
     })
 
     test("refuses an environment variable that isn't set", async () => {
-        const provider = readingFrom({ kind: "env", variable })
+        const provider = createProviderReadingFrom({
+            kind: "env",
+            variable: variableName,
+        })
 
         const reading = readApiKey(projectRoot, provider)
 
+        const refusalMessage = `${variableName}, which isn't set.`
+
         await expect(reading).rejects.toThrow(UserError)
-        await expect(reading).rejects.toThrow(`${variable}, which isn't set.`)
+        await expect(reading).rejects.toThrow(refusalMessage)
     })
 
     test("reads a file outside the repository", async () => {
-        const path = join(outside, "anthropic")
-        await Bun.write(path, "sk-from-file\n")
-        const provider = readingFrom({ kind: "file", path })
+        const keyPath = join(outsideFolderPath, "anthropic")
+        await Bun.write(keyPath, "sk-from-file\n")
+        const provider = createProviderReadingFrom({
+            kind: "file",
+            path: keyPath,
+        })
 
         expect(await readApiKey(projectRoot, provider)).toBe("sk-from-file")
     })
 
     test("refuses a file of the repository that git doesn't ignore", async () => {
         await Bun.write(join(projectRoot, "secrets", "anthropic"), "sk")
-        const path = "secrets/anthropic"
-        const provider = readingFrom({ kind: "file", path })
+        const keyPath = "secrets/anthropic"
+        const provider = createProviderReadingFrom({
+            kind: "file",
+            path: keyPath,
+        })
 
         const reading = readApiKey(projectRoot, provider)
 
@@ -76,16 +93,22 @@ describe("readApiKey", () => {
     test("reads a file of the repository that git ignores, from its root", async () => {
         await Bun.write(join(projectRoot, "secrets", "anthropic"), "sk-in")
         await Bun.write(join(projectRoot, ".gitignore"), "secrets/\n")
-        const path = "secrets/anthropic"
-        const provider = readingFrom({ kind: "file", path })
+        const keyPath = "secrets/anthropic"
+        const provider = createProviderReadingFrom({
+            kind: "file",
+            path: keyPath,
+        })
 
         expect(await readApiKey(projectRoot, provider)).toBe("sk-in")
     })
 
     test("refuses an empty file", async () => {
-        const path = join(outside, "anthropic")
-        await Bun.write(path, "\n")
-        const provider = readingFrom({ kind: "file", path })
+        const keyPath = join(outsideFolderPath, "anthropic")
+        await Bun.write(keyPath, "\n")
+        const provider = createProviderReadingFrom({
+            kind: "file",
+            path: keyPath,
+        })
 
         const reading = readApiKey(projectRoot, provider)
 

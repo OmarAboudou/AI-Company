@@ -19,7 +19,7 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const forcing = { shouldForce: true }
+const forceOptions = { shouldForce: true }
 
 function saveModel(id: string) {
     return saveLlmModel(projectRoot, {
@@ -52,10 +52,14 @@ describe("deleteLlmProvider", () => {
     test("deletes a provider with its models when forced", async () => {
         await Promise.all([saveModel("llama"), saveModel("qwen")])
 
-        const outcome = await deleteLlmProvider(projectRoot, "ollama", forcing)
+        const deletion = await deleteLlmProvider(
+            projectRoot,
+            "ollama",
+            forceOptions,
+        )
 
         expect(await hasLlmProvider(projectRoot, "ollama")).toBe(false)
-        expect(outcome.deletedModelIds).toEqual(["llama", "qwen"])
+        expect(deletion.deletedModelIds).toEqual(["llama", "qwen"])
     })
 
     test("refuses a provider an employee runs on, even forced", async () => {
@@ -68,7 +72,7 @@ describe("deleteLlmProvider", () => {
             modelId: "llama",
         })
 
-        const deletion = deleteLlmProvider(projectRoot, "ollama", forcing)
+        const deletion = deleteLlmProvider(projectRoot, "ollama", forceOptions)
 
         await expect(deletion).rejects.toThrow("is used by claude.")
         await expect(deletion).rejects.toThrow("--force doesn't change that.")
@@ -81,9 +85,9 @@ describe("deleteLlmProvider", () => {
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const deletion = deleteLlmProvider(elsewhere, "ollama")
+        const deletion = deleteLlmProvider(folderWithoutCompany, "ollama")
 
         await expect(deletion).rejects.toThrow("Run `llmco init` first.")
     })

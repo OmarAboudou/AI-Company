@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { ConnectionsSchema } from "../connection/schema.ts"
 
-const environmentVariableName =
+const environmentVariableNameMessage =
     "must be an environment variable's name, without $: letters, digits and underscores, not starting with a digit"
 
 const ApiKeySourceSchema = z.discriminatedUnion("kind", [
@@ -13,11 +13,14 @@ const ApiKeySourceSchema = z.discriminatedUnion("kind", [
             }),
             variable: z
                 .string()
-                .regex(/^[A-Za-z_][A-Za-z0-9_]*$/, environmentVariableName)
+                .regex(
+                    /^[A-Za-z_][A-Za-z0-9_]*$/,
+                    environmentVariableNameMessage,
+                )
                 .meta({
                     description:
                         "Name of the environment variable holding the API key, without $, e.g. ANTHROPIC_API_KEY.",
-                    patternErrorMessage: environmentVariableName,
+                    patternErrorMessage: environmentVariableNameMessage,
                 }),
         })
         .meta({
