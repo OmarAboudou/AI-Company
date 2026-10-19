@@ -31,7 +31,7 @@ describe("llmco employee", () => {
     })
 
     test("create human rejects a model", () => {
-        const create = runCli(
+        const creation = runCli(
             "employee",
             "create",
             "human",
@@ -42,8 +42,8 @@ describe("llmco employee", () => {
             "x",
         )
 
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain("unknown option '-m'")
+        expect(creation.exitCode).toBe(1)
+        expect(creation.stderr).toContain("unknown option '-m'")
     })
 })
 
@@ -77,30 +77,30 @@ describe("--reuse-id", () => {
         })
     }
 
-    const longAgo = "2026-10-18T14:01:00.000Z"
+    const earlierSentAt = "2026-10-18T14:01:00.000Z"
 
     test("create refuses an id an earlier employee wrote under", async () => {
-        await archiveMessageBy("claude", longAgo)
+        await archiveMessageBy("claude", earlierSentAt)
         const hire = ["employee", "create", "human", "claude", "-n", "C"]
-        const usedIn = `was used before: in thread "${threadId}".`
+        const usedBeforeMessage = `was used before: in thread "${threadId}".`
 
-        const create = runCli(...hire)
+        const creation = runCli(...hire)
 
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain(usedIn)
-        expect(create.stderr).toContain("add --reuse-id")
+        expect(creation.exitCode).toBe(1)
+        expect(creation.stderr).toContain(usedBeforeMessage)
+        expect(creation.stderr).toContain("add --reuse-id")
         expect(runCli("employee", "show", "claude").exitCode).toBe(1)
     })
 
     test.each(["--reuse-id", "-r"])(
         "create %s reuses it anyway",
         async (flag) => {
-            await archiveMessageBy("claude", longAgo)
+            await archiveMessageBy("claude", earlierSentAt)
             const hire = ["employee", "create", "human", "claude", "-n", "C"]
 
-            const create = runCli(...hire, flag)
+            const creation = runCli(...hire, flag)
 
-            expect(create.exitCode).toBe(0)
+            expect(creation.exitCode).toBe(0)
             expect(runCli("employee", "show", "claude").exitCode).toBe(0)
         },
     )

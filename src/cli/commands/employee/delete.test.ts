@@ -5,15 +5,15 @@ const { runCli, getProjectPath } = useTemporaryProject()
 
 const interimEmployee = ["position", "interim", "employee"]
 
-async function temporaryAssignee(positionId: string): Promise<unknown> {
-    const path = [".llmco", ".state", "positions", `${positionId}.json`]
-    const file = Bun.file(getProjectPath(...path))
-    return (await file.exists())
-        ? (await file.json()).temporaryAssignment
+async function loadTemporaryAssignee(positionId: string): Promise<unknown> {
+    const pathSegments = [".llmco", ".state", "positions", `${positionId}.json`]
+    const stateFile = Bun.file(getProjectPath(...pathSegments))
+    return (await stateFile.exists())
+        ? (await stateFile.json()).temporaryAssignment
         : undefined
 }
 
-function employeeWorker(employeeId: string) {
+function createEmployeeWorker(employeeId: string) {
     return { kind: "employee", employeeId }
 }
 
@@ -71,15 +71,15 @@ describe("llmco employee delete", () => {
     test("delete --force ends its temporary assignments", async () => {
         runCli("position", "assign", "developer", "omar")
         runCli(...interimEmployee, "qa-tester", "omar")
-        const before = await temporaryAssignee("qa-tester")
+        const before = await loadTemporaryAssignee("qa-tester")
 
         const deletion = runCli("employee", "delete", "omar", "--force")
-        const after = await temporaryAssignee("qa-tester")
+        const after = await loadTemporaryAssignee("qa-tester")
 
         expect(deletion.stdout).toBe(
             'Deleted employee "omar"; now vacant: developer; temporary assignments ended: qa-tester.\n',
         )
-        expect(before).toEqual(employeeWorker("omar"))
+        expect(before).toEqual(createEmployeeWorker("omar"))
         expect(after).toBeUndefined()
     })
 })

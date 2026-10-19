@@ -58,7 +58,7 @@ describe("llmco employee", () => {
     test("create refuses an existing id", () => {
         createClaude()
 
-        const second = runCli(
+        const duplicate = runCli(
             "employee",
             "create",
             "human",
@@ -67,7 +67,7 @@ describe("llmco employee", () => {
             "X",
         )
 
-        expect(second.exitCode).toBe(1)
+        expect(duplicate.exitCode).toBe(1)
         expect(runCli("employee", "show", "claude-senior").stdout).toContain(
             "# Claude Senior",
         )
@@ -76,11 +76,11 @@ describe("llmco employee", () => {
     test("create llm requires a provider and a model", () => {
         const create = ["employee", "create", "llm", "x", "-n", "X"]
 
-        const withoutModel = runCli(...create, "-p", "anthropic")
-        const withoutProvider = runCli(...create, "-m", "claude-opus-5-5")
+        const hiringWithoutModel = runCli(...create, "-p", "anthropic")
+        const hiringWithoutProvider = runCli(...create, "-m", "claude-opus-5-5")
 
-        expect(withoutModel.exitCode).toBe(1)
-        expect(withoutProvider.exitCode).toBe(1)
+        expect(hiringWithoutModel.exitCode).toBe(1)
+        expect(hiringWithoutProvider.exitCode).toBe(1)
     })
 })
 
@@ -114,22 +114,22 @@ describe("--reuse-id", () => {
         })
     }
 
-    const longAgo = "2026-10-18T14:01:00.000Z"
+    const earlierSentAt = "2026-10-18T14:01:00.000Z"
 
     test("create llm takes --reuse-id too", async () => {
-        await archiveMessageBy("claude", longAgo)
+        await archiveMessageBy("claude", earlierSentAt)
         runCli("provider", "create", "anthropic", "-n", "Anthropic")
         const url = "https://api.anthropic.com"
         const connect = ["provider", "connection", "create", "anthropic"]
         runCli(...connect, "anthropic-messages", "-u", url)
         runCli("model", "create", "anthropic", "opus", "-n", "Opus", "-a", "o")
         const hire = ["employee", "create", "llm", "claude", "-n", "Claude"]
-        const onOpus = [...hire, "-p", "anthropic", "-m", "opus"]
+        const hireOnOpus = [...hire, "-p", "anthropic", "-m", "opus"]
 
-        const refused = runCli(...onOpus)
-        const reused = runCli(...onOpus, "-r")
+        const refusal = runCli(...hireOnOpus)
+        const reuse = runCli(...hireOnOpus, "-r")
 
-        expect(refused.exitCode).toBe(1)
-        expect(reused.exitCode).toBe(0)
+        expect(refusal.exitCode).toBe(1)
+        expect(reuse.exitCode).toBe(0)
     })
 })

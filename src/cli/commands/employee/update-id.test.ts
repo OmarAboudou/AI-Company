@@ -7,15 +7,15 @@ const { runCli, getProjectPath } = useTemporaryProject()
 
 const interimEmployee = ["position", "interim", "employee"]
 
-async function temporaryAssignee(positionId: string): Promise<unknown> {
-    const path = [".llmco", ".state", "positions", `${positionId}.json`]
-    const file = Bun.file(getProjectPath(...path))
-    return (await file.exists())
-        ? (await file.json()).temporaryAssignment
+async function loadTemporaryAssignee(positionId: string): Promise<unknown> {
+    const pathSegments = [".llmco", ".state", "positions", `${positionId}.json`]
+    const stateFile = Bun.file(getProjectPath(...pathSegments))
+    return (await stateFile.exists())
+        ? (await stateFile.json()).temporaryAssignment
         : undefined
 }
 
-function employeeWorker(employeeId: string) {
+function createEmployeeWorker(employeeId: string) {
     return { kind: "employee", employeeId }
 }
 
@@ -53,16 +53,16 @@ describe("llmco employee update-id", () => {
         runCli("position", "assign", "developer", "omar")
         runCli(...interimEmployee, "qa-tester", "omar")
 
-        const before = await temporaryAssignee("qa-tester")
+        const before = await loadTemporaryAssignee("qa-tester")
 
         const update = runCli("employee", "update-id", "omar", "omar-a")
-        const after = await temporaryAssignee("qa-tester")
+        const after = await loadTemporaryAssignee("qa-tester")
 
         expect(update.stdout).toContain(
             "updated positions: developer, qa-tester (temporarily).",
         )
-        expect(before).toEqual(employeeWorker("omar"))
-        expect(after).toEqual(employeeWorker("omar-a"))
+        expect(before).toEqual(createEmployeeWorker("omar"))
+        expect(after).toEqual(createEmployeeWorker("omar-a"))
     })
 
     test("update-id refuses an id another employee has", () => {
@@ -105,19 +105,19 @@ describe("--reuse-id", () => {
         })
     }
 
-    const longAgo = "2026-10-18T14:01:00.000Z"
+    const earlierSentAt = "2026-10-18T14:01:00.000Z"
 
     test("update-id refuses an id an earlier employee wrote under", async () => {
-        await archiveMessageBy("claude", longAgo)
+        await archiveMessageBy("claude", earlierSentAt)
         runCli("employee", "create", "human", "claudia", "-n", "Claudia")
 
         const rename = ["employee", "update-id", "claudia", "claude"]
 
-        const refused = runCli(...rename)
-        const reused = runCli(...rename, "-r")
+        const refusal = runCli(...rename)
+        const reuse = runCli(...rename, "-r")
 
-        expect(refused.exitCode).toBe(1)
-        expect(refused.stderr).toContain("add --reuse-id")
-        expect(reused.exitCode).toBe(0)
+        expect(refusal.exitCode).toBe(1)
+        expect(refusal.stderr).toContain("add --reuse-id")
+        expect(reuse.exitCode).toBe(0)
     })
 })
