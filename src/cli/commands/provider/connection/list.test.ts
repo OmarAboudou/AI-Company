@@ -1,0 +1,44 @@
+import { beforeEach, describe, expect, test } from "bun:test"
+import { useTemporaryProject } from "../../../use-temporary-project.ts"
+
+const { runCli } = useTemporaryProject()
+
+const anthropicUrl = "https://api.anthropic.com"
+
+beforeEach(() => {
+    runCli("init", "-n", "Acme")
+    runCli("provider", "create", "anthropic", "-n", "Anthropic")
+    runCli("provider", "create", "openrouter", "-n", "OpenRouter")
+})
+
+function createConnection(...args: string[]) {
+    return runCli("provider", "connection", "create", ...args)
+}
+
+describe("llmco provider connection create", () => {
+    test("list sorts by provider, then by protocol", () => {
+        const url = "https://openrouter.ai/api/v1"
+        createConnection("openrouter", "openai-responses", "-u", url)
+        createConnection("openrouter", "openai-chat-completions", "-u", url)
+        createConnection("anthropic", "anthropic-messages", "-u", anthropicUrl)
+
+        const list = runCli("provider", "connection", "list").stdout
+        const names = list
+            .trimEnd()
+            .split("\n")
+            .map((row) => row.split(" ")[0])
+
+        expect(names).toEqual([
+            "anthropic/anthropic-messages",
+            "openrouter/openai-chat-completions",
+            "openrouter/openai-responses",
+        ])
+    })
+
+    test("list says so when there is no connection", () => {
+        const list = runCli("provider", "connection", "list")
+
+        expect(list.exitCode).toBe(0)
+        expect(list.stdout).toContain("No connections yet.")
+    })
+})
