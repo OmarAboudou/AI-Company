@@ -5,7 +5,7 @@ import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { withoutUndefined } from "../cli-helpers.ts"
+import { getDefinedValues } from "../get-defined-values.ts"
 import { requireGitRepository } from "../git/require-git-repository.ts"
 import { savePosition } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
@@ -87,7 +87,7 @@ export function registerCompanyCommands(program: Command): void {
             const { description: currentDescription, ...current } = company
             const config = CompanyConfigSchema.safeParse({
                 ...current,
-                ...withoutUndefined({ name: options.name }),
+                ...getDefinedValues({ name: options.name }),
             })
             if (!config.success) {
                 throw new UserError(z.prettifyError(config.error))

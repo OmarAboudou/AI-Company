@@ -6,8 +6,8 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { withoutUndefined } from "../cli-helpers.ts"
 import { requireCompany } from "../company/require-company.ts"
+import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { registerLlmConnectionCommands } from "../llm-connection/commands.ts"
 import { protocols } from "../llm-connection/llm-connection.ts"
@@ -87,7 +87,7 @@ export function registerLlmProviderCommands(program: Command): void {
             }
             const config = LlmProviderConfigSchema.safeParse({
                 name,
-                ...withoutUndefined({ apiKey: apiKeySource(apiKeyOptions) }),
+                ...getDefinedValues({ apiKey: apiKeySource(apiKeyOptions) }),
             })
             if (!config.success) {
                 throw new UserError(z.prettifyError(config.error))
@@ -159,7 +159,7 @@ export function registerLlmProviderCommands(program: Command): void {
             )
             const config = LlmProviderConfigSchema.safeParse({
                 ...current,
-                ...withoutUndefined({
+                ...getDefinedValues({
                     name: options.name,
                     apiKey: apiKeySource(options),
                 }),
