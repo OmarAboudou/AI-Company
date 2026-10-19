@@ -18,10 +18,10 @@ afterEach(async () => {
 
 describe("requireCompany", () => {
     test("refuses a directory without company, saying how to create one", async () => {
-        const check = requireCompany(projectRoot)
+        const checking = requireCompany(projectRoot)
 
-        await expect(check).rejects.toThrow(UserError)
-        await expect(check).rejects.toThrow("Run `llmco init` first.")
+        await expect(checking).rejects.toThrow(UserError)
+        await expect(checking).rejects.toThrow("Run `llmco init` first.")
     })
 
     test("accepts a directory with a company", async () => {

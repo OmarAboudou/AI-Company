@@ -22,11 +22,11 @@ const acme = { name: "Acme", description: "We build things." }
 
 describe("createCompany", () => {
     test("saves the company, naming its director's position", async () => {
-        const created = await createCompany(projectRoot, acme)
+        const createdCompany = await createCompany(projectRoot, acme)
 
         const company = await loadCompany(projectRoot)
         expect(company).toEqual({ ...acme, directorPositionId: "director" })
-        expect(created).toEqual(company)
+        expect(createdCompany).toEqual(company)
     })
 
     test("creates the director's position, held by no employee", async () => {
@@ -59,11 +59,11 @@ describe("createCompany", () => {
     })
 
     test("refuses a directory outside any git repository", async () => {
-        const elsewhere = await mkdtemp(join(tmpdir(), "llmco-"))
+        const folderOutsideGit = await mkdtemp(join(tmpdir(), "llmco-"))
 
-        const creation = createCompany(elsewhere, acme)
+        const creation = createCompany(folderOutsideGit, acme)
 
         await expect(creation).rejects.toThrow("Run `git init` first.")
-        await rm(elsewhere, { recursive: true, force: true })
+        await rm(folderOutsideGit, { recursive: true, force: true })
     })
 })

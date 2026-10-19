@@ -5,10 +5,10 @@ import { readTextFile } from "../../files/read-text-file.ts"
 import { type Company, CompanyConfigSchema } from "./schema.ts"
 
 function getCompanyFilePaths(projectRoot: string) {
-    const dir = join(getLlmcoFolderPath(projectRoot), "company")
+    const companyFolderPath = join(getLlmcoFolderPath(projectRoot), "company")
     return {
-        config: join(dir, "config.json"),
-        description: join(dir, "description.md"),
+        config: join(companyFolderPath, "config.json"),
+        description: join(companyFolderPath, "description.md"),
     }
 }
 

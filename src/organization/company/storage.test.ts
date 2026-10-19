@@ -23,9 +23,12 @@ const acme: Company = {
 }
 
 async function writeCompanyFiles(config: unknown, description: string) {
-    const dir = join(projectRoot, ".llmco", "company")
-    await Bun.write(join(dir, "config.json"), JSON.stringify(config))
-    await Bun.write(join(dir, "description.md"), description)
+    const companyFolderPath = join(projectRoot, ".llmco", "company")
+    await Bun.write(
+        join(companyFolderPath, "config.json"),
+        JSON.stringify(config),
+    )
+    await Bun.write(join(companyFolderPath, "description.md"), description)
 }
 
 describe("loadCompany", () => {
@@ -54,13 +57,16 @@ describe("saveCompany", () => {
     test("writes config.json and description.md", async () => {
         await saveCompany(projectRoot, acme)
 
-        const dir = join(projectRoot, ".llmco", "company")
-        expect(await Bun.file(join(dir, "config.json")).text()).toBe(
-            '{\n    "name": "Acme",\n    "directorPositionId": "director"\n}\n',
-        )
-        expect(await Bun.file(join(dir, "description.md")).text()).toBe(
-            "We build things.",
-        )
+        const companyFolderPath = join(projectRoot, ".llmco", "company")
+        const [configText, descriptionText] = await Promise.all([
+            Bun.file(join(companyFolderPath, "config.json")).text(),
+            Bun.file(join(companyFolderPath, "description.md")).text(),
+        ])
+        const expectedConfigText =
+            '{\n    "name": "Acme",\n    "directorPositionId": "director"\n}\n'
+
+        expect(configText).toBe(expectedConfigText)
+        expect(descriptionText).toBe("We build things.")
     })
 
     test("writes what loadCompany reads back", async () => {

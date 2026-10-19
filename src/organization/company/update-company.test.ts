@@ -30,24 +30,24 @@ describe("updateCompany", () => {
         const before = await loadCompany(projectRoot)
         const changes = { description: "We build rockets." }
 
-        const updated = await updateCompany(projectRoot, changes)
+        const updatedCompany = await updateCompany(projectRoot, changes)
 
-        expect(updated).toEqual({ ...before, ...changes })
-        expect(await loadCompany(projectRoot)).toEqual(updated)
+        expect(updatedCompany).toEqual({ ...before, ...changes })
+        expect(await loadCompany(projectRoot)).toEqual(updatedCompany)
     })
 
     test("refuses a blank name", async () => {
-        const update = updateCompany(projectRoot, { name: " " })
+        const updating = updateCompany(projectRoot, { name: " " })
 
-        await expect(update).rejects.toThrow(UserError)
+        await expect(updating).rejects.toThrow(UserError)
         expect((await loadCompany(projectRoot)).name).toBe("Acme")
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const update = updateCompany(elsewhere, { name: "Globex" })
+        const updating = updateCompany(folderWithoutCompany, { name: "Globex" })
 
-        await expect(update).rejects.toThrow("Run `llmco init` first.")
+        await expect(updating).rejects.toThrow("Run `llmco init` first.")
     })
 })
