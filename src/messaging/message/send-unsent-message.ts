@@ -8,8 +8,8 @@ export async function sendUnsentMessage(
     threadId: string,
     { unknownMentionIds, ...messageContent }: UnsentMessage,
 ): Promise<Message> {
-    const messages = await listMessages(projectRoot, threadId)
-    const sentAt = getNextSentAt(messages, new Date())
+    const threadMessages = await listMessages(projectRoot, threadId)
+    const sentAt = getNextSentAt(threadMessages, new Date())
     const message = {
         threadId,
         id: createMessageId(sentAt),

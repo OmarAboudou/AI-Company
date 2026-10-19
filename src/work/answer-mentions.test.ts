@@ -154,7 +154,7 @@ describe("answerMentions", () => {
         expect(answerResponse).toMatchObject({
             protocol: "anthropic-messages",
             apiId: "claude-opus-5-5",
-            response: { content: [thinking, { type: "text", text: "Hono." }] },
+            payload: { content: [thinking, { type: "text", text: "Hono." }] },
         })
     })
 

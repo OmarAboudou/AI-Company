@@ -53,7 +53,7 @@ export const ProviderResponseSchema = z
         modelId: IdSchema,
         protocol: ProtocolSchema,
         apiId: z.string().min(1),
-        response: z.unknown().meta({
+        payload: z.unknown().meta({
             description:
                 "The provider's response, as its API returned it: thinking, text, usage.",
         }),

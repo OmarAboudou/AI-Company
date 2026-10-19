@@ -95,13 +95,18 @@ async function requireWorkedPosition(
 type PositionChoice = {
     human: CurrentHuman
     workedPositions: Position[]
-    memberIds: string[]
+    threadMemberIds: string[]
     directorPositionId: string
 }
 
 async function loadPositionToWriteFrom(
     projectRoot: string,
-    { human, workedPositions, memberIds, directorPositionId }: PositionChoice,
+    {
+        human,
+        workedPositions,
+        threadMemberIds,
+        directorPositionId,
+    }: PositionChoice,
     asPositionId: string | undefined,
 ): Promise<Position> {
     if (asPositionId !== undefined) {
@@ -114,7 +119,7 @@ async function loadPositionToWriteFrom(
         )
     }
     const positionInThread = getOnlyItem(
-        workedPositions.filter(({ id }) => memberIds.includes(id)),
+        workedPositions.filter(({ id }) => threadMemberIds.includes(id)),
     )
     if (positionInThread !== undefined) {
         return positionInThread
@@ -148,7 +153,7 @@ export async function readCurrentAuthor(
     const positionChoice = {
         human,
         workedPositions: workedPositions.map(({ position }) => position),
-        memberIds:
+        threadMemberIds:
             archive === undefined
                 ? []
                 : getMemberIds(archive.thread, archive.messages, positions),

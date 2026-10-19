@@ -18,9 +18,9 @@ export async function sendMessage(
 ): Promise<SendMessageResult> {
     await requireCompany(projectRoot)
     const thread = await loadExistingThread(projectRoot, rawThreadId)
-    const messages = await listMessages(projectRoot, thread.id)
+    const threadMessages = await listMessages(projectRoot, thread.id)
     const author = await readCurrentAuthor(projectRoot, {
-        archive: { thread, messages },
+        archive: { thread, messages: threadMessages },
         asPositionId,
     })
     const unsentMessage = await createUnsentMessage(projectRoot, author, body)

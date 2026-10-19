@@ -66,11 +66,11 @@ export async function saveMessage(
 export async function saveProviderResponse(
     projectRoot: string,
     { threadId, id }: Pick<Message, "threadId" | "id">,
-    response: ProviderResponse,
+    providerResponse: ProviderResponse,
 ): Promise<void> {
     await Bun.write(
         getMessagePaths(projectRoot, threadId, id).response,
-        `${JSON.stringify(response, null, 4)}\n`,
+        `${JSON.stringify(providerResponse, null, 4)}\n`,
     )
 }
 
@@ -78,9 +78,9 @@ export async function loadProviderResponse(
     projectRoot: string,
     { threadId, id }: Pick<Message, "threadId" | "id">,
 ): Promise<ProviderResponse | undefined> {
-    const path = getMessagePaths(projectRoot, threadId, id).response
-    if (!(await Bun.file(path).exists())) {
+    const responsePath = getMessagePaths(projectRoot, threadId, id).response
+    if (!(await Bun.file(responsePath).exists())) {
         return undefined
     }
-    return readJsonFile(projectRoot, path, ProviderResponseSchema)
+    return readJsonFile(projectRoot, responsePath, ProviderResponseSchema)
 }

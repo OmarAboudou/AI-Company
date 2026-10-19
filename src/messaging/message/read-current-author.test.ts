@@ -10,13 +10,13 @@ import { UserError } from "../../user-error.ts"
 import type { Archive } from "../thread/list-archives.ts"
 import { readCurrentAuthor } from "./read-current-author.ts"
 
-const variable = "LLMCO_CURRENT_HUMAN_ID"
-const shellValue = process.env[variable]
+const variableName = "LLMCO_CURRENT_HUMAN_ID"
+const shellValue = process.env[variableName]
 const committer = { name: "Test User", email: "test@example.com" }
 let projectRoot: string
 
 beforeEach(async () => {
-    delete process.env[variable]
+    delete process.env[variableName]
     projectRoot = await createTemporaryCompany()
     createGitRepository(projectRoot, committer)
     await Promise.all([
@@ -34,9 +34,9 @@ beforeEach(async () => {
 
 afterEach(async () => {
     if (shellValue === undefined) {
-        delete process.env[variable]
+        delete process.env[variableName]
     } else {
-        process.env[variable] = shellValue
+        process.env[variableName] = shellValue
     }
     await rm(projectRoot, { recursive: true, force: true })
 })
@@ -81,7 +81,7 @@ describe("readCurrentAuthor", () => {
 
     test("is a human employee at their only position", async () => {
         await assignPosition(projectRoot, "graphics", "julie")
-        process.env[variable] = "julie"
+        process.env[variableName] = "julie"
 
         const author = await readCurrentAuthor(projectRoot)
 
@@ -116,7 +116,7 @@ describe("readCurrentAuthor", () => {
             kind: "employee",
             rawEmployeeId: "julie",
         })
-        process.env[variable] = "julie"
+        process.env[variableName] = "julie"
         const archive = createArchive("director", ["support"])
 
         expect(await readPositionId({ archive })).toBe("support")
@@ -128,7 +128,7 @@ describe("readCurrentAuthor", () => {
             kind: "employee",
             rawEmployeeId: "julie",
         })
-        process.env[variable] = "julie"
+        process.env[variableName] = "julie"
         const refusalMessage =
             "Julie (julie) works several positions, graphics, support:"
 
@@ -141,13 +141,13 @@ describe("readCurrentAuthor", () => {
     })
 
     test("refuses a human employee working no position", async () => {
-        process.env[variable] = "julie"
-        const command =
+        process.env[variableName] = "julie"
+        const assignmentCommand =
             "`llmco position assign-temporarily employee <position-id> julie`"
 
         const reading = readCurrentAuthor(projectRoot)
 
-        await expect(reading).rejects.toThrow(command)
+        await expect(reading).rejects.toThrow(assignmentCommand)
     })
 })
 
@@ -168,7 +168,7 @@ describe("readCurrentAuthor with a position chosen", () => {
             kind: "employee",
             rawEmployeeId: "julie",
         })
-        process.env[variable] = "julie"
+        process.env[variableName] = "julie"
 
         const positionId = await readPositionId({ asPositionId: "support" })
 
@@ -193,7 +193,7 @@ describe("readCurrentAuthor with a position chosen", () => {
     })
 
     test("refuses a vacant position, giving the command to work it", async () => {
-        process.env[variable] = "julie"
+        process.env[variableName] = "julie"
         const refusalMessage =
             "it is vacant. A director can assign it to julie temporarily: `llmco position assign-temporarily employee support julie`."
 
@@ -208,7 +208,7 @@ describe("readCurrentAuthor with a position chosen", () => {
             kind: "employee",
             rawEmployeeId: "bob",
         })
-        process.env[variable] = "julie"
+        process.env[variableName] = "julie"
         const refusalMessage =
             "Bob, a human employee, works it. A director can give it back to julie: `llmco position unassign-temporarily graphics`."
 
@@ -219,7 +219,7 @@ describe("readCurrentAuthor with a position chosen", () => {
 
     test("refuses the director's position to a human employee", async () => {
         await assignPosition(projectRoot, "graphics", "julie")
-        process.env[variable] = "julie"
+        process.env[variableName] = "julie"
 
         const reading = readPositionId({ asPositionId: "director" })
 

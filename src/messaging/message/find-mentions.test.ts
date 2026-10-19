@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import { findMentions } from "./find-mentions.ts"
 
-function positionIds(body: string): string[] {
+function getPositionIds(body: string): string[] {
     return findMentions(body).positionIds
 }
 
@@ -9,7 +9,7 @@ describe("findMentions", () => {
     test("finds every @position-id once, in order", () => {
         const body = "@backend-developer, ask @qa-tester. @backend-developer?"
 
-        expect(positionIds(body)).toEqual(["backend-developer", "qa-tester"])
+        expect(getPositionIds(body)).toEqual(["backend-developer", "qa-tester"])
     })
 
     test.each([
@@ -21,7 +21,7 @@ describe("findMentions", () => {
         ["in a quote", "> @qa-tester said so"],
         ["between backticks that close nothing", "`@qa-tester`` is no code"],
     ])("finds a mention %s", (_, body) => {
-        expect(positionIds(body)).toEqual(["qa-tester"])
+        expect(getPositionIds(body)).toEqual(["qa-tester"])
     })
 
     test.each([
@@ -35,13 +35,13 @@ describe("findMentions", () => {
         ["an indented code block", "    @qa-tester"],
         ["a code block in a list item", "- see:\n\n  ```\n  @qa-tester\n  ```"],
     ])("ignores %s", (_, body) => {
-        expect(positionIds(body)).toEqual([])
+        expect(getPositionIds(body)).toEqual([])
     })
 
     test("finds mentions after a code block", () => {
         const body = "```\n@ignored\n```\n\n@qa-tester, see above."
 
-        expect(positionIds(body)).toEqual(["qa-tester"])
+        expect(getPositionIds(body)).toEqual(["qa-tester"])
     })
 
     test.each([
@@ -49,7 +49,7 @@ describe("findMentions", () => {
         ["nested list items", "- @qa-tester\n  - @designer"],
         ["table cells", "| @qa-tester | @designer |\n| --- | --- |"],
     ])("finds mentions in consecutive %s", (_, body) => {
-        expect(positionIds(body)).toEqual(["qa-tester", "designer"])
+        expect(getPositionIds(body)).toEqual(["qa-tester", "designer"])
     })
 
     test("sets apart mentions of a specific employee", () => {
