@@ -1,6 +1,6 @@
 import { getCurrentId } from "../../ids/get-current-id.ts"
 import type { IdHistory } from "../../ids/id-history-schema.ts"
-import type { Message } from "../../message/message.ts"
+import type { Message } from "../message/schema.ts"
 import { getExchanges } from "./get-exchanges.ts"
 import type { Thread } from "./schema.ts"
 

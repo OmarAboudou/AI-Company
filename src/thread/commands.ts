@@ -4,8 +4,8 @@ import { formatIdArgumentDescription } from "../cli/format-id-argument-descripti
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { loadExistingThread } from "../cli-helpers.ts"
+import { minutes } from "../format-date-time.ts"
 import { answerMentions } from "../llm/reply.ts"
-import { currentAuthor } from "../message/author.ts"
 import {
     asPositionOption,
     bodyFileOption,
@@ -14,8 +14,10 @@ import {
     readBody,
     sendDraft,
 } from "../message/commands.ts"
-import { minutes, signature } from "../message/signature.ts"
-import { listMessages } from "../message/storage.ts"
+import { authorName } from "../messaging/message/get-author-name.ts"
+import { currentAuthor } from "../messaging/message/read-current-author.ts"
+import type { Author } from "../messaging/message/schema.ts"
+import { listMessages } from "../messaging/message/storage.ts"
 import { createThreadId } from "../messaging/thread/create-thread-id.ts"
 import { getAwaitedIds } from "../messaging/thread/get-awaited-ids.ts"
 import { getMemberIds } from "../messaging/thread/get-member-ids.ts"
@@ -25,6 +27,11 @@ import { saveThread } from "../messaging/thread/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
 import { listPositions } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
+
+function signature(author: Author): string {
+    const { position } = author
+    return `${authorName(author)}, ${position.title} (@${position.id})`
+}
 
 function mentionsOf(positionIds: string[]): string {
     return positionIds.map((id) => `@${id}`).join(", ")

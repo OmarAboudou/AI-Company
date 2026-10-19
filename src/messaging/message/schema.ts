@@ -1,11 +1,11 @@
 import { z } from "zod"
-import { IdSchema } from "../ids/id-schema.ts"
-import { ProtocolSchema } from "../llm/connection/schema.ts"
+import { IdSchema } from "../../ids/id-schema.ts"
+import { ProtocolSchema } from "../../llm/connection/schema.ts"
 import {
     CommitterSchema,
     EmployeeSnapshotSchema,
     PositionSnapshotSchema,
-} from "../messaging/thread/schema.ts"
+} from "../thread/schema.ts"
 
 export const MessageConfigSchema = z
     .strictObject({
@@ -32,6 +32,8 @@ export const MessageConfigSchema = z
     })
 
 export type MessageConfig = z.infer<typeof MessageConfigSchema>
+
+export type Author = Pick<MessageConfig, "position" | "employee" | "committer">
 
 export type Message = MessageConfig & {
     threadId: string

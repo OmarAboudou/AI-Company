@@ -3,8 +3,12 @@ import { projectRoot } from "../cli/project-root.ts"
 import { readGitCommitter } from "../git/read-git-committer.ts"
 import { isAuthorOf } from "../ids/is-author-of.ts"
 import { readMentions, sendDraft } from "../message/commands.ts"
-import type { Message } from "../message/message.ts"
-import { listMessages, loadResponse, saveResponse } from "../message/storage.ts"
+import type { Message } from "../messaging/message/schema.ts"
+import {
+    listMessages,
+    loadResponse,
+    saveResponse,
+} from "../messaging/message/storage.ts"
 import { loadThread } from "../messaging/thread/storage.ts"
 import { loadCompany } from "../organization/company/storage.ts"
 import type { Employee } from "../organization/employee/schema.ts"

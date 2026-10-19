@@ -5,7 +5,7 @@ import { LlmProviderConfigSchema } from "../src/llm/provider/schema.ts"
 import {
     MessageConfigSchema,
     ProviderResponseSchema,
-} from "../src/message/message.ts"
+} from "../src/messaging/message/schema.ts"
 import { ThreadConfigSchema } from "../src/messaging/thread/schema.ts"
 import { CompanyConfigSchema } from "../src/organization/company/schema.ts"
 import { EmployeeConfigSchema } from "../src/organization/employee/schema.ts"

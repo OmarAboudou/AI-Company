@@ -1,27 +1,25 @@
-import { projectRoot } from "../cli/project-root.ts"
-import { readGitCommitter } from "../git/read-git-committer.ts"
-import { getMemberIds } from "../messaging/thread/get-member-ids.ts"
-import type { Archive } from "../messaging/thread/list-archives.ts"
-import { loadCompany } from "../organization/company/storage.ts"
-import type { Employee } from "../organization/employee/schema.ts"
-import { loadEmployee } from "../organization/employee/storage.ts"
-import { listPositionsWorkedBy } from "../organization/human/list-positions-worked-by.ts"
+import { projectRoot } from "../../cli/project-root.ts"
+import { readGitCommitter } from "../../git/read-git-committer.ts"
+import { loadCompany } from "../../organization/company/storage.ts"
+import type { Employee } from "../../organization/employee/schema.ts"
+import { loadEmployee } from "../../organization/employee/storage.ts"
+import { listPositionsWorkedBy } from "../../organization/human/list-positions-worked-by.ts"
 import {
     type CurrentHuman,
     readCurrentHuman,
-} from "../organization/human/read-current-human.ts"
-import { getCurrentWorker } from "../organization/position/get-current-worker.ts"
-import { loadExistingPosition } from "../organization/position/load-existing-position.ts"
-import type { Position, Worker } from "../organization/position/schema.ts"
+} from "../../organization/human/read-current-human.ts"
+import { getCurrentWorker } from "../../organization/position/get-current-worker.ts"
+import { loadExistingPosition } from "../../organization/position/load-existing-position.ts"
+import type { Position, Worker } from "../../organization/position/schema.ts"
 import {
     listPositions,
     loadPosition,
     loadPositionState,
-} from "../organization/position/storage.ts"
-import { UserError } from "../user-error.ts"
-import type { MessageConfig } from "./message.ts"
-
-export type Author = Pick<MessageConfig, "position" | "employee" | "committer">
+} from "../../organization/position/storage.ts"
+import { UserError } from "../../user-error.ts"
+import { getMemberIds } from "../thread/get-member-ids.ts"
+import type { Archive } from "../thread/list-archives.ts"
+import type { Author } from "./schema.ts"
 
 function only<Item>(items: Item[]): Item | undefined {
     return items.length === 1 ? items[0] : undefined

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import type { IdHistory } from "../../ids/id-history-schema.ts"
-import type { Message } from "../../message/message.ts"
+import type { Message } from "../message/schema.ts"
 import { getAwaitedIds } from "./get-awaited-ids.ts"
 import { getMemberIds } from "./get-member-ids.ts"
 import type { Thread } from "./schema.ts"
