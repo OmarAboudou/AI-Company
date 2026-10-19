@@ -2,6 +2,15 @@ import type Anthropic from "@anthropic-ai/sdk"
 import { projectRoot } from "../cli/project-root.ts"
 import { readGitCommitter } from "../git/read-git-committer.ts"
 import { isAuthorOf } from "../ids/is-author-of.ts"
+import { callAnthropicMessages } from "../llm/anthropic-messages/call-anthropic-messages.ts"
+import {
+    getAnthropicTurns,
+    type Replays,
+} from "../llm/anthropic-messages/get-anthropic-turns.ts"
+import type { LlmModel } from "../llm/model/schema.ts"
+import { loadLlmModel } from "../llm/model/storage.ts"
+import { readApiKey } from "../llm/provider/read-api-key.ts"
+import { loadLlmProvider } from "../llm/provider/storage.ts"
 import { resolveMentions } from "../messaging/message/resolve-mentions.ts"
 import type { Message } from "../messaging/message/schema.ts"
 import { sendDraft } from "../messaging/message/send-draft.ts"
@@ -21,16 +30,7 @@ import {
     loadPositionState,
 } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
-import { callAnthropicMessages } from "./anthropic-messages/call-anthropic-messages.ts"
-import {
-    getAnthropicTurns,
-    type Replays,
-} from "./anthropic-messages/get-anthropic-turns.ts"
-import type { LlmModel } from "./model/schema.ts"
-import { loadLlmModel } from "./model/storage.ts"
-import { readApiKey } from "./provider/read-api-key.ts"
-import { loadLlmProvider } from "./provider/storage.ts"
-import { systemPrompt } from "./system-prompt.ts"
+import { systemPrompt } from "./build-system-prompt.ts"
 
 type LlmEmployee = Extract<Employee, { kind: "llm" }>
 

@@ -3,13 +3,13 @@ import { formatIdArgumentDescription } from "../cli/format-id-argument-descripti
 import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
 import { loadExistingThread } from "../cli-helpers.ts"
-import { answerMentions } from "../llm/reply.ts"
 import { createDraft } from "../messaging/message/create-draft.ts"
 import { readCurrentAuthor } from "../messaging/message/read-current-author.ts"
 import { sendDraft } from "../messaging/message/send-draft.ts"
 import { listMessages } from "../messaging/message/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
 import { UserError } from "../user-error.ts"
+import { answerMentions } from "../work/answer-mentions.ts"
 
 export function bodyOption(what = "the message") {
     return new Option("-b, --body <text>", `${what}, in Markdown`)
