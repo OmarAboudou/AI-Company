@@ -49,7 +49,7 @@ function onlyPositionOf(employee: Employee, worked: Position[]): Position {
         )
     }
     throw new UserError(
-        `${who} works several positions, ${worked.map(({ id }) => id).join(", ")}: llmco can't tell which one to write from. Choose one with --as.`,
+        `${who} works several positions, ${worked.map(({ id }) => id).join(", ")}: llmco can't tell which one to write from. Choose one with --as-position.`,
     )
 }
 

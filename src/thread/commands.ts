@@ -11,7 +11,7 @@ import { UserError } from "../errors.ts"
 import { answerMentions } from "../llm/reply.ts"
 import { currentAuthor } from "../message/author.ts"
 import {
-    asOption,
+    asPositionOption,
     bodyFileOption,
     bodyOption,
     draftMessage,
@@ -45,10 +45,12 @@ export function registerThreadCommands(program: Command): void {
         .requiredOption("-s, --subject <subject>", "subject of the thread")
         .addOption(bodyOption("the thread's first message"))
         .addOption(bodyFileOption("the thread's first message"))
-        .addOption(asOption())
+        .addOption(asPositionOption())
         .action(async (options) => {
             await requireCompany()
-            const author = await currentAuthor({ asPositionId: options.as })
+            const author = await currentAuthor({
+                asPositionId: options.asPosition,
+            })
             const body = await readBody(options)
             const draft =
                 body === undefined
