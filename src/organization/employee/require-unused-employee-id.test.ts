@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
-import { createTemporaryCompany } from "../../company/create-temporary-company.ts"
 import { saveMessage } from "../../message/storage.ts"
 import { saveThread } from "../../thread/storage.ts"
 import { UserError } from "../../user-error.ts"
+import { createTemporaryCompany } from "../company/create-temporary-company.ts"
 import { requireUnusedEmployeeId } from "./require-unused-employee-id.ts"
 import { saveEmployee } from "./storage.ts"
 

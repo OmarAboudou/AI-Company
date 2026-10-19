@@ -4,7 +4,6 @@ import { formatIdArgumentDescription } from "../cli/format-id-argument-descripti
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { loadExistingThread } from "../cli-helpers.ts"
-import { requireCompany } from "../company/require-company.ts"
 import { answerMentions } from "../llm/reply.ts"
 import { currentAuthor } from "../message/author.ts"
 import {
@@ -17,6 +16,7 @@ import {
 } from "../message/commands.ts"
 import { minutes, signature } from "../message/signature.ts"
 import { listMessages } from "../message/storage.ts"
+import { requireCompany } from "../organization/company/require-company.ts"
 import { listPositions } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
 import { readArchives } from "./archives.ts"

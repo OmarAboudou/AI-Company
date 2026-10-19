@@ -1,5 +1,5 @@
-import { requireCompany } from "../../company/require-company.ts"
 import { UserError } from "../../user-error.ts"
+import { requireCompany } from "../company/require-company.ts"
 import {
     listPositions,
     savePosition,

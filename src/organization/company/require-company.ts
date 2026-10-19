@@ -1,4 +1,4 @@
-import { UserError } from "../user-error.ts"
+import { UserError } from "../../user-error.ts"
 import { companyExists } from "./storage.ts"
 
 export async function requireCompany(projectRoot: string): Promise<void> {

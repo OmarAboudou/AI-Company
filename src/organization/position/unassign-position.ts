@@ -1,5 +1,5 @@
-import { requireCompany } from "../../company/require-company.ts"
 import { parseId } from "../../ids/parse-id.ts"
+import { requireCompany } from "../company/require-company.ts"
 import { loadExistingPosition } from "./load-existing-position.ts"
 import type { Worker } from "./schema.ts"
 import { loadPositionState, savePosition } from "./storage.ts"

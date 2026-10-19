@@ -1,7 +1,7 @@
-import { requireCompany } from "../../company/require-company.ts"
 import { getRenamedEntity } from "../../ids/get-renamed-entity.ts"
 import { parseId } from "../../ids/parse-id.ts"
 import { UserError } from "../../user-error.ts"
+import { requireCompany } from "../company/require-company.ts"
 import {
     listPositions,
     savePosition,

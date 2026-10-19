@@ -5,7 +5,6 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { requireCompany } from "../company/require-company.ts"
 import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
@@ -15,6 +14,7 @@ import {
 } from "../llm-provider/llm-provider.ts"
 import { loadExistingLlmProvider } from "../llm-provider/load-existing-llm-provider.ts"
 import { listLlmProviders, saveLlmProvider } from "../llm-provider/storage.ts"
+import { requireCompany } from "../organization/company/require-company.ts"
 import { UserError } from "../user-error.ts"
 import {
     authSchemes,

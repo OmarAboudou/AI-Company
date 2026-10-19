@@ -1,6 +1,6 @@
 import { projectRoot } from "../cli/project-root.ts"
-import { loadCompany } from "../company/storage.ts"
 import { readGitCommitter } from "../git/read-git-committer.ts"
+import { loadCompany } from "../organization/company/storage.ts"
 import type { Employee } from "../organization/employee/schema.ts"
 import { loadEmployee } from "../organization/employee/storage.ts"
 import { listPositionsWorkedBy } from "../organization/human/list-positions-worked-by.ts"

@@ -1,4 +1,4 @@
-import type { Company } from "../company/company.ts"
+import type { Company } from "../organization/company/schema.ts"
 import type { Employee } from "../organization/employee/schema.ts"
 import type { Position } from "../organization/position/schema.ts"
 import type { Thread } from "../thread/thread.ts"

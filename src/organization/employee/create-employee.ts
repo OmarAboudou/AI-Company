@@ -1,7 +1,7 @@
 import { z } from "zod"
-import { requireCompany } from "../../company/require-company.ts"
 import { parseId } from "../../ids/parse-id.ts"
 import { UserError } from "../../user-error.ts"
+import { requireCompany } from "../company/require-company.ts"
 import { requireEmployeeModel } from "./require-employee-model.ts"
 import { requireUnusedEmployeeId } from "./require-unused-employee-id.ts"
 import {

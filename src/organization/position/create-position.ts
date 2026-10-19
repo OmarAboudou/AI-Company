@@ -1,7 +1,7 @@
 import { z } from "zod"
-import { requireCompany } from "../../company/require-company.ts"
 import { parseId } from "../../ids/parse-id.ts"
 import { UserError } from "../../user-error.ts"
+import { requireCompany } from "../company/require-company.ts"
 import { type Position, PositionConfigSchema } from "./schema.ts"
 import { deletePositionState, hasPosition, savePosition } from "./storage.ts"
 

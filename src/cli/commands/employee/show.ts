@@ -1,5 +1,5 @@
 import type { Command } from "@commander-js/extra-typings"
-import { requireCompany } from "../../../company/require-company.ts"
+import { requireCompany } from "../../../organization/company/require-company.ts"
 import { loadExistingEmployee } from "../../../organization/employee/load-existing-employee.ts"
 import { listPositions } from "../../../organization/position/storage.ts"
 import { formatIdArgumentDescription } from "../../format-id-argument-description.ts"

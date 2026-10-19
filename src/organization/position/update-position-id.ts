@@ -1,8 +1,8 @@
-import { requireCompany } from "../../company/require-company.ts"
-import { loadCompany, saveCompany } from "../../company/storage.ts"
 import { getRenamedEntity } from "../../ids/get-renamed-entity.ts"
 import { parseId } from "../../ids/parse-id.ts"
 import { UserError } from "../../user-error.ts"
+import { requireCompany } from "../company/require-company.ts"
+import { loadCompany, saveCompany } from "../company/storage.ts"
 import { loadExistingPosition } from "./load-existing-position.ts"
 import type { Position } from "./schema.ts"
 import {

@@ -1,7 +1,7 @@
 import { mkdtemp } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { savePosition } from "../organization/position/storage.ts"
+import { savePosition } from "../position/storage.ts"
 import { saveCompany } from "./storage.ts"
 
 export async function createTemporaryCompany(): Promise<string> {

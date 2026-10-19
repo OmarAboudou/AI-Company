@@ -1,7 +1,7 @@
 import { z } from "zod"
-import { requireCompany } from "../../company/require-company.ts"
 import { getDefinedValues } from "../../get-defined-values.ts"
 import { UserError } from "../../user-error.ts"
+import { requireCompany } from "../company/require-company.ts"
 import { loadExistingEmployee } from "./load-existing-employee.ts"
 import { requireEmployeeModel } from "./require-employee-model.ts"
 import { type Employee, EmployeeConfigSchema } from "./schema.ts"
