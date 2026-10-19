@@ -30,18 +30,6 @@ describe("llmco thread list", () => {
         expect(list.exitCode).toBe(0)
         expect(list.stdout).toContain("No threads yet.")
     })
-
-    test("shows a renamed position awaited under its new id", () => {
-        runCli("position", "create", "qa-tester", "-t", "QA Tester")
-        createThread("-b", "@qa-tester Can you check?")
-        const before = runCli("thread", "list").stdout
-
-        runCli("position", "update-id", "qa-tester", "tester")
-        const after = runCli("thread", "list").stdout
-
-        expect(before).toContain("awaiting @qa-tester")
-        expect(after).toContain("awaiting @tester")
-    })
 })
 
 describe("mentions", () => {

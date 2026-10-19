@@ -3,7 +3,7 @@ import { useTemporaryProject } from "../../use-temporary-project.ts"
 
 const { runCli } = useTemporaryProject()
 
-describe("llmco thread create", () => {
+describe("llmco thread show", () => {
     beforeEach(() => {
         runCli("init", "-n", "Acme")
     })
@@ -20,16 +20,6 @@ describe("llmco thread create", () => {
         expect(show).toStartWith("# Choice of framework\n\n")
         expect(show).toContain("Created by Test User, Director (@director), ")
     })
-})
-
-describe("llmco thread show", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-    })
-
-    function createThread(...args: string[]) {
-        return runCli("thread", "create", "-s", "Choice of framework", ...args)
-    }
 
     test("--json prints one message per line, with its author", () => {
         const id = createThread("-b", "Hono or Express?").stdout.trim()
