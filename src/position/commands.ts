@@ -12,6 +12,7 @@ import { loadExistingEmployee } from "../employee/load-existing-employee.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { createPosition } from "../organization/position/create-position.ts"
+import { deletePosition } from "../organization/position/delete-position.ts"
 import { loadExistingPosition } from "../organization/position/load-existing-position.ts"
 import type {
     Position,
@@ -19,8 +20,6 @@ import type {
     Worker,
 } from "../organization/position/schema.ts"
 import {
-    deletePositionFolder,
-    deletePositionState,
     listPositions,
     loadPositionState,
     savePosition,
@@ -28,8 +27,6 @@ import {
 } from "../organization/position/storage.ts"
 import { updatePosition } from "../organization/position/update-position.ts"
 import { updatePositionId } from "../organization/position/update-position-id.ts"
-import { readArchives } from "../thread/archives.ts"
-import { awaitedIds } from "../thread/members.ts"
 import { UserError } from "../user-error.ts"
 
 function workerName(assignment: Worker): string {
@@ -472,44 +469,20 @@ export function registerPositionCommands(program: Command): void {
         )
         .option("-f, --force", "delete it even if threads await it")
         .hook("preAction", requireDirector)
-        .action(async (rawId, { force }) => {
-            await requireCompany(projectRoot)
-            const [position, company, positions, archives] = await Promise.all([
-                loadExistingPosition(projectRoot, rawId),
-                loadCompany(projectRoot),
-                listPositions(projectRoot),
-                readArchives(projectRoot),
-            ])
-            if (company.directorPositionId === position.id) {
-                throw new UserError(
-                    `Position "${position.id}" is the director's position: it can't be deleted.`,
-                )
-            }
-            const awaiting = archives
-                .filter(({ thread, messages }) =>
-                    awaitedIds(thread, messages, positions).includes(
-                        position.id,
-                    ),
-                )
-                .map(({ thread }) => thread.id)
-                .join(", ")
-            if (awaiting !== "" && !force) {
-                throw new UserError(
-                    `Position "${position.id}" is awaited in these threads: ${awaiting}. Add --force to delete it anyway; they will keep awaiting it.`,
-                )
-            }
-            await Promise.all([
-                deletePositionFolder(projectRoot, position.id),
-                deletePositionState(projectRoot, position.id),
-            ])
-            const deleted =
+        .action(async (rawId, { force: shouldForce }) => {
+            const { position, awaitingThreadIds } = await deletePosition(
+                projectRoot,
+                rawId,
+                { shouldForce },
+            )
+            const deletedMessage =
                 position.defaultEmployeeId === undefined
                     ? `Deleted position "${position.id}"`
                     : `Deleted position "${position.id}"; its default employee "${position.defaultEmployeeId}" stays hired`
             console.log(
-                awaiting === ""
-                    ? `${deleted}.`
-                    : `${deleted}. Still awaited in: ${awaiting}.`,
+                awaitingThreadIds.length === 0
+                    ? `${deletedMessage}.`
+                    : `${deletedMessage}. Still awaited in: ${awaitingThreadIds.join(", ")}.`,
             )
         })
 }
