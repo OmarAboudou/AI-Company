@@ -11,6 +11,11 @@ import { getDefinedValues } from "../get-defined-values.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { loadExistingLlmModel } from "../llm-model/load-existing-llm-model.ts"
+import { getPositionsFilledBy } from "../organization/employee/get-positions-filled-by.ts"
+import {
+    listPositionsWorkedTemporarilyBy,
+    type TemporaryPosition,
+} from "../organization/employee/list-positions-worked-temporarily-by.ts"
 import { loadExistingEmployee } from "../organization/employee/load-existing-employee.ts"
 import { requireUnusedEmployeeId } from "../organization/employee/require-unused-employee-id.ts"
 import {
@@ -24,47 +29,16 @@ import {
     listEmployees,
     saveEmployee,
 } from "../organization/employee/storage.ts"
-import type {
-    Position,
-    PositionState,
-} from "../organization/position/schema.ts"
+import type { Position } from "../organization/position/schema.ts"
 import {
     listPositions,
-    loadPositionState,
     savePosition,
     savePositionState,
 } from "../organization/position/storage.ts"
 import { UserError } from "../user-error.ts"
 
-function filledPositions(
-    positions: Position[],
-    employeeId: string,
-): Position[] {
-    return positions.filter(
-        ({ defaultEmployeeId }) => defaultEmployeeId === employeeId,
-    )
-}
-
-type TemporaryPosition = { position: Position; state: PositionState }
-
-async function positionsWorkedTemporarily(
-    positions: Position[],
-    employeeId: string,
-): Promise<TemporaryPosition[]> {
-    const states = await Promise.all(
-        positions.map(async (position) => ({
-            position,
-            state: await loadPositionState(projectRoot, position.id),
-        })),
-    )
-    return states.filter(
-        ({ state: { temporaryAssignment: worker } }) =>
-            worker?.kind === "employee" && worker.employeeId === employeeId,
-    )
-}
-
 function positionsFilledBy(positions: Position[], employeeId: string): string {
-    const ids = filledPositions(positions, employeeId).map(({ id }) => id)
+    const ids = getPositionsFilledBy(positions, employeeId).map(({ id }) => id)
     return ids.length > 0 ? ids.join(", ") : "(none)"
 }
 
@@ -305,9 +279,13 @@ export function registerEmployeeCommands(program: Command): void {
                     shouldReuseId: reuseId,
                     renamedEmployee: employee,
                 }),
-                positionsWorkedTemporarily(positions, employee.id),
+                listPositionsWorkedTemporarilyBy(
+                    projectRoot,
+                    positions,
+                    employee.id,
+                ),
             ])
-            const filled = filledPositions(positions, employee.id)
+            const filled = getPositionsFilledBy(positions, employee.id)
             // Copy, repoint, then delete rather than move, so that an
             // interrupted command never leaves a position naming a missing
             // employee: at worst, the employee exists twice.
@@ -374,10 +352,18 @@ export function registerEmployeeCommands(program: Command): void {
             if (replacement.id === employee.id) {
                 throw new UserError(`"${employee.id}" can't replace itself.`)
             }
-            const filled = filledPositions(positions, employee.id)
+            const filled = getPositionsFilledBy(positions, employee.id)
             const [kept, confirmed] = await Promise.all([
-                positionsWorkedTemporarily(positions, employee.id),
-                positionsWorkedTemporarily(filled, replacement.id),
+                listPositionsWorkedTemporarilyBy(
+                    projectRoot,
+                    positions,
+                    employee.id,
+                ),
+                listPositionsWorkedTemporarilyBy(
+                    projectRoot,
+                    filled,
+                    replacement.id,
+                ),
             ])
             const handedOver = temporary ? kept : []
             const isDefault = ({ position }: TemporaryPosition) =>
@@ -458,8 +444,9 @@ export function registerEmployeeCommands(program: Command): void {
                 loadExistingEmployee(projectRoot, rawId),
                 listPositions(projectRoot),
             ])
-            const filled = filledPositions(positions, employee.id)
-            const temporary = await positionsWorkedTemporarily(
+            const filled = getPositionsFilledBy(positions, employee.id)
+            const temporary = await listPositionsWorkedTemporarilyBy(
+                projectRoot,
                 positions,
                 employee.id,
             )
