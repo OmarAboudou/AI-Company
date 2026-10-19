@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk"
-import { type IdHistory, wrote } from "../id-history.ts"
+import type { IdHistory } from "../ids/id-history-schema.ts"
+import { wrote } from "../ids/is-author-of.ts"
 import type { Connections } from "../llm-connection/llm-connection.ts"
 import type { Message } from "../message/message.ts"
 import { authorName, minutes } from "../message/signature.ts"

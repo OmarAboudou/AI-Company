@@ -1,6 +1,6 @@
 import { z } from "zod"
-import { IdSchema } from "../id.ts"
-import type { IdHistoryRecord } from "../id-history.ts"
+import type { IdHistoryRecord } from "../ids/id-history-schema.ts"
+import { IdSchema } from "../ids/id-schema.ts"
 
 export const PositionConfigSchema = z
     .strictObject({
