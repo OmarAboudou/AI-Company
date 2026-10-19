@@ -21,27 +21,32 @@ import { getMemberIds } from "../thread/get-member-ids.ts"
 import type { Archive } from "../thread/list-archives.ts"
 import type { Author } from "./schema.ts"
 
-function only<Item>(items: Item[]): Item | undefined {
+function getOnlyItem<Item>(items: Item[]): Item | undefined {
     return items.length === 1 ? items[0] : undefined
 }
 
-function onlyPositionOf(employee: Employee, worked: Position[]): Position {
-    const position = only(worked)
+function requireOnlyPosition(
+    employee: Employee,
+    workedPositions: Position[],
+): Position {
+    const position = getOnlyItem(workedPositions)
     if (position !== undefined) {
         return position
     }
-    const who = `${employee.name} (${employee.id})`
-    if (worked.length === 0) {
+    const employeeDescription = `${employee.name} (${employee.id})`
+    if (workedPositions.length === 0) {
         throw new UserError(
-            `${who} works no position to write from. A director can assign one temporarily: \`llmco position assign-temporarily employee <position-id> ${employee.id}\`.`,
+            `${employeeDescription} works no position to write from. A director can assign one temporarily: \`llmco position assign-temporarily employee <position-id> ${employee.id}\`.`,
         )
     }
     throw new UserError(
-        `${who} works several positions, ${worked.map(({ id }) => id).join(", ")}: llmco can't tell which one to write from. Choose one with --as-position.`,
+        `${employeeDescription} works several positions, ${workedPositions.map(({ id }) => id).join(", ")}: llmco can't tell which one to write from. Choose one with --as-position.`,
     )
 }
 
-async function workerDescription(worker: Worker | undefined): Promise<string> {
+async function loadWorkerDescription(
+    worker: Worker | undefined,
+): Promise<string> {
     if (worker === undefined) {
         return "it is vacant"
     }
@@ -54,7 +59,7 @@ async function workerDescription(worker: Worker | undefined): Promise<string> {
         : `${employee.name}, a human employee, works it`
 }
 
-function howToWorkIt(human: CurrentHuman, position: Position): string {
+function formatHowToWorkIt(human: CurrentHuman, position: Position): string {
     if (human.kind === "director") {
         return `Assign it to the directors temporarily first: \`llmco position assign-temporarily directors ${position.id}\`.`
     }
@@ -64,14 +69,14 @@ function howToWorkIt(human: CurrentHuman, position: Position): string {
         : `A director can assign it to ${id} temporarily: \`llmco position assign-temporarily employee ${position.id} ${id}\`.`
 }
 
-async function chosenPosition(
+async function requireWorkedPosition(
     human: CurrentHuman,
-    worked: Position[],
+    workedPositions: Position[],
     rawId: string,
     directorPositionId: string,
 ): Promise<Position> {
     const position = await loadExistingPosition(projectRoot, rawId)
-    if (worked.some(({ id }) => id === position.id)) {
+    if (workedPositions.some(({ id }) => id === position.id)) {
         return position
     }
     if (position.id === directorPositionId) {
@@ -79,37 +84,44 @@ async function chosenPosition(
             `Only directors write from the director's position "${position.id}": unset LLMCO_CURRENT_HUMAN_ID to act as one.`,
         )
     }
-    const state = await loadPositionState(projectRoot, position.id)
-    const worker = getCurrentWorker(position, state, directorPositionId)
+    const positionState = await loadPositionState(projectRoot, position.id)
+    const worker = getCurrentWorker(position, positionState, directorPositionId)
     throw new UserError(
-        `You don't work position "${position.id}": ${await workerDescription(worker)}. ${howToWorkIt(human, position)}`,
+        `You don't work position "${position.id}": ${await loadWorkerDescription(worker)}. ${formatHowToWorkIt(human, position)}`,
     )
 }
 
-type Choice = {
+type PositionChoice = {
     human: CurrentHuman
-    worked: Position[]
+    workedPositions: Position[]
     memberIds: string[]
     directorPositionId: string
 }
 
-async function positionToWriteFrom(
-    { human, worked, memberIds, directorPositionId }: Choice,
+async function loadPositionToWriteFrom(
+    { human, workedPositions, memberIds, directorPositionId }: PositionChoice,
     asPositionId: string | undefined,
 ): Promise<Position> {
     if (asPositionId !== undefined) {
-        return chosenPosition(human, worked, asPositionId, directorPositionId)
+        return requireWorkedPosition(
+            human,
+            workedPositions,
+            asPositionId,
+            directorPositionId,
+        )
     }
-    const inThread = only(worked.filter(({ id }) => memberIds.includes(id)))
-    if (inThread !== undefined) {
-        return inThread
+    const positionInThread = getOnlyItem(
+        workedPositions.filter(({ id }) => memberIds.includes(id)),
+    )
+    if (positionInThread !== undefined) {
+        return positionInThread
     }
     return human.kind === "director"
         ? loadPosition(projectRoot, directorPositionId)
-        : onlyPositionOf(human.employee, worked)
+        : requireOnlyPosition(human.employee, workedPositions)
 }
 
-export async function currentAuthor({
+export async function readCurrentAuthor({
     archive,
     asPositionId,
 }: {
@@ -121,22 +133,22 @@ export async function currentAuthor({
         listPositions(projectRoot),
         loadCompany(projectRoot),
     ])
-    const worked = await listPositionsWorkedBy(
+    const workedPositions = await listPositionsWorkedBy(
         projectRoot,
         human,
         positions,
         directorPositionId,
     )
-    const choice = {
+    const positionChoice = {
         human,
-        worked: worked.map(({ position }) => position),
+        workedPositions: workedPositions.map(({ position }) => position),
         memberIds:
             archive === undefined
                 ? []
                 : getMemberIds(archive.thread, archive.messages, positions),
         directorPositionId,
     }
-    const position = await positionToWriteFrom(choice, asPositionId)
+    const position = await loadPositionToWriteFrom(positionChoice, asPositionId)
     return {
         position: { id: position.id, title: position.title },
         ...(human.kind === "employee" && {

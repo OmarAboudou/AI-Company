@@ -1,8 +1,8 @@
 import type Anthropic from "@anthropic-ai/sdk"
-import { minutes } from "../../format-date-time.ts"
+import { formatDateTime } from "../../format-date-time.ts"
 import type { IdHistory } from "../../ids/id-history-schema.ts"
 import { isAuthorOf } from "../../ids/is-author-of.ts"
-import { authorName } from "../../messaging/message/get-author-name.ts"
+import { getAuthorName } from "../../messaging/message/get-author-name.ts"
 import type { Message } from "../../messaging/message/schema.ts"
 
 export type Replays = ReadonlyMap<string, Anthropic.ContentBlockParam[]>
@@ -16,11 +16,11 @@ function escapeAttribute(value: string): string {
 
 function formatTaggedMessage(message: Message): string {
     const { position } = message
-    const escapedAuthorName = escapeAttribute(authorName(message))
+    const escapedAuthorName = escapeAttribute(getAuthorName(message))
     const escapedPositionName = escapeAttribute(
         `${position.title} (@${position.id})`,
     )
-    const sentMinute = minutes(message.sentAt)
+    const sentMinute = formatDateTime(message.sentAt)
     return [
         `<message from="${escapedAuthorName}" position="${escapedPositionName}" sent="${sentMinute}">`,
         message.body.trimEnd(),

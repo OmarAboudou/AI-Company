@@ -10,16 +10,19 @@ import {
     ProviderResponseSchema,
 } from "./schema.ts"
 
-function messagesDir(projectRoot: string, threadId: string): string {
+function getMessagesFolderPath(projectRoot: string, threadId: string): string {
     return join(getThreadFolderPath(projectRoot, threadId), "messages")
 }
 
-function messagePaths(projectRoot: string, threadId: string, id: string) {
-    const dir = join(messagesDir(projectRoot, threadId), id)
+function getMessagePaths(projectRoot: string, threadId: string, id: string) {
+    const messageFolderPath = join(
+        getMessagesFolderPath(projectRoot, threadId),
+        id,
+    )
     return {
-        config: join(dir, "message.json"),
-        body: join(dir, "body.md"),
-        response: join(dir, "response.json"),
+        config: join(messageFolderPath, "message.json"),
+        body: join(messageFolderPath, "body.md"),
+        response: join(messageFolderPath, "response.json"),
     }
 }
 
@@ -28,10 +31,10 @@ async function loadMessage(
     threadId: string,
     id: string,
 ): Promise<Message> {
-    const paths = messagePaths(projectRoot, threadId, id)
+    const messagePaths = getMessagePaths(projectRoot, threadId, id)
     const [config, body] = await Promise.all([
-        readJsonFile(projectRoot, paths.config, MessageConfigSchema),
-        readTextFile(projectRoot, paths.body),
+        readJsonFile(projectRoot, messagePaths.config, MessageConfigSchema),
+        readTextFile(projectRoot, messagePaths.body),
     ])
     return { threadId, id, ...config, body }
 }
@@ -40,8 +43,12 @@ export async function listMessages(
     projectRoot: string,
     threadId: string,
 ): Promise<Message[]> {
-    const ids = await listSubdirectories(messagesDir(projectRoot, threadId))
-    return Promise.all(ids.map((id) => loadMessage(projectRoot, threadId, id)))
+    const messageIds = await listSubdirectories(
+        getMessagesFolderPath(projectRoot, threadId),
+    )
+    return Promise.all(
+        messageIds.map((id) => loadMessage(projectRoot, threadId, id)),
+    )
 }
 
 export async function saveMessage(
@@ -49,29 +56,29 @@ export async function saveMessage(
     message: Message,
 ): Promise<void> {
     const { threadId, id, body, ...config } = message
-    const paths = messagePaths(projectRoot, threadId, id)
+    const messagePaths = getMessagePaths(projectRoot, threadId, id)
     await Promise.all([
-        Bun.write(paths.config, `${JSON.stringify(config, null, 4)}\n`),
-        Bun.write(paths.body, body),
+        Bun.write(messagePaths.config, `${JSON.stringify(config, null, 4)}\n`),
+        Bun.write(messagePaths.body, body),
     ])
 }
 
-export async function saveResponse(
+export async function saveProviderResponse(
     projectRoot: string,
     { threadId, id }: Pick<Message, "threadId" | "id">,
     response: ProviderResponse,
 ): Promise<void> {
     await Bun.write(
-        messagePaths(projectRoot, threadId, id).response,
+        getMessagePaths(projectRoot, threadId, id).response,
         `${JSON.stringify(response, null, 4)}\n`,
     )
 }
 
-export async function loadResponse(
+export async function loadProviderResponse(
     projectRoot: string,
     { threadId, id }: Pick<Message, "threadId" | "id">,
 ): Promise<ProviderResponse | undefined> {
-    const path = messagePaths(projectRoot, threadId, id).response
+    const path = getMessagePaths(projectRoot, threadId, id).response
     if (!(await Bun.file(path).exists())) {
         return undefined
     }

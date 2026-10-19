@@ -4,8 +4,8 @@ import { projectRoot } from "../cli/project-root.ts"
 import { readTextOrFile } from "../cli/read-text-or-file.ts"
 import { loadExistingThread } from "../cli-helpers.ts"
 import { answerMentions } from "../llm/reply.ts"
-import { draftMessage } from "../messaging/message/create-draft.ts"
-import { currentAuthor } from "../messaging/message/read-current-author.ts"
+import { createDraft } from "../messaging/message/create-draft.ts"
+import { readCurrentAuthor } from "../messaging/message/read-current-author.ts"
 import { sendDraft } from "../messaging/message/send-draft.ts"
 import { listMessages } from "../messaging/message/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
@@ -70,11 +70,11 @@ export function registerMessageCommands(program: Command): void {
                 )
             }
             const messages = await listMessages(projectRoot, thread.id)
-            const author = await currentAuthor({
+            const author = await readCurrentAuthor({
                 archive: { thread, messages },
                 asPositionId: options.asPosition,
             })
-            const draft = await draftMessage(author, body)
+            const draft = await createDraft(author, body)
             const id = await sendDraft(thread.id, draft)
             console.error(`Sent message "${id}" in thread "${thread.id}".`)
             await answerMentions(thread.id, draft.mentions)

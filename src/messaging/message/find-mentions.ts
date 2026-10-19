@@ -1,24 +1,27 @@
-const id = "[a-z0-9]+(?:-[a-z0-9]+)*"
+const idPattern = "[a-z0-9]+(?:-[a-z0-9]+)*"
 
-const mention = new RegExp(`(?<![\\w@.])@(${id})(?::(${id}))?(?![\\w-])`, "g")
+const mentionPattern = new RegExp(
+    `(?<![\\w@.])@(${idPattern})(?::(${idPattern}))?(?![\\w-])`,
+    "g",
+)
 
-function onItsOwnLine(children: string): string {
+function formatOnItsOwnLine(children: string): string {
     return `\n${children}\n`
 }
 
-function withoutCode(markdown: string): string {
+function removeCode(markdown: string): string {
     return Bun.markdown.render(markdown, {
         code: () => "",
         codespan: () => "",
-        paragraph: onItsOwnLine,
-        heading: onItsOwnLine,
-        blockquote: onItsOwnLine,
-        list: onItsOwnLine,
-        listItem: onItsOwnLine,
-        table: onItsOwnLine,
-        tr: onItsOwnLine,
-        th: onItsOwnLine,
-        td: onItsOwnLine,
+        paragraph: formatOnItsOwnLine,
+        heading: formatOnItsOwnLine,
+        blockquote: formatOnItsOwnLine,
+        list: formatOnItsOwnLine,
+        listItem: formatOnItsOwnLine,
+        table: formatOnItsOwnLine,
+        tr: formatOnItsOwnLine,
+        th: formatOnItsOwnLine,
+        td: formatOnItsOwnLine,
     })
 }
 
@@ -30,11 +33,10 @@ export type Mentions = {
 export function findMentions(body: string): Mentions {
     const positionIds: string[] = []
     const employeeMentions: string[] = []
-    for (const [text, positionId, employeeId] of withoutCode(body).matchAll(
-        mention,
-    )) {
+    const mentionMatches = removeCode(body).matchAll(mentionPattern)
+    for (const [mentionText, positionId, employeeId] of mentionMatches) {
         if (employeeId !== undefined) {
-            employeeMentions.push(text)
+            employeeMentions.push(mentionText)
         } else if (
             positionId !== undefined &&
             !positionIds.includes(positionId)

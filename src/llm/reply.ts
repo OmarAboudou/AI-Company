@@ -2,13 +2,13 @@ import type Anthropic from "@anthropic-ai/sdk"
 import { projectRoot } from "../cli/project-root.ts"
 import { readGitCommitter } from "../git/read-git-committer.ts"
 import { isAuthorOf } from "../ids/is-author-of.ts"
-import { readMentions } from "../messaging/message/resolve-mentions.ts"
+import { resolveMentions } from "../messaging/message/resolve-mentions.ts"
 import type { Message } from "../messaging/message/schema.ts"
 import { sendDraft } from "../messaging/message/send-draft.ts"
 import {
     listMessages,
-    loadResponse,
-    saveResponse,
+    loadProviderResponse,
+    saveProviderResponse,
 } from "../messaging/message/storage.ts"
 import { loadThread } from "../messaging/thread/storage.ts"
 import { loadCompany } from "../organization/company/storage.ts"
@@ -42,7 +42,7 @@ async function replays(
     const own = messages.filter((message) => isAuthorOf(employee, message))
     const entries = await Promise.all(
         own.map(async (message) => {
-            const response = await loadResponse(projectRoot, message)
+            const response = await loadProviderResponse(projectRoot, message)
             const sameModel =
                 response?.protocol === "anthropic-messages" &&
                 response.providerId === model.providerId &&
@@ -114,9 +114,9 @@ async function answerAs(
         employee: { id: employee.id, name: employee.name },
         committer: readGitCommitter(projectRoot),
         body,
-        ...(await readMentions(body, position.id)),
+        ...(await resolveMentions(body, position.id)),
     })
-    await saveResponse(
+    await saveProviderResponse(
         projectRoot,
         { threadId, id },
         {

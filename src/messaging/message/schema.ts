@@ -38,7 +38,7 @@ export type Author = Pick<MessageConfig, "position" | "employee" | "committer">
 export type Draft = Author & {
     body: string
     mentions: string[]
-    unknownMentions: string[]
+    unknownMentionIds: string[]
 }
 
 export type Message = MessageConfig & {

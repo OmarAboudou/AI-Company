@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { nextSentAt } from "./get-next-sent-at.ts"
+import { getNextSentAt } from "./get-next-sent-at.ts"
 import type { Message } from "./schema.ts"
 
 const question: Message = {
@@ -12,16 +12,16 @@ const question: Message = {
     body: "@backend-developer Hono or Express?",
 }
 
-describe("nextSentAt", () => {
+describe("getNextSentAt", () => {
     test("is now in a thread without messages", () => {
         const now = new Date("2026-10-18T14:03:22.123Z")
 
-        expect(nextSentAt([], now)).toBe("2026-10-18T14:03:22.123Z")
+        expect(getNextSentAt([], now)).toBe("2026-10-18T14:03:22.123Z")
     })
 
     test("comes after the last message, even within its millisecond", () => {
         const now = new Date(question.sentAt)
 
-        expect(nextSentAt([question], now)).toBe("2026-10-18T14:03:22.124Z")
+        expect(getNextSentAt([question], now)).toBe("2026-10-18T14:03:22.124Z")
     })
 })

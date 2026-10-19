@@ -3,17 +3,19 @@ import { listPositions } from "../../organization/position/storage.ts"
 import { findMentions } from "./find-mentions.ts"
 import type { Draft } from "./schema.ts"
 
-export async function readMentions(
+export async function resolveMentions(
     body: string,
     authorPositionId: string,
-): Promise<Pick<Draft, "mentions" | "unknownMentions">> {
+): Promise<Pick<Draft, "mentions" | "unknownMentionIds">> {
     const { positionIds } = findMentions(body)
     const positions = await listPositions(projectRoot)
-    const known = new Set(positions.map(({ id }) => id))
+    const knownPositionIds = new Set(positions.map(({ id }) => id))
     return {
         mentions: positionIds.filter(
-            (id) => known.has(id) && id !== authorPositionId,
+            (id) => knownPositionIds.has(id) && id !== authorPositionId,
         ),
-        unknownMentions: positionIds.filter((id) => !known.has(id)),
+        unknownMentionIds: positionIds.filter(
+            (id) => !knownPositionIds.has(id),
+        ),
     }
 }

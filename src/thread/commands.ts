@@ -4,7 +4,7 @@ import { formatIdArgumentDescription } from "../cli/format-id-argument-descripti
 import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { loadExistingThread } from "../cli-helpers.ts"
-import { minutes } from "../format-date-time.ts"
+import { formatDateTime } from "../format-date-time.ts"
 import { answerMentions } from "../llm/reply.ts"
 import {
     asPositionOption,
@@ -12,9 +12,9 @@ import {
     bodyOption,
     readBody,
 } from "../message/commands.ts"
-import { draftMessage } from "../messaging/message/create-draft.ts"
-import { authorName } from "../messaging/message/get-author-name.ts"
-import { currentAuthor } from "../messaging/message/read-current-author.ts"
+import { createDraft } from "../messaging/message/create-draft.ts"
+import { getAuthorName } from "../messaging/message/get-author-name.ts"
+import { readCurrentAuthor } from "../messaging/message/read-current-author.ts"
 import type { Author } from "../messaging/message/schema.ts"
 import { sendDraft } from "../messaging/message/send-draft.ts"
 import { listMessages } from "../messaging/message/storage.ts"
@@ -30,7 +30,7 @@ import { UserError } from "../user-error.ts"
 
 function signature(author: Author): string {
     const { position } = author
-    return `${authorName(author)}, ${position.title} (@${position.id})`
+    return `${getAuthorName(author)}, ${position.title} (@${position.id})`
 }
 
 function mentionsOf(positionIds: string[]): string {
@@ -55,14 +55,12 @@ export function registerThreadCommands(program: Command): void {
         .addOption(asPositionOption())
         .action(async (options) => {
             await requireCompany(projectRoot)
-            const author = await currentAuthor({
+            const author = await readCurrentAuthor({
                 asPositionId: options.asPosition,
             })
             const body = await readBody(options)
             const draft =
-                body === undefined
-                    ? undefined
-                    : await draftMessage(author, body)
+                body === undefined ? undefined : await createDraft(author, body)
             const createdAt = new Date().toISOString()
             const config = ThreadConfigSchema.safeParse({
                 subject: options.subject,
@@ -144,7 +142,7 @@ export function registerThreadCommands(program: Command): void {
             const lines = [
                 `# ${thread.subject}`,
                 "",
-                `Created by ${signature(thread.createdBy)}, ${minutes(thread.createdAt)}.`,
+                `Created by ${signature(thread.createdBy)}, ${formatDateTime(thread.createdAt)}.`,
                 `Members: ${mentionsOf(getMemberIds(thread, messages, positions))}.`,
             ]
             if (awaited.length > 0) {
@@ -153,7 +151,7 @@ export function registerThreadCommands(program: Command): void {
             for (const message of messages) {
                 lines.push(
                     "",
-                    `## ${signature(message)} · ${minutes(message.sentAt)}`,
+                    `## ${signature(message)} · ${formatDateTime(message.sentAt)}`,
                     "",
                     message.body.trimEnd(),
                 )
