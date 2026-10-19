@@ -19,14 +19,22 @@ import { UserError } from "../errors.ts"
 import { withNewId } from "../id-history.ts"
 import { readArchives } from "../thread/archives.ts"
 import { awaitedIds } from "../thread/members.ts"
-import { PositionConfigSchema } from "./position.ts"
+import { PositionConfigSchema, type Worker } from "./position.ts"
 import {
     copyPosition,
     deletePosition,
     listPositions,
+    loadPositionState,
     positionExists,
     savePosition,
+    savePositionState,
 } from "./storage.ts"
+
+function workerName(assignment: Worker): string {
+    return assignment.kind === "directors"
+        ? "the directors"
+        : `"${assignment.employeeId}"`
+}
 
 export function registerPositionCommands(program: Command): void {
     const positionCommand = program
@@ -259,6 +267,114 @@ export function registerPositionCommands(program: Command): void {
             await savePosition(projectRoot, position)
             console.log(
                 `Position "${position.id}" is now vacant: "${defaultEmployeeId}" is no longer its default employee.`,
+            )
+        })
+
+    positionCommand
+        .command("assign-temporarily")
+        .alias("interim")
+        .description(
+            "Assign a position temporarily to an employee, or without one to the directors, until unassign-temporarily. Its default employee doesn't change.",
+        )
+        .argument(
+            "<position-id>",
+            idDescription("position", "backend-developer"),
+        )
+        .argument(
+            "[employee-id]",
+            "id of the employee working the position meanwhile (e.g. julie); without it, the directors work it themselves",
+        )
+        .option("-r, --replace", "replace the current temporary assignment")
+        .action(async (rawPositionId, rawEmployeeId, { replace }) => {
+            await requireCompany()
+            const [position, employee, company, state] = await Promise.all([
+                loadExistingPosition(rawPositionId),
+                rawEmployeeId === undefined
+                    ? undefined
+                    : loadExistingEmployee(rawEmployeeId),
+                loadCompany(projectRoot),
+                loadPositionState(
+                    projectRoot,
+                    parseId("position", rawPositionId),
+                ),
+            ])
+            if (position.id === company.directorPositionId) {
+                throw new UserError(
+                    `Position "${position.id}" is the director's position: the people working on this repository always hold it.`,
+                )
+            }
+            const current = state.temporaryAssignment
+            if (
+                employee !== undefined &&
+                employee.id === position.defaultEmployeeId
+            ) {
+                if (current !== undefined) {
+                    throw new UserError(
+                        `"${employee.id}" is the default employee of position "${position.id}": run \`llmco position unassign-temporarily ${position.id}\` to give the position back to it.`,
+                    )
+                }
+                console.log(
+                    `"${employee.id}" already works position "${position.id}", as its default employee.`,
+                )
+                return
+            }
+            const assignment: Worker =
+                employee === undefined
+                    ? { kind: "directors" }
+                    : { kind: "employee", employeeId: employee.id }
+            if (current !== undefined && Bun.deepEquals(current, assignment)) {
+                console.log(
+                    `Position "${position.id}" is already assigned temporarily to ${workerName(assignment)}.`,
+                )
+                return
+            }
+            if (current !== undefined && !replace) {
+                throw new UserError(
+                    `Position "${position.id}" is already assigned temporarily to ${workerName(current)}. Add --replace to replace it.`,
+                )
+            }
+            await savePositionState(projectRoot, position.id, {
+                ...state,
+                temporaryAssignment: assignment,
+            })
+            const assigned = `Position "${position.id}" is now assigned temporarily to ${workerName(assignment)}`
+            console.log(
+                current === undefined
+                    ? `${assigned}.`
+                    : `${assigned} instead of ${workerName(current)}.`,
+            )
+        })
+
+    positionCommand
+        .command("unassign-temporarily")
+        .alias("end-interim")
+        .description(
+            "End the temporary assignment of a position: its default employee works it again, or nobody if it is vacant.",
+        )
+        .argument(
+            "<position-id>",
+            idDescription("position", "backend-developer"),
+        )
+        .action(async (rawId) => {
+            await requireCompany()
+            const [position, { temporaryAssignment, ...state }] =
+                await Promise.all([
+                    loadExistingPosition(rawId),
+                    loadPositionState(projectRoot, parseId("position", rawId)),
+                ])
+            if (temporaryAssignment === undefined) {
+                console.log(
+                    `Position "${position.id}" isn't assigned temporarily.`,
+                )
+                return
+            }
+            await savePositionState(projectRoot, position.id, state)
+            const back =
+                position.defaultEmployeeId === undefined
+                    ? "it is vacant again"
+                    : `its default employee "${position.defaultEmployeeId}" works it again`
+            console.log(
+                `Position "${position.id}" is no longer assigned temporarily to ${workerName(temporaryAssignment)}: ${back}.`,
             )
         })
 

@@ -270,6 +270,187 @@ describe("llmco position assign and unassign", () => {
     })
 })
 
+describe("llmco position assign-temporarily and unassign-temporarily", () => {
+    beforeEach(() => {
+        runCli("init", "-n", "Acme")
+        runCli("position", "create", "developer", "-t", "Developer")
+        runCli("position", "create", "designer", "-t", "Designer")
+        runCli("employee", "create", "human", "omar", "-n", "Omar")
+        runCli("employee", "create", "human", "julie", "-n", "Julie")
+        runCli("employee", "create", "human", "bob", "-n", "Bob")
+        runCli("position", "assign", "developer", "omar")
+    })
+
+    async function positionState(id: string): Promise<unknown> {
+        const path = projectPath(".llmco", "state", "positions", `${id}.json`)
+        const file = Bun.file(path)
+        return (await file.exists()) ? file.json() : undefined
+    }
+
+    const julie = { kind: "employee", employeeId: "julie" }
+
+    test("assign-temporarily gives the position to an employee and keeps its default employee", async () => {
+        const before = await positionState("developer")
+
+        const interim = runCli(
+            "position",
+            "assign-temporarily",
+            "developer",
+            "julie",
+        )
+
+        expect(before).toBeUndefined()
+        expect(interim.exitCode).toBe(0)
+        expect(interim.stdout).toBe(
+            'Position "developer" is now assigned temporarily to "julie".\n',
+        )
+        expect(await positionState("developer")).toEqual({
+            temporaryAssignment: julie,
+        })
+        expect(runCli("position", "show", "developer").stdout).toContain(
+            "default employee: omar",
+        )
+    })
+
+    test("assign-temporarily without employee gives a vacant position to the directors", async () => {
+        const interim = runCli("position", "assign-temporarily", "designer")
+
+        expect(interim.exitCode).toBe(0)
+        expect(interim.stdout).toBe(
+            'Position "designer" is now assigned temporarily to the directors.\n',
+        )
+        expect(await positionState("designer")).toEqual({
+            temporaryAssignment: { kind: "directors" },
+        })
+    })
+
+    test("interim and end-interim are aliases", async () => {
+        const interim = runCli("position", "interim", "developer", "julie")
+        const during = await positionState("developer")
+        const endInterim = runCli("position", "end-interim", "developer")
+
+        expect(interim.exitCode).toBe(0)
+        expect(during).toEqual({ temporaryAssignment: julie })
+        expect(endInterim.exitCode).toBe(0)
+        expect(await positionState("developer")).toBeUndefined()
+    })
+
+    test("assign-temporarily refuses to replace a temporary assignment without --replace", async () => {
+        runCli("position", "interim", "developer", "julie")
+
+        const interim = runCli("position", "interim", "developer", "bob")
+
+        expect(interim.exitCode).toBe(1)
+        expect(interim.stderr).toContain(
+            'already assigned temporarily to "julie". Add --replace',
+        )
+        expect(await positionState("developer")).toEqual({
+            temporaryAssignment: julie,
+        })
+    })
+
+    test.each(["--replace", "-r"])(
+        "assign-temporarily %s replaces the temporary assignment",
+        async (flag) => {
+            runCli("position", "interim", "developer", "julie")
+
+            const interim = runCli("position", "interim", "developer", flag)
+
+            expect(interim.exitCode).toBe(0)
+            expect(interim.stdout).toBe(
+                'Position "developer" is now assigned temporarily to the directors instead of "julie".\n',
+            )
+            expect(await positionState("developer")).toEqual({
+                temporaryAssignment: { kind: "directors" },
+            })
+        },
+    )
+
+    test("assign-temporarily accepts the same temporary assignment again", () => {
+        runCli("position", "interim", "developer", "julie")
+
+        const again = runCli("position", "interim", "developer", "julie")
+
+        expect(again.exitCode).toBe(0)
+        expect(again.stdout).toContain("already assigned temporarily")
+    })
+
+    test("assign-temporarily writes nothing for the default employee", async () => {
+        const interim = runCli("position", "interim", "developer", "omar")
+
+        expect(interim.exitCode).toBe(0)
+        expect(interim.stdout).toBe(
+            '"omar" already works position "developer", as its default employee.\n',
+        )
+        expect(await positionState("developer")).toBeUndefined()
+    })
+
+    test("assign-temporarily refuses the default employee while someone else works the position", async () => {
+        runCli("position", "interim", "developer", "julie")
+
+        const interim = runCli("position", "interim", "developer", "omar", "-r")
+
+        expect(interim.exitCode).toBe(1)
+        expect(interim.stderr).toContain(
+            "`llmco position unassign-temporarily developer`",
+        )
+        expect(await positionState("developer")).toEqual({
+            temporaryAssignment: julie,
+        })
+    })
+
+    test("assign-temporarily refuses the director's position", async () => {
+        const toJulie = runCli("position", "interim", "director", "julie")
+        const toDirectors = runCli("position", "interim", "director")
+
+        expect(toJulie.exitCode).toBe(1)
+        expect(toJulie.stderr).toContain("is the director's position")
+        expect(toDirectors.exitCode).toBe(1)
+        expect(await positionState("director")).toBeUndefined()
+    })
+
+    test("assign-temporarily fails for an unknown position or employee", () => {
+        const unknownPosition = runCli("position", "interim", "tester", "julie")
+        const unknownEmployee = runCli("position", "interim", "designer", "eve")
+
+        expect(unknownPosition.exitCode).toBe(1)
+        expect(unknownPosition.stderr).toContain('No position "tester".')
+        expect(unknownEmployee.exitCode).toBe(1)
+        expect(unknownEmployee.stderr).toContain('No employee "eve".')
+    })
+
+    test("unassign-temporarily gives the position back to its default employee", async () => {
+        runCli("position", "interim", "developer", "julie")
+
+        const end = runCli("position", "unassign-temporarily", "developer")
+
+        expect(end.exitCode).toBe(0)
+        expect(end.stdout).toBe(
+            'Position "developer" is no longer assigned temporarily to "julie": its default employee "omar" works it again.\n',
+        )
+        expect(await positionState("developer")).toBeUndefined()
+    })
+
+    test("unassign-temporarily leaves a vacant position vacant again", () => {
+        runCli("position", "interim", "designer")
+
+        const end = runCli("position", "unassign-temporarily", "designer")
+
+        expect(end.stdout).toBe(
+            'Position "designer" is no longer assigned temporarily to the directors: it is vacant again.\n',
+        )
+    })
+
+    test("unassign-temporarily says so when the position isn't assigned temporarily", () => {
+        const end = runCli("position", "unassign-temporarily", "developer")
+
+        expect(end.exitCode).toBe(0)
+        expect(end.stdout).toBe(
+            'Position "developer" isn\'t assigned temporarily.\n',
+        )
+    })
+})
+
 describe("--description-file", () => {
     const markdown = "## Mission\n\nYou build the API.\n"
 
