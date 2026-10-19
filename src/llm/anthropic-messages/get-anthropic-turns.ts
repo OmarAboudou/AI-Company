@@ -20,9 +20,9 @@ function formatTaggedMessage(message: Message): string {
     const escapedPositionName = escapeAttribute(
         `${position.title} (@${position.id})`,
     )
-    const sentMinute = formatDateTime(message.sentAt)
+    const sentDateTime = formatDateTime(message.sentAt)
     return [
-        `<message from="${escapedAuthorName}" position="${escapedPositionName}" sent="${sentMinute}">`,
+        `<message from="${escapedAuthorName}" position="${escapedPositionName}" sent="${sentDateTime}">`,
         message.body.trimEnd(),
         "</message>",
     ].join("\n")
