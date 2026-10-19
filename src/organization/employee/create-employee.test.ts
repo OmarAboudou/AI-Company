@@ -72,9 +72,15 @@ describe("createEmployee", () => {
     })
 
     test("saves an LLM employee running on an existing model", async () => {
-        const created = await createEmployee(projectRoot, "claude", claude)
+        const createdEmployee = await createEmployee(
+            projectRoot,
+            "claude",
+            claude,
+        )
 
-        expect(await loadEmployee(projectRoot, "claude")).toEqual(created)
+        const savedEmployee = await loadEmployee(projectRoot, "claude")
+
+        expect(savedEmployee).toEqual(createdEmployee)
     })
 
     test("refuses an id another employee has", async () => {
@@ -93,17 +99,17 @@ describe("createEmployee", () => {
     })
 
     test("refuses a blank name", async () => {
-        const blank = { ...omar, name: " " }
+        const omarWithBlankName = { ...omar, name: " " }
 
-        const creation = createEmployee(projectRoot, "omar", blank)
+        const creation = createEmployee(projectRoot, "omar", omarWithBlankName)
 
         await expect(creation).rejects.toThrow(UserError)
     })
 
     test("refuses an LLM employee on a model that doesn't exist", async () => {
-        const onHaiku = { ...claude, modelId: "haiku" }
+        const claudeOnHaiku = { ...claude, modelId: "haiku" }
 
-        const creation = createEmployee(projectRoot, "claude", onHaiku)
+        const creation = createEmployee(projectRoot, "claude", claudeOnHaiku)
 
         await expect(creation).rejects.toThrow('has no model "haiku"')
     })
@@ -118,9 +124,9 @@ describe("createEmployee", () => {
 
     test("reuses an id used before when told to", async () => {
         await archiveMessageBy("omar")
-        const reusing = { shouldReuseId: true }
+        const reuseOptions = { shouldReuseId: true }
 
-        await createEmployee(projectRoot, "omar", omar, reusing)
+        await createEmployee(projectRoot, "omar", omar, reuseOptions)
 
         expect((await loadEmployee(projectRoot, "omar")).name).toBe("Omar")
     })
@@ -135,9 +141,9 @@ describe("createEmployee", () => {
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const creation = createEmployee(elsewhere, "omar", omar)
+        const creation = createEmployee(folderWithoutCompany, "omar", omar)
 
         await expect(creation).rejects.toThrow("Run `llmco init` first.")
     })

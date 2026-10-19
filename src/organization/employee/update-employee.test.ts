@@ -28,9 +28,15 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-function createModel(providerId: string, id: string) {
+function createModel(providerId: string, modelId: string) {
     const protocol = "anthropic-messages"
-    return { providerId, id, name: id, apiId: id, protocol } as const
+    return {
+        providerId,
+        id: modelId,
+        name: modelId,
+        apiId: modelId,
+        protocol,
+    } as const
 }
 
 const claude: Employee = {
@@ -60,29 +66,37 @@ describe("updateEmployee", () => {
     })
 
     test("moves an LLM employee to another provider's model", async () => {
-        const toLlama = { providerId: "ollama", modelId: "llama" }
+        const llamaChanges = { providerId: "ollama", modelId: "llama" }
 
-        const updated = await updateEmployee(projectRoot, "claude", toLlama)
+        const updatedEmployee = await updateEmployee(
+            projectRoot,
+            "claude",
+            llamaChanges,
+        )
 
-        expect(await loadEmployee(projectRoot, "claude")).toEqual(updated)
-        expect(updated).toMatchObject(toLlama)
+        const savedEmployee = await loadEmployee(projectRoot, "claude")
+
+        expect(savedEmployee).toEqual(updatedEmployee)
+        expect(updatedEmployee).toMatchObject(llamaChanges)
     })
 
     test("refuses a provider and model pair that doesn't exist", async () => {
-        const toOllama = { providerId: "ollama" }
+        const ollamaChanges = { providerId: "ollama" }
 
-        const update = updateEmployee(projectRoot, "claude", toOllama)
+        const updating = updateEmployee(projectRoot, "claude", ollamaChanges)
 
-        await expect(update).rejects.toThrow('"ollama" has no model "opus"')
+        await expect(updating).rejects.toThrow('"ollama" has no model "opus"')
         const employee = await loadEmployee(projectRoot, "claude")
         expect(employee).toEqual(claude)
     })
 
     test("refuses a provider or a model for a human", async () => {
-        const update = updateEmployee(projectRoot, "omar", { modelId: "opus" })
+        const updating = updateEmployee(projectRoot, "omar", {
+            modelId: "opus",
+        })
 
-        await expect(update).rejects.toThrow(UserError)
-        await expect(update).rejects.toThrow("is a human")
+        await expect(updating).rejects.toThrow(UserError)
+        await expect(updating).rejects.toThrow("is a human")
     })
 
     test("renames a human", async () => {
@@ -93,22 +107,24 @@ describe("updateEmployee", () => {
     })
 
     test("refuses a blank name", async () => {
-        const update = updateEmployee(projectRoot, "omar", { name: " " })
+        const updating = updateEmployee(projectRoot, "omar", { name: " " })
 
-        await expect(update).rejects.toThrow(UserError)
+        await expect(updating).rejects.toThrow(UserError)
     })
 
     test("refuses an unknown employee", async () => {
-        const update = updateEmployee(projectRoot, "julie", { name: "J" })
+        const updating = updateEmployee(projectRoot, "julie", { name: "J" })
 
-        await expect(update).rejects.toThrow('No employee "julie".')
+        await expect(updating).rejects.toThrow('No employee "julie".')
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const update = updateEmployee(elsewhere, "omar", { name: "O" })
+        const updating = updateEmployee(folderWithoutCompany, "omar", {
+            name: "O",
+        })
 
-        await expect(update).rejects.toThrow("Run `llmco init` first.")
+        await expect(updating).rejects.toThrow("Run `llmco init` first.")
     })
 })

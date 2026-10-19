@@ -43,7 +43,7 @@ export async function replaceEmployee(
         throw new UserError(`"${employee.id}" can't replace itself.`)
     }
     const filledPositions = getPositionsFilledBy(positions, employee.id)
-    const [employeeTemporaryPositions, confirmedTemporaryPositions] =
+    const [employeeTemporaryPositions, replacementTemporaryPositions] =
         await Promise.all([
             listPositionsWorkedTemporarilyBy(
                 projectRoot,
@@ -56,17 +56,17 @@ export async function replaceEmployee(
                 replacement.id,
             ),
         ])
-    const handedOverPositions = shouldHandOverTemporaryAssignments
+    const handedOverTemporaryPositions = shouldHandOverTemporaryAssignments
         ? employeeTemporaryPositions
         : []
     const isFilledByReplacement = ({ position }: TemporaryPosition) =>
         position.defaultEmployeeId === replacement.id
-    const endingPositions = [
-        ...confirmedTemporaryPositions,
-        ...handedOverPositions.filter(isFilledByReplacement),
+    const endingTemporaryPositions = [
+        ...replacementTemporaryPositions,
+        ...handedOverTemporaryPositions.filter(isFilledByReplacement),
     ]
-    const movingPositions = handedOverPositions.filter(
-        (handedOver) => !isFilledByReplacement(handedOver),
+    const movingTemporaryPositions = handedOverTemporaryPositions.filter(
+        (handedOverPosition) => !isFilledByReplacement(handedOverPosition),
     )
     await Promise.all([
         ...filledPositions.map((position) =>
@@ -75,11 +75,11 @@ export async function replaceEmployee(
                 defaultEmployeeId: replacement.id,
             }),
         ),
-        ...endingPositions.map(
+        ...endingTemporaryPositions.map(
             ({ position, state: { temporaryAssignment, ...state } }) =>
                 savePositionState(projectRoot, position.id, state),
         ),
-        ...movingPositions.map(({ position, state }) =>
+        ...movingTemporaryPositions.map(({ position, state }) =>
             savePositionState(projectRoot, position.id, {
                 ...state,
                 temporaryAssignment: {
@@ -93,8 +93,8 @@ export async function replaceEmployee(
         employeeId: employee.id,
         replacementId: replacement.id,
         filledPositionIds: filledPositions.map(({ id }) => id),
-        handedOverPositionIds: getPositionIds(movingPositions),
-        endedTemporaryPositionIds: getPositionIds(endingPositions),
+        handedOverPositionIds: getPositionIds(movingTemporaryPositions),
+        endedTemporaryPositionIds: getPositionIds(endingTemporaryPositions),
         keptTemporaryPositionIds: shouldHandOverTemporaryAssignments
             ? []
             : getPositionIds(employeeTemporaryPositions),

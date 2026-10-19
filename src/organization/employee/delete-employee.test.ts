@@ -27,7 +27,7 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const forcing = { shouldForce: true }
+const forceOptions = { shouldForce: true }
 const omarWorker = { kind: "employee", employeeId: "omar" } as const
 
 async function assignDefaultEmployee(positionId: string, employeeId: string) {
@@ -61,7 +61,7 @@ describe("deleteEmployee", () => {
     test("leaves the positions it fills vacant when forced", async () => {
         await assignDefaultEmployee("dev", "omar")
 
-        const deletion = await deleteEmployee(projectRoot, "omar", forcing)
+        const deletion = await deleteEmployee(projectRoot, "omar", forceOptions)
 
         const position = await loadPosition(projectRoot, "dev")
         expect(position.defaultEmployeeId).toBeUndefined()
@@ -85,7 +85,7 @@ describe("deleteEmployee", () => {
             temporaryAssignment: omarWorker,
         })
 
-        const deletion = await deleteEmployee(projectRoot, "omar", forcing)
+        const deletion = await deleteEmployee(projectRoot, "omar", forceOptions)
 
         expect(await loadPositionState(projectRoot, "qa")).toEqual({})
         expect(deletion.endedTemporaryPositionIds).toEqual(["qa"])
@@ -98,9 +98,9 @@ describe("deleteEmployee", () => {
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const deletion = deleteEmployee(elsewhere, "omar")
+        const deletion = deleteEmployee(folderWithoutCompany, "omar")
 
         await expect(deletion).rejects.toThrow("Run `llmco init` first.")
     })

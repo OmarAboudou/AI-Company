@@ -37,16 +37,17 @@ describe("saveEmployee", () => {
     test("writes config.json in a folder named after the id", async () => {
         await saveEmployee(projectRoot, claude)
 
-        const path = join(
+        const configPath = join(
             projectRoot,
             ".llmco",
             "employees",
             "claude-senior",
             "config.json",
         )
-        expect(await Bun.file(path).text()).toBe(
-            '{\n    "name": "Claude Senior",\n    "kind": "llm",\n    "providerId": "anthropic",\n    "modelId": "claude-opus-5-5"\n}\n',
-        )
+        const expectedConfigText =
+            '{\n    "name": "Claude Senior",\n    "kind": "llm",\n    "providerId": "anthropic",\n    "modelId": "claude-opus-5-5"\n}\n'
+
+        expect(await Bun.file(configPath).text()).toBe(expectedConfigText)
     })
 
     test("writes the id history to history.json, out of config.json", async () => {
@@ -56,10 +57,15 @@ describe("saveEmployee", () => {
 
         await saveEmployee(projectRoot, { ...omar, createdAt, formerIds })
 
-        const dir = join(projectRoot, ".llmco", "employees", "omar")
+        const employeeFolderPath = join(
+            projectRoot,
+            ".llmco",
+            "employees",
+            "omar",
+        )
         const [config, history] = await Promise.all([
-            Bun.file(join(dir, "config.json")).json(),
-            Bun.file(join(dir, "history.json")).json(),
+            Bun.file(join(employeeFolderPath, "config.json")).json(),
+            Bun.file(join(employeeFolderPath, "history.json")).json(),
         ])
         expect(config).toEqual({ name: "Omar", kind: "human" })
         expect(history).toEqual({ createdAt, formerIds })
@@ -72,9 +78,9 @@ describe("loadEmployee", () => {
         async (employee) => {
             await saveEmployee(projectRoot, employee)
 
-            expect(await loadEmployee(projectRoot, employee.id)).toEqual(
-                employee,
-            )
+            const loadedEmployee = await loadEmployee(projectRoot, employee.id)
+
+            expect(loadedEmployee).toEqual(employee)
         },
     )
 
@@ -84,15 +90,15 @@ describe("loadEmployee", () => {
             JSON.stringify({ name: "Omar", kind: "human", modelId: "x" }),
         )
 
-        await expect(loadEmployee(projectRoot, "omar")).rejects.toThrow(
-            UserError,
-        )
+        const loading = loadEmployee(projectRoot, "omar")
+
+        await expect(loading).rejects.toThrow(UserError)
     })
 
     test("fails when the employee does not exist", async () => {
-        await expect(loadEmployee(projectRoot, "omar")).rejects.toThrow(
-            UserError,
-        )
+        const loading = loadEmployee(projectRoot, "omar")
+
+        await expect(loading).rejects.toThrow(UserError)
     })
 })
 

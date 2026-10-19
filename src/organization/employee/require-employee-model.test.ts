@@ -23,40 +23,40 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-function runningOn(providerId: string, modelId: string) {
+function createLlmConfig(providerId: string, modelId: string) {
     return { name: "Claude", kind: "llm", providerId, modelId } as const
 }
 
 describe("requireEmployeeModel", () => {
     test("accepts an LLM employee running on an existing model", async () => {
-        const claude = runningOn("anthropic", "opus")
+        const claude = createLlmConfig("anthropic", "opus")
 
-        const check = requireEmployeeModel(projectRoot, claude)
+        const checking = requireEmployeeModel(projectRoot, claude)
 
-        await expect(check).resolves.toBeUndefined()
+        await expect(checking).resolves.toBeUndefined()
     })
 
     test("refuses a model its provider doesn't have", async () => {
-        const claude = runningOn("anthropic", "haiku")
+        const claude = createLlmConfig("anthropic", "haiku")
 
-        const check = requireEmployeeModel(projectRoot, claude)
+        const checking = requireEmployeeModel(projectRoot, claude)
 
-        await expect(check).rejects.toThrow('has no model "haiku"')
+        await expect(checking).rejects.toThrow('has no model "haiku"')
     })
 
     test("refuses an unknown provider", async () => {
-        const claude = runningOn("openai", "opus")
+        const claude = createLlmConfig("openai", "opus")
 
-        const check = requireEmployeeModel(projectRoot, claude)
+        const checking = requireEmployeeModel(projectRoot, claude)
 
-        await expect(check).rejects.toThrow('No provider "openai".')
+        await expect(checking).rejects.toThrow('No provider "openai".')
     })
 
     test("asks nothing of a human", async () => {
         const omar = { name: "Omar", kind: "human" } as const
 
-        const check = requireEmployeeModel(projectRoot, omar)
+        const checking = requireEmployeeModel(projectRoot, omar)
 
-        await expect(check).resolves.toBeUndefined()
+        await expect(checking).resolves.toBeUndefined()
     })
 })

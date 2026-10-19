@@ -17,21 +17,21 @@ async function listEarlierUses(
         .filter(
             (employee) =>
                 employee.id !== renamedEmployee?.id &&
-                employee.formerIds?.some((former) => former.id === id),
+                employee.formerIds?.some(({ id: formerId }) => formerId === id),
         )
         .map((employee) => `as a former id of employee "${employee.id}"`)
     const threadUses = archives
         .filter(({ thread, messages }) => {
-            const creator = {
+            const threadCreator = {
                 employee: thread.createdBy.employee,
                 sentAt: thread.createdAt,
             }
-            return [creator, ...messages].some(
-                (author) =>
-                    author.employee?.id === id &&
+            return [threadCreator, ...messages].some(
+                (authorship) =>
+                    authorship.employee?.id === id &&
                     !(
                         renamedEmployee !== undefined &&
-                        isAuthorOf(renamedEmployee, author)
+                        isAuthorOf(renamedEmployee, authorship)
                     ),
             )
         })
