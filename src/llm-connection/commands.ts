@@ -7,21 +7,21 @@ import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
 import { getDefinedValues } from "../get-defined-values.ts"
 import { parseId } from "../ids/parse-id.ts"
-import { listLlmModels } from "../llm-model/storage.ts"
-import {
-    type LlmProvider,
-    LlmProviderConfigSchema,
-} from "../llm-provider/llm-provider.ts"
-import { loadExistingLlmProvider } from "../llm-provider/load-existing-llm-provider.ts"
-import { listLlmProviders, saveLlmProvider } from "../llm-provider/storage.ts"
-import { requireCompany } from "../organization/company/require-company.ts"
-import { UserError } from "../user-error.ts"
 import {
     authSchemes,
     type Connection,
     type Protocol,
     protocols,
-} from "./llm-connection.ts"
+} from "../llm/connection/schema.ts"
+import { loadExistingLlmProvider } from "../llm/provider/load-existing-llm-provider.ts"
+import {
+    type LlmProvider,
+    LlmProviderConfigSchema,
+} from "../llm/provider/schema.ts"
+import { listLlmProviders, saveLlmProvider } from "../llm/provider/storage.ts"
+import { listLlmModels } from "../llm-model/storage.ts"
+import { requireCompany } from "../organization/company/require-company.ts"
+import { UserError } from "../user-error.ts"
 
 function protocolArgument() {
     return new Argument(

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { ConnectionsSchema, protocols } from "./llm-connection.ts"
+import { ConnectionsSchema, protocols } from "./schema.ts"
 
 const local = { baseUrl: "http://localhost:11434" }
 

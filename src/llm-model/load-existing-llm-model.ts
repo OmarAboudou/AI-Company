@@ -1,5 +1,5 @@
 import { parseId } from "../ids/parse-id.ts"
-import { loadExistingLlmProvider } from "../llm-provider/load-existing-llm-provider.ts"
+import { loadExistingLlmProvider } from "../llm/provider/load-existing-llm-provider.ts"
 import { UserError } from "../user-error.ts"
 import type { LlmModel } from "./llm-model.ts"
 import { llmModelExists, loadLlmModel } from "./storage.ts"

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { UserError } from "../user-error.ts"
+import { UserError } from "../../user-error.ts"
 import { loadExistingLlmProvider } from "./load-existing-llm-provider.ts"
 import { saveLlmProvider } from "./storage.ts"
 

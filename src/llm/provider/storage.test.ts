@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import type { LlmModel } from "../llm-model/llm-model.ts"
-import { listLlmModels, saveLlmModel } from "../llm-model/storage.ts"
-import { UserError } from "../user-error.ts"
-import type { LlmProvider } from "./llm-provider.ts"
+import type { LlmModel } from "../../llm-model/llm-model.ts"
+import { listLlmModels, saveLlmModel } from "../../llm-model/storage.ts"
+import { UserError } from "../../user-error.ts"
+import type { LlmProvider } from "./schema.ts"
 import {
     copyLlmProvider,
     deleteLlmProvider,

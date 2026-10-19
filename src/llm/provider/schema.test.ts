@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { LlmProviderConfigSchema } from "./llm-provider.ts"
+import { LlmProviderConfigSchema } from "./schema.ts"
 
 const anthropic = { name: "Anthropic" }
 
