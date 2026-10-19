@@ -8,13 +8,13 @@ import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import {
     loadExistingEmployee,
     loadExistingLlmModel,
-    parseId,
     requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { requireDirector } from "../human/current-human.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
 import { isAuthorOf } from "../ids/is-author-of.ts"
+import { parseId } from "../ids/parse-id.ts"
 import type {
     Position,
     PositionState,

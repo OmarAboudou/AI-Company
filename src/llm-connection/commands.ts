@@ -6,11 +6,11 @@ import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import {
     loadExistingLlmProvider,
-    parseId,
     requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { requireDirector } from "../human/current-human.ts"
+import { parseId } from "../ids/parse-id.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
 import {
     type LlmProvider,

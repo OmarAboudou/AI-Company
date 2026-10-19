@@ -7,12 +7,12 @@ import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import {
     loadExistingLlmProvider,
-    parseId,
     requireCompany,
     withoutUndefined,
 } from "../cli-helpers.ts"
 import { listEmployees, saveEmployee } from "../employee/storage.ts"
 import { requireDirector } from "../human/current-human.ts"
+import { parseId } from "../ids/parse-id.ts"
 import { registerLlmConnectionCommands } from "../llm-connection/commands.ts"
 import { protocols } from "../llm-connection/llm-connection.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
