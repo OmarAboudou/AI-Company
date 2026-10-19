@@ -21,12 +21,12 @@ export function registerPositionAssignTemporarilyEmployeeCommand(
         )
         .addOption(createReplaceTemporaryAssignmentOption())
         .action(async (rawPositionId, rawEmployeeId, options) => {
-            const outcome = await assignPositionTemporarily(
+            const assignment = await assignPositionTemporarily(
                 projectRoot,
                 rawPositionId,
                 { kind: "employee", rawEmployeeId },
                 { shouldReplace: options.replace },
             )
-            console.log(formatTemporarilyAssignedMessage(outcome))
+            console.log(formatTemporarilyAssignedMessage(assignment))
         })
 }

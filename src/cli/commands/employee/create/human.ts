@@ -5,9 +5,9 @@ import { projectRoot } from "../../../project-root.ts"
 import { createReuseIdOption } from "../create-reuse-id-option.ts"
 
 export function registerEmployeeCreateHumanCommand(
-    createEmployeeCommand: Command,
+    employeeCreateCommand: Command,
 ): void {
-    createEmployeeCommand
+    employeeCreateCommand
         .command("human")
         .description("Create an employee who is a human.")
         .argument(
@@ -16,12 +16,12 @@ export function registerEmployeeCreateHumanCommand(
         )
         .requiredOption("-n, --name <name>", "employee name")
         .addOption(createReuseIdOption())
-        .action(async (rawId, { name, reuseId }) => {
+        .action(async (rawId, { name, reuseId: shouldReuseId }) => {
             const employee = await createEmployee(
                 projectRoot,
                 rawId,
                 { name, kind: "human" },
-                { shouldReuseId: reuseId },
+                { shouldReuseId },
             )
             console.log(`Created employee "${employee.id}".`)
         })

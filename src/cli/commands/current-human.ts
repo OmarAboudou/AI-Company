@@ -27,10 +27,10 @@ export function registerCurrentHumanCommand(program: Command): void {
                 positions,
                 company.directorPositionId,
             )
-            const { name, email } = readGitCommitter(projectRoot)
+            const committer = readGitCommitter(projectRoot)
             const identityMessage =
                 human.kind === "director"
-                    ? `${name}, a director`
+                    ? `${committer.name}, a director`
                     : `${human.employee.name} (${human.employee.id}), a human employee`
             const workedPositionLabels = workedPositions.map(
                 ({ position, isTemporary }) =>
@@ -40,7 +40,7 @@ export function registerCurrentHumanCommand(program: Command): void {
                 [
                     identityMessage,
                     `positions: ${workedPositionLabels.length > 0 ? workedPositionLabels.join(", ") : "(none)"}`,
-                    `committer: ${name} <${email}>`,
+                    `committer: ${committer.name} <${committer.email}>`,
                 ].join("\n"),
             )
         })

@@ -5,9 +5,9 @@ import { projectRoot } from "../../../project-root.ts"
 import { createReuseIdOption } from "../create-reuse-id-option.ts"
 
 export function registerEmployeeCreateLlmCommand(
-    createEmployeeCommand: Command,
+    employeeCreateCommand: Command,
 ): void {
-    createEmployeeCommand
+    employeeCreateCommand
         .command("llm")
         .description("Create an employee run by an LLM.")
         .argument(
@@ -24,12 +24,17 @@ export function registerEmployeeCreateLlmCommand(
             "id of one of the provider's models in llmco, e.g. claude-opus-5-5 (see llmco model list), not its api id",
         )
         .addOption(createReuseIdOption())
-        .action(async (rawId, { name, provider, model, reuseId }) => {
+        .action(async (rawId, options) => {
             const employee = await createEmployee(
                 projectRoot,
                 rawId,
-                { name, kind: "llm", providerId: provider, modelId: model },
-                { shouldReuseId: reuseId },
+                {
+                    name: options.name,
+                    kind: "llm",
+                    providerId: options.provider,
+                    modelId: options.model,
+                },
+                { shouldReuseId: options.reuseId },
             )
             console.log(`Created employee "${employee.id}".`)
         })
