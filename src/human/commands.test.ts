@@ -194,7 +194,7 @@ describe("the person at the keyboard writes in threads", () => {
     })
 })
 
-describe("--as", () => {
+describe("--as-position", () => {
     function lastPositionId(threadId: string): string {
         const lines = runCli("thread", "show", threadId, "--json").stdout
         return JSON.parse(lines.trimEnd().split("\n").at(-1) ?? "").position.id
@@ -205,10 +205,11 @@ describe("--as", () => {
         return runCliWithEnv(env, ...create, ...options)
     }
 
-    test("thread create --as writes from one of the positions you work", () => {
+    test("thread create --as-position writes from one of the positions you work", () => {
         runCli(...interimDirectors, "support")
 
-        const threadId = createThread({}, "--as", "support").stdout.trim()
+        const create = createThread({}, "--as-position", "support")
+        const threadId = create.stdout.trim()
         const show = runCli("thread", "show", threadId).stdout
 
         expect(lastPositionId(threadId)).toBe("support")
@@ -230,10 +231,10 @@ describe("--as", () => {
         runCli(...interimEmployee, "support", "julie")
 
         const refused = createThread(asJulie)
-        const chosen = createThread(asJulie, "--as", "support")
+        const chosen = createThread(asJulie, "--as-position", "support")
 
         expect(refused.exitCode).toBe(1)
-        expect(refused.stderr).toContain("Choose one with --as.")
+        expect(refused.stderr).toContain("Choose one with --as-position.")
         expect(lastPositionId(chosen.stdout.trim())).toBe("support")
     })
 
@@ -241,7 +242,7 @@ describe("--as", () => {
         hireLlmEmployee("claude")
         runCli("position", "assign", "support", "claude")
 
-        const create = createThread({}, "--as", "support")
+        const create = createThread({}, "--as-position", "support")
 
         expect(create.exitCode).toBe(1)
         expect(create.stderr).toBe(
@@ -251,7 +252,7 @@ describe("--as", () => {
     })
 
     test("refuses a vacant position, giving the command to work it", () => {
-        const create = createThread(asJulie, "--as", "support")
+        const create = createThread(asJulie, "--as-position", "support")
 
         expect(create.exitCode).toBe(1)
         expect(create.stderr).toContain(
@@ -263,7 +264,7 @@ describe("--as", () => {
         runCli("position", "assign", "graphics", "julie")
         runCli(...interimEmployee, "graphics", "bob")
 
-        const create = createThread(asJulie, "--as", "graphics")
+        const create = createThread(asJulie, "--as-position", "graphics")
 
         expect(create.exitCode).toBe(1)
         expect(create.stderr).toContain(
@@ -274,14 +275,14 @@ describe("--as", () => {
     test("refuses the director's position to a human employee", () => {
         runCli("position", "assign", "graphics", "julie")
 
-        const create = createThread(asJulie, "--as", "director")
+        const create = createThread(asJulie, "--as-position", "director")
 
         expect(create.exitCode).toBe(1)
         expect(create.stderr).toContain("Only directors write from")
     })
 
     test("refuses an unknown position", () => {
-        const create = createThread({}, "--as", "marketing")
+        const create = createThread({}, "--as-position", "marketing")
 
         expect(create.exitCode).toBe(1)
         expect(create.stderr).toContain('No position "marketing".')
