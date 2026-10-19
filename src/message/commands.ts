@@ -102,7 +102,7 @@ export function registerMessageCommands(program: Command): void {
     messageCommand
         .command("send")
         .description(
-            "Send a message in a thread, from the director's position, and print the answers of the LLM employees it mentions.",
+            "Send a message in a thread, as the person at the keyboard (see whoami), and print the answers of the LLM employees it mentions.",
         )
         .argument(
             "<thread-id>",
@@ -119,7 +119,9 @@ export function registerMessageCommands(program: Command): void {
                     "Give the message with -b, --body or -F, --body-file.",
                 )
             }
-            const draft = await draftMessage(await currentAuthor(), body)
+            const messages = await listMessages(projectRoot, thread.id)
+            const author = await currentAuthor({ thread, messages })
+            const draft = await draftMessage(author, body)
             const id = await sendDraft(thread.id, draft)
             console.error(`Sent message "${id}" in thread "${thread.id}".`)
             await answerMentions(thread.id, draft.mentions)
