@@ -67,12 +67,12 @@ export function registerEmployeeReplaceCommand(employeeCommand: Command): void {
         .option("-t, --temporary", "also hand over its temporary assignments")
         .hook("preAction", requireDirector)
         .action(async (rawId, rawReplacementId, options) => {
-            const replacement = await replaceEmployee(
+            const handover = await replaceEmployee(
                 projectRoot,
                 rawId,
                 rawReplacementId,
                 { shouldHandOverTemporaryAssignments: options.temporary },
             )
-            console.log(formatReplacedMessage(replacement))
+            console.log(formatReplacedMessage(handover))
         })
 }

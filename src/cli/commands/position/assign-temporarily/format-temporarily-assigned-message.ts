@@ -2,17 +2,17 @@ import type { AssignPositionTemporarilyResult } from "../../../../organization/p
 import { formatWorkerName } from "../../../../organization/position/format-worker-name.ts"
 
 export function formatTemporarilyAssignedMessage(
-    outcome: AssignPositionTemporarilyResult,
+    assignment: AssignPositionTemporarilyResult,
 ): string {
-    if (outcome.kind === "worked-by-default-employee") {
-        return `"${outcome.employeeId}" already works position "${outcome.positionId}", as its default employee.`
+    if (assignment.kind === "worked-by-default-employee") {
+        return `"${assignment.employeeId}" already works position "${assignment.positionId}", as its default employee.`
     }
-    const workerName = formatWorkerName(outcome.temporaryAssignment)
-    if (outcome.kind === "already-assigned") {
-        return `Position "${outcome.positionId}" is already assigned temporarily to ${workerName}.`
+    const workerName = formatWorkerName(assignment.temporaryAssignment)
+    if (assignment.kind === "already-assigned") {
+        return `Position "${assignment.positionId}" is already assigned temporarily to ${workerName}.`
     }
-    const assignedMessage = `Position "${outcome.positionId}" is now assigned temporarily to ${workerName}`
-    return outcome.replacedTemporaryAssignment === undefined
+    const assignedMessage = `Position "${assignment.positionId}" is now assigned temporarily to ${workerName}`
+    return assignment.replacedTemporaryAssignment === undefined
         ? `${assignedMessage}.`
-        : `${assignedMessage} instead of ${formatWorkerName(outcome.replacedTemporaryAssignment)}.`
+        : `${assignedMessage} instead of ${formatWorkerName(assignment.replacedTemporaryAssignment)}.`
 }

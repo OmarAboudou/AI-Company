@@ -19,12 +19,12 @@ export function registerPositionAssignTemporarilyDirectorsCommand(
         )
         .addOption(createReplaceTemporaryAssignmentOption())
         .action(async (rawPositionId, options) => {
-            const outcome = await assignPositionTemporarily(
+            const assignment = await assignPositionTemporarily(
                 projectRoot,
                 rawPositionId,
                 { kind: "directors" },
                 { shouldReplace: options.replace },
             )
-            console.log(formatTemporarilyAssignedMessage(outcome))
+            console.log(formatTemporarilyAssignedMessage(assignment))
         })
 }

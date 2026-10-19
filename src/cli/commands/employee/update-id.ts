@@ -45,12 +45,12 @@ export function registerEmployeeUpdateIdCommand(
         )
         .addOption(createReuseIdOption())
         .hook("preAction", requireDirector)
-        .action(async (rawId, rawNewId, { reuseId }) => {
+        .action(async (rawId, rawNewId, { reuseId: shouldReuseId }) => {
             const renaming = await updateEmployeeId(
                 projectRoot,
                 rawId,
                 rawNewId,
-                { shouldReuseId: reuseId },
+                { shouldReuseId },
             )
             console.log(formatRenamedMessage(renaming))
         })

@@ -4,11 +4,11 @@ import { registerEmployeeCreateHumanCommand } from "./human.ts"
 import { registerEmployeeCreateLlmCommand } from "./llm.ts"
 
 export function registerEmployeeCreateCommands(employeeCommand: Command): void {
-    const createEmployeeCommand = employeeCommand
+    const employeeCreateCommand = employeeCommand
         .command("create")
         .alias("hire")
         .description("Create (hire) an employee: an LLM or a human.")
         .hook("preAction", requireDirector)
-    registerEmployeeCreateLlmCommand(createEmployeeCommand)
-    registerEmployeeCreateHumanCommand(createEmployeeCommand)
+    registerEmployeeCreateLlmCommand(employeeCreateCommand)
+    registerEmployeeCreateHumanCommand(employeeCreateCommand)
 }
