@@ -33,22 +33,22 @@ const context: PromptContext = {
 describe("buildSystemPrompt", () => {
     test("starts with who the employee is, where and as what", () => {
         const prompt = buildSystemPrompt(context)
-        const identity = "You are Claude Senior, Backend Developer at Acme."
+        const identityLine = "You are Claude Senior, Backend Developer at Acme."
 
-        expect(prompt.split("\n")[0]).toBe(identity)
+        expect(prompt.split("\n")[0]).toBe(identityLine)
     })
 
     test("gives the company's and the position's descriptions", () => {
         const prompt = buildSystemPrompt(context)
 
-        const company = [
+        const companyLines = [
             "# Acme",
             "",
             "<company_description>",
             "We build things.",
             "</company_description>",
         ]
-        const position = [
+        const positionLines = [
             "# Your position: Backend Developer",
             "",
             "<position_description>",
@@ -56,8 +56,8 @@ describe("buildSystemPrompt", () => {
             "</position_description>",
         ]
 
-        expect(prompt).toContain(`${company.join("\n")}\n\n`)
-        expect(prompt).toContain(`${position.join("\n")}\n\n`)
+        expect(prompt).toContain(`${companyLines.join("\n")}\n\n`)
+        expect(prompt).toContain(`${positionLines.join("\n")}\n\n`)
     })
 
     test("keeps a description's own headings inside its tags", () => {
