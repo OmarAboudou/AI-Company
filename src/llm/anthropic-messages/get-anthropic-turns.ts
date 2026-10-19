@@ -6,26 +6,28 @@ import { authorName, minutes } from "../../message/signature.ts"
 
 export type Replays = ReadonlyMap<string, Anthropic.ContentBlockParam[]>
 
-function attribute(value: string): string {
+function escapeAttribute(value: string): string {
     return value
         .replaceAll("&", "&amp;")
         .replaceAll('"', "&quot;")
         .replaceAll("<", "&lt;")
 }
 
-function delimited(message: Message): string {
+function formatTaggedMessage(message: Message): string {
     const { position } = message
-    const from = attribute(authorName(message))
-    const as = attribute(`${position.title} (@${position.id})`)
-    const sent = minutes(message.sentAt)
+    const escapedAuthorName = escapeAttribute(authorName(message))
+    const escapedPositionName = escapeAttribute(
+        `${position.title} (@${position.id})`,
+    )
+    const sentMinute = minutes(message.sentAt)
     return [
-        `<message from="${from}" position="${as}" sent="${sent}">`,
+        `<message from="${escapedAuthorName}" position="${escapedPositionName}" sent="${sentMinute}">`,
         message.body.trimEnd(),
         "</message>",
     ].join("\n")
 }
 
-export function anthropicTurns(
+export function getAnthropicTurns(
     messages: Message[],
     employee: IdHistory,
     replays: Replays,
@@ -35,16 +37,16 @@ export function anthropicTurns(
         content: Anthropic.ContentBlockParam[]
     }[] = []
     for (const message of messages) {
-        const own = isAuthorOf(employee, message)
-        const role = own ? "assistant" : "user"
-        const content: Anthropic.ContentBlockParam[] = own
+        const isOwnMessage = isAuthorOf(employee, message)
+        const role = isOwnMessage ? "assistant" : "user"
+        const content: Anthropic.ContentBlockParam[] = isOwnMessage
             ? (replays.get(message.id) ?? [
                   { type: "text", text: message.body },
               ])
-            : [{ type: "text", text: delimited(message) }]
-        const last = turns.at(-1)
-        if (last?.role === role) {
-            last.content.push(...content)
+            : [{ type: "text", text: formatTaggedMessage(message) }]
+        const lastTurn = turns.at(-1)
+        if (lastTurn?.role === role) {
+            lastTurn.content.push(...content)
         } else {
             turns.push({ role, content })
         }

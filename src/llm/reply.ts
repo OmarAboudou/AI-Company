@@ -18,7 +18,7 @@ import { loadThread } from "../thread/storage.ts"
 import { UserError } from "../user-error.ts"
 import { callAnthropicMessages } from "./anthropic-messages/call-anthropic-messages.ts"
 import {
-    anthropicTurns,
+    getAnthropicTurns,
     type Replays,
 } from "./anthropic-messages/get-anthropic-turns.ts"
 import type { LlmModel } from "./model/schema.ts"
@@ -87,8 +87,8 @@ async function answerAs(
         connection,
         apiKey,
         apiId: model.apiId,
-        system: systemPrompt({ company, position, employee, thread }),
-        messages: anthropicTurns(messages, employee, ownReplays),
+        systemPrompt: systemPrompt({ company, position, employee, thread }),
+        turns: getAnthropicTurns(messages, employee, ownReplays),
         onText: (text) => process.stdout.write(text),
     })
     process.stdout.write("\n")

@@ -17,46 +17,49 @@ export type ReceivedRequest = {
     }
 }
 
-function event(type: string, data: object): string {
-    return `event: ${type}\ndata: ${JSON.stringify({ type, ...data })}\n\n`
+function formatEvent(type: string, fields: object): string {
+    return `event: ${type}\ndata: ${JSON.stringify({ type, ...fields })}\n\n`
 }
 
-function stream(text: string, signature: string | undefined): string {
-    const blocks: string[] = []
-    let index = 0
+function formatEventStream(
+    text: string,
+    signature: string | undefined,
+): string {
+    const blockEvents: string[] = []
+    let blockIndex = 0
     if (signature !== undefined) {
-        blocks.push(
-            event("content_block_start", {
-                index,
+        blockEvents.push(
+            formatEvent("content_block_start", {
+                index: blockIndex,
                 content_block: {
                     type: "thinking",
                     thinking: "",
                     signature: "",
                 },
             }),
-            event("content_block_delta", {
-                index,
+            formatEvent("content_block_delta", {
+                index: blockIndex,
                 delta: { type: "signature_delta", signature },
             }),
-            event("content_block_stop", { index }),
+            formatEvent("content_block_stop", { index: blockIndex }),
         )
-        index++
+        blockIndex++
     }
-    blocks.push(
-        event("content_block_start", {
-            index,
+    blockEvents.push(
+        formatEvent("content_block_start", {
+            index: blockIndex,
             content_block: { type: "text", text: "" },
         }),
         ...text.split(/(?<= )/).map((piece) =>
-            event("content_block_delta", {
-                index,
+            formatEvent("content_block_delta", {
+                index: blockIndex,
                 delta: { type: "text_delta", text: piece },
             }),
         ),
-        event("content_block_stop", { index }),
+        formatEvent("content_block_stop", { index: blockIndex }),
     )
     return [
-        event("message_start", {
+        formatEvent("message_start", {
             message: {
                 id: "msg_fake",
                 type: "message",
@@ -68,16 +71,16 @@ function stream(text: string, signature: string | undefined): string {
                 usage: { input_tokens: 10, output_tokens: 1 },
             },
         }),
-        ...blocks,
-        event("message_delta", {
+        ...blockEvents,
+        formatEvent("message_delta", {
             delta: { stop_reason: "end_turn", stop_sequence: null },
             usage: { output_tokens: 5 },
         }),
-        event("message_stop", {}),
+        formatEvent("message_stop", {}),
     ].join("")
 }
 
-export function useFakeAnthropic() {
+export function useFakeAnthropicServer() {
     let server: Server<undefined> | undefined
     const requests: ReceivedRequest[] = []
     const replies: FakeReply[] = []
@@ -101,9 +104,12 @@ export function useFakeAnthropic() {
                         { status: reply.status },
                     )
                 }
-                return new Response(stream(reply.text, reply.signature), {
-                    headers: { "content-type": "text/event-stream" },
-                })
+                return new Response(
+                    formatEventStream(reply.text, reply.signature),
+                    {
+                        headers: { "content-type": "text/event-stream" },
+                    },
+                )
             },
         })
     })
@@ -113,10 +119,10 @@ export function useFakeAnthropic() {
     })
 
     return {
-        url: () => `http://localhost:${server?.port}`,
+        getUrl: () => `http://localhost:${server?.port}`,
         requests,
-        respondWith: (...next: FakeReply[]) => {
-            replies.push(...next)
+        respondWith: (...nextReplies: FakeReply[]) => {
+            replies.push(...nextReplies)
         },
     }
 }

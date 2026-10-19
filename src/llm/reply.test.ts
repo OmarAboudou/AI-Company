@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useTemporaryProject } from "../cli/use-temporary-project.ts"
-import { useFakeAnthropic } from "./anthropic-messages/use-fake-anthropic-server.ts"
+import { useFakeAnthropicServer } from "./anthropic-messages/use-fake-anthropic-server.ts"
 
 const { runCli, runCliAsync, projectPath, homePath } = useTemporaryProject()
 
 const interimEmployee = ["position", "interim", "employee"]
 const interimDirectors = ["position", "interim", "directors"]
 
-const fake = useFakeAnthropic()
+const fakeServer = useFakeAnthropicServer()
 
 const key = { TEST_ANTHROPIC_KEY: "sk-test" }
 const question = "@backend-developer Hono or Express?"
@@ -31,7 +31,7 @@ beforeEach(() => {
         "anthropic",
         "anthropic-messages",
         "-u",
-        fake.url(),
+        fakeServer.getUrl(),
     )
     runCli(
         "model",
@@ -64,7 +64,7 @@ function messages(): { employee?: { id: string }; body: string }[] {
 
 describe("an LLM employee answers when its position is mentioned", () => {
     test("message send prints the answer as it streams", async () => {
-        fake.respondWith({ text: "Hono, for Bun." })
+        fakeServer.respondWith({ text: "Hono, for Bun." })
 
         const sent = await send(question)
 
@@ -74,7 +74,7 @@ describe("an LLM employee answers when its position is mentioned", () => {
     })
 
     test("the answer is a message of the thread, by the employee", async () => {
-        fake.respondWith({ text: "Hono, for Bun." })
+        fakeServer.respondWith({ text: "Hono, for Bun." })
 
         await send(question)
         const [, answer] = messages()
@@ -86,7 +86,7 @@ describe("an LLM employee answers when its position is mentioned", () => {
 
     test("the request carries the model, the prompt and the thread", async () => {
         await send(question)
-        const [request] = fake.requests
+        const [request] = fakeServer.requests
         const lastTurn = request?.body.messages.at(-1)?.content.at(-1)?.text
 
         expect(request?.path).toBe("/v1/messages")
@@ -99,7 +99,7 @@ describe("an LLM employee answers when its position is mentioned", () => {
 
     test("the key is sent as x-api-key, from its variable", async () => {
         await send(question)
-        const headers = fake.requests[0]?.headers
+        const headers = fakeServer.requests[0]?.headers
 
         expect(headers?.["x-api-key"]).toBe("sk-test")
         expect(headers?.authorization).toBeUndefined()
@@ -110,7 +110,7 @@ describe("an LLM employee answers when its position is mentioned", () => {
         runCli(...connection, "anthropic-messages", "-a", "bearer")
 
         await send(question)
-        const headers = fake.requests[0]?.headers
+        const headers = fakeServer.requests[0]?.headers
 
         expect(headers?.authorization).toBe("Bearer sk-test")
         expect(headers?.["x-api-key"]).toBeUndefined()
@@ -127,7 +127,7 @@ describe("an LLM employee answers when its position is mentioned", () => {
         await Bun.write(configPath, JSON.stringify(config))
 
         const sent = await send(question, {})
-        const headers = fake.requests[0]?.headers
+        const headers = fakeServer.requests[0]?.headers
 
         expect(apiKey).toEqual({ kind: "env", variable: "TEST_ANTHROPIC_KEY" })
         expect(sent.exitCode).toBe(0)
@@ -136,7 +136,7 @@ describe("an LLM employee answers when its position is mentioned", () => {
     })
 
     test("the provider's raw response is stored next to the answer", async () => {
-        fake.respondWith({ text: "Hono.", signature: "sig-1" })
+        fakeServer.respondWith({ text: "Hono.", signature: "sig-1" })
 
         await send(question)
         const answerId = runCli("thread", "show", threadId, "--json")
@@ -165,11 +165,11 @@ describe("an LLM employee answers when its position is mentioned", () => {
     })
 
     test("the employee's own answer comes back exactly, thinking included", async () => {
-        fake.respondWith({ text: "Hono.", signature: "sig-1" })
+        fakeServer.respondWith({ text: "Hono.", signature: "sig-1" })
         await send(question)
 
         await send("@backend-developer Why?")
-        const turns = fake.requests[1]?.body.messages ?? []
+        const turns = fakeServer.requests[1]?.body.messages ?? []
         const types = turns[1]?.content.map(({ type }) => type)
 
         expect(turns.map(({ role }) => role)).toEqual([
@@ -181,12 +181,12 @@ describe("an LLM employee answers when its position is mentioned", () => {
     })
 
     test("a renamed employee still gets its own answer back", async () => {
-        fake.respondWith({ text: "Hono.", signature: "sig-1" })
+        fakeServer.respondWith({ text: "Hono.", signature: "sig-1" })
         await send(question)
         runCli("employee", "update-id", "claude", "claude-lead")
 
         await send("@backend-developer Why?")
-        const turns = fake.requests[1]?.body.messages ?? []
+        const turns = fakeServer.requests[1]?.body.messages ?? []
         const types = turns[1]?.content.map(({ type }) => type)
 
         expect(turns.map(({ role }) => role)).toEqual([
@@ -198,7 +198,7 @@ describe("an LLM employee answers when its position is mentioned", () => {
     })
 
     test("an answer mentioning the director makes it awaited", async () => {
-        fake.respondWith({ text: "Hono. @director, do you agree?" })
+        fakeServer.respondWith({ text: "Hono. @director, do you agree?" })
         const before = runCli("thread", "list").stdout
 
         await send(question)
@@ -209,7 +209,7 @@ describe("an LLM employee answers when its position is mentioned", () => {
     })
 
     test("thread create -b gets its first message answered too", async () => {
-        fake.respondWith({ text: "Budget approved." })
+        fakeServer.respondWith({ text: "Budget approved." })
 
         const create = await runCliAsync(
             key,
@@ -235,7 +235,7 @@ describe("when nobody answers", () => {
 
         expect(sent.exitCode).toBe(0)
         expect(sent.stderr).toContain("@qa-tester is vacant")
-        expect(fake.requests).toHaveLength(0)
+        expect(fakeServer.requests).toHaveLength(0)
     })
 
     test("a position worked by a human leaves the message waiting", async () => {
@@ -245,7 +245,7 @@ describe("when nobody answers", () => {
         const sent = await send(question)
 
         expect(sent.stderr).toContain("worked by Julie, a human")
-        expect(fake.requests).toHaveLength(0)
+        expect(fakeServer.requests).toHaveLength(0)
     })
 
     test("a missing key is an error, and the mention stays awaited", async () => {
@@ -254,12 +254,12 @@ describe("when nobody answers", () => {
 
         expect(sent.exitCode).toBe(1)
         expect(sent.stderr).toContain("TEST_ANTHROPIC_KEY, which isn't set")
-        expect(fake.requests).toHaveLength(0)
+        expect(fakeServer.requests).toHaveLength(0)
         expect(list).toContain("awaiting @backend-developer")
     })
 
     test("an API error is reported, and the mention stays awaited", async () => {
-        fake.respondWith({ status: 401, error: "invalid x-api-key" })
+        fakeServer.respondWith({ status: 401, error: "invalid x-api-key" })
 
         const sent = await send(question)
         const list = runCli("thread", "list").stdout
@@ -270,7 +270,7 @@ describe("when nobody answers", () => {
     })
 
     test("a model called through another protocol isn't called yet", async () => {
-        const url = `${fake.url()}/v1`
+        const url = `${fakeServer.getUrl()}/v1`
         const connection = ["provider", "connection", "create", "anthropic"]
         runCli(...connection, "openai-chat-completions", "-u", url)
         runCli(
@@ -286,7 +286,7 @@ describe("when nobody answers", () => {
 
         expect(sent.exitCode).toBe(1)
         expect(sent.stderr).toContain("which llmco can't call yet")
-        expect(fake.requests).toHaveLength(0)
+        expect(fakeServer.requests).toHaveLength(0)
     })
 })
 
@@ -298,7 +298,7 @@ describe("whoever works the position now answers", () => {
     test("an LLM employee assigned temporarily answers instead of the default employee", async () => {
         runCli("position", "assign", "backend-developer", "julie", "-r")
         runCli(...interimEmployee, "backend-developer", "claude")
-        fake.respondWith({ text: "Hono, for Bun." })
+        fakeServer.respondWith({ text: "Hono, for Bun." })
 
         const sent = await send(question)
         const [, answer] = messages()
@@ -315,7 +315,7 @@ describe("whoever works the position now answers", () => {
 
         expect(sent.exitCode).toBe(0)
         expect(sent.stderr).toContain("worked by Julie, a human")
-        expect(fake.requests).toHaveLength(0)
+        expect(fakeServer.requests).toHaveLength(0)
     })
 
     test("a position assigned temporarily to the directors leaves the message waiting", async () => {
@@ -328,7 +328,7 @@ describe("whoever works the position now answers", () => {
         expect(sent.stderr).toContain(
             "@backend-developer is worked by the directors",
         )
-        expect(fake.requests).toHaveLength(0)
+        expect(fakeServer.requests).toHaveLength(0)
         expect(list).toContain("awaiting @backend-developer")
     })
 
@@ -339,7 +339,7 @@ describe("whoever works the position now answers", () => {
         const sent = await send(question)
 
         expect(sent.stderr).toContain("Claude Senior answers as Backend")
-        expect(fake.requests).toHaveLength(1)
+        expect(fakeServer.requests).toHaveLength(1)
     })
 })
 
@@ -354,7 +354,9 @@ describe("a key read from a file", () => {
 
         await send(question, {})
 
-        expect(fake.requests[0]?.headers["x-api-key"]).toBe("sk-from-file")
+        expect(fakeServer.requests[0]?.headers["x-api-key"]).toBe(
+            "sk-from-file",
+        )
     })
 
     test("inside the repository, must be ignored by git", async () => {
@@ -368,6 +370,6 @@ describe("a key read from a file", () => {
         expect(refused.exitCode).toBe(1)
         expect(refused.stderr).toContain("not ignored by git")
         expect(accepted.exitCode).toBe(0)
-        expect(fake.requests[0]?.headers["x-api-key"]).toBe("sk-in-repo")
+        expect(fakeServer.requests[0]?.headers["x-api-key"]).toBe("sk-in-repo")
     })
 })
