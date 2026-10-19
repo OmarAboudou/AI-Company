@@ -539,6 +539,32 @@ describe("a temporary assignment through the position's lifecycle", () => {
         expect(await positionState("developer")).toBeUndefined()
     })
 
+    test("assign of the temporary assignee ends its temporary assignment", async () => {
+        const before = await positionState("developer")
+
+        const assign = runCli("position", "assign", "developer", "julie")
+        const show = runCli("position", "show", "developer").stdout
+
+        expect(before).toEqual(julie)
+        expect(assign.stdout).toBe(
+            '"julie" is now the default employee of position "developer", which ends its temporary assignment.\n',
+        )
+        expect(await positionState("developer")).toBeUndefined()
+        expect(show).toContain("default employee: julie\n\n")
+    })
+
+    test("assign and unassign of another employee keep the temporary assignment", async () => {
+        runCli("employee", "create", "human", "bob", "-n", "Bob")
+
+        const assign = runCli("position", "assign", "developer", "bob")
+        const unassign = runCli("position", "unassign", "developer")
+
+        const stays = ' It stays assigned temporarily to "julie".\n'
+        expect(assign.stdout).toEndWith(stays)
+        expect(unassign.stdout).toEndWith(stays)
+        expect(await positionState("developer")).toEqual(julie)
+    })
+
     test("create ignores a state left behind by another position", async () => {
         const state = { temporaryAssignment: { kind: "directors" } }
         await Bun.write(positionStatePath("tester"), JSON.stringify(state))

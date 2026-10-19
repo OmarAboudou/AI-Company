@@ -42,6 +42,12 @@ function workerName(assignment: Worker): string {
         : `"${assignment.employeeId}"`
 }
 
+function stillTemporary(worker: Worker | undefined): string {
+    return worker === undefined
+        ? ""
+        : ` It stays assigned temporarily to ${workerName(worker)}.`
+}
+
 function currentEmployeeInList(
     { defaultEmployeeId }: Position,
     { temporaryAssignment }: PositionState,
@@ -330,7 +336,7 @@ export function registerPositionCommands(program: Command): void {
     positionCommand
         .command("assign")
         .description(
-            "Set the default employee of a position, except the director's.",
+            "Set the default employee of a position, except the director's. Assigning its temporary assignee ends the temporary assignment.",
         )
         .argument(
             "<position-id>",
@@ -340,10 +346,14 @@ export function registerPositionCommands(program: Command): void {
         .option("-r, --replace", "replace the current default employee")
         .action(async (rawPositionId, rawEmployeeId, { replace }) => {
             await requireCompany()
-            const [position, employee, company] = await Promise.all([
+            const [position, employee, company, state] = await Promise.all([
                 loadExistingPosition(rawPositionId),
                 loadExistingEmployee(rawEmployeeId),
                 loadCompany(projectRoot),
+                loadPositionState(
+                    projectRoot,
+                    parseId("position", rawPositionId),
+                ),
             ])
             if (position.id === company.directorPositionId) {
                 throw new UserError(
@@ -362,14 +372,27 @@ export function registerPositionCommands(program: Command): void {
                     `Position "${position.id}" already has "${previous}" as default employee. Add --replace to replace it.`,
                 )
             }
-            await savePosition(projectRoot, {
-                ...position,
-                defaultEmployeeId: employee.id,
-            })
-            console.log(
+            const { temporaryAssignment, ...otherState } = state
+            const confirmed =
+                temporaryAssignment?.kind === "employee" &&
+                temporaryAssignment.employeeId === employee.id
+            await Promise.all([
+                savePosition(projectRoot, {
+                    ...position,
+                    defaultEmployeeId: employee.id,
+                }),
+                confirmed
+                    ? savePositionState(projectRoot, position.id, otherState)
+                    : undefined,
+            ])
+            const assigned =
                 previous === undefined
-                    ? `"${employee.id}" is now the default employee of position "${position.id}".`
-                    : `"${employee.id}" replaces "${previous}" as the default employee of position "${position.id}".`,
+                    ? `"${employee.id}" is now the default employee of position "${position.id}"`
+                    : `"${employee.id}" replaces "${previous}" as the default employee of position "${position.id}"`
+            console.log(
+                confirmed
+                    ? `${assigned}, which ends its temporary assignment.`
+                    : `${assigned}.${stillTemporary(temporaryAssignment)}`,
             )
         })
 
@@ -384,15 +407,20 @@ export function registerPositionCommands(program: Command): void {
         )
         .action(async (rawId) => {
             await requireCompany()
-            const { defaultEmployeeId, ...position } =
-                await loadExistingPosition(rawId)
+            const [
+                { defaultEmployeeId, ...position },
+                { temporaryAssignment },
+            ] = await Promise.all([
+                loadExistingPosition(rawId),
+                loadPositionState(projectRoot, parseId("position", rawId)),
+            ])
             if (defaultEmployeeId === undefined) {
                 console.log(`Position "${position.id}" is already vacant.`)
                 return
             }
             await savePosition(projectRoot, position)
             console.log(
-                `Position "${position.id}" is now vacant: "${defaultEmployeeId}" is no longer its default employee.`,
+                `Position "${position.id}" is now vacant: "${defaultEmployeeId}" is no longer its default employee.${stillTemporary(temporaryAssignment)}`,
             )
         })
 
