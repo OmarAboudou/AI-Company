@@ -1,9 +1,5 @@
 import { projectRoot } from "./cli/project-root.ts"
 import { parseId } from "./ids/parse-id.ts"
-import type { LlmModel } from "./llm-model/llm-model.ts"
-import { llmModelExists, loadLlmModel } from "./llm-model/storage.ts"
-import type { LlmProvider } from "./llm-provider/llm-provider.ts"
-import { llmProviderExists, loadLlmProvider } from "./llm-provider/storage.ts"
 import { loadThread, threadExists } from "./thread/storage.ts"
 import type { Thread } from "./thread/thread.ts"
 import { UserError } from "./user-error.ts"
@@ -14,30 +10,6 @@ export function withoutUndefined<Values extends object>(
     return Object.fromEntries(
         Object.entries(values).filter(([, value]) => value !== undefined),
     ) as Partial<Values>
-}
-
-export async function loadExistingLlmProvider(
-    rawId: string,
-): Promise<LlmProvider> {
-    const id = parseId("provider", rawId)
-    if (!(await llmProviderExists(projectRoot, id))) {
-        throw new UserError(`No provider "${id}". Run \`llmco provider list\`.`)
-    }
-    return loadLlmProvider(projectRoot, id)
-}
-
-export async function loadExistingLlmModel(
-    rawProviderId: string,
-    rawModelId: string,
-): Promise<LlmModel> {
-    const provider = await loadExistingLlmProvider(rawProviderId)
-    const modelId = parseId("model", rawModelId)
-    if (!(await llmModelExists(projectRoot, provider.id, modelId))) {
-        throw new UserError(
-            `Provider "${provider.id}" has no model "${modelId}". Run \`llmco model list\`.`,
-        )
-    }
-    return loadLlmModel(projectRoot, provider.id, modelId)
 }
 
 export async function loadExistingThread(rawId: string): Promise<Thread> {

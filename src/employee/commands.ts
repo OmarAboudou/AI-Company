@@ -6,11 +6,12 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { loadExistingLlmModel, withoutUndefined } from "../cli-helpers.ts"
+import { withoutUndefined } from "../cli-helpers.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { getRenamedEntity } from "../ids/get-renamed-entity.ts"
 import { isAuthorOf } from "../ids/is-author-of.ts"
 import { parseId } from "../ids/parse-id.ts"
+import { loadExistingLlmModel } from "../llm-model/load-existing-llm-model.ts"
 import { loadExistingEmployee } from "../organization/employee/load-existing-employee.ts"
 import {
     type Employee,
@@ -71,7 +72,11 @@ function positionsFilledBy(positions: Position[], employeeId: string): string {
 
 async function requireLlmModel(config: EmployeeConfig): Promise<void> {
     if (config.kind === "llm") {
-        await loadExistingLlmModel(config.providerId, config.modelId)
+        await loadExistingLlmModel(
+            projectRoot,
+            config.providerId,
+            config.modelId,
+        )
     }
 }
 

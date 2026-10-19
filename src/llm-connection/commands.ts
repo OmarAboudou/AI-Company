@@ -5,7 +5,7 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import { loadExistingLlmProvider, withoutUndefined } from "../cli-helpers.ts"
+import { withoutUndefined } from "../cli-helpers.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { listLlmModels } from "../llm-model/storage.ts"
@@ -13,6 +13,7 @@ import {
     type LlmProvider,
     LlmProviderConfigSchema,
 } from "../llm-provider/llm-provider.ts"
+import { loadExistingLlmProvider } from "../llm-provider/load-existing-llm-provider.ts"
 import { listLlmProviders, saveLlmProvider } from "../llm-provider/storage.ts"
 import { UserError } from "../user-error.ts"
 import {
@@ -72,7 +73,7 @@ async function loadProviderWithConnection(
     rawProviderId: string,
     protocol: Protocol,
 ): Promise<LlmProvider> {
-    const provider = await loadExistingLlmProvider(rawProviderId)
+    const provider = await loadExistingLlmProvider(projectRoot, rawProviderId)
     if (provider.connections?.[protocol] === undefined) {
         throw new UserError(
             `Provider "${provider.id}" has no ${protocol} connection. Run \`llmco provider connection list\`.`,
@@ -104,7 +105,10 @@ export function registerLlmConnectionCommands(providerCommand: Command): void {
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol, { baseUrl, auth }) => {
             await requireCompany(projectRoot)
-            const provider = await loadExistingLlmProvider(rawProviderId)
+            const provider = await loadExistingLlmProvider(
+                projectRoot,
+                rawProviderId,
+            )
             if (provider.connections?.[protocol] !== undefined) {
                 throw new UserError(
                     `Provider "${provider.id}" already has a connection through ${protocol}.`,
