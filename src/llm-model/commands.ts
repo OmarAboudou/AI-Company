@@ -6,15 +6,12 @@ import { printColumns } from "../cli/print-columns.ts"
 import { projectRoot } from "../cli/project-root.ts"
 import { requireAtLeastOneOption } from "../cli/require-at-least-one-option.ts"
 import { requireDirector } from "../cli/require-director.ts"
-import {
-    loadExistingLlmModel,
-    loadExistingLlmProvider,
-    withoutUndefined,
-} from "../cli-helpers.ts"
+import { withoutUndefined } from "../cli-helpers.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { parseId } from "../ids/parse-id.ts"
 import { type Protocol, protocols } from "../llm-connection/llm-connection.ts"
 import type { LlmProvider } from "../llm-provider/llm-provider.ts"
+import { loadExistingLlmProvider } from "../llm-provider/load-existing-llm-provider.ts"
 import { listLlmProviders, loadLlmProvider } from "../llm-provider/storage.ts"
 import {
     listEmployees,
@@ -22,6 +19,7 @@ import {
 } from "../organization/employee/storage.ts"
 import { UserError } from "../user-error.ts"
 import { LlmModelConfigSchema } from "./llm-model.ts"
+import { loadExistingLlmModel } from "./load-existing-llm-model.ts"
 import {
     copyLlmModel,
     deleteLlmModel,
@@ -95,7 +93,10 @@ export function registerLlmModelCommands(program: Command): void {
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, options) => {
             await requireCompany(projectRoot)
-            const provider = await loadExistingLlmProvider(rawProviderId)
+            const provider = await loadExistingLlmProvider(
+                projectRoot,
+                rawProviderId,
+            )
             const modelId = parseId("model", rawModelId)
             if (await llmModelExists(projectRoot, provider.id, modelId)) {
                 throw new UserError(
@@ -157,7 +158,11 @@ export function registerLlmModelCommands(program: Command): void {
         )
         .action(async (rawProviderId, rawModelId) => {
             await requireCompany(projectRoot)
-            const model = await loadExistingLlmModel(rawProviderId, rawModelId)
+            const model = await loadExistingLlmModel(
+                projectRoot,
+                rawProviderId,
+                rawModelId,
+            )
             console.log(
                 `# ${model.name}\n\nprovider: ${model.providerId}\napi id: ${model.apiId}\nprotocol: ${model.protocol}`,
             )
@@ -185,6 +190,7 @@ export function registerLlmModelCommands(program: Command): void {
             requireAtLeastOneOption(options)
             await requireCompany(projectRoot)
             const { providerId, id, ...current } = await loadExistingLlmModel(
+                projectRoot,
                 rawProviderId,
                 rawModelId,
             )
@@ -224,7 +230,7 @@ export function registerLlmModelCommands(program: Command): void {
         .action(async (rawProviderId, rawModelId, rawNewId) => {
             await requireCompany(projectRoot)
             const [model, employees] = await Promise.all([
-                loadExistingLlmModel(rawProviderId, rawModelId),
+                loadExistingLlmModel(projectRoot, rawProviderId, rawModelId),
                 listEmployees(projectRoot),
             ])
             const newId = parseId("model", rawNewId)
@@ -272,7 +278,7 @@ export function registerLlmModelCommands(program: Command): void {
         .action(async (rawProviderId, rawModelId) => {
             await requireCompany(projectRoot)
             const [model, employees] = await Promise.all([
-                loadExistingLlmModel(rawProviderId, rawModelId),
+                loadExistingLlmModel(projectRoot, rawProviderId, rawModelId),
                 listEmployees(projectRoot),
             ])
             const users = employees.filter(
