@@ -5,12 +5,12 @@ const { runCli, getProjectPath } = useTemporaryProject()
 
 const interimEmployee = ["position", "interim", "employee"]
 
-function positionStatePath(id: string): string {
+function getPositionStatePath(id: string): string {
     return getProjectPath(".llmco", ".state", "positions", `${id}.json`)
 }
 
-async function positionState(id: string): Promise<unknown> {
-    const file = Bun.file(positionStatePath(id))
+async function loadPositionStateFile(id: string): Promise<unknown> {
+    const file = Bun.file(getPositionStatePath(id))
     return (await file.exists()) ? file.json() : undefined
 }
 
@@ -54,19 +54,19 @@ describe("llmco position assign and unassign", () => {
         )
     })
 
-    async function positionConfig(id: string): Promise<unknown> {
+    async function loadPositionConfigFile(id: string): Promise<unknown> {
         const path = getProjectPath(".llmco", "positions", id, "config.json")
         return Bun.file(path).json()
     }
 
     test("assign sets the default employee of a vacant position", async () => {
-        const assign = runCli("position", "assign", "developer", "omar")
+        const assignment = runCli("position", "assign", "developer", "omar")
 
-        expect(assign.exitCode).toBe(0)
-        expect(assign.stdout).toBe(
+        expect(assignment.exitCode).toBe(0)
+        expect(assignment.stdout).toBe(
             '"omar" is now the default employee of position "developer".\n',
         )
-        expect(await positionConfig("developer")).toEqual({
+        expect(await loadPositionConfigFile("developer")).toEqual({
             title: "Developer",
             defaultEmployeeId: "omar",
         })
@@ -75,14 +75,14 @@ describe("llmco position assign and unassign", () => {
     test("assign refuses to replace a default employee without --replace", async () => {
         runCli("position", "assign", "developer", "claude-senior")
 
-        const assign = runCli("position", "assign", "developer", "omar")
+        const assignment = runCli("position", "assign", "developer", "omar")
 
-        expect(assign.exitCode).toBe(1)
-        expect(assign.stderr).toContain(
+        expect(assignment.exitCode).toBe(1)
+        expect(assignment.stderr).toContain(
             'already has "claude-senior" as default employee',
         )
-        expect(assign.stderr).toContain("--replace")
-        expect(await positionConfig("developer")).toEqual({
+        expect(assignment.stderr).toContain("--replace")
+        expect(await loadPositionConfigFile("developer")).toEqual({
             title: "Developer",
             defaultEmployeeId: "claude-senior",
         })
@@ -93,7 +93,7 @@ describe("llmco position assign and unassign", () => {
         async (flag) => {
             runCli("position", "assign", "developer", "claude-senior")
 
-            const assign = runCli(
+            const assignment = runCli(
                 "position",
                 "assign",
                 "developer",
@@ -101,11 +101,11 @@ describe("llmco position assign and unassign", () => {
                 flag,
             )
 
-            expect(assign.exitCode).toBe(0)
-            expect(assign.stdout).toBe(
+            expect(assignment.exitCode).toBe(0)
+            expect(assignment.stdout).toBe(
                 '"omar" replaces "claude-senior" as the default employee of position "developer".\n',
             )
-            expect(await positionConfig("developer")).toEqual({
+            expect(await loadPositionConfigFile("developer")).toEqual({
                 title: "Developer",
                 defaultEmployeeId: "omar",
             })
@@ -115,15 +115,15 @@ describe("llmco position assign and unassign", () => {
     test("assign accepts the current default employee again", () => {
         runCli("position", "assign", "developer", "omar")
 
-        const again = runCli("position", "assign", "developer", "omar")
+        const reassignment = runCli("position", "assign", "developer", "omar")
 
-        expect(again.exitCode).toBe(0)
-        expect(again.stdout).toContain("is already the default employee")
+        expect(reassignment.exitCode).toBe(0)
+        expect(reassignment.stdout).toContain("is already the default employee")
     })
 })
 
 describe("a temporary assignment through the position's lifecycle", () => {
-    const julie = {
+    const julieState = {
         temporaryAssignment: { kind: "employee", employeeId: "julie" },
     }
 
@@ -135,28 +135,29 @@ describe("a temporary assignment through the position's lifecycle", () => {
     })
 
     test("assign of the temporary assignee ends its temporary assignment", async () => {
-        const before = await positionState("developer")
+        const before = await loadPositionStateFile("developer")
 
-        const assign = runCli("position", "assign", "developer", "julie")
+        const assignment = runCli("position", "assign", "developer", "julie")
         const show = runCli("position", "show", "developer").stdout
 
-        expect(before).toEqual(julie)
-        expect(assign.stdout).toBe(
+        expect(before).toEqual(julieState)
+        expect(assignment.stdout).toBe(
             '"julie" is now the default employee of position "developer", which ends its temporary assignment.\n',
         )
-        expect(await positionState("developer")).toBeUndefined()
+        expect(await loadPositionStateFile("developer")).toBeUndefined()
         expect(show).toContain("default employee: julie\n\n")
     })
 
     test("assign and unassign of another employee keep the temporary assignment", async () => {
         runCli("employee", "create", "human", "bob", "-n", "Bob")
 
-        const assign = runCli("position", "assign", "developer", "bob")
-        const unassign = runCli("position", "unassign", "developer")
+        const assignment = runCli("position", "assign", "developer", "bob")
+        const unassignment = runCli("position", "unassign", "developer")
 
-        const stays = ' It stays assigned temporarily to "julie".\n'
-        expect(assign.stdout).toEndWith(stays)
-        expect(unassign.stdout).toEndWith(stays)
-        expect(await positionState("developer")).toEqual(julie)
+        const stillTemporaryMessage =
+            ' It stays assigned temporarily to "julie".\n'
+        expect(assignment.stdout).toEndWith(stillTemporaryMessage)
+        expect(unassignment.stdout).toEndWith(stillTemporaryMessage)
+        expect(await loadPositionStateFile("developer")).toEqual(julieState)
     })
 })

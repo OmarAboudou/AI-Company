@@ -6,12 +6,12 @@ const { runCli, getProjectPath } = useTemporaryProject()
 const interimEmployee = ["position", "interim", "employee"]
 const interimDirectors = ["position", "interim", "directors"]
 
-function positionStatePath(id: string): string {
+function getPositionStatePath(id: string): string {
     return getProjectPath(".llmco", ".state", "positions", `${id}.json`)
 }
 
-async function positionState(id: string): Promise<unknown> {
-    const file = Bun.file(positionStatePath(id))
+async function loadPositionStateFile(id: string): Promise<unknown> {
+    const file = Bun.file(getPositionStatePath(id))
     return (await file.exists()) ? file.json() : undefined
 }
 
@@ -38,7 +38,7 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
         expect(interim.stdout).toBe(
             'Position "designer" is now assigned temporarily to the directors.\n',
         )
-        expect(await positionState("designer")).toEqual({
+        expect(await loadPositionStateFile("designer")).toEqual({
             temporaryAssignment: { kind: "directors" },
         })
     })
@@ -54,7 +54,7 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
             expect(interim.stdout).toBe(
                 'Position "developer" is now assigned temporarily to the directors instead of "julie".\n',
             )
-            expect(await positionState("developer")).toEqual({
+            expect(await loadPositionStateFile("developer")).toEqual({
                 temporaryAssignment: { kind: "directors" },
             })
         },

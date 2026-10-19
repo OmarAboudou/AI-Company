@@ -6,12 +6,12 @@ const { runCli, getProjectPath } = useTemporaryProject()
 const interimEmployee = ["position", "interim", "employee"]
 const interimDirectors = ["position", "interim", "directors"]
 
-function positionStatePath(id: string): string {
+function getPositionStatePath(id: string): string {
     return getProjectPath(".llmco", ".state", "positions", `${id}.json`)
 }
 
-async function positionState(id: string): Promise<unknown> {
-    const file = Bun.file(positionStatePath(id))
+async function loadPositionStateFile(id: string): Promise<unknown> {
+    const file = Bun.file(getPositionStatePath(id))
     return (await file.exists()) ? file.json() : undefined
 }
 
@@ -35,7 +35,7 @@ describe("llmco position assign-temporarily and unassign-temporarily", () => {
         expect(end.stdout).toBe(
             'Position "developer" is no longer assigned temporarily to "julie": its default employee "omar" works it again.\n',
         )
-        expect(await positionState("developer")).toBeUndefined()
+        expect(await loadPositionStateFile("developer")).toBeUndefined()
     })
 
     test("unassign-temporarily leaves a vacant position vacant again", () => {
