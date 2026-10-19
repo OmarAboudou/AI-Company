@@ -19,7 +19,7 @@ afterEach(async () => {
 
 describe("loadExistingThread", () => {
     test("loads the thread the id names", async () => {
-        const budget: Thread = {
+        const thread: Thread = {
             id: "2026-10-18-budget",
             subject: "Budget",
             createdAt: "2026-10-18T14:03:22.123Z",
@@ -28,11 +28,11 @@ describe("loadExistingThread", () => {
                 committer: { name: "Omar Aboudou", email: "omar@example.com" },
             },
         }
-        await saveThread(projectRoot, budget)
+        await saveThread(projectRoot, thread)
 
-        const thread = await loadExistingThread(projectRoot, budget.id)
+        const loadedThread = await loadExistingThread(projectRoot, thread.id)
 
-        expect(thread).toEqual(budget)
+        expect(loadedThread).toEqual(thread)
     })
 
     test("refuses an unknown thread, saying how to list them", async () => {

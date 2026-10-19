@@ -10,13 +10,13 @@ import { listMessages } from "../message/storage.ts"
 import { createThread } from "./create-thread.ts"
 import { listThreads, loadThread } from "./storage.ts"
 
-const variable = "LLMCO_CURRENT_HUMAN_ID"
-const shellValue = process.env[variable]
+const variableName = "LLMCO_CURRENT_HUMAN_ID"
+const shellValue = process.env[variableName]
 const committer = { name: "Test User", email: "test@example.com" }
 let projectRoot: string
 
 beforeEach(async () => {
-    delete process.env[variable]
+    delete process.env[variableName]
     projectRoot = await createTemporaryCompany()
     createGitRepository(projectRoot, committer)
     await savePosition(projectRoot, {
@@ -28,9 +28,9 @@ beforeEach(async () => {
 
 afterEach(async () => {
     if (shellValue === undefined) {
-        delete process.env[variable]
+        delete process.env[variableName]
     } else {
-        process.env[variable] = shellValue
+        process.env[variableName] = shellValue
     }
     await rm(projectRoot, { recursive: true, force: true })
 })
@@ -121,9 +121,11 @@ describe("createThread", () => {
     })
 
     test("refuses to run outside a company", async () => {
-        const elsewhere = join(projectRoot, "elsewhere")
+        const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const creation = createThread(elsewhere, { subject: "Budget" })
+        const creation = createThread(folderWithoutCompany, {
+            subject: "Budget",
+        })
 
         await expect(creation).rejects.toThrow("Run `llmco init` first.")
     })

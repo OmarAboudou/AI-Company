@@ -11,8 +11,8 @@ export function getAwaitedIds(
 ): string[] {
     const answeredIds = new Set<string>()
     const awaitedIds = new Set<string>()
-    const newestFirst = getExchanges(messages, positions).toReversed()
-    for (const { authorId, mentionIds } of newestFirst) {
+    const newestFirstExchanges = getExchanges(messages, positions).toReversed()
+    for (const { authorId, mentionIds } of newestFirstExchanges) {
         for (const id of mentionIds) {
             if (!answeredIds.has(id)) {
                 awaitedIds.add(id)
