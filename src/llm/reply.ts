@@ -3,7 +3,6 @@ import { projectRoot } from "../cli-helpers.ts"
 import { loadCompany } from "../company/storage.ts"
 import type { Employee } from "../employee/employee.ts"
 import { loadEmployee } from "../employee/storage.ts"
-import { UserError } from "../errors.ts"
 import { wrote } from "../id-history.ts"
 import type { LlmModel } from "../llm-model/llm-model.ts"
 import { loadLlmModel } from "../llm-model/storage.ts"
@@ -16,6 +15,7 @@ import type { Position } from "../position/position.ts"
 import { loadPosition, loadPositionState } from "../position/storage.ts"
 import { currentWorker } from "../position/worker.ts"
 import { loadThread } from "../thread/storage.ts"
+import { UserError } from "../user-error.ts"
 import {
     anthropicTurns,
     callAnthropicMessages,

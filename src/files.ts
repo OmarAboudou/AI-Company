@@ -1,7 +1,7 @@
 import { readdir } from "node:fs/promises"
 import { relative } from "node:path"
 import { z } from "zod"
-import { UserError } from "./errors.ts"
+import { UserError } from "./user-error.ts"
 
 export async function readText(
     projectRoot: string,
