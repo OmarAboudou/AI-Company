@@ -1,6 +1,6 @@
 import { projectRoot } from "../cli/project-root.ts"
 import { readGitCommitter } from "../git/read-git-committer.ts"
-import { memberIds } from "../messaging/thread/get-member-ids.ts"
+import { getMemberIds } from "../messaging/thread/get-member-ids.ts"
 import type { Archive } from "../messaging/thread/list-archives.ts"
 import { loadCompany } from "../organization/company/storage.ts"
 import type { Employee } from "../organization/employee/schema.ts"
@@ -135,7 +135,7 @@ export async function currentAuthor({
         memberIds:
             archive === undefined
                 ? []
-                : memberIds(archive.thread, archive.messages, positions),
+                : getMemberIds(archive.thread, archive.messages, positions),
         directorPositionId,
     }
     const position = await positionToWriteFrom(choice, asPositionId)

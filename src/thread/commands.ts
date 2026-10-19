@@ -16,10 +16,10 @@ import {
 } from "../message/commands.ts"
 import { minutes, signature } from "../message/signature.ts"
 import { listMessages } from "../message/storage.ts"
-import { newThreadId } from "../messaging/thread/create-thread-id.ts"
-import { awaitedIds } from "../messaging/thread/get-awaited-ids.ts"
-import { memberIds } from "../messaging/thread/get-member-ids.ts"
-import { readArchives } from "../messaging/thread/list-archives.ts"
+import { createThreadId } from "../messaging/thread/create-thread-id.ts"
+import { getAwaitedIds } from "../messaging/thread/get-awaited-ids.ts"
+import { getMemberIds } from "../messaging/thread/get-member-ids.ts"
+import { listArchives } from "../messaging/thread/list-archives.ts"
 import { ThreadConfigSchema } from "../messaging/thread/schema.ts"
 import { saveThread } from "../messaging/thread/storage.ts"
 import { requireCompany } from "../organization/company/require-company.ts"
@@ -65,7 +65,7 @@ export function registerThreadCommands(program: Command): void {
             if (!config.success) {
                 throw new UserError(z.prettifyError(config.error))
             }
-            const id = await newThreadId(
+            const id = await createThreadId(
                 projectRoot,
                 config.data.subject,
                 createdAt,
@@ -86,7 +86,7 @@ export function registerThreadCommands(program: Command): void {
         .action(async () => {
             await requireCompany(projectRoot)
             const [archives, positions] = await Promise.all([
-                readArchives(projectRoot),
+                listArchives(projectRoot),
                 listPositions(projectRoot),
             ])
             if (archives.length === 0) {
@@ -95,7 +95,7 @@ export function registerThreadCommands(program: Command): void {
             }
             printColumns(
                 archives.map(({ thread, messages }) => {
-                    const awaited = awaitedIds(thread, messages, positions)
+                    const awaited = getAwaitedIds(thread, messages, positions)
                     return [
                         thread.id,
                         thread.subject,
@@ -133,12 +133,12 @@ export function registerThreadCommands(program: Command): void {
                 }
                 return
             }
-            const awaited = awaitedIds(thread, messages, positions)
+            const awaited = getAwaitedIds(thread, messages, positions)
             const lines = [
                 `# ${thread.subject}`,
                 "",
                 `Created by ${signature(thread.createdBy)}, ${minutes(thread.createdAt)}.`,
-                `Members: ${mentionsOf(memberIds(thread, messages, positions))}.`,
+                `Members: ${mentionsOf(getMemberIds(thread, messages, positions))}.`,
             ]
             if (awaited.length > 0) {
                 lines.push(`Awaiting: ${mentionsOf(awaited)}.`)

@@ -1,5 +1,5 @@
-import { awaitedIds } from "../../messaging/thread/get-awaited-ids.ts"
-import { readArchives } from "../../messaging/thread/list-archives.ts"
+import { getAwaitedIds } from "../../messaging/thread/get-awaited-ids.ts"
+import { listArchives } from "../../messaging/thread/list-archives.ts"
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { loadCompany } from "../company/storage.ts"
@@ -26,7 +26,7 @@ export async function deletePosition(
         loadExistingPosition(projectRoot, rawId),
         loadCompany(projectRoot),
         listPositions(projectRoot),
-        readArchives(projectRoot),
+        listArchives(projectRoot),
     ])
     if (company.directorPositionId === position.id) {
         throw new UserError(
@@ -35,7 +35,7 @@ export async function deletePosition(
     }
     const awaitingThreadIds = archives
         .filter(({ thread, messages }) =>
-            awaitedIds(thread, messages, positions).includes(position.id),
+            getAwaitedIds(thread, messages, positions).includes(position.id),
         )
         .map(({ thread }) => thread.id)
     if (awaitingThreadIds.length > 0 && !shouldForce) {

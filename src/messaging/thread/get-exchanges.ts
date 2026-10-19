@@ -4,7 +4,7 @@ import type { Message } from "../../message/message.ts"
 
 export type Exchange = { authorId: string; mentionIds: string[] }
 
-export function exchanges(
+export function getExchanges(
     messages: Message[],
     positions: IdHistory[],
 ): Exchange[] {

@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { newThreadId } from "./create-thread-id.ts"
+import { createThreadId } from "./create-thread-id.ts"
 import type { Thread } from "./schema.ts"
-import { saveThread, threadExists } from "./storage.ts"
+import { hasThread, saveThread } from "./storage.ts"
 
 let projectRoot: string
 
@@ -26,9 +26,9 @@ const framework: Thread = {
     },
 }
 
-describe("newThreadId", () => {
+describe("createThreadId", () => {
     test("starts with the creation date", async () => {
-        const id = await newThreadId(
+        const id = await createThreadId(
             projectRoot,
             "Choice of framework",
             framework.createdAt,
@@ -39,15 +39,15 @@ describe("newThreadId", () => {
 
     test("adds a number when the id is taken", async () => {
         await saveThread(projectRoot, framework)
-        const exists = await threadExists(projectRoot, framework.id)
+        const isIdTaken = await hasThread(projectRoot, framework.id)
 
-        const id = await newThreadId(
+        const id = await createThreadId(
             projectRoot,
             "Choice of framework",
             framework.createdAt,
         )
 
-        expect(exists).toBe(true)
+        expect(isIdTaken).toBe(true)
         expect(id).toBe("2026-10-18-choice-of-framework-2")
     })
 })

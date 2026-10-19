@@ -9,11 +9,11 @@ export function slugify(subject: string): string {
         .filter((word) => word !== "")
     let slug = ""
     for (const word of words) {
-        const longer = slug === "" ? word : `${slug}-${word}`
-        if (longer.length > maxSlugLength) {
+        const longerSlug = slug === "" ? word : `${slug}-${word}`
+        if (longerSlug.length > maxSlugLength) {
             break
         }
-        slug = longer
+        slug = longerSlug
     }
     return slug === "" ? "thread" : slug
 }

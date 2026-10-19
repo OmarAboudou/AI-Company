@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test"
 import type { IdHistory } from "../../ids/id-history-schema.ts"
 import type { Message } from "../../message/message.ts"
-import { awaitedIds } from "./get-awaited-ids.ts"
-import { memberIds } from "./get-member-ids.ts"
+import { getAwaitedIds } from "./get-awaited-ids.ts"
+import { getMemberIds } from "./get-member-ids.ts"
 import type { Thread } from "./schema.ts"
 
 const director = { id: "director", title: "Director" }
@@ -16,7 +16,7 @@ const thread: Thread = {
     createdBy: { position: director, committer },
 }
 
-function message(
+function createMessage(
     positionId: string,
     mentions: string[] = [],
     sentAt = "2026-10-18T14:00:00.000Z",
@@ -32,48 +32,48 @@ function message(
     }
 }
 
-function members(messages: Message[], positions: IdHistory[] = []) {
-    return memberIds(thread, messages, positions)
+function getThreadMemberIds(messages: Message[], positions: IdHistory[] = []) {
+    return getMemberIds(thread, messages, positions)
 }
 
-function awaited(messages: Message[], positions: IdHistory[] = []) {
-    return awaitedIds(thread, messages, positions)
+function getThreadAwaitedIds(messages: Message[], positions: IdHistory[] = []) {
+    return getAwaitedIds(thread, messages, positions)
 }
 
-describe("awaitedIds", () => {
+describe("getAwaitedIds", () => {
     test("awaits a mentioned position until it writes", () => {
-        const question = message("director", ["backend-developer"])
-        const answer = message("backend-developer")
+        const question = createMessage("director", ["backend-developer"])
+        const answer = createMessage("backend-developer")
 
-        expect(awaited([question])).toEqual(["backend-developer"])
-        expect(awaited([question, answer])).toEqual([])
+        expect(getThreadAwaitedIds([question])).toEqual(["backend-developer"])
+        expect(getThreadAwaitedIds([question, answer])).toEqual([])
     })
 
     test("awaits a position again when mentioned after its answer", () => {
         const messages = [
-            message("director", ["backend-developer"]),
-            message("backend-developer"),
-            message("director", ["backend-developer"]),
+            createMessage("director", ["backend-developer"]),
+            createMessage("backend-developer"),
+            createMessage("director", ["backend-developer"]),
         ]
 
-        expect(awaited(messages)).toEqual(["backend-developer"])
+        expect(getThreadAwaitedIds(messages)).toEqual(["backend-developer"])
     })
 
     test("doesn't await a position because it is a member", () => {
         const messages = [
-            message("director", ["backend-developer"]),
-            message("backend-developer", ["director"]),
-            message("director"),
+            createMessage("director", ["backend-developer"]),
+            createMessage("backend-developer", ["director"]),
+            createMessage("director"),
         ]
 
-        expect(members(messages)).toContain("backend-developer")
-        expect(awaited(messages)).toEqual([])
+        expect(getThreadMemberIds(messages)).toContain("backend-developer")
+        expect(getThreadAwaitedIds(messages)).toEqual([])
     })
 
     test("awaits every position mentioned, in the order members are", () => {
-        const messages = [message("director", ["qa-tester", "designer"])]
+        const messages = [createMessage("director", ["qa-tester", "designer"])]
 
-        expect(awaited(messages)).toEqual(["qa-tester", "designer"])
+        expect(getThreadAwaitedIds(messages)).toEqual(["qa-tester", "designer"])
     })
 })
 
@@ -88,22 +88,30 @@ describe("through the positions' id history", () => {
     ]
 
     test("awaits a renamed position under its new id", () => {
-        const question = message("director", ["backend-developer"])
+        const question = createMessage("director", ["backend-developer"])
 
-        expect(awaited([question], positions)).toEqual(["api-developer"])
+        expect(getThreadAwaitedIds([question], positions)).toEqual([
+            "api-developer",
+        ])
     })
 
     test("counts an answer under the new id for a mention made before", () => {
-        const question = message("director", ["backend-developer"])
-        const answer = message("api-developer", [], "2026-10-19T10:00:00.000Z")
+        const question = createMessage("director", ["backend-developer"])
+        const answer = createMessage(
+            "api-developer",
+            [],
+            "2026-10-19T10:00:00.000Z",
+        )
 
-        expect(awaited([question], positions)).toEqual(["api-developer"])
-        expect(awaited([question, answer], positions)).toEqual([])
+        expect(getThreadAwaitedIds([question], positions)).toEqual([
+            "api-developer",
+        ])
+        expect(getThreadAwaitedIds([question, answer], positions)).toEqual([])
     })
 
     test("keeps the id of a position nobody has had since", () => {
-        const question = message("director", ["designer"])
+        const question = createMessage("director", ["designer"])
 
-        expect(awaited([question], positions)).toEqual(["designer"])
+        expect(getThreadAwaitedIds([question], positions)).toEqual(["designer"])
     })
 })

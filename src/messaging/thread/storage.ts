@@ -4,23 +4,23 @@ import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
 import { type Thread, ThreadConfigSchema } from "./schema.ts"
 
-function threadsDir(projectRoot: string): string {
+function getThreadsFolderPath(projectRoot: string): string {
     return join(getLlmcoFolderPath(projectRoot), "threads")
 }
 
-export function threadDir(projectRoot: string, id: string): string {
-    return join(threadsDir(projectRoot), id)
+export function getThreadFolderPath(projectRoot: string, id: string): string {
+    return join(getThreadsFolderPath(projectRoot), id)
 }
 
-function threadConfigPath(projectRoot: string, id: string): string {
-    return join(threadDir(projectRoot, id), "thread.json")
+function getThreadConfigPath(projectRoot: string, id: string): string {
+    return join(getThreadFolderPath(projectRoot, id), "thread.json")
 }
 
-export async function threadExists(
+export async function hasThread(
     projectRoot: string,
     id: string,
 ): Promise<boolean> {
-    return Bun.file(threadConfigPath(projectRoot, id)).exists()
+    return Bun.file(getThreadConfigPath(projectRoot, id)).exists()
 }
 
 export async function loadThread(
@@ -29,15 +29,17 @@ export async function loadThread(
 ): Promise<Thread> {
     const config = await readJsonFile(
         projectRoot,
-        threadConfigPath(projectRoot, id),
+        getThreadConfigPath(projectRoot, id),
         ThreadConfigSchema,
     )
     return { id, ...config }
 }
 
 export async function listThreads(projectRoot: string): Promise<Thread[]> {
-    const ids = await listSubdirectories(threadsDir(projectRoot))
-    return Promise.all(ids.map((id) => loadThread(projectRoot, id)))
+    const threadIds = await listSubdirectories(
+        getThreadsFolderPath(projectRoot),
+    )
+    return Promise.all(threadIds.map((id) => loadThread(projectRoot, id)))
 }
 
 export async function saveThread(
@@ -46,7 +48,7 @@ export async function saveThread(
 ): Promise<void> {
     const { id, ...config } = thread
     await Bun.write(
-        threadConfigPath(projectRoot, id),
+        getThreadConfigPath(projectRoot, id),
         `${JSON.stringify(config, null, 4)}\n`,
     )
 }

@@ -3,7 +3,7 @@ import { join } from "node:path"
 import { listSubdirectories } from "../files/list-subdirectories.ts"
 import { readJsonFile } from "../files/read-json-file.ts"
 import { readTextFile } from "../files/read-text-file.ts"
-import { threadDir } from "../messaging/thread/storage.ts"
+import { getThreadFolderPath } from "../messaging/thread/storage.ts"
 import {
     type Message,
     MessageConfigSchema,
@@ -12,7 +12,7 @@ import {
 } from "./message.ts"
 
 function messagesDir(projectRoot: string, threadId: string): string {
-    return join(threadDir(projectRoot, threadId), "messages")
+    return join(getThreadFolderPath(projectRoot, threadId), "messages")
 }
 
 function messagePaths(projectRoot: string, threadId: string, id: string) {
