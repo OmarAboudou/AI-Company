@@ -27,5 +27,31 @@
                 "organizeImports": "on"
             }
         }
-    }
+    },
+    "overrides": [
+        {
+            "includes": ["src/**", "!src/cli/**"],
+            "linter": {
+                "rules": {
+                    "style": {
+                        "noRestrictedImports": {
+                            "level": "error",
+                            "options": {
+                                "paths": {
+                                    "commander": "Only src/cli/ imports commander: the core returns what a command prints, and throws a UserError to refuse.",
+                                    "@commander-js/extra-typings": "Only src/cli/ imports commander: the core returns what a command prints, and throws a UserError to refuse."
+                                },
+                                "patterns": [
+                                    {
+                                        "group": ["**/cli/**"],
+                                        "message": "Nothing outside src/cli/ imports from it: the core receives what it needs, such as the project's root, as parameters."
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
 }
