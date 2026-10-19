@@ -29,8 +29,8 @@ describe("llmco employee", () => {
     })
 
     test("hire is an alias of create", () => {
-        const hire = runCli("employee", "hire", "human", "omar", "-n", "Omar")
-        expect(hire.exitCode).toBe(0)
+        const hiring = runCli("employee", "hire", "human", "omar", "-n", "Omar")
+        expect(hiring.exitCode).toBe(0)
 
         expect(runCli("employee", "show", "omar").stdout).toBe(
             "# Omar\n\nkind: human\npositions: (none)\n",
@@ -38,9 +38,9 @@ describe("llmco employee", () => {
     })
 
     test("create requires the kind before the id", () => {
-        const create = runCli("employee", "create", "omar", "-n", "Omar")
+        const creation = runCli("employee", "create", "omar", "-n", "Omar")
 
-        expect(create.exitCode).toBe(1)
-        expect(create.stderr).toContain("unknown command 'omar'")
+        expect(creation.exitCode).toBe(1)
+        expect(creation.stderr).toContain("unknown command 'omar'")
     })
 })

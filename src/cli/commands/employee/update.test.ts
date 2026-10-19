@@ -4,8 +4,9 @@ import { useTemporaryProject } from "../../use-temporary-project.ts"
 const { runCli } = useTemporaryProject()
 
 describe("llmco employee update", () => {
-    function createModel(provider: string, model: string) {
-        runCli("model", "create", provider, model, "-n", model, "-a", model)
+    function createModel(providerId: string, modelId: string) {
+        const options = ["-n", modelId, "-a", modelId]
+        runCli("model", "create", providerId, modelId, ...options)
     }
 
     beforeEach(() => {
