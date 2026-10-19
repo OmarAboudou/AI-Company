@@ -22,9 +22,9 @@ describe("llmco init", () => {
     test("refuses to overwrite an existing company", () => {
         runCli("init", "--name", "Acme")
 
-        const second = runCli("init", "--name", "Other")
+        const secondInit = runCli("init", "--name", "Other")
 
-        expect(second.exitCode).toBe(1)
+        expect(secondInit.exitCode).toBe(1)
         expect(runCli("company", "show").stdout).toContain("# Acme")
     })
 
@@ -34,14 +34,15 @@ describe("llmco init", () => {
 })
 
 describe("--description-file", () => {
-    const markdown = "## Mission\n\nYou build the API.\n"
+    const description = "## Mission\n\nYou build the API.\n"
 
     test("init reads the description from a file", async () => {
-        await Bun.write(getProjectPath("company.md"), markdown)
+        await Bun.write(getProjectPath("company.md"), description)
 
         runCli("init", "--name", "Acme", "--description-file", "company.md")
+        const show = runCli("company", "show").stdout
 
-        expect(runCli("company", "show").stdout).toBe(`# Acme\n\n${markdown}\n`)
+        expect(show).toBe(`# Acme\n\n${description}\n`)
     })
 
     test("cannot be combined with --description", () => {

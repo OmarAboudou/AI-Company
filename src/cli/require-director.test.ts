@@ -5,11 +5,11 @@ import { useTemporaryProject } from "./use-temporary-project.ts"
 
 const { runCli, runCliWithEnv } = useTemporaryProject()
 
-const asJulie = { LLMCO_CURRENT_HUMAN_ID: "julie" }
+const julieEnv = { LLMCO_CURRENT_HUMAN_ID: "julie" }
 
 const connection = ["provider", "connection"]
 
-const management: Record<string, string[]> = {
+const managementCommandArgs: Record<string, string[]> = {
     init: ["init", "-n", "Acme"],
     "company update": ["company", "update", "-n", "Acme"],
     "position create": ["position", "create", "dev", "-t", "Dev"],
@@ -58,7 +58,7 @@ const management: Record<string, string[]> = {
     "model delete": ["model", "delete", "anthropic", "opus"],
 }
 
-const free = [
+const freeCommandNames = [
     "company show",
     "position list",
     "position show",
@@ -76,12 +76,12 @@ const free = [
     "current-human",
 ]
 
-function leafCommands(command: CommandUnknownOpts): string[] {
+function getLeafCommandNames(command: CommandUnknownOpts): string[] {
     return command.commands.flatMap((subcommand) => {
-        const leaves = leafCommands(subcommand)
-        return leaves.length === 0
+        const leafNames = getLeafCommandNames(subcommand)
+        return leafNames.length === 0
             ? [subcommand.name()]
-            : leaves.map((leaf) => `${subcommand.name()} ${leaf}`)
+            : leafNames.map((leafName) => `${subcommand.name()} ${leafName}`)
     })
 }
 
@@ -92,26 +92,30 @@ describe("management commands", () => {
     })
 
     test("every command is either reserved to directors or free", () => {
-        const classified = [...Object.keys(management), ...free]
+        const leafCommandNames = getLeafCommandNames(createProgram())
+        const classifiedCommandNames = [
+            ...Object.keys(managementCommandArgs),
+            ...freeCommandNames,
+        ]
 
-        expect(leafCommands(createProgram()).sort()).toEqual(classified.sort())
+        expect(leafCommandNames.sort()).toEqual(classifiedCommandNames.sort())
     })
 
-    test.each(Object.entries(management))(
+    test.each(Object.entries(managementCommandArgs))(
         "%s is reserved to directors",
-        (name, args) => {
-            const run = runCliWithEnv(asJulie, ...args)
+        (commandName, args) => {
+            const run = runCliWithEnv(julieEnv, ...args)
 
             expect(run.exitCode).toBe(1)
             expect(run.stderr).toBe(
-                `Only directors run \`llmco ${name}\`: LLMCO_CURRENT_HUMAN_ID has you act as "julie". Unset it to act as a director.\n`,
+                `Only directors run \`llmco ${commandName}\`: LLMCO_CURRENT_HUMAN_ID has you act as "julie". Unset it to act as a director.\n`,
             )
         },
     )
 
     test("reading stays free", () => {
-        const list = runCliWithEnv(asJulie, "position", "list")
-        const show = runCliWithEnv(asJulie, "company", "show")
+        const list = runCliWithEnv(julieEnv, "position", "list")
+        const show = runCliWithEnv(julieEnv, "company", "show")
 
         expect(list.exitCode).toBe(0)
         expect(show.exitCode).toBe(0)

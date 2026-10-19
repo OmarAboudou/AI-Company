@@ -5,11 +5,11 @@ const { runCli, runCliWithEnv } = useTemporaryProject()
 
 const interimEmployee = ["position", "interim", "employee"]
 
-function switchedTo(employeeId: string) {
+function createEmployeeEnv(employeeId: string) {
     return { LLMCO_CURRENT_HUMAN_ID: employeeId }
 }
 
-const asJulie = switchedTo("julie")
+const julieEnv = createEmployeeEnv("julie")
 
 beforeEach(() => {
     runCli("init", "-n", "Acme")
@@ -22,10 +22,10 @@ beforeEach(() => {
 
 describe("llmco current-human", () => {
     test("without LLMCO_CURRENT_HUMAN_ID, shows a director, named by git", () => {
-        const currentHuman = runCli("current-human")
+        const currentHumanRun = runCli("current-human")
 
-        expect(currentHuman.exitCode).toBe(0)
-        expect(currentHuman.stdout).toBe(
+        expect(currentHumanRun.exitCode).toBe(0)
+        expect(currentHumanRun.stdout).toBe(
             "Test User, a director\n" +
                 "positions: director\n" +
                 "committer: Test User <test@example.com>\n",
@@ -40,10 +40,10 @@ describe("llmco current-human", () => {
     })
 
     test("shows the human employee LLMCO_CURRENT_HUMAN_ID names, and the committer", () => {
-        const currentHuman = runCliWithEnv(asJulie, "current-human")
+        const currentHumanRun = runCliWithEnv(julieEnv, "current-human")
 
-        expect(currentHuman.exitCode).toBe(0)
-        expect(currentHuman.stdout).toBe(
+        expect(currentHumanRun.exitCode).toBe(0)
+        expect(currentHumanRun.stdout).toBe(
             "Julie (julie), a human employee\n" +
                 "positions: (none)\n" +
                 "committer: Test User <test@example.com>\n",
@@ -56,17 +56,19 @@ describe("llmco current-human", () => {
         runCli(...interimEmployee, "design", "bob")
         runCli(...interimEmployee, "support", "julie")
 
-        const currentHuman = runCliWithEnv(asJulie, "current-human").stdout
+        const currentHumanRun = runCliWithEnv(julieEnv, "current-human")
 
-        expect(currentHuman).toContain(
+        expect(currentHumanRun.stdout).toContain(
             "positions: graphics, support (temporarily)\n",
         )
     })
 
     test("refuses an id naming no employee", () => {
-        const currentHuman = runCliWithEnv(switchedTo("eve"), "current-human")
+        const eveEnv = createEmployeeEnv("eve")
 
-        expect(currentHuman.exitCode).toBe(1)
-        expect(currentHuman.stderr).toContain('names no employee: "eve"')
+        const currentHumanRun = runCliWithEnv(eveEnv, "current-human")
+
+        expect(currentHumanRun.exitCode).toBe(1)
+        expect(currentHumanRun.stderr).toContain('names no employee: "eve"')
     })
 })
