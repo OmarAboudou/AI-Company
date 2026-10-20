@@ -8,7 +8,7 @@ export function readCurrentHumanId(): string | undefined {
     }
     if (!IdSchema.safeParse(rawId).success) {
         throw new UserError(
-            `LLMCO_CURRENT_HUMAN_ID is "${rawId}", which isn't an employee id. Unset it to act as a director.`,
+            `LLMCO_CURRENT_HUMAN_ID is "${rawId}", which isn't an employee id. Run \`llmco current-human clear\` to act as a director.`,
         )
     }
     return rawId

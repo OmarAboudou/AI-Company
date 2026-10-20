@@ -82,7 +82,7 @@ async function requireWorkedPosition(
     }
     if (position.id === directorPositionId) {
         throw new UserError(
-            `Only directors write from the director's position "${position.id}": unset LLMCO_CURRENT_HUMAN_ID to act as one.`,
+            `Only directors write from the director's position "${position.id}": run \`llmco current-human clear\` to act as one.`,
         )
     }
     const positionState = await loadPositionState(projectRoot, position.id)
