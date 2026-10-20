@@ -188,3 +188,11 @@ d656f81b5f37617bd300380ab2cd308a1df380d7
 
 # Name the provider and model commands' test values after what they hold
 4d5b5c27665f816ed07a904e508da1c83869ae03
+
+# Choosing who acts, and from which position (#121), as it landed on main
+
+# Name the operation setCurrentHuman, for current-human set
+3ed06a9d5b635acfb5e9821e5e43621df398fe46
+
+# Move requireWorkedPosition next to the current human
+0db19ea7d00747cf551d72708b8333045dd84e40
