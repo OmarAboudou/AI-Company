@@ -7,6 +7,8 @@ import { registerMessageCommands } from "./commands/message/message.ts"
 import { registerModelCommands } from "./commands/model/model.ts"
 import { registerPositionCommands } from "./commands/position/position.ts"
 import { registerProviderCommands } from "./commands/provider/provider.ts"
+import { registerSwitchToDirectorCommand } from "./commands/switch-to-director.ts"
+import { registerSwitchToHumanCommand } from "./commands/switch-to-human.ts"
 import { registerThreadCommands } from "./commands/thread/thread.ts"
 
 export function createProgram(): Command {
@@ -23,5 +25,7 @@ export function createProgram(): Command {
     registerThreadCommands(program)
     registerMessageCommands(program)
     registerCurrentHumanCommand(program)
+    registerSwitchToHumanCommand(program)
+    registerSwitchToDirectorCommand(program)
     return program
 }
