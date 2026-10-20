@@ -71,6 +71,20 @@ for (const shell of shells) {
                 expect(shellRun.stdout).toBe("unset|$ ")
             })
 
+            test("lets current-position set select a position, cleared by a new identity", () => {
+                const printPositionId =
+                    'printf "%s|" "${LLMCO_CURRENT_POSITION_ID-unset}"'
+
+                const shellRun = runFunction(
+                    "llmco current-position set director",
+                    printPositionId,
+                    "llmco current-human set julie",
+                    printPositionId,
+                )
+
+                expect(shellRun.stdout).toBe("director|unset|")
+            })
+
             test("passes the other commands to llmco", () => {
                 const shellRun = runFunction(
                     "llmco current-human set julie",

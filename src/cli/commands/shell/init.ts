@@ -7,7 +7,7 @@ export function registerShellInitCommand(shellCommand: Command): void {
     shellCommand
         .command("init")
         .description(
-            "Print llmco's shell function, which current-human set and clear need, for your shell's startup file to evaluate, or add the line evaluating it to that file with --install.",
+            "Print llmco's shell function, which current-human and current-position set and clear need, for your shell's startup file to evaluate, or add the line evaluating it to that file with --install.",
         )
         .addArgument(
             new Argument(

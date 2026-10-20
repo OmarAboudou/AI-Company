@@ -76,6 +76,9 @@ const freeCommandNames = [
     "current-human show",
     "current-human set",
     "current-human clear",
+    "current-position show",
+    "current-position set",
+    "current-position clear",
     "shell init",
 ]
 

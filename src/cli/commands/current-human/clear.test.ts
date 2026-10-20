@@ -12,9 +12,12 @@ describe("llmco current-human clear", () => {
     })
 
     test("--shell-code prints the code switching back to a director", () => {
+        const unsetLine =
+            "unset LLMCO_CURRENT_HUMAN_ID LLMCO_CURRENT_POSITION_ID\n"
+
         const switching = runCli("current-human", "clear", "--shell-code")
 
         expect(switching.exitCode).toBe(0)
-        expect(switching.stdout).toStartWith("unset LLMCO_CURRENT_HUMAN_ID\n")
+        expect(switching.stdout).toStartWith(unsetLine)
     })
 })

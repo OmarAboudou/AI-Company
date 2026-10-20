@@ -4,6 +4,7 @@ import { requireCompany } from "../../../organization/company/require-company.ts
 import { loadCompany } from "../../../organization/company/storage.ts"
 import { listPositionsWorkedBy } from "../../../organization/human/list-positions-worked-by.ts"
 import { readCurrentHuman } from "../../../organization/human/read-current-human.ts"
+import { readCurrentPositionId } from "../../../organization/human/read-current-position-id.ts"
 import { listPositions } from "../../../organization/position/storage.ts"
 import { projectRoot } from "../../project-root.ts"
 
@@ -33,9 +34,19 @@ export function registerCurrentHumanShowCommand(
                 human.kind === "director"
                     ? `${committer.name}, a director`
                     : `${human.employee.name} (${human.employee.id}), a human employee`
+            const currentPositionId = readCurrentPositionId()
             const workedPositionLabels = workedPositions.map(
-                ({ position, isTemporary }) =>
-                    isTemporary ? `${position.id} (temporarily)` : position.id,
+                ({ position, isTemporary }) => {
+                    const notes = [
+                        ...(isTemporary ? ["temporarily"] : []),
+                        ...(position.id === currentPositionId
+                            ? ["selected"]
+                            : []),
+                    ]
+                    return notes.length === 0
+                        ? position.id
+                        : `${position.id} (${notes.join(", ")})`
+                },
             )
             console.log(
                 [
