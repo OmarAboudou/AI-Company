@@ -7,7 +7,7 @@ Everything written into the repository or on GitHub is in English: code, comment
 ## Workflow
 
 - GitHub Flow: never commit to `main`. One branch per coherent change (`feat/…`, `fix/…`, `chore/…`, `docs/…`), opened as a pull request against `main`.
-- The maintainer reviews line by line: keep pull requests small, split into small commits that each make sense on their own.
+- The maintainer reviews commit by commit, line by line: keep commits short, each making sense on its own. A pull request may hold many of them: a long commit makes a review hard, not a long pull request.
 - Answer review comments in their GitHub thread. Resolve a thread only when the maintainer's own last message in it settles it (an agreement, a decision, a thanks); while your reply is the last word, leave it open for the maintainer.
 - Once the maintainer has approved a pull request, its checks pass and every review thread is resolved, the agent that opened it merges it with rebase-merge, unless the maintainer asked to wait. A commit pushed after the approval needs a new approval.
 - A pre-push hook runs lint, typecheck and tests: never bypass it with `--no-verify`.
