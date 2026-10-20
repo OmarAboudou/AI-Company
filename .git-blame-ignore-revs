@@ -159,3 +159,32 @@ f81e728803ae1e69d24148ad329ee12d364dcbac
 
 # Name a message not sent yet an UnsentMessage
 57a5004ac2bf524f2a9cfa8dfe40668ecbb332f5
+
+# The naming audit (#110), as it landed on main
+
+# Name the repository scripts' values after what they hold
+0dd950694213139f4f516a942d6edc20ba4ef80d
+
+# Name the human at the keyboard's test values after what they hold
+aa0e4ca8e8775268e308be302bc0a5732766f2f7
+
+# Name the Anthropic protocol's sending date after what it holds
+2b000ccdcdf430b06ce15aade13d2a5efe5a9229
+
+# Name the messages' values after what they hold
+d9ec0f7006eadbbf157bb53a42b2e44193ba77e6
+
+# Name the work domain's values after what they hold
+ed7560c25d85bf983b427c52b782936f823f6372
+
+# Name the command line helpers' values after what they hold
+d656f81b5f37617bd300380ab2cd308a1df380d7
+
+# Name the test project's helpers after what they do
+63e885c99cbd9fdd26f33458159a12a0b4e7fd6e
+
+# Name the position commands' test values after what they hold
+63c52403ec9747dfbb3616f6a84d67922ad9afe1
+
+# Name the provider and model commands' test values after what they hold
+4d5b5c27665f816ed07a904e508da1c83869ae03
