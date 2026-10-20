@@ -3,7 +3,7 @@ import { requireCompany } from "../company/require-company.ts"
 import { loadExistingEmployee } from "../employee/load-existing-employee.ts"
 import type { CurrentHuman } from "./read-current-human.ts"
 
-export async function switchToHuman(
+export async function setCurrentHuman(
     projectRoot: string,
     rawEmployeeId: string,
 ): Promise<CurrentHuman> {

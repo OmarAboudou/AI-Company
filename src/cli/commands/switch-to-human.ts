@@ -1,5 +1,5 @@
 import { type Command, Option } from "@commander-js/extra-typings"
-import { switchToHuman } from "../../organization/human/switch-to-human.ts"
+import { setCurrentHuman } from "../../organization/human/set-current-human.ts"
 import { formatIdArgumentDescription } from "../id-argument-descriptions.ts"
 import { projectRoot } from "../project-root.ts"
 import { buildSwitchHumanCode } from "./build-switch-human-code.ts"
@@ -23,7 +23,10 @@ export function registerSwitchToHumanCommand(program: Command): void {
         )
         .action(async (rawEmployeeId, { shellCode: shouldPrintShellCode }) => {
             requireShellFunction(shouldPrintShellCode)
-            const currentHuman = await switchToHuman(projectRoot, rawEmployeeId)
+            const currentHuman = await setCurrentHuman(
+                projectRoot,
+                rawEmployeeId,
+            )
             process.stdout.write(buildSwitchHumanCode(currentHuman))
         })
 }
