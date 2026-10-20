@@ -123,7 +123,8 @@ describe("answerAsLlmEmployee", () => {
     })
 
     test("stores the provider's raw response next to the answer only", async () => {
-        fakeServer.respondWith({ text: "Hono.", signature: "sig-1" })
+        const signature = "sig-1"
+        fakeServer.respondWith({ text: "Hono.", signature })
 
         await sendAndAnswer(question)
 
@@ -133,12 +134,13 @@ describe("answerAsLlmEmployee", () => {
                 loadProviderResponse(projectRoot, message),
             ),
         )
-        const thinking = { type: "thinking", thinking: "", signature: "sig-1" }
+        const thinkingBlock = { type: "thinking", thinking: "", signature }
+        const textBlock = { type: "text", text: "Hono." }
         expect(questionResponse).toBeUndefined()
         expect(answerResponse).toMatchObject({
             protocol: "anthropic-messages",
             apiId: "claude-opus-5-5",
-            payload: { content: [thinking, { type: "text", text: "Hono." }] },
+            payload: { content: [thinkingBlock, textBlock] },
         })
     })
 
