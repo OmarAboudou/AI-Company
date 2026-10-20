@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, test } from "bun:test"
 import { chmod, mkdir } from "node:fs/promises"
 import { join } from "node:path"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
+import { isShellInstalled, runShell, type ShellRun } from "./run-shell.ts"
+import { shells } from "./shells.ts"
 
 const { runCli, runCliWithEnv, getProjectPath, getHomePath } =
     useTemporaryProject()
@@ -21,51 +23,65 @@ beforeEach(async () => {
     await chmod(llmcoPath, 0o755)
 })
 
-function runBash(...commands: string[]) {
-    const script = ['eval "$(llmco shell init bash)"', 'PS1="$ "', ...commands]
-    const bash = Bun.spawnSync(
-        ["bash", "--norc", "--noprofile", "-c", script.join("\n")],
-        {
-            cwd: getProjectPath(),
-            env: {
-                PATH: `${getHomePath("bin")}:${process.env.PATH}`,
-                HOME: getHomePath(),
-            },
+for (const shell of shells) {
+    describe.skipIf(!isShellInstalled(shell))(
+        `llmco shell init ${shell}`,
+        () => {
+            function runFunction(...commands: string[]): ShellRun {
+                const script = [
+                    `eval "$(llmco shell init ${shell})"`,
+                    'PS1="$ "',
+                    ...commands,
+                ]
+                return runShell(shell, script.join("\n"), {
+                    cwd: getProjectPath(),
+                    env: {
+                        PATH: `${getHomePath("bin")}:${process.env.PATH}`,
+                        HOME: getHomePath(),
+                    },
+                })
+            }
+
+            test("prints a function through which switch-to-human switches the shell", () => {
+                const shellRun = runFunction(
+                    "llmco switch-to-human julie",
+                    printShellState,
+                )
+
+                expect(shellRun.stdout).toBe("julie|(julie) $ ")
+            })
+
+            test("lets switch-to-director switch back", () => {
+                const shellRun = runFunction(
+                    "llmco switch-to-human julie",
+                    "llmco switch-to-director",
+                    printShellState,
+                )
+
+                expect(shellRun.stdout).toBe("unset|$ ")
+            })
+
+            test("leaves the shell as it was when switch-to-human refuses", () => {
+                const shellRun = runFunction(
+                    "llmco switch-to-human eve",
+                    printShellState,
+                )
+
+                expect(shellRun.stderr).toContain('No employee "eve".')
+                expect(shellRun.stdout).toBe("unset|$ ")
+            })
+
+            test("passes the other commands to llmco", () => {
+                const shellRun = runFunction(
+                    "llmco switch-to-human julie",
+                    "llmco whoami",
+                )
+
+                expect(shellRun.stdout).toStartWith("Julie (julie), a human")
+            })
         },
     )
-    return { stdout: bash.stdout.toString(), stderr: bash.stderr.toString() }
 }
-
-describe("llmco shell init bash", () => {
-    test("prints a function through which switch-to-human switches the shell", () => {
-        const shellRun = runBash("llmco switch-to-human julie", printShellState)
-
-        expect(shellRun.stdout).toBe("julie|(julie) $ ")
-    })
-
-    test("lets switch-to-director switch back", () => {
-        const shellRun = runBash(
-            "llmco switch-to-human julie",
-            "llmco switch-to-director",
-            printShellState,
-        )
-
-        expect(shellRun.stdout).toBe("unset|$ ")
-    })
-
-    test("leaves the shell as it was when switch-to-human refuses", () => {
-        const shellRun = runBash("llmco switch-to-human eve", printShellState)
-
-        expect(shellRun.stderr).toContain('No employee "eve".')
-        expect(shellRun.stdout).toBe("unset|$ ")
-    })
-
-    test("passes the other commands to llmco", () => {
-        const shellRun = runBash("llmco switch-to-human julie", "llmco whoami")
-
-        expect(shellRun.stdout).toStartWith("Julie (julie), a human employee")
-    })
-})
 
 describe("llmco shell init", () => {
     test("refuses a shell it doesn't set up", () => {
