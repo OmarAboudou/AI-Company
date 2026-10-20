@@ -1,66 +1,34 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
-import { createGitRepository } from "../git/create-git-repository.ts"
 import { useFakeAnthropicServer } from "../llm/anthropic-messages/use-fake-anthropic-server.ts"
 import { createLlmConnection } from "../llm/connection/create-llm-connection.ts"
-import { createLlmModel } from "../llm/model/create-llm-model.ts"
 import { updateLlmModel } from "../llm/model/update-llm-model.ts"
-import { createLlmProvider } from "../llm/provider/create-llm-provider.ts"
 import { sendMessage } from "../messaging/message/send-message.ts"
 import {
     listMessages,
     loadProviderResponse,
 } from "../messaging/message/storage.ts"
-import { createThread } from "../messaging/thread/create-thread.ts"
-import { createTemporaryCompany } from "../organization/company/create-temporary-company.ts"
-import { createEmployee } from "../organization/employee/create-employee.ts"
 import { updateEmployeeId } from "../organization/employee/update-employee-id.ts"
 import { assignPosition } from "../organization/position/assign-position.ts"
 import { assignPositionTemporarily } from "../organization/position/assign-position-temporarily.ts"
-import { createPosition } from "../organization/position/create-position.ts"
 import { unassignPositionTemporarily } from "../organization/position/unassign-position-temporarily.ts"
 import { UserError } from "../user-error.ts"
 import { type AnswerEvent, answerMentions } from "./answer-mentions.ts"
+import { createAnsweringCompany } from "./create-answering-company.ts"
 
 const fakeServer = useFakeAnthropicServer()
 const variableNames = ["LLMCO_CURRENT_HUMAN_ID", "TEST_ANTHROPIC_KEY"] as const
 const shellValues = variableNames.map((name) => process.env[name])
-const committer = { name: "Test User", email: "test@example.com" }
 const question = "@backend-developer Hono or Express?"
 let projectRoot: string
 let threadId: string
 
-async function createLlmEmployee(): Promise<void> {
-    const apiKey = { kind: "env", variable: "TEST_ANTHROPIC_KEY" } as const
-    await createLlmProvider(projectRoot, "anthropic", { name: "A", apiKey })
-    await createLlmConnection(projectRoot, "anthropic", "anthropic-messages", {
-        baseUrl: fakeServer.getUrl(),
-    })
-    const opus = { name: "Opus", apiId: "claude-opus-5-5" }
-    await createLlmModel(projectRoot, "anthropic", "opus", opus)
-    await createEmployee(projectRoot, "claude", {
-        name: "Claude Senior",
-        kind: "llm",
-        providerId: "anthropic",
-        modelId: "opus",
-    })
-}
-
 beforeEach(async () => {
     delete process.env.LLMCO_CURRENT_HUMAN_ID
     process.env.TEST_ANTHROPIC_KEY = "sk-test"
-    projectRoot = await createTemporaryCompany()
-    createGitRepository(projectRoot, committer)
-    await Promise.all([
-        createLlmEmployee(),
-        createEmployee(projectRoot, "julie", { name: "Julie", kind: "human" }),
-        ...["backend-developer", "qa-tester"].map((id) =>
-            createPosition(projectRoot, id, { title: id, description: "" }),
-        ),
-    ])
-    await assignPosition(projectRoot, "backend-developer", "claude")
-    const { thread } = await createThread(projectRoot, { subject: "Stack" })
-    threadId = thread.id
+    const answeringCompany = await createAnsweringCompany(fakeServer.getUrl())
+    projectRoot = answeringCompany.projectRoot
+    threadId = answeringCompany.threadId
 })
 
 afterEach(async () => {
