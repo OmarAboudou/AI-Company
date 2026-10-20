@@ -3,6 +3,7 @@ import { parseId } from "../../ids/parse-id.ts"
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { requireEmployeeModel } from "./require-employee-model.ts"
+import { requireUnreservedEmployeeId } from "./require-unreserved-employee-id.ts"
 import { requireUnusedEmployeeId } from "./require-unused-employee-id.ts"
 import {
     type Employee,
@@ -19,6 +20,7 @@ export async function createEmployee(
 ): Promise<Employee> {
     await requireCompany(projectRoot)
     const id = parseId("employee", rawId)
+    requireUnreservedEmployeeId(id)
     const validation = EmployeeConfigSchema.safeParse(config)
     if (!validation.success) {
         throw new UserError(z.prettifyError(validation.error))
