@@ -74,6 +74,8 @@ const freeCommandNames = [
     "thread show",
     "message send",
     "current-human",
+    "switch-to-human",
+    "switch-to-director",
 ]
 
 function getLeafCommandNames(command: CommandUnknownOpts): string[] {
