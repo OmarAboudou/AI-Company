@@ -8,7 +8,7 @@
             "minLength": 1,
             "description": "Display name of the LLM provider, e.g. Anthropic."
         },
-        "apiKey": {
+        "apiKeySource": {
             "description": "Where llmco reads the provider's API key, never the key itself. Absent for servers without authentication, such as a local Ollama.",
             "oneOf": [
                 {

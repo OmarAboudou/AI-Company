@@ -24,7 +24,7 @@ export function registerProviderUpdateCommand(providerCommand: Command): void {
             requireAtLeastOneOption(options)
             const provider = await updateLlmProvider(projectRoot, rawId, {
                 name: options.name,
-                apiKey: getApiKeySource(options),
+                apiKeySource: getApiKeySource(options),
             })
             console.log(`Updated provider "${provider.id}".`)
         })

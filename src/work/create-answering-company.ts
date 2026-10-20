@@ -16,8 +16,10 @@ async function createLlmEmployee(
     projectRoot: string,
     baseUrl: string,
 ): Promise<void> {
-    const apiKey = { kind: "env", variable: "TEST_ANTHROPIC_KEY" } as const
-    await createLlmProvider(projectRoot, "anthropic", { name: "A", apiKey })
+    await createLlmProvider(projectRoot, "anthropic", {
+        name: "A",
+        apiKeySource: { kind: "env", variable: "TEST_ANTHROPIC_KEY" },
+    })
     await createLlmConnection(projectRoot, "anthropic", "anthropic-messages", {
         baseUrl,
     })

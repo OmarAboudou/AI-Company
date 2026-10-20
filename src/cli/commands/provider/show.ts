@@ -37,7 +37,7 @@ export function registerProviderShowCommand(providerCommand: Command): void {
             const lines = [
                 `# ${provider.name}`,
                 "",
-                `api key: ${formatApiKeySource(provider.apiKey)}`,
+                `api key: ${formatApiKeySource(provider.apiKeySource)}`,
                 `connections: ${connectedProtocols.length > 0 ? connectedProtocols.join(", ") : "(none)"}`,
                 `models: ${modelIds.length > 0 ? modelIds.join(", ") : "(none)"}`,
             ]

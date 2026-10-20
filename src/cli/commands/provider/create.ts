@@ -22,7 +22,7 @@ export function registerProviderCreateCommand(providerCommand: Command): void {
         .action(async (rawId, { name, ...apiKeyOptions }) => {
             const provider = await createLlmProvider(projectRoot, rawId, {
                 name,
-                apiKey: getApiKeySource(apiKeyOptions),
+                apiKeySource: getApiKeySource(apiKeyOptions),
             })
             console.log(`Created provider "${provider.id}".`)
         })

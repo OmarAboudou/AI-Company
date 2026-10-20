@@ -13,7 +13,7 @@ import { hasLlmProvider, saveLlmProvider } from "./storage.ts"
 export async function createLlmProvider(
     projectRoot: string,
     rawId: string,
-    { name, apiKey }: { name: string; apiKey?: ApiKeySource },
+    { name, apiKeySource }: { name: string; apiKeySource?: ApiKeySource },
 ): Promise<LlmProvider> {
     await requireCompany(projectRoot)
     const id = parseId("provider", rawId)
@@ -22,7 +22,7 @@ export async function createLlmProvider(
     }
     const validation = LlmProviderConfigSchema.safeParse({
         name,
-        ...getDefinedValues({ apiKey }),
+        ...getDefinedValues({ apiKeySource }),
     })
     if (!validation.success) {
         throw new UserError(z.prettifyError(validation.error))
