@@ -76,6 +76,7 @@ const freeCommandNames = [
     "current-human",
     "switch-to-human",
     "switch-to-director",
+    "shell init",
 ]
 
 function getLeafCommandNames(command: CommandUnknownOpts): string[] {
