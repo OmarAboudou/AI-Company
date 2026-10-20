@@ -32,7 +32,7 @@ The last command prints the new thread's id, then Claude Senior's answer as it i
 
 ## Talking to employees
 
-Positions talk through **threads**, like posts in a forum: a subject and messages. You write as a director, signed with your git identity (`user.name` and `user.email`): from the director's position, or from a position assigned temporarily to the directors when it is the only one of yours in the thread. To act as a fictitious human employee instead, set `LLMCO_CURRENT_HUMAN_ID` to its id: you then write from its positions. `llmco current-human`, or `llmco whoami`, shows who you are and the positions you work; `--as-position <position-id>` chooses which one to write from. Commands that change the company's configuration, such as `create`, `update`, `delete`, `assign` or `interim`, are reserved to directors: unset `LLMCO_CURRENT_HUMAN_ID` to run them.
+Positions talk through **threads**, like posts in a forum: a subject and messages. You write as a director, signed with your git identity (`user.name` and `user.email`): from the director's position, or from a position assigned temporarily to the directors when it is the only one of yours in the thread. To act as a fictitious human employee instead, run `llmco switch-to-human <employee-id>`: you then write from its positions, and your prompt shows its id until `llmco switch-to-director`. `llmco current-human`, or `llmco whoami`, shows who you are and the positions you work; `--as-position <position-id>` chooses which one to write from. Commands that change the company's configuration, such as `create`, `update`, `delete`, `assign` or `interim`, are reserved to directors: run `llmco switch-to-director` first.
 
 ```bash
 llmco message send <thread-id> -b "@backend-developer Why Hono?"
@@ -50,6 +50,14 @@ Whoever works a position is its default employee, unless the position is assigne
 llmco position interim employee backend-developer claude-junior   # another employee works it
 llmco position interim directors backend-developer                 # the directors work it
 llmco position end-interim backend-developer                       # back to its default employee
+```
+
+`switch-to-human` and `switch-to-director` change your shell's environment, which only llmco's shell function can do, set up once. `llmco shell init <bash|zsh> --install` adds the line evaluating it to `~/.bashrc` or `~/.zshrc`; without `--install`, the command prints the function, for you to place where you prefer. A script sets `LLMCO_CURRENT_HUMAN_ID` to the employee's id instead, and `LLMCO_DISABLE_PROMPT` leaves the prompt as it is.
+
+```bash
+llmco shell init bash --install     # once, then open a new terminal
+llmco switch-to-human julie         # the prompt shows (julie)
+llmco switch-to-director            # a director again
 ```
 
 ## Connecting to LLM providers
