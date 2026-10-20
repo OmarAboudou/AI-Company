@@ -42,28 +42,28 @@ for (const shell of shells) {
                 })
             }
 
-            test("prints a function through which switch-to-human switches the shell", () => {
+            test("prints a function through which current-human set switches the shell", () => {
                 const shellRun = runFunction(
-                    "llmco switch-to-human julie",
+                    "llmco current-human set julie",
                     printShellState,
                 )
 
                 expect(shellRun.stdout).toBe("julie|(julie) $ ")
             })
 
-            test("lets switch-to-director switch back", () => {
+            test("lets current-human clear switch back", () => {
                 const shellRun = runFunction(
-                    "llmco switch-to-human julie",
-                    "llmco switch-to-director",
+                    "llmco current-human set julie",
+                    "llmco current-human clear",
                     printShellState,
                 )
 
                 expect(shellRun.stdout).toBe("unset|$ ")
             })
 
-            test("leaves the shell as it was when switch-to-human refuses", () => {
+            test("leaves the shell as it was when current-human set refuses", () => {
                 const shellRun = runFunction(
-                    "llmco switch-to-human eve",
+                    "llmco current-human set eve",
                     printShellState,
                 )
 
@@ -73,7 +73,7 @@ for (const shell of shells) {
 
             test("passes the other commands to llmco", () => {
                 const shellRun = runFunction(
-                    "llmco switch-to-human julie",
+                    "llmco current-human set julie",
                     "llmco whoami",
                 )
 

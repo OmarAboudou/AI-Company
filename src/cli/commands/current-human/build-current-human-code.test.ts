@@ -1,9 +1,9 @@
 // biome-ignore-all lint/suspicious/noTemplateCurlyInString: these strings are shell code, whose ${…} the shell expands.
 import { describe, expect, test } from "bun:test"
-import type { CurrentHuman } from "../../organization/human/read-current-human.ts"
-import { buildSwitchHumanCode } from "./build-switch-human-code.ts"
-import { isShellInstalled, runShell } from "./shell/run-shell.ts"
-import { shells } from "./shell/shells.ts"
+import type { CurrentHuman } from "../../../organization/human/read-current-human.ts"
+import { isShellInstalled, runShell } from "../shell/run-shell.ts"
+import { shells } from "../shell/shells.ts"
+import { buildCurrentHumanCode } from "./build-current-human-code.ts"
 
 const director: CurrentHuman = { kind: "director" }
 
@@ -13,7 +13,7 @@ function createEmployeeHuman(id: string): CurrentHuman {
 
 for (const shell of shells) {
     describe.skipIf(!isShellInstalled(shell))(
-        `buildSwitchHumanCode in ${shell}`,
+        `buildCurrentHumanCode in ${shell}`,
         () => {
             function runSwitches(
                 currentHumans: CurrentHuman[],
@@ -24,7 +24,7 @@ for (const shell of shells) {
                     'for code in "$@"; do eval "$code"; done',
                     'printf "%s|%s" "${LLMCO_CURRENT_HUMAN_ID-unset}" "$PS1"',
                 ].join("\n")
-                const codes = currentHumans.map(buildSwitchHumanCode)
+                const codes = currentHumans.map(buildCurrentHumanCode)
                 return runShell(shell, script, {
                     args: codes,
                     env: { PATH: process.env.PATH ?? "", ...env },

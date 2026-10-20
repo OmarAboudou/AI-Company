@@ -1,7 +1,7 @@
 // biome-ignore-all lint/suspicious/noTemplateCurlyInString: these strings are shell code, whose ${…} the shell expands.
-import type { CurrentHuman } from "../../organization/human/read-current-human.ts"
+import type { CurrentHuman } from "../../../organization/human/read-current-human.ts"
 
-export function buildSwitchHumanCode(currentHuman: CurrentHuman): string {
+export function buildCurrentHumanCode(currentHuman: CurrentHuman): string {
     if (currentHuman.kind === "director") {
         return [
             "unset LLMCO_CURRENT_HUMAN_ID",

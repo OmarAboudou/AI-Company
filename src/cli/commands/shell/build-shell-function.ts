@@ -3,10 +3,10 @@ import { rcFileNames, type Shell } from "./shells.ts"
 
 export function buildShellFunction(shell: Shell): string {
     return [
-        `# llmco's shell function, which switch-to-human and switch-to-director need: add eval "$(llmco shell init ${shell})" to ~/${rcFileNames[shell]}`,
+        `# llmco's shell function, which current-human set and clear need: add eval "$(llmco shell init ${shell})" to ~/${rcFileNames[shell]}`,
         "llmco() {",
-        '    case "${1-}" in',
-        "    switch-to-human|switch-to-director)",
+        '    case "${1-} ${2-}" in',
+        '    "current-human set" | "current-human clear" | "whoami set" | "whoami clear")',
         "        local shell_code",
         '        shell_code="$(command llmco "$@" --shell-code)" || return',
         '        eval "$shell_code"',
