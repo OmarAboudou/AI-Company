@@ -10,11 +10,17 @@ const { runCli, runCliWithEnv, getProjectPath, getHomePath } =
     useTemporaryProject()
 const cliPath = join(import.meta.dir, "..", "..", "main.ts")
 const printShellState =
-    'printf "%s|%s" "${LLMCO_CURRENT_HUMAN_ID-unset}" "$PS1"'
+    '_llmco_update_prompt; printf "%s|%s" "${LLMCO_CURRENT_HUMAN_ID-unset}" "$PS1"'
+const printRegistrations: Record<(typeof shells)[number], string> = {
+    bash: 'printf "%s" "$PROMPT_COMMAND"',
+    zsh: 'printf "%s" "${precmd_functions[*]}"',
+}
 
 beforeEach(async () => {
     runCli("init", "-n", "Acme")
     runCli("employee", "create", "human", "julie", "-n", "Julie")
+    runCli("position", "create", "graphics", "-t", "Graphics")
+    runCli("position", "assign", "graphics", "julie")
     const llmcoPath = getHomePath("bin", "llmco")
     await Bun.write(
         llmcoPath,
@@ -58,7 +64,7 @@ for (const shell of shells) {
                     printShellState,
                 )
 
-                expect(shellRun.stdout).toBe("unset|$ ")
+                expect(shellRun.stdout).toBe("unset|(director) $ ")
             })
 
             test("leaves the shell as it was when current-human set refuses", () => {
@@ -68,7 +74,7 @@ for (const shell of shells) {
                 )
 
                 expect(shellRun.stderr).toContain('No employee "eve".')
-                expect(shellRun.stdout).toBe("unset|$ ")
+                expect(shellRun.stdout).toBe("unset|(director) $ ")
             })
 
             test("lets current-position set select a position, cleared by a new identity", () => {
@@ -83,6 +89,42 @@ for (const shell of shells) {
                 )
 
                 expect(shellRun.stdout).toBe("director|unset|")
+            })
+
+            test("shows the selected position next to the identity", () => {
+                const shellRun = runFunction(
+                    "llmco current-human set julie",
+                    "llmco current-position set graphics",
+                    printShellState,
+                )
+
+                expect(shellRun.stdout).toBe("julie|(julie @graphics) $ ")
+            })
+
+            test("shows no label outside an llmco project", () => {
+                const shellRun = runFunction('cd "$HOME"', printShellState)
+
+                expect(shellRun.stdout).toBe("unset|$ ")
+            })
+
+            test("keeps one label across prompts, and none once disabled", () => {
+                const shellRun = runFunction(
+                    "_llmco_update_prompt",
+                    printShellState,
+                    "LLMCO_DISABLE_PROMPT=1",
+                    printShellState,
+                )
+
+                expect(shellRun.stdout).toBe("unset|(director) $ unset|$ ")
+            })
+
+            test("updates the label before each prompt, registered once", () => {
+                const shellRun = runFunction(
+                    `eval "$(llmco shell init ${shell})"`,
+                    printRegistrations[shell],
+                )
+
+                expect(shellRun.stdout).toBe("_llmco_update_prompt")
             })
 
             test("passes the other commands to llmco", () => {

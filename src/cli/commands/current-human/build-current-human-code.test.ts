@@ -6,60 +6,40 @@ import { shells } from "../shell/shells.ts"
 import { buildCurrentHumanCode } from "./build-current-human-code.ts"
 
 const director: CurrentHuman = { kind: "director" }
-
-function createEmployeeHuman(id: string): CurrentHuman {
-    return { kind: "employee", employee: { id, name: id, kind: "human" } }
+const julie: CurrentHuman = {
+    kind: "employee",
+    employee: { id: "julie", name: "Julie", kind: "human" },
 }
 
 for (const shell of shells) {
     describe.skipIf(!isShellInstalled(shell))(
         `buildCurrentHumanCode in ${shell}`,
         () => {
-            function runSwitches(
-                currentHumans: CurrentHuman[],
-                env: Record<string, string> = {},
-            ): string {
+            function runSwitches(currentHumans: CurrentHuman[]): string {
                 const script = [
-                    'PS1="$ "',
                     'for code in "$@"; do eval "$code"; done',
-                    'printf "%s|%s" "${LLMCO_CURRENT_HUMAN_ID-unset}" "$PS1"',
+                    'printf "%s|%s" "${LLMCO_CURRENT_HUMAN_ID-unset}" "${LLMCO_CURRENT_POSITION_ID-unset}"',
                 ].join("\n")
                 const codes = currentHumans.map(buildCurrentHumanCode)
                 return runShell(shell, script, {
                     args: codes,
-                    env: { PATH: process.env.PATH ?? "", ...env },
+                    env: {
+                        PATH: process.env.PATH ?? "",
+                        LLMCO_CURRENT_POSITION_ID: "graphics",
+                    },
                 }).stdout
             }
 
-            test("switches the shell to the employee, shown in the prompt", () => {
-                const shellState = runSwitches([createEmployeeHuman("julie")])
+            test("switches to the employee, clearing the selected position", () => {
+                const shellState = runSwitches([julie])
 
-                expect(shellState).toBe("julie|(julie) $ ")
+                expect(shellState).toBe("julie|unset")
             })
 
-            test("switches back to a director, restoring the prompt", () => {
-                const julie = createEmployeeHuman("julie")
-
+            test("switches back to a director, clearing the selected position", () => {
                 const shellState = runSwitches([julie, director])
 
-                expect(shellState).toBe("unset|$ ")
-            })
-
-            test("keeps the original prompt from one employee to the next", () => {
-                const employeeHumans = ["julie", "bob"].map(createEmployeeHuman)
-
-                const shellState = runSwitches(employeeHumans)
-
-                expect(shellState).toBe("bob|(bob) $ ")
-            })
-
-            test("leaves the prompt alone with LLMCO_DISABLE_PROMPT", () => {
-                const julie = createEmployeeHuman("julie")
-                const disabledPrompt = { LLMCO_DISABLE_PROMPT: "1" }
-
-                const shellState = runSwitches([julie], disabledPrompt)
-
-                expect(shellState).toBe("julie|$ ")
+                expect(shellState).toBe("unset|unset")
             })
         },
     )
