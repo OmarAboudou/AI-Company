@@ -1,18 +1,19 @@
 import type { Command } from "@commander-js/extra-typings"
-import { readGitCommitter } from "../../git/read-git-committer.ts"
-import { requireCompany } from "../../organization/company/require-company.ts"
-import { loadCompany } from "../../organization/company/storage.ts"
-import { listPositionsWorkedBy } from "../../organization/human/list-positions-worked-by.ts"
-import { readCurrentHuman } from "../../organization/human/read-current-human.ts"
-import { listPositions } from "../../organization/position/storage.ts"
-import { projectRoot } from "../project-root.ts"
+import { readGitCommitter } from "../../../git/read-git-committer.ts"
+import { requireCompany } from "../../../organization/company/require-company.ts"
+import { loadCompany } from "../../../organization/company/storage.ts"
+import { listPositionsWorkedBy } from "../../../organization/human/list-positions-worked-by.ts"
+import { readCurrentHuman } from "../../../organization/human/read-current-human.ts"
+import { listPositions } from "../../../organization/position/storage.ts"
+import { projectRoot } from "../../project-root.ts"
 
-export function registerCurrentHumanCommand(program: Command): void {
-    program
-        .command("current-human")
-        .alias("whoami")
+export function registerCurrentHumanShowCommand(
+    currentHumanCommand: Command,
+): void {
+    currentHumanCommand
+        .command("show", { isDefault: true })
         .description(
-            "Show who is at the keyboard: a director, or the human employee LLMCO_CURRENT_HUMAN_ID names; the positions they work; and the committer, from git.",
+            "Show who is at the keyboard: a director, or the human employee current-human set chose; the positions they work; and the committer, from git.",
         )
         .action(async () => {
             await requireCompany(projectRoot)

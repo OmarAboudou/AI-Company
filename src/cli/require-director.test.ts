@@ -73,9 +73,9 @@ const freeCommandNames = [
     "thread list",
     "thread show",
     "message send",
-    "current-human",
-    "switch-to-human",
-    "switch-to-director",
+    "current-human show",
+    "current-human set",
+    "current-human clear",
     "shell init",
 ]
 
