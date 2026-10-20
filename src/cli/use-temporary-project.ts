@@ -35,10 +35,11 @@ export function useTemporaryProject() {
 
     // No test may reach a real API: the CLI never sees this machine's API
     // keys, nor the credentials an SDK could find in its home directory.
-    // Nor does it see who this machine's shell is switched to.
+    // Nor does it see who this machine's shell is switched to, nor where
+    // its zsh keeps its startup files.
     function readCliEnvironment(env: Record<string, string>) {
         const keptEntries = Object.entries(process.env).filter(
-            ([name]) => !/^(ANTHROPIC|OPENAI|LLMCO)_/.test(name),
+            ([name]) => !/^((ANTHROPIC|OPENAI|LLMCO)_|ZDOTDIR$)/.test(name),
         )
         return { ...Object.fromEntries(keptEntries), HOME: home, ...env }
     }

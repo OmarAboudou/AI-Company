@@ -1,10 +1,11 @@
 // biome-ignore-all lint/suspicious/noTemplateCurlyInString: these strings are shell code, whose ${…} the shell expands.
 import { beforeEach, describe, expect, test } from "bun:test"
-import { chmod } from "node:fs/promises"
+import { chmod, mkdir } from "node:fs/promises"
 import { join } from "node:path"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-const { runCli, getProjectPath, getHomePath } = useTemporaryProject()
+const { runCli, runCliWithEnv, getProjectPath, getHomePath } =
+    useTemporaryProject()
 const cliPath = join(import.meta.dir, "..", "..", "main.ts")
 const printShellState =
     'printf "%s|%s" "${LLMCO_CURRENT_HUMAN_ID-unset}" "$PS1"'
@@ -72,5 +73,37 @@ describe("llmco shell init", () => {
 
         expect(init.exitCode).toBe(1)
         expect(init.stderr).toContain("Allowed choices are bash, zsh.")
+    })
+})
+
+describe("llmco shell init --install", () => {
+    test("adds the line evaluating the function to ~/.bashrc", async () => {
+        await Bun.write(getHomePath(".bashrc"), "alias ll='ls -l'\n")
+
+        const installation = runCli("shell", "init", "bash", "--install")
+
+        const rcText = await Bun.file(getHomePath(".bashrc")).text()
+        expect(installation.exitCode).toBe(0)
+        expect(rcText).toStartWith("alias ll='ls -l'\n")
+        expect(rcText).toEndWith('eval "$(llmco shell init bash)"\n')
+    })
+
+    test("refuses a startup file that already evaluates it", () => {
+        runCli("shell", "init", "bash", "--install")
+
+        const installation = runCli("shell", "init", "bash", "--install")
+
+        expect(installation.exitCode).toBe(1)
+        expect(installation.stderr).toContain("already evaluates")
+    })
+
+    test("adds it to the .zshrc in ZDOTDIR for zsh", async () => {
+        const zdotdirEnv = { ZDOTDIR: getHomePath("zsh") }
+        await mkdir(zdotdirEnv.ZDOTDIR)
+
+        runCliWithEnv(zdotdirEnv, "shell", "init", "zsh", "-i")
+
+        const rcText = await Bun.file(getHomePath("zsh", ".zshrc")).text()
+        expect(rcText).toContain('eval "$(llmco shell init zsh)"')
     })
 })
