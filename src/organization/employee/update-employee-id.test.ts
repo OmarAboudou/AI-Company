@@ -141,6 +141,12 @@ describe("updateEmployeeId", () => {
         expect(await hasEmployee(projectRoot, "omar")).toBe(true)
     })
 
+    test("refuses the id reserved for the directors", async () => {
+        const updating = updateEmployeeId(projectRoot, "omar", "director")
+
+        await expect(updating).rejects.toThrow("reserved for the directors")
+    })
+
     test("refuses a new id that is not kebab-case", async () => {
         const updating = updateEmployeeId(projectRoot, "omar", "Omar")
 
