@@ -13,7 +13,7 @@ import { saveLlmProvider } from "./storage.ts"
 export async function updateLlmProvider(
     projectRoot: string,
     rawId: string,
-    changes: { name?: string; apiKey?: ApiKeySource },
+    changes: { name?: string; apiKeySource?: ApiKeySource },
 ): Promise<LlmProvider> {
     await requireCompany(projectRoot)
     const { id, ...config } = await loadExistingLlmProvider(projectRoot, rawId)

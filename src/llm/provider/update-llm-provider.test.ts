@@ -21,7 +21,7 @@ afterEach(async () => {
 const anthropic: LlmProvider = {
     id: "anthropic",
     name: "Anthropic",
-    apiKey: { kind: "env", variable: "ANTHROPIC_API_KEY" },
+    apiKeySource: { kind: "env", variable: "ANTHROPIC_API_KEY" },
     connections: {
         "anthropic-messages": { baseUrl: "https://api.anthropic.com" },
     },
@@ -36,12 +36,15 @@ describe("updateLlmProvider", () => {
     })
 
     test("changes the key's source", async () => {
-        const apiKey = { kind: "file", path: "~/.keys/anthropic" } as const
+        const apiKeySource = {
+            kind: "file",
+            path: "~/.keys/anthropic",
+        } as const
 
-        await updateLlmProvider(projectRoot, "anthropic", { apiKey })
+        await updateLlmProvider(projectRoot, "anthropic", { apiKeySource })
 
         const provider = await loadLlmProvider(projectRoot, "anthropic")
-        expect(provider).toEqual({ ...anthropic, apiKey })
+        expect(provider).toEqual({ ...anthropic, apiKeySource })
     })
 
     test("returns the provider it saved", async () => {

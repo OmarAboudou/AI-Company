@@ -44,7 +44,7 @@ export const LlmProviderConfigSchema = z
         name: z.string().trim().min(1).meta({
             description: "Display name of the LLM provider, e.g. Anthropic.",
         }),
-        apiKey: ApiKeySourceSchema.optional().meta({
+        apiKeySource: ApiKeySourceSchema.optional().meta({
             description:
                 "Where llmco reads the provider's API key, never the key itself. Absent for servers without authentication, such as a local Ollama.",
         }),
@@ -61,7 +61,7 @@ export const LlmProviderConfigSchema = z
 
 export type LlmProviderConfig = z.infer<typeof LlmProviderConfigSchema>
 
-export type ApiKeySource = NonNullable<LlmProviderConfig["apiKey"]>
+export type ApiKeySource = NonNullable<LlmProviderConfig["apiKeySource"]>
 
 export type LlmProvider = LlmProviderConfig & {
     id: string

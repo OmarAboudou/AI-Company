@@ -27,8 +27,10 @@ afterEach(async () => {
     )
 })
 
-function createProviderReadingFrom(apiKey: LlmProvider["apiKey"]): LlmProvider {
-    return { id: "anthropic", name: "Anthropic", apiKey }
+function createProviderReadingFrom(
+    apiKeySource: LlmProvider["apiKeySource"],
+): LlmProvider {
+    return { id: "anthropic", name: "Anthropic", apiKeySource }
 }
 
 describe("readApiKey", () => {

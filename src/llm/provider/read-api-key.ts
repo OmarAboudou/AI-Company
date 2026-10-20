@@ -16,7 +16,7 @@ export async function readApiKey(
     projectRoot: string,
     provider: LlmProvider,
 ): Promise<string | undefined> {
-    const apiKeySource = provider.apiKey
+    const { apiKeySource } = provider
     if (apiKeySource === undefined) {
         return undefined
     }

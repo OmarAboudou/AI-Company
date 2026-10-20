@@ -18,7 +18,7 @@ afterEach(async () => {
 
 const anthropic = {
     name: "Anthropic",
-    apiKey: { kind: "env", variable: "ANTHROPIC_API_KEY" },
+    apiKeySource: { kind: "env", variable: "ANTHROPIC_API_KEY" },
 } as const
 
 describe("createLlmProvider", () => {
@@ -59,8 +59,11 @@ describe("createLlmProvider", () => {
     })
 
     test("refuses an invalid API key's source", async () => {
-        const apiKey = { kind: "env", variable: "$ANTHROPIC_API_KEY" } as const
-        const anthropicWithDollar = { ...anthropic, apiKey }
+        const apiKeySource = {
+            kind: "env",
+            variable: "$ANTHROPIC_API_KEY",
+        } as const
+        const anthropicWithDollar = { ...anthropic, apiKeySource }
 
         const creation = createLlmProvider(
             projectRoot,
