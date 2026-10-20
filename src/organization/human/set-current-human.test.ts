@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { UserError } from "../../user-error.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.ts"
 import { saveEmployee } from "../employee/storage.ts"
-import { switchToHuman } from "./switch-to-human.ts"
+import { setCurrentHuman } from "./set-current-human.ts"
 
 const julie = { id: "julie", name: "Julie", kind: "human" } as const
 let projectRoot: string
@@ -27,22 +27,22 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-describe("switchToHuman", () => {
+describe("setCurrentHuman", () => {
     test("switches to the human employee the id names", async () => {
-        const currentHuman = await switchToHuman(projectRoot, "julie")
+        const currentHuman = await setCurrentHuman(projectRoot, "julie")
 
         expect(currentHuman).toEqual({ kind: "employee", employee: julie })
     })
 
     test("refuses an LLM employee", async () => {
-        const switching = switchToHuman(projectRoot, "claude")
+        const switching = setCurrentHuman(projectRoot, "claude")
 
         await expect(switching).rejects.toThrow(UserError)
         await expect(switching).rejects.toThrow('"claude" is an LLM employee')
     })
 
     test("refuses an id naming no employee", async () => {
-        const switching = switchToHuman(projectRoot, "eve")
+        const switching = setCurrentHuman(projectRoot, "eve")
 
         await expect(switching).rejects.toThrow('No employee "eve".')
     })
@@ -50,7 +50,7 @@ describe("switchToHuman", () => {
     test("refuses to run outside a company", async () => {
         const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const switching = switchToHuman(folderWithoutCompany, "julie")
+        const switching = setCurrentHuman(folderWithoutCompany, "julie")
 
         await expect(switching).rejects.toThrow("Run `llmco init` first.")
     })
