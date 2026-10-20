@@ -14,7 +14,7 @@ export async function saveShellInitLine(shell: Shell): Promise<string> {
     }
     await appendFile(
         rcFilePath,
-        `\n# llmco's shell function, which current-human set needs\neval "$(llmco shell init ${shell})"\n`,
+        `\n# llmco's shell function, which current-human and current-position need\neval "$(llmco shell init ${shell})"\n`,
     )
     return rcFilePath
 }

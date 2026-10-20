@@ -32,6 +32,15 @@ describe("llmco current-human", () => {
         )
     })
 
+    test("marks the position selected in this shell", () => {
+        const directorEnv = { LLMCO_CURRENT_POSITION_ID: "director" }
+        const positionsLine = "positions: director (selected)\n"
+
+        const currentHumanRun = runCliWithEnv(directorEnv, "current-human")
+
+        expect(currentHumanRun.stdout).toContain(positionsLine)
+    })
+
     test("whoami is an alias of current-human", () => {
         const whoami = runCli("whoami")
 
