@@ -6,6 +6,7 @@ import {
     type CurrentHuman,
     readCurrentHuman,
 } from "../../organization/human/read-current-human.ts"
+import { readCurrentPositionId } from "../../organization/human/read-current-position-id.ts"
 import { requireWorkedPosition } from "../../organization/human/require-worked-position.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import {
@@ -43,8 +44,22 @@ function requireOnlyPosition(
 type PositionChoice = {
     human: CurrentHuman
     workedPositions: Position[]
+    currentPositionId: string | undefined
     threadMemberIds: string[]
     directorPositionId: string
+}
+
+function requireSelectedPosition(
+    workedPositions: Position[],
+    currentPositionId: string,
+): Position {
+    const position = workedPositions.find(({ id }) => id === currentPositionId)
+    if (position === undefined) {
+        throw new UserError(
+            `The position selected in this shell, "${currentPositionId}", isn't one you work now. Select another with \`llmco current-position set <position-id>\`, or run \`llmco current-position clear\`.`,
+        )
+    }
+    return position
 }
 
 async function loadPositionToWriteFrom(
@@ -52,6 +67,7 @@ async function loadPositionToWriteFrom(
     {
         human,
         workedPositions,
+        currentPositionId,
         threadMemberIds,
         directorPositionId,
     }: PositionChoice,
@@ -65,6 +81,9 @@ async function loadPositionToWriteFrom(
             asPositionId,
             directorPositionId,
         )
+    }
+    if (currentPositionId !== undefined) {
+        return requireSelectedPosition(workedPositions, currentPositionId)
     }
     const positionInThread = getOnlyItem(
         workedPositions.filter(({ id }) => threadMemberIds.includes(id)),
@@ -101,6 +120,7 @@ export async function readCurrentAuthor(
     const positionChoice = {
         human,
         workedPositions: workedPositions.map(({ position }) => position),
+        currentPositionId: readCurrentPositionId(),
         threadMemberIds:
             archive === undefined
                 ? []
