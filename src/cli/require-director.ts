@@ -21,7 +21,7 @@ export function requireDirector(
     const currentHumanId = readCurrentHumanId()
     if (currentHumanId !== undefined) {
         throw new UserError(
-            `Only directors run \`${formatCommandPath(actionCommand)}\`: LLMCO_CURRENT_HUMAN_ID has you act as "${currentHumanId}". Unset it to act as a director.`,
+            `Only directors run \`${formatCommandPath(actionCommand)}\`: LLMCO_CURRENT_HUMAN_ID has you act as "${currentHumanId}". Run \`llmco current-human clear\` to act as a director.`,
         )
     }
 }
