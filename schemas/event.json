@@ -5,11 +5,7 @@
         {
             "type": "object",
             "properties": {
-                "type": {
-                    "type": "string",
-                    "const": "message-sent",
-                    "description": "message-sent: a message was added to a thread."
-                },
+                "type": { "type": "string", "const": "message-sent" },
                 "occurredAt": {
                     "type": "string",
                     "format": "date-time",
@@ -58,11 +54,7 @@
         {
             "type": "object",
             "properties": {
-                "type": {
-                    "type": "string",
-                    "const": "task-created",
-                    "description": "task-created: a task was created for a position, and waits for whoever works it."
-                },
+                "type": { "type": "string", "const": "task-created" },
                 "occurredAt": {
                     "type": "string",
                     "format": "date-time",
@@ -84,16 +76,12 @@
             },
             "required": ["type", "occurredAt", "depth", "taskId"],
             "additionalProperties": false,
-            "description": "A task was created."
+            "description": "A task was created for a position, and waits for whoever works it."
         },
         {
             "type": "object",
             "properties": {
-                "type": {
-                    "type": "string",
-                    "const": "task-started",
-                    "description": "task-started: whoever works the task's position started it."
-                },
+                "type": { "type": "string", "const": "task-started" },
                 "occurredAt": {
                     "type": "string",
                     "format": "date-time",
@@ -115,16 +103,12 @@
             },
             "required": ["type", "occurredAt", "depth", "taskId"],
             "additionalProperties": false,
-            "description": "A task was started."
+            "description": "Whoever works the task's position started it."
         },
         {
             "type": "object",
             "properties": {
-                "type": {
-                    "type": "string",
-                    "const": "task-completed",
-                    "description": "task-completed: the task was done."
-                },
+                "type": { "type": "string", "const": "task-completed" },
                 "occurredAt": {
                     "type": "string",
                     "format": "date-time",
@@ -151,16 +135,12 @@
             },
             "required": ["type", "occurredAt", "depth", "taskId", "summary"],
             "additionalProperties": false,
-            "description": "A task was done."
+            "description": "The task was done."
         },
         {
             "type": "object",
             "properties": {
-                "type": {
-                    "type": "string",
-                    "const": "task-failed",
-                    "description": "task-failed: the task was given up."
-                },
+                "type": { "type": "string", "const": "task-failed" },
                 "occurredAt": {
                     "type": "string",
                     "format": "date-time",
@@ -187,16 +167,12 @@
             },
             "required": ["type", "occurredAt", "depth", "taskId", "reason"],
             "additionalProperties": false,
-            "description": "A task was given up."
+            "description": "The task was given up."
         },
         {
             "type": "object",
             "properties": {
-                "type": {
-                    "type": "string",
-                    "const": "chain-stopped",
-                    "description": "chain-stopped: llmco created no task for an event, whose chain of tasks had reached the company's maxTaskDepth."
-                },
+                "type": { "type": "string", "const": "chain-stopped" },
                 "occurredAt": {
                     "type": "string",
                     "format": "date-time",
@@ -247,7 +223,7 @@
                 "stoppedTask"
             ],
             "additionalProperties": false,
-            "description": "A chain of tasks was stopped."
+            "description": "llmco created no task for an event, whose chain of tasks had reached the company's maxTaskDepth."
         }
     ],
     "title": "llmco event",

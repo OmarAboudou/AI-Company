@@ -10,13 +10,33 @@ const DepthSchema = z.int().min(0).meta({
         "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes.",
 })
 
-const MessageSentEventSchema = z
-    .strictObject({
-        type: z.literal("message-sent").meta({
-            description: "message-sent: a message was added to a thread.",
-        }),
-        occurredAt: OccurredAtSchema,
-        depth: DepthSchema,
+export function defineEventType<
+    Type extends string,
+    Fields extends z.ZodRawShape,
+>({
+    type,
+    description,
+    fields,
+}: {
+    type: Type
+    description: string
+    fields: Fields
+}) {
+    const schema = z
+        .strictObject({
+            type: z.literal(type),
+            occurredAt: OccurredAtSchema,
+            depth: DepthSchema,
+            ...fields,
+        })
+        .meta({ description })
+    return { type, schema }
+}
+
+export const messageSentEventType = defineEventType({
+    type: "message-sent",
+    description: "A message was added to a thread.",
+    fields: {
         threadId: IdSchema.meta({
             description:
                 "Id of the thread, i.e. the name of its folder in .llmco/threads.",
@@ -29,73 +49,53 @@ const MessageSentEventSchema = z
             description:
                 "Ids of the positions the message mentions, as its message.json records them.",
         }),
-    })
-    .meta({ description: "A message was added to a thread." })
+    },
+})
 
 const TaskIdSchema = IdSchema.meta({
     description: "Id of the task, i.e. the name of its file in .llmco/tasks.",
 })
 
-const TaskCreatedEventSchema = z
-    .strictObject({
-        type: z.literal("task-created").meta({
-            description:
-                "task-created: a task was created for a position, and waits for whoever works it.",
-        }),
-        occurredAt: OccurredAtSchema,
-        depth: DepthSchema,
-        taskId: TaskIdSchema,
-    })
-    .meta({ description: "A task was created." })
+export const taskCreatedEventType = defineEventType({
+    type: "task-created",
+    description:
+        "A task was created for a position, and waits for whoever works it.",
+    fields: { taskId: TaskIdSchema },
+})
 
-const TaskStartedEventSchema = z
-    .strictObject({
-        type: z.literal("task-started").meta({
-            description:
-                "task-started: whoever works the task's position started it.",
-        }),
-        occurredAt: OccurredAtSchema,
-        depth: DepthSchema,
-        taskId: TaskIdSchema,
-    })
-    .meta({ description: "A task was started." })
+export const taskStartedEventType = defineEventType({
+    type: "task-started",
+    description: "Whoever works the task's position started it.",
+    fields: { taskId: TaskIdSchema },
+})
 
-const TaskCompletedEventSchema = z
-    .strictObject({
-        type: z.literal("task-completed").meta({
-            description: "task-completed: the task was done.",
-        }),
-        occurredAt: OccurredAtSchema,
-        depth: DepthSchema,
+export const taskCompletedEventType = defineEventType({
+    type: "task-completed",
+    description: "The task was done.",
+    fields: {
         taskId: TaskIdSchema,
         summary: z.string().trim().min(1).meta({
             description: "What was done, as whoever did it sums it up.",
         }),
-    })
-    .meta({ description: "A task was done." })
+    },
+})
 
-const TaskFailedEventSchema = z
-    .strictObject({
-        type: z.literal("task-failed").meta({
-            description: "task-failed: the task was given up.",
-        }),
-        occurredAt: OccurredAtSchema,
-        depth: DepthSchema,
+export const taskFailedEventType = defineEventType({
+    type: "task-failed",
+    description: "The task was given up.",
+    fields: {
         taskId: TaskIdSchema,
         reason: z.string().trim().min(1).meta({
             description: "Why the task was given up.",
         }),
-    })
-    .meta({ description: "A task was given up." })
+    },
+})
 
-const ChainStoppedEventSchema = z
-    .strictObject({
-        type: z.literal("chain-stopped").meta({
-            description:
-                "chain-stopped: llmco created no task for an event, whose chain of tasks had reached the company's maxTaskDepth.",
-        }),
-        occurredAt: OccurredAtSchema,
-        depth: DepthSchema,
+export const chainStoppedEventType = defineEventType({
+    type: "chain-stopped",
+    description:
+        "llmco created no task for an event, whose chain of tasks had reached the company's maxTaskDepth.",
+    fields: {
         causeEventId: IdSchema.meta({
             description:
                 "Id of the event the task would have been created for, i.e. the name of its file in .llmco/journal.",
@@ -110,17 +110,17 @@ const ChainStoppedEventSchema = z
                 description:
                     "The task the chain stopped before, as a listener asked for it: its type, the position it was for and its parameters.",
             }),
-    })
-    .meta({ description: "A chain of tasks was stopped." })
+    },
+})
 
 export const JournalEventSchema = z
     .discriminatedUnion("type", [
-        MessageSentEventSchema,
-        TaskCreatedEventSchema,
-        TaskStartedEventSchema,
-        TaskCompletedEventSchema,
-        TaskFailedEventSchema,
-        ChainStoppedEventSchema,
+        messageSentEventType.schema,
+        taskCreatedEventType.schema,
+        taskStartedEventType.schema,
+        taskCompletedEventType.schema,
+        taskFailedEventType.schema,
+        chainStoppedEventType.schema,
     ])
     .meta({
         title: "llmco event",
