@@ -17,18 +17,19 @@ export type TaskRunEnd = {
     task: Task
     position: Position
     runId: string
+    depth: number
     sessionResult: TaskResult
     usage?: TokenUsage
 }
 
 export async function endTask(
     journal: Journal,
-    { task, position, runId, sessionResult, usage }: TaskRunEnd,
+    { task, position, runId, depth, sessionResult, usage }: TaskRunEnd,
     taskEnding: TaskEnding,
 ): Promise<void> {
     const causeEvent = requireJournalEvent(journal, task.causeEventId)
     const runEnd = {
-        depth: causeEvent.depth + 1,
+        depth,
         taskId: task.id,
         runId,
         ...(usage !== undefined && { usage }),

@@ -90,7 +90,7 @@ export async function runTask(
     })
     await endTask(
         journal,
-        { task, position, runId, sessionResult, usage },
+        { task, position, runId, depth: taskDepth, sessionResult, usage },
         taskEnding,
     )
     return { taskEnding, run: { runId, usage } }
