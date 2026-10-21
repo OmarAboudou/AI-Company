@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
-import { createEvent } from "../../journal/create-event.ts"
+import { recordEvent } from "../../journal/record-event.ts"
 import { listEvents, saveEvent } from "../../journal/storage.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.ts"
 import { loadCompany, saveCompany } from "../../organization/company/storage.ts"
@@ -25,7 +25,7 @@ afterEach(async () => {
 const threadId = "2026-10-18-choice-of-framework"
 
 async function createMessageSentEvent(mentions: string[], depth = 0) {
-    return createEvent(projectRoot, {
+    return recordEvent(projectRoot, {
         type: "message-sent",
         depth,
         threadId,
