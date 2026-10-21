@@ -119,7 +119,8 @@ describe("runTask", () => {
         await runFakeTask()
 
         const body = fakeServer.requests[0]?.body
-        const identityLine = "You are Claude Senior, backend-developer at Acme."
+        const identityLine =
+            "You are Claude Senior, backend-developer (@backend-developer) at Acme."
         expect(body?.system[0]?.text).toStartWith(identityLine)
         expect(body?.messages[0]?.content).toMatchObject([
             {
