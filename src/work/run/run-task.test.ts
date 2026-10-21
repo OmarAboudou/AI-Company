@@ -6,6 +6,7 @@ import type { EventType, JournalEvent } from "../../journal/schema.ts"
 import { listEvents } from "../../journal/storage.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.ts"
 import { sendMessage } from "../../messaging/message/send-message.ts"
+import { listMessages } from "../../messaging/message/storage.ts"
 import type { LlmEmployee } from "../../organization/employee/schema.ts"
 import { loadEmployee } from "../../organization/employee/storage.ts"
 import type { Position } from "../../organization/position/schema.ts"
@@ -161,6 +162,30 @@ describe("runTask", () => {
         })
         const events = await listEvents(projectRoot)
         expect(getTaskStates([task], events).get(task.id)).toBe("succeeded")
+    })
+
+    test("records the last entry shown, when the run sends nothing", async () => {
+        fakeServer.respondWith({ toolCalls: [completion] })
+
+        await runFakeTask()
+
+        expect(await findEvent(taskCompletedEventType)).toMatchObject({
+            lastReadEntryId: questionId,
+        })
+    })
+
+    test("records the messages the run sent as read too", async () => {
+        const answer = { threadId, body: "Hono, for Bun." }
+        fakeServer.respondWith({
+            toolCalls: [{ name: "message_send", input: answer }, completion],
+        })
+
+        await runFakeTask()
+
+        const answerMessage = (await listMessages(projectRoot, threadId)).at(-1)
+        expect(await findEvent(taskCompletedEventType)).toMatchObject({
+            lastReadEntryId: answerMessage?.id,
+        })
     })
 
     test("records the task given up, with its reason", async () => {

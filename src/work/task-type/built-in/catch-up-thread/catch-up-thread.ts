@@ -53,7 +53,8 @@ export const catchUpThreadTaskType = defineTaskType({
                 return { kind: "done", summary }
             }
         }
-        if (readCount === messages.length) {
+        const lastMessage = messages.at(-1)
+        if (lastMessage === undefined || readCount === messages.length) {
             const summary = `Nothing new: the thread was read up to its last entry, #${readCount}.`
             return { kind: "done", summary }
         }
@@ -67,6 +68,7 @@ export const catchUpThreadTaskType = defineTaskType({
                 readCount,
             }),
             toolNames: ["message_send", "thread_show"],
+            lastShownEntry: { threadId, entryId: lastMessage.id },
         }
     },
 })
