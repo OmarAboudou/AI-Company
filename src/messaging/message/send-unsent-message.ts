@@ -1,4 +1,4 @@
-import { createMessageId } from "./create-message-id.ts"
+import { createTimeOrderedId } from "../../ids/create-time-ordered-id.ts"
 import { getNextSentAt } from "./get-next-sent-at.ts"
 import type { Message, UnsentMessage } from "./schema.ts"
 import { listMessages, saveMessage } from "./storage.ts"
@@ -12,7 +12,7 @@ export async function sendUnsentMessage(
     const sentAt = getNextSentAt(threadMessages, new Date())
     const message = {
         threadId,
-        id: createMessageId(sentAt),
+        id: createTimeOrderedId(sentAt),
         ...messageContent,
         sentAt,
     }

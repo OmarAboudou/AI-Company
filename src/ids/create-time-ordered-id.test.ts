@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
-import { IdSchema } from "../../ids/id-schema.ts"
-import { createMessageId } from "./create-message-id.ts"
-import type { Message } from "./schema.ts"
+import type { Message } from "../messaging/message/schema.ts"
+import { createTimeOrderedId } from "./create-time-ordered-id.ts"
+import { IdSchema } from "./id-schema.ts"
 
 const question: Message = {
     threadId: "2026-10-18-choice-of-framework",
@@ -13,9 +13,9 @@ const question: Message = {
     body: "@backend-developer Hono or Express?",
 }
 
-describe("createMessageId", () => {
+describe("createTimeOrderedId", () => {
     test("is the time of sending with a random suffix", () => {
-        const id = createMessageId("2026-10-18T14:03:22.123Z")
+        const id = createTimeOrderedId("2026-10-18T14:03:22.123Z")
 
         expect(id).toMatch(/^20261018-140322-123-[0-9a-f]{4}$/)
         expect(IdSchema.safeParse(id).success).toBe(true)
@@ -23,7 +23,9 @@ describe("createMessageId", () => {
 
     test("differs between two messages sent at the same time", () => {
         const messageIds = new Set(
-            Array.from({ length: 20 }, () => createMessageId(question.sentAt)),
+            Array.from({ length: 20 }, () =>
+                createTimeOrderedId(question.sentAt),
+            ),
         )
 
         expect(messageIds.size).toBeGreaterThan(1)

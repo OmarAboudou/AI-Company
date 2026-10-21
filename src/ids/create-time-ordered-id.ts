@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto"
 
-export function createMessageId(sentAt: string): string {
-    const digits = sentAt.replace(/\D/g, "")
+export function createTimeOrderedId(moment: string): string {
+    const digits = moment.replace(/\D/g, "")
     const [date, time, milliseconds] = [
         digits.slice(0, 8),
         digits.slice(8, 14),
