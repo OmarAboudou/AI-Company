@@ -9,10 +9,14 @@ import { loadCompany } from "../../organization/company/storage.ts"
 import { listPositions } from "../../organization/position/storage.ts"
 import { createTask } from "../task/create-task.ts"
 import { getTaskPositionId } from "../task/get-task-position-id.ts"
-import type { NewTask, Task } from "../task/schema.ts"
+import {
+    type ChainStoppedEvent,
+    chainStoppedEventType,
+    type NewTask,
+    type Task,
+} from "../task/schema.ts"
 import { listTasks } from "../task/storage.ts"
 import type { Listener } from "./define-listener.ts"
-import { type ChainStoppedEvent, chainStoppedEventType } from "./schema.ts"
 import { loadDispatchedEventIds, saveDispatchedEventIds } from "./storage.ts"
 
 export type DispatchEventsResult = {

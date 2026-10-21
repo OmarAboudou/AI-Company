@@ -15,11 +15,9 @@ import {
     PositionConfigSchema,
     PositionStateSchema,
 } from "../src/organization/position/schema.ts"
+import { DispatchedEventsSchema } from "../src/work/listener/schema.ts"
 import {
     chainStoppedEventType,
-    DispatchedEventsSchema,
-} from "../src/work/listener/schema.ts"
-import {
     TaskSchema,
     taskCompletedEventType,
     taskCreatedEventType,

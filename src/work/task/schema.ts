@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { IdSchema } from "../../ids/id-schema.ts"
-import { defineEventType } from "../../journal/schema.ts"
+import { defineEventType, type EventOfType } from "../../journal/schema.ts"
 import { RunIdSchema, TokenUsageSchema } from "../run/schema.ts"
 
 export const TaskSchema = z
@@ -105,3 +105,27 @@ export const taskFailedEventType = defineEventType({
         usage: TokenUsageSchema.optional(),
     },
 })
+
+export const chainStoppedEventType = defineEventType({
+    type: "chain-stopped",
+    description:
+        "llmco created no task for an event, whose chain of tasks had reached the company's maxTaskDepth.",
+    fields: {
+        causeEventId: IdSchema.meta({
+            description:
+                "Id of the event the task would have been created for, i.e. the name of its file in .llmco/journal.",
+        }),
+        stoppedTask: z
+            .strictObject({
+                type: IdSchema,
+                positionId: IdSchema,
+                params: z.record(z.string(), z.unknown()),
+            })
+            .meta({
+                description:
+                    "The task the chain stopped before, as a listener asked for it: its type, the position it was for and its parameters.",
+            }),
+    },
+})
+
+export type ChainStoppedEvent = EventOfType<typeof chainStoppedEventType>
