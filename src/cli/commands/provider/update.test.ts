@@ -1,11 +1,14 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createLlmProvider } from "../../../llm/provider/create-llm-provider.ts"
+import { createCompany } from "../../../organization/company/create-company.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
-const { runCli } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("llmco provider API key", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
     })
 
     test("update -e replaces a file with an environment variable", () => {
@@ -22,9 +25,10 @@ describe("llmco provider API key", () => {
 })
 
 describe("llmco provider update", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("provider", "create", "anthropic", "-n", "Anthropic")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" })
     })
 
     test("update -n changes the name", () => {

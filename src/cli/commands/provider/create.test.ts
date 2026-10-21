@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createCompany } from "../../../organization/company/create-company.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
-const { runCli } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("llmco provider", () => {
-    beforeEach(() => {
-        runCli("init", "--name", "Acme")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
     })
 
     function createAnthropic() {
@@ -40,8 +42,9 @@ describe("llmco provider", () => {
 })
 
 describe("llmco provider API key", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
     })
 
     test.each([

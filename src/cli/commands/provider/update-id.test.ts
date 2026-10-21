@@ -1,23 +1,30 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createLlmConnection } from "../../../llm/connection/create-llm-connection.ts"
+import { createLlmModel } from "../../../llm/model/create-llm-model.ts"
+import { createLlmProvider } from "../../../llm/provider/create-llm-provider.ts"
+import { createCompany } from "../../../organization/company/create-company.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
-const { runCli } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("llmco provider update-id", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("provider", "create", "anthropic", "-n", "Anthropic")
-        runCli(
-            "provider",
-            "connection",
-            "create",
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await Promise.all([
+            createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" }),
+            createLlmProvider(projectRoot, "ollama", { name: "Ollama" }),
+        ])
+        await createLlmConnection(
+            projectRoot,
             "anthropic",
             "anthropic-messages",
-            "-u",
-            "https://api.anthropic.com",
+            { baseUrl: "https://api.anthropic.com" },
         )
-        runCli("provider", "create", "ollama", "-n", "Ollama")
-        runCli("model", "create", "anthropic", "opus", "-n", "Opus", "-a", "o")
+        await createLlmModel(projectRoot, "anthropic", "opus", {
+            name: "Opus",
+            apiId: "o",
+        })
     })
 
     test("update-id moves the provider with its models", () => {

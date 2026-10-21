@@ -1,12 +1,17 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createLlmProvider } from "../../../../llm/provider/create-llm-provider.ts"
+import { createCompany } from "../../../../organization/company/create-company.ts"
 import { useTemporaryProject } from "../../../use-temporary-project.testing.ts"
 
-const { runCli } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
-beforeEach(() => {
-    runCli("init", "-n", "Acme")
-    runCli("provider", "create", "anthropic", "-n", "Anthropic")
-    runCli("provider", "create", "openrouter", "-n", "OpenRouter")
+beforeEach(async () => {
+    const projectRoot = getProjectPath()
+    await createCompany(projectRoot, { name: "Acme", description: "" })
+    await Promise.all([
+        createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" }),
+        createLlmProvider(projectRoot, "openrouter", { name: "OpenRouter" }),
+    ])
 })
 
 function createConnection(...args: string[]) {
