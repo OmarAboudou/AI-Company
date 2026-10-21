@@ -6,10 +6,8 @@ import {
     getAnthropicTurns,
     type Replays,
 } from "../llm/anthropic-messages/get-anthropic-turns.ts"
+import { loadAnthropicMessagesModel } from "../llm/anthropic-messages/load-anthropic-messages-model.ts"
 import type { LlmModel } from "../llm/model/schema.ts"
-import { loadLlmModel } from "../llm/model/storage.ts"
-import { readApiKey } from "../llm/provider/read-api-key.ts"
-import { loadLlmProvider } from "../llm/provider/storage.ts"
 import { resolveMentions } from "../messaging/message/resolve-mentions.ts"
 import type { Message } from "../messaging/message/schema.ts"
 import { sendUnsentMessage } from "../messaging/message/send-unsent-message.ts"
@@ -73,28 +71,15 @@ export async function answerAsLlmEmployee(
     employee: LlmEmployee,
     onEvent: (event: LlmAnswerEvent) => void,
 ): Promise<void> {
-    const [company, thread, messages, provider, model] = await Promise.all([
-        loadCompany(projectRoot),
-        loadThread(projectRoot, threadId),
-        listMessages(projectRoot, threadId),
-        loadLlmProvider(projectRoot, employee.providerId),
-        loadLlmModel(projectRoot, employee.providerId, employee.modelId),
-    ])
-    if (model.protocol !== "anthropic-messages") {
-        throw new UserError(
-            `Model "${model.id}" of provider "${provider.id}" is called through ${model.protocol}, which llmco can't call yet.`,
-        )
-    }
-    const connection = provider.connections?.["anthropic-messages"]
-    if (connection === undefined) {
-        throw new UserError(
-            `Provider "${provider.id}" has no anthropic-messages connection. Run \`llmco provider connection create\`.`,
-        )
-    }
-    const [apiKey, ownReplays] = await Promise.all([
-        readApiKey(projectRoot, provider),
-        loadReplays(projectRoot, messages, employee, model),
-    ])
+    const [company, thread, messages, anthropicMessagesModel] =
+        await Promise.all([
+            loadCompany(projectRoot),
+            loadThread(projectRoot, threadId),
+            listMessages(projectRoot, threadId),
+            loadAnthropicMessagesModel(projectRoot, employee),
+        ])
+    const { provider, model, connection, apiKey } = anthropicMessagesModel
+    const ownReplays = await loadReplays(projectRoot, messages, employee, model)
     onEvent({ kind: "answering", position, employee })
     const response = await callAnthropicMessages({
         connection,
