@@ -1,23 +1,24 @@
 import type { Command } from "@commander-js/extra-typings"
-import { parseId } from "../../../ids/parse-id.ts"
 import { requireCompany } from "../../../organization/company/require-company.ts"
-import { loadCompany } from "../../../organization/company/storage.ts"
-import { loadExistingPosition } from "../../../organization/position/load-existing-position.ts"
-import type { Position, Worker } from "../../../organization/position/schema.ts"
-import { loadPositionState } from "../../../organization/position/storage.ts"
+import { loadExistingPositionAssignment } from "../../../organization/position/load-existing-position-assignment.ts"
+import type { PositionAssignment } from "../../../organization/position/schema.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 
-function formatCurrentEmployee(
-    { defaultEmployeeId }: Position,
-    temporaryAssignment: Worker | undefined,
-): string {
-    if (temporaryAssignment === undefined) {
-        return defaultEmployeeId ?? "(vacant)"
+function formatCurrentEmployee({
+    state,
+    currentWorker,
+}: PositionAssignment): string {
+    if (currentWorker === undefined) {
+        return "(vacant)"
     }
-    return temporaryAssignment.kind === "directors"
-        ? "the repository's git users (temporarily)"
-        : `${temporaryAssignment.employeeId} (temporarily)`
+    const workerName =
+        currentWorker.kind === "directors"
+            ? "the repository's git users"
+            : currentWorker.employeeId
+    return state.temporaryAssignment === undefined
+        ? workerName
+        : `${workerName} (temporarily)`
 }
 
 export function registerPositionShowCommand(positionCommand: Command): void {
@@ -32,19 +33,17 @@ export function registerPositionShowCommand(positionCommand: Command): void {
         )
         .action(async (rawId) => {
             await requireCompany(projectRoot)
-            const [position, company, { temporaryAssignment }] =
-                await Promise.all([
-                    loadExistingPosition(projectRoot, rawId),
-                    loadCompany(projectRoot),
-                    loadPositionState(projectRoot, parseId("position", rawId)),
-                ])
-            const holderLines =
-                position.id === company.directorPositionId
-                    ? ["held by: the repository's git users"]
-                    : [
-                          `current employee: ${formatCurrentEmployee(position, temporaryAssignment)}`,
-                          `default employee: ${position.defaultEmployeeId ?? "(none)"}`,
-                      ]
+            const assignment = await loadExistingPositionAssignment(
+                projectRoot,
+                rawId,
+            )
+            const { position } = assignment
+            const holderLines = assignment.isDirectorPosition
+                ? ["held by: the repository's git users"]
+                : [
+                      `current employee: ${formatCurrentEmployee(assignment)}`,
+                      `default employee: ${position.defaultEmployeeId ?? "(none)"}`,
+                  ]
             console.log(
                 `# ${position.title}\n\n${holderLines.join("\n")}\n\n${position.description}`,
             )
