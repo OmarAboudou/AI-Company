@@ -10,7 +10,7 @@ export function getEventOfType<Content extends Omit<JournalEvent, "id">>(
         return undefined
     }
     const { id, ...content } = event
-    const validation = eventType.recordingSchema.safeParse(content)
+    const validation = eventType.readingSchema.safeParse(content)
     if (!validation.success) {
         throw new UserError(
             `Invalid .llmco/journal/${id}.json:\n${z.prettifyError(validation.error)}`,

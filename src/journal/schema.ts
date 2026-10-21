@@ -10,6 +10,28 @@ const DepthSchema = z.int().min(0).meta({
         "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes.",
 })
 
+// An event written by a newer llmco may carry fields that this one doesn't
+// know: reading ignores them, at any depth, while recording still refuses
+// them.
+function createTolerantSchema(schema: z.core.$ZodType): z.core.$ZodType {
+    if (schema instanceof z.ZodObject) {
+        const tolerantShape = Object.fromEntries(
+            Object.entries(schema.shape).map(([key, fieldSchema]) => [
+                key,
+                createTolerantSchema(fieldSchema),
+            ]),
+        )
+        return z.object(tolerantShape)
+    }
+    if (schema instanceof z.ZodOptional) {
+        return z.optional(createTolerantSchema(schema.unwrap()))
+    }
+    if (schema instanceof z.ZodArray) {
+        return z.array(createTolerantSchema(schema.element))
+    }
+    return schema
+}
+
 export function defineEventType<
     Type extends string,
     Fields extends z.ZodRawShape,
@@ -30,7 +52,10 @@ export function defineEventType<
             ...fields,
         })
         .meta({ description })
-    return { type, recordingSchema }
+    const readingSchema = createTolerantSchema(recordingSchema) as z.ZodType<
+        z.output<typeof recordingSchema>
+    >
+    return { type, recordingSchema, readingSchema }
 }
 
 export const JournalEventSchema = z
@@ -55,6 +80,7 @@ export type JournalEvent = EventContent & { id: string }
 export type EventType<Content extends EventContent = EventContent> = {
     type: string
     recordingSchema: z.ZodType<Content>
+    readingSchema: z.ZodType<Content>
 }
 
 export type EventOfType<Type extends EventType> = z.output<
