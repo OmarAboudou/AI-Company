@@ -94,7 +94,7 @@ async function findEvent<Content extends Omit<JournalEvent, "id">>(
 }
 
 const completion = {
-    name: "task_complete",
+    name: "task_mark-as-done",
     input: { summary: "Answered: Hono, for Bun." },
 }
 
@@ -138,8 +138,8 @@ describe("runTask", () => {
         const tools = fakeServer.requests[0]?.body.tools ?? []
         expect(tools.map(({ name }) => name)).toEqual([
             "message_send",
-            "task_complete",
-            "task_fail",
+            "task_mark-as-done",
+            "task_mark-as-failed",
             "thread_show",
         ])
     })
@@ -192,7 +192,7 @@ describe("runTask", () => {
     test("records the task given up, with its reason", async () => {
         const reason = "The thread asks for figures I don't have."
         fakeServer.respondWith({
-            toolCalls: [{ name: "task_fail", input: { reason } }],
+            toolCalls: [{ name: "task_mark-as-failed", input: { reason } }],
         })
 
         await runFakeTask()

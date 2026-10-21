@@ -43,6 +43,6 @@ export function buildCatchUpMessage({
         "",
         "# Your task",
         "",
-        "Catch up on this thread: if its entries ask something of your position, answer in the thread with message_send. Then call task_complete with a summary of what you did.",
+        "Catch up on this thread: if its entries ask something of your position, answer in the thread with message_send. Then call task_mark-as-done with a summary of what you did.",
     ].join("\n")
 }

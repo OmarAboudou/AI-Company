@@ -79,7 +79,7 @@ describe("buildSystemPrompt", () => {
         const prompt = buildSystemPrompt(context)
 
         const rule =
-            "Only your tools act: what you write outside them reaches no one. End each task with task_complete, or with task_fail if you can't do it."
+            "Only your tools act: what you write outside them reaches no one. End each task with task_mark-as-done, or with task_mark-as-failed if you can't do it."
         expect(prompt).toEndWith(`# Your tasks\n\n${rule}`)
     })
 })

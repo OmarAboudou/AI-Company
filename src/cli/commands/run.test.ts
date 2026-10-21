@@ -41,7 +41,7 @@ describe("llmco run", () => {
             text: "The director asks for a framework.",
             toolCalls: [
                 { name: "message_send", input: answer },
-                { name: "task_complete", input: { summary: "Answered." } },
+                { name: "task_mark-as-done", input: { summary: "Answered." } },
             ],
         })
 

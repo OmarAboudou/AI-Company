@@ -33,7 +33,10 @@ export type RunTaskResult = {
 }
 
 // Every run can end its task, whichever tools its type gives.
-const taskEndingToolNames: BuiltInToolName[] = ["task_complete", "task_fail"]
+const taskEndingToolNames: BuiltInToolName[] = [
+    "task_mark-as-done",
+    "task_mark-as-failed",
+]
 
 function getRunTools(toolNames: BuiltInToolName[]): Record<string, Tool> {
     return Object.fromEntries(

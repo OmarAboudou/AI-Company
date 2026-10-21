@@ -35,6 +35,6 @@ export function buildSystemPrompt({
         ),
         "# Your tasks",
         "",
-        "Only your tools act: what you write outside them reaches no one. End each task with task_complete, or with task_fail if you can't do it.",
+        "Only your tools act: what you write outside them reaches no one. End each task with task_mark-as-done, or with task_mark-as-failed if you can't do it.",
     ].join("\n")
 }

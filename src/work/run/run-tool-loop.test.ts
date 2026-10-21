@@ -4,8 +4,8 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { z } from "zod"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.ts"
-import { taskCompleteTool } from "../tool/built-in/task/complete.ts"
-import { taskFailTool } from "../tool/built-in/task/fail.ts"
+import { taskMarkAsDoneTool } from "../tool/built-in/task/mark-as-done.ts"
+import { taskMarkAsFailedTool } from "../tool/built-in/task/mark-as-failed.ts"
 import { defineTool } from "../tool/define-tool.ts"
 import { exampleToolContext } from "../tool/example-tool-context.ts"
 import { getAnthropicTools } from "./get-anthropic-tools.ts"
@@ -43,12 +43,12 @@ const noteWriteTool = defineTool({
 
 const tools = {
     note_write: noteWriteTool,
-    task_complete: taskCompleteTool,
-    task_fail: taskFailTool,
+    "task_mark-as-done": taskMarkAsDoneTool,
+    "task_mark-as-failed": taskMarkAsFailedTool,
 }
 
 const completion = {
-    name: "task_complete",
+    name: "task_mark-as-done",
     input: { summary: "Wrote the notes." },
 }
 
@@ -128,7 +128,7 @@ describe("runToolLoop", () => {
     test("ends after the turn that gives the task up", async () => {
         const reason = "There is nothing to note."
         fakeServer.respondWith({
-            toolCalls: [{ name: "task_fail", input: { reason } }],
+            toolCalls: [{ name: "task_mark-as-failed", input: { reason } }],
         })
 
         const { taskEnding } = await runFakeLoop()
