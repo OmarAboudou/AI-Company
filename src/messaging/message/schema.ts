@@ -1,7 +1,6 @@
 import { z } from "zod"
 import { IdSchema } from "../../ids/id-schema.ts"
 import { defineEventType } from "../../journal/schema.ts"
-import { ProtocolSchema } from "../../llm/connection/schema.ts"
 import {
     CommitterSchema,
     EmployeeSnapshotSchema,
@@ -47,25 +46,6 @@ export type Message = MessageConfig & {
     id: string
     body: string
 }
-
-export const ProviderResponseSchema = z
-    .strictObject({
-        providerId: IdSchema,
-        modelId: IdSchema,
-        protocol: ProtocolSchema,
-        apiId: z.string().min(1),
-        payload: z.unknown().meta({
-            description:
-                "The provider's response, as its API returned it: thinking, text, usage.",
-        }),
-    })
-    .meta({
-        title: "llmco provider response",
-        description:
-            "The raw response behind a message written by an LLM employee, in .llmco/threads/<thread-id>/messages/<message-id>/response.json, so that the same model can be given its own message back exactly.",
-    })
-
-export type ProviderResponse = z.infer<typeof ProviderResponseSchema>
 
 export const messageSentEventType = defineEventType({
     type: "message-sent",

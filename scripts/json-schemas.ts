@@ -6,7 +6,6 @@ import { LlmProviderConfigSchema } from "../src/llm/provider/schema.ts"
 import {
     MessageConfigSchema,
     messageSentEventType,
-    ProviderResponseSchema,
 } from "../src/messaging/message/schema.ts"
 import { ThreadConfigSchema } from "../src/messaging/thread/schema.ts"
 import { CompanyConfigSchema } from "../src/organization/company/schema.ts"
@@ -47,7 +46,6 @@ const zodSchemas = {
     "llm-model": LlmModelConfigSchema,
     thread: ThreadConfigSchema,
     message: MessageConfigSchema,
-    "provider-response": ProviderResponseSchema,
     event: BuiltInEventSchema,
     task: TaskSchema,
     "id-history": IdHistorySchema,

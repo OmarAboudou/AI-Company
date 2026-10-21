@@ -3,12 +3,7 @@ import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
 import { readTextFile } from "../../files/read-text-file.ts"
 import { getThreadFolderPath } from "../thread/storage.ts"
-import {
-    type Message,
-    MessageConfigSchema,
-    type ProviderResponse,
-    ProviderResponseSchema,
-} from "./schema.ts"
+import { type Message, MessageConfigSchema } from "./schema.ts"
 
 function getMessagesFolderPath(projectRoot: string, threadId: string): string {
     return join(getThreadFolderPath(projectRoot, threadId), "messages")
@@ -22,7 +17,6 @@ function getMessagePaths(projectRoot: string, threadId: string, id: string) {
     return {
         config: join(messageFolderPath, "message.json"),
         body: join(messageFolderPath, "body.md"),
-        response: join(messageFolderPath, "response.json"),
     }
 }
 
@@ -61,26 +55,4 @@ export async function saveMessage(
         Bun.write(messagePaths.config, `${JSON.stringify(config, null, 4)}\n`),
         Bun.write(messagePaths.body, body),
     ])
-}
-
-export async function saveProviderResponse(
-    projectRoot: string,
-    { threadId, id }: Pick<Message, "threadId" | "id">,
-    providerResponse: ProviderResponse,
-): Promise<void> {
-    await Bun.write(
-        getMessagePaths(projectRoot, threadId, id).response,
-        `${JSON.stringify(providerResponse, null, 4)}\n`,
-    )
-}
-
-export async function loadProviderResponse(
-    projectRoot: string,
-    { threadId, id }: Pick<Message, "threadId" | "id">,
-): Promise<ProviderResponse | undefined> {
-    const responsePath = getMessagePaths(projectRoot, threadId, id).response
-    if (!(await Bun.file(responsePath).exists())) {
-        return undefined
-    }
-    return readJsonFile(projectRoot, responsePath, ProviderResponseSchema)
 }

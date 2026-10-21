@@ -3,12 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import type { Message } from "./schema.ts"
-import {
-    listMessages,
-    loadProviderResponse,
-    saveMessage,
-    saveProviderResponse,
-} from "./storage.ts"
+import { listMessages, saveMessage } from "./storage.ts"
 
 let projectRoot: string
 
@@ -66,31 +61,5 @@ describe("saveMessage and listMessages", () => {
         const messages = await listMessages(projectRoot, question.threadId)
 
         expect(messages).toEqual([question, answer])
-    })
-})
-
-describe("saveProviderResponse and loadProviderResponse", () => {
-    const providerResponse = {
-        providerId: "anthropic",
-        modelId: "claude-opus-5-5",
-        protocol: "anthropic-messages",
-        apiId: "claude-opus-5-5",
-        payload: { content: [{ type: "text", text: "Hono." }] },
-    } as const
-
-    test("write response.json next to the message, then read it", async () => {
-        await saveMessage(projectRoot, answer)
-
-        await saveProviderResponse(projectRoot, answer, providerResponse)
-
-        const loadedResponse = await loadProviderResponse(projectRoot, answer)
-        expect(loadedResponse).toEqual(providerResponse)
-    })
-
-    test("load gives nothing for a message without response", async () => {
-        await saveMessage(projectRoot, question)
-
-        const loadedResponse = await loadProviderResponse(projectRoot, question)
-        expect(loadedResponse).toBeUndefined()
     })
 })
