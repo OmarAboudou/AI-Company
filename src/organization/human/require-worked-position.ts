@@ -1,6 +1,6 @@
 import { UserError } from "../../user-error.ts"
 import { loadEmployee } from "../employee/storage.ts"
-import { getCurrentWorker } from "../position/get-current-worker.ts"
+import { getPositionAssignment } from "../position/get-position-assignment.ts"
 import { loadExistingPosition } from "../position/load-existing-position.ts"
 import type { Position, Worker } from "../position/schema.ts"
 import { loadPositionState } from "../position/storage.ts"
@@ -49,8 +49,12 @@ export async function requireWorkedPosition(
         )
     }
     const positionState = await loadPositionState(projectRoot, position.id)
-    const worker = getCurrentWorker(position, positionState, directorPositionId)
+    const { currentWorker } = getPositionAssignment(
+        position,
+        positionState,
+        directorPositionId,
+    )
     throw new UserError(
-        `You don't work position "${position.id}": ${await loadWorkerDescription(projectRoot, worker)}. ${formatHowToWorkIt(human, position)}`,
+        `You don't work position "${position.id}": ${await loadWorkerDescription(projectRoot, currentWorker)}. ${formatHowToWorkIt(human, position)}`,
     )
 }

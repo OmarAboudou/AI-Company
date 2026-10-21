@@ -2,7 +2,7 @@ import { listEvents } from "../../journal/storage.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
 import type { LlmEmployee } from "../../organization/employee/schema.ts"
 import { loadEmployee } from "../../organization/employee/storage.ts"
-import { getCurrentWorker } from "../../organization/position/get-current-worker.ts"
+import { getPositionAssignment } from "../../organization/position/get-position-assignment.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import {
     listPositions,
@@ -42,7 +42,11 @@ async function loadPendingTask(
         return { ...waitingTask, reason: "deleted-position" }
     }
     const positionState = await loadPositionState(projectRoot, position.id)
-    const worker = getCurrentWorker(position, positionState, directorPositionId)
+    const worker = getPositionAssignment(
+        position,
+        positionState,
+        directorPositionId,
+    ).currentWorker
     if (worker === undefined) {
         return { ...waitingTask, reason: "vacant-position" }
     }

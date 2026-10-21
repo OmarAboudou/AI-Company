@@ -65,3 +65,10 @@ export const PositionStateSchema = z
     })
 
 export type PositionState = z.infer<typeof PositionStateSchema>
+
+export type PositionAssignment = {
+    position: Position
+    isDirectorPosition: boolean
+    state: PositionState
+    currentWorker: Worker | undefined
+}

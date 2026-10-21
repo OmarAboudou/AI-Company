@@ -1,4 +1,4 @@
-import { getCurrentWorker } from "../position/get-current-worker.ts"
+import { getPositionAssignment } from "../position/get-position-assignment.ts"
 import type { Position, Worker } from "../position/schema.ts"
 import { loadPositionState } from "../position/storage.ts"
 import type { CurrentHuman } from "./read-current-human.ts"
@@ -26,7 +26,11 @@ export async function listPositionsWorkedBy(
             return {
                 position,
                 isTemporary: state.temporaryAssignment !== undefined,
-                worker: getCurrentWorker(position, state, directorPositionId),
+                worker: getPositionAssignment(
+                    position,
+                    state,
+                    directorPositionId,
+                ).currentWorker,
             }
         }),
     )
