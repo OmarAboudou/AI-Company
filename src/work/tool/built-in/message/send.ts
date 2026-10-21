@@ -7,9 +7,14 @@ import { listMessages } from "../../../../messaging/message/storage.ts"
 import { loadExistingThread } from "../../../../messaging/thread/load-existing-thread.ts"
 import { defineTool } from "../../define-tool.ts"
 
+function buildDescription(thread: string): string {
+    return `Send a message in ${thread}, from your position. To ask a position to act on the thread, mention it in the message as @position-id: a position you don't mention isn't asked anything.`
+}
+
 export const messageSendTool = defineTool({
-    description:
-        "Send a message in a thread, from your position. To ask a position to act on the thread, mention it in the message as @position-id: a position you don't mention isn't asked anything.",
+    description: buildDescription("a thread"),
+    buildBoundDescription: ({ threadId }) =>
+        buildDescription(threadId === undefined ? "a thread" : "this thread"),
     inputSchema: z.strictObject({
         threadId: z.string().meta({
             description:

@@ -4,6 +4,7 @@ import { createGitRepository } from "../../../../git/create-git-repository.testi
 import { sendMessage } from "../../../../messaging/message/send-message.ts"
 import { createThread } from "../../../../messaging/thread/create-thread.ts"
 import { createTemporaryCompany } from "../../../../organization/company/create-temporary-company.testing.ts"
+import { bindTool } from "../../bind-tool.ts"
 import { exampleToolContext } from "../../example-tool-context.testing.ts"
 import { runToolCall } from "../../run-tool-call.ts"
 import { maxEntriesPerCall, threadShowTool } from "./show.ts"
@@ -108,5 +109,11 @@ describe("thread_show", () => {
             text: `Thread ${threadId} has no entries yet.`,
             isError: true,
         })
+    })
+
+    test("speaks of this thread once the task fixes its thread", () => {
+        const { description } = bindTool(threadShowTool, { threadId })
+
+        expect(description).toStartWith("Show this thread's entries")
     })
 })
