@@ -40,7 +40,7 @@ The rules that decide where code and documentation go, and how big they grow. Th
 ## Boundaries
 
 - Only `src/cli/` imports commander, and nothing outside `src/cli/` imports from it.
-- The core receives the project's root as a parameter: only `src/cli/` knows the current directory.
+- The core receives the project's root and the environment as parameters: only `src/cli/` knows the current directory and reads `process.env`, apart from `spawnGit`, which hands it to git.
 - No module imports a module that imports it back, directly or not.
 
 ## Documentation

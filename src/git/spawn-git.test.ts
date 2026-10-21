@@ -41,6 +41,7 @@ describe("spawnGit", () => {
         const otherGitPath = join(otherFolderPath, ".git")
         const otherConfig = Bun.file(join(otherGitPath, "config"))
         const otherConfigBefore = await otherConfig.text()
+        // biome-ignore lint/style/noProcessEnv: a hook runs in its caller's environment, plus GIT_DIR.
         const hookEnvironment = { ...process.env, GIT_DIR: otherGitPath }
         const inheritingGit = Bun.spawnSync(
             ["git", "rev-parse", "--absolute-git-dir"],

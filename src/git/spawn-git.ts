@@ -11,6 +11,7 @@ function readRepositoryVariableNames(): string[] {
 // variables, while llmco names the repository it works on by its folder.
 function readEnvironmentWithoutRepositoryVariables() {
     repositoryVariableNames ??= readRepositoryVariableNames()
+    // biome-ignore lint/style/noProcessEnv: git runs in llmco's own environment, which the next lines clean.
     const environment = { ...process.env }
     for (const name of repositoryVariableNames) {
         delete environment[name]
