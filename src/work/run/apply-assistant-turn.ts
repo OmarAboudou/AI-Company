@@ -1,0 +1,149 @@
+import type {
+    AssistantTurn,
+    ConversationTurn,
+    ToolCallBlock,
+    ToolResultBlock,
+    TurnStop,
+    UserTurn,
+} from "../../llm/conversation/schema.ts"
+import type { TaskEnding, Tool, ToolContext } from "../tool/define-tool.ts"
+import { runToolCall } from "../tool/run-tool-call.ts"
+import type { Run, RunProgress } from "./schema.ts"
+import { appendRunTranscriptLine } from "./storage.ts"
+
+export const reminderText =
+    "You ended your turn without calling a tool, and only tools act: what you write outside them reaches no one. Call task_mark-as-done with a summary if your task is done, or task_mark-as-failed with the reason if you can't do it."
+
+// Settings (#35) will let management choose it.
+export const maxToolCallsPerRun = 50
+
+export type TurnApplication = {
+    tools: Record<string, Tool>
+    ctx: ToolContext
+    onProgress: (progress: RunProgress) => void
+}
+
+export type ApplyAssistantTurnResult = { run: Run; taskEnding?: TaskEnding }
+
+type TurnAnswer = { answeringTurn?: UserTurn; taskEnding?: TaskEnding }
+
+function getToolCalls(turn: AssistantTurn): ToolCallBlock[] {
+    return turn.blocks.filter((block) => block.type === "tool-call")
+}
+
+function getStopFailureReason(stop: TurnStop): string | undefined {
+    switch (stop.reason) {
+        case "refusal":
+            return `The model's provider declined to go on (refusal${stop.category ? `, ${stop.category}` : ""}).`
+        case "max-length":
+            return "The model's turn was cut at its maximum length."
+        case "context-window-exceeded":
+            return "The run's conversation outgrew the model's context window."
+        case "end":
+            return undefined
+    }
+}
+
+function getFailureReason(
+    previousTurns: ConversationTurn[],
+    turn: AssistantTurn,
+): string | undefined {
+    // A refusal or a cut can stop a tool call halfway through its input,
+    // so none of this turn's calls runs.
+    const stopFailureReason =
+        turn.modelResponse && getStopFailureReason(turn.modelResponse.stop)
+    if (stopFailureReason !== undefined) {
+        return stopFailureReason
+    }
+    const previousAssistantTurns = previousTurns.filter(
+        (previousTurn) => previousTurn.role === "assistant",
+    )
+    const toolCallCount = [...previousAssistantTurns, turn].flatMap(
+        getToolCalls,
+    ).length
+    if (toolCallCount > maxToolCallsPerRun) {
+        return `The run went beyond ${maxToolCallsPerRun} tool calls without ending its task.`
+    }
+    const hasBeenReminded = previousAssistantTurns.some(
+        (previousTurn) => getToolCalls(previousTurn).length === 0,
+    )
+    if (getToolCalls(turn).length === 0 && hasBeenReminded) {
+        return "Two turns ended without calling a tool, the second after a reminder."
+    }
+    return undefined
+}
+
+async function runToolCalls(
+    toolCalls: ToolCallBlock[],
+    { tools, ctx, onProgress }: TurnApplication,
+) {
+    const toolResults: ToolResultBlock[] = []
+    let taskEnding: TaskEnding | undefined
+    for (const { id, name, input } of toolCalls) {
+        onProgress({ kind: "tool-call", name, input })
+        const { text, isError, ...result } = await runToolCall(
+            tools,
+            { name, input },
+            ctx,
+        )
+        onProgress({ kind: "tool-result", name, text, isError })
+        toolResults.push({ type: "tool-result", toolCallId: id, text, isError })
+        taskEnding ??= result.taskEnding
+    }
+    return { toolResults, taskEnding }
+}
+
+async function answerTurn(
+    previousTurns: ConversationTurn[],
+    turn: AssistantTurn,
+    application: TurnApplication,
+): Promise<TurnAnswer> {
+    const failureReason = getFailureReason(previousTurns, turn)
+    if (failureReason !== undefined) {
+        return { taskEnding: { state: "failed", reason: failureReason } }
+    }
+    const toolCalls = getToolCalls(turn)
+    if (toolCalls.length === 0) {
+        application.onProgress({ kind: "reminder", text: reminderText })
+        const blocks = [{ type: "text" as const, text: reminderText }]
+        return { answeringTurn: { role: "user", blocks } }
+    }
+    const { toolResults, taskEnding } = await runToolCalls(
+        toolCalls,
+        application,
+    )
+    return { answeringTurn: { role: "user", blocks: toolResults }, taskEnding }
+}
+
+export async function applyAssistantTurn(
+    run: Run,
+    turn: AssistantTurn,
+    application: TurnApplication,
+): Promise<ApplyAssistantTurnResult> {
+    const { projectRoot } = application.ctx
+    const { conversation } = run
+    await appendRunTranscriptLine(projectRoot, run.id, {
+        type: "turn",
+        ...turn,
+    })
+    const { answeringTurn, taskEnding } = await answerTurn(
+        conversation.turns,
+        turn,
+        application,
+    )
+    if (answeringTurn !== undefined) {
+        await appendRunTranscriptLine(projectRoot, run.id, {
+            type: "turn",
+            ...answeringTurn,
+        })
+    }
+    const turns = [
+        ...conversation.turns,
+        turn,
+        ...(answeringTurn === undefined ? [] : [answeringTurn]),
+    ]
+    return {
+        run: { ...run, conversation: { ...conversation, turns } },
+        taskEnding,
+    }
+}
