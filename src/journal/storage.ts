@@ -13,7 +13,7 @@ function getEventFilePath(projectRoot: string, id: string): string {
     return join(getJournalFolderPath(projectRoot), `${id}.json`)
 }
 
-async function loadEvent(
+export async function loadEvent(
     projectRoot: string,
     id: string,
 ): Promise<JournalEvent> {

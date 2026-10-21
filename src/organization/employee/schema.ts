@@ -49,3 +49,5 @@ export type Employee = EmployeeConfig &
     IdHistoryRecord & {
         id: string
     }
+
+export type LlmEmployee = Extract<Employee, { kind: "llm" }>
