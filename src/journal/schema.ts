@@ -22,7 +22,7 @@ export function defineEventType<
     description: string
     fields: Fields
 }) {
-    const schema = z
+    const recordingSchema = z
         .strictObject({
             type: z.literal(type),
             occurredAt: OccurredAtSchema,
@@ -30,7 +30,7 @@ export function defineEventType<
             ...fields,
         })
         .meta({ description })
-    return { type, schema }
+    return { type, recordingSchema }
 }
 
 export const JournalEventSchema = z
@@ -54,9 +54,11 @@ export type JournalEvent = EventContent & { id: string }
 
 export type EventType<Content extends EventContent = EventContent> = {
     type: string
-    schema: z.ZodType<Content>
+    recordingSchema: z.ZodType<Content>
 }
 
-export type EventOfType<Type extends EventType> = z.output<Type["schema"]> & {
+export type EventOfType<Type extends EventType> = z.output<
+    Type["recordingSchema"]
+> & {
     id: string
 }

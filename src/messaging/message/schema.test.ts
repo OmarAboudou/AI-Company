@@ -57,7 +57,7 @@ describe("messageSentEventType", () => {
     }
 
     function isAccepted(event: unknown): boolean {
-        return messageSentEventType.schema.safeParse(event).success
+        return messageSentEventType.recordingSchema.safeParse(event).success
     }
 
     test("accepts a message sent, with its thread, id and mentions", () => {
