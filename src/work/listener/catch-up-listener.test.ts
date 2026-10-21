@@ -20,32 +20,35 @@ function createMessageSentEvent(
     }
 }
 
-function getTasksToCreate(mentions: string[]) {
-    return catchUpListener.getTasksToCreate(createMessageSentEvent(mentions))
+function getEffects(mentions: string[]) {
+    return catchUpListener.getEffects(createMessageSentEvent(mentions))
 }
 
 describe("catchUpListener", () => {
     test("asks each position a message mentions to catch up on its thread", () => {
-        const uncreatedTasks = getTasksToCreate([
-            "backend-developer",
-            "qa-tester",
-        ])
+        const effects = getEffects(["backend-developer", "qa-tester"])
 
-        expect(uncreatedTasks).toEqual([
+        expect(effects).toEqual([
             {
-                type: "catch-up-thread",
-                positionId: "backend-developer",
-                params: { threadId },
+                kind: "create-task",
+                task: {
+                    type: "catch-up-thread",
+                    positionId: "backend-developer",
+                    params: { threadId },
+                },
             },
             {
-                type: "catch-up-thread",
-                positionId: "qa-tester",
-                params: { threadId },
+                kind: "create-task",
+                task: {
+                    type: "catch-up-thread",
+                    positionId: "qa-tester",
+                    params: { threadId },
+                },
             },
         ])
     })
 
     test("asks nothing for a message without mentions", () => {
-        expect(getTasksToCreate([])).toEqual([])
+        expect(getEffects([])).toEqual([])
     })
 })

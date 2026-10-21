@@ -40,11 +40,14 @@ async function createMessageSentEvent(mentions: string[], depth = 0) {
 
 const reviewListener = defineListener({
     eventType: messageSentEventType,
-    getTasksToCreate: ({ threadId }) => [
+    getEffects: ({ threadId }) => [
         {
-            type: "review-thread",
-            positionId: "qa-tester",
-            params: { threadId },
+            kind: "create-task",
+            task: {
+                type: "review-thread",
+                positionId: "qa-tester",
+                params: { threadId },
+            },
         },
     ],
 })
