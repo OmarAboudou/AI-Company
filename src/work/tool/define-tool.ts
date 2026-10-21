@@ -1,7 +1,16 @@
 import type { z } from "zod"
+import type { Employee } from "../../organization/employee/schema.ts"
+import type { Position } from "../../organization/position/schema.ts"
 import type { Task } from "../task/schema.ts"
 
-export type ToolContext = { projectRoot: string; task: Task; runId: string }
+export type ToolContext = {
+    projectRoot: string
+    task: Task
+    taskDepth: number
+    position: Position
+    employee: Employee
+    runId: string
+}
 
 export type TaskEnding =
     | { state: "succeeded"; summary: string }

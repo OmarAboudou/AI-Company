@@ -3,6 +3,7 @@ import { recordEvent } from "../../journal/record-event.ts"
 import { loadEvent } from "../../journal/storage.ts"
 import { loadAnthropicMessagesModel } from "../../llm/anthropic-messages/load-anthropic-messages-model.ts"
 import type { LlmEmployee } from "../../organization/employee/schema.ts"
+import type { Position } from "../../organization/position/schema.ts"
 import { readMonotonicTime } from "../../read-monotonic-time.ts"
 import {
     type Task,
@@ -24,6 +25,7 @@ export async function runTask(
     projectRoot: string,
     {
         task,
+        position,
         employee,
         systemPrompt,
         userMessage,
@@ -31,6 +33,7 @@ export async function runTask(
         onProgress,
     }: {
         task: Task
+        position: Position
         employee: LlmEmployee
         systemPrompt: string
         userMessage: string
@@ -43,17 +46,17 @@ export async function runTask(
             loadAnthropicMessagesModel(projectRoot, employee),
             loadEvent(projectRoot, task.causeEventId),
         ])
-    const depth = causeEvent.depth + 1
+    const taskDepth = causeEvent.depth + 1
     const runId = createTimeOrderedId(readMonotonicTime())
     await recordEvent(projectRoot, taskStartedEventType, {
-        depth,
+        depth: taskDepth,
         taskId: task.id,
         runId,
         employeeId: employee.id,
         model: { providerId: provider.id, modelId: model.id },
     })
     const { taskEnding, usage } = await runToolLoop({
-        ctx: { projectRoot, task, runId },
+        ctx: { projectRoot, task, taskDepth, position, employee, runId },
         connection,
         apiKey,
         apiId: model.apiId,
@@ -62,7 +65,7 @@ export async function runTask(
         tools,
         onProgress,
     })
-    const runEnd = { depth, taskId: task.id, runId, usage }
+    const runEnd = { depth: taskDepth, taskId: task.id, runId, usage }
     if (taskEnding.state === "succeeded") {
         await recordEvent(projectRoot, taskCompletedEventType, {
             ...runEnd,

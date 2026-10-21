@@ -6,6 +6,8 @@ import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-an
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import type { LlmEmployee } from "../../organization/employee/schema.ts"
 import { loadEmployee } from "../../organization/employee/storage.ts"
+import type { Position } from "../../organization/position/schema.ts"
+import { loadPosition } from "../../organization/position/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { createAnsweringCompany } from "../create-answering-company.ts"
 import { createTask } from "../task/create-task.ts"
@@ -19,6 +21,7 @@ const variableNames = ["LLMCO_CURRENT_HUMAN_ID", "TEST_ANTHROPIC_KEY"] as const
 const shellValues = variableNames.map((name) => process.env[name])
 let projectRoot: string
 let task: Task
+let position: Position
 let employee: LlmEmployee
 
 beforeEach(async () => {
@@ -38,6 +41,7 @@ beforeEach(async () => {
         params: { threadId: answeringCompany.threadId },
     }
     task = await createTask(projectRoot, newTask, questionSent)
+    position = await loadPosition(projectRoot, "backend-developer")
     const claude = await loadEmployee(projectRoot, "claude")
     if (claude.kind !== "llm") {
         throw new Error("Claude isn't an LLM employee")
@@ -60,6 +64,7 @@ afterEach(async () => {
 function runFakeTask() {
     return runTask(projectRoot, {
         task,
+        position,
         employee,
         systemPrompt: "You are Claude Senior.",
         userMessage: "Catch up on the thread.",

@@ -10,5 +10,18 @@ export const exampleToolContext: ToolContext = {
         positionId: "backend-developer",
         causeEventId: "20261018-140322-123-5d1e",
     },
+    taskDepth: 1,
+    position: {
+        id: "backend-developer",
+        title: "Backend Developer",
+        description: "",
+    },
+    employee: {
+        id: "claude-senior",
+        name: "Claude Senior",
+        kind: "llm",
+        providerId: "anthropic",
+        modelId: "opus",
+    },
     runId: "20261018-140324-000-1b2c",
 }
