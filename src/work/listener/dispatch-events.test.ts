@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
+import { IdSchema } from "../../ids/id-schema.ts"
 import { recordEvent } from "../../journal/record-event.ts"
+import { defineEventType } from "../../journal/schema.ts"
 import { saveEvent } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
@@ -45,6 +47,29 @@ const reviewListener = defineListener({
             },
         },
     ],
+})
+
+const positionNotedEventType = defineEventType({
+    type: "test-position-noted",
+    description: "A test noted that a position finished its tasks.",
+    fields: { positionId: IdSchema },
+})
+
+const notingListener = defineListener({
+    eventType: positionNotedEventType,
+    getEffects: ({ positionId }, { tasks, taskStates }) =>
+        tasks
+            .filter(
+                (task) =>
+                    task.positionId === positionId &&
+                    taskStates.get(task.id) === "waiting",
+            )
+            .map((task) => ({
+                kind: "mark-task-as-done",
+                taskId: task.id,
+                summary: "Noted as finished.",
+                result: {},
+            })),
 })
 
 function dispatchToCatchUpListener() {
@@ -108,6 +133,23 @@ describe("dispatchEvents", () => {
 
         expect(createdTasks).toEqual([])
         expect(await listTasks(projectRoot)).toHaveLength(1)
+    })
+
+    test("shows listeners the tasks that earlier events created", async () => {
+        await createMessageSentEvent(["qa-tester"])
+        await recordEvent(projectRoot, positionNotedEventType, {
+            depth: 0,
+            positionId: "qa-tester",
+        })
+        const listeners = [catchUpListener, notingListener]
+
+        const { createdTasks, doneTasks } = await dispatchEvents(
+            projectRoot,
+            listeners,
+        )
+
+        expect(createdTasks).toHaveLength(1)
+        expect(doneTasks).toEqual(createdTasks)
     })
 
     test("passes over an event of a type no listener handles", async () => {

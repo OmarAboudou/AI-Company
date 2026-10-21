@@ -75,5 +75,6 @@ export async function createTaskOnce(
     }
     const task = await createTask(projectRoot, uncreatedTask, causeEvent)
     dispatching.tasks.push(task)
+    dispatching.taskStates.set(task.id, "waiting")
     dispatching.createdTasks.push(task)
 }
