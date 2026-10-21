@@ -45,7 +45,7 @@ export async function runToolLoop(loop: ToolLoop): Promise<RunToolLoopResult> {
             apiKey,
             apiId,
             conversation: run.conversation,
-            onText: (text) => onProgress({ kind: "text", text }),
+            onText: (text) => onProgress?.({ kind: "text", text }),
         })
         usage = addUsage(usage, modelTurn.modelResponse.usage)
         const application = await applyAssistantTurn(run, modelTurn, loop)

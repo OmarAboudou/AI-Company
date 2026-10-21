@@ -20,12 +20,12 @@ export const maxToolCallsPerRun = 50
 export type TurnApplication = {
     tools: Record<string, Tool>
     ctx: ToolContext
-    onProgress: (progress: RunProgress) => void
+    onProgress?: (progress: RunProgress) => void
 }
 
-export type ApplyAssistantTurnResult = { run: Run; taskEnding?: TaskEnding }
-
 type TurnAnswer = { answeringTurn?: UserTurn; taskEnding?: TaskEnding }
+
+export type ApplyAssistantTurnResult = TurnAnswer & { run: Run }
 
 function getToolCalls(turn: AssistantTurn): ToolCallBlock[] {
     return turn.blocks.filter((block) => block.type === "tool-call")
@@ -80,13 +80,13 @@ async function runToolCalls(
     const toolResults: ToolResultBlock[] = []
     let taskEnding: TaskEnding | undefined
     for (const { id, name, input } of toolCalls) {
-        onProgress({ kind: "tool-call", name, input })
+        onProgress?.({ kind: "tool-call", name, input })
         const { text, isError, ...result } = await runToolCall(
             tools,
             { name, input },
             ctx,
         )
-        onProgress({ kind: "tool-result", name, text, isError })
+        onProgress?.({ kind: "tool-result", name, text, isError })
         toolResults.push({ type: "tool-result", toolCallId: id, text, isError })
         taskEnding ??= result.taskEnding
     }
@@ -104,7 +104,7 @@ async function answerTurn(
     }
     const toolCalls = getToolCalls(turn)
     if (toolCalls.length === 0) {
-        application.onProgress({ kind: "reminder", text: reminderText })
+        application.onProgress?.({ kind: "reminder", text: reminderText })
         const blocks = [{ type: "text" as const, text: reminderText }]
         return { answeringTurn: { role: "user", blocks } }
     }
@@ -144,6 +144,7 @@ export async function applyAssistantTurn(
     ]
     return {
         run: { ...run, conversation: { ...conversation, turns } },
+        answeringTurn,
         taskEnding,
     }
 }
