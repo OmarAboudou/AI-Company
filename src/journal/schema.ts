@@ -33,28 +33,6 @@ export function defineEventType<
     return { type, schema }
 }
 
-export const chainStoppedEventType = defineEventType({
-    type: "chain-stopped",
-    description:
-        "llmco created no task for an event, whose chain of tasks had reached the company's maxTaskDepth.",
-    fields: {
-        causeEventId: IdSchema.meta({
-            description:
-                "Id of the event the task would have been created for, i.e. the name of its file in .llmco/journal.",
-        }),
-        stoppedTask: z
-            .strictObject({
-                type: IdSchema,
-                positionId: IdSchema,
-                params: z.record(z.string(), z.unknown()),
-            })
-            .meta({
-                description:
-                    "The task the chain stopped before, as a listener asked for it: its type, the position it was for and its parameters.",
-            }),
-    },
-})
-
 export const JournalEventSchema = z
     .looseObject({
         type: IdSchema.meta({
@@ -82,5 +60,3 @@ export type EventType<Content extends EventContent = EventContent> = {
 export type EventOfType<Type extends EventType> = z.output<Type["schema"]> & {
     id: string
 }
-
-export type ChainStoppedEvent = EventOfType<typeof chainStoppedEventType>

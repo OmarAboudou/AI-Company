@@ -1,9 +1,6 @@
 import { z } from "zod"
 import { IdHistorySchema } from "../src/ids/id-history-schema.ts"
-import {
-    chainStoppedEventType,
-    JournalEventSchema,
-} from "../src/journal/schema.ts"
+import { JournalEventSchema } from "../src/journal/schema.ts"
 import { LlmModelConfigSchema } from "../src/llm/model/schema.ts"
 import { LlmProviderConfigSchema } from "../src/llm/provider/schema.ts"
 import {
@@ -18,7 +15,10 @@ import {
     PositionConfigSchema,
     PositionStateSchema,
 } from "../src/organization/position/schema.ts"
-import { DispatchedEventsSchema } from "../src/work/listener/schema.ts"
+import {
+    chainStoppedEventType,
+    DispatchedEventsSchema,
+} from "../src/work/listener/schema.ts"
 import {
     TaskSchema,
     taskCompletedEventType,
