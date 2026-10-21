@@ -5,6 +5,7 @@ import { listMessages } from "../../../../messaging/message/storage.ts"
 import { loadEmployee } from "../../../../organization/employee/storage.ts"
 import { loadPosition } from "../../../../organization/position/storage.ts"
 import { createCompanyWithLlmEmployee } from "../../../create-company-with-llm-employee.testing.ts"
+import { bindTool } from "../../bind-tool.ts"
 import type { ToolContext } from "../../define-tool.ts"
 import { exampleToolContext } from "../../example-tool-context.testing.ts"
 import { runToolCall } from "../../run-tool-call.ts"
@@ -110,5 +111,11 @@ describe("message_send", () => {
             text: "The message's body is empty.",
             isError: true,
         })
+    })
+
+    test("speaks of this thread once the task fixes its thread", () => {
+        const { description } = bindTool(messageSendTool, { threadId })
+
+        expect(description).toStartWith("Send a message in this thread,")
     })
 })

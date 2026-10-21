@@ -12,8 +12,16 @@ function formatEntryCount(count: number): string {
     return count === 1 ? "1 entry" : `${count} entries`
 }
 
+function buildDescription(thread: string): string {
+    return `Show ${thread} entries word for word, by their numbers, ${maxEntriesPerCall} at most per call. Your task gives you the entries you haven't read yet: this reads earlier ones.`
+}
+
 export const threadShowTool = defineTool({
-    description: `Show a thread's entries word for word, by their numbers, ${maxEntriesPerCall} at most per call. Your task gives you the entries you haven't read yet: this reads earlier ones.`,
+    description: buildDescription("a thread's"),
+    buildBoundDescription: ({ threadId }) =>
+        buildDescription(
+            threadId === undefined ? "a thread's" : "this thread's",
+        ),
     inputSchema: z.strictObject({
         threadId: z.string().meta({
             description:
