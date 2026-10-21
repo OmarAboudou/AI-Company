@@ -196,3 +196,38 @@ d656f81b5f37617bd300380ab2cd308a1df380d7
 
 # Move requireWorkedPosition next to the current human
 0db19ea7d00747cf551d72708b8333045dd84e40
+
+# Events, tasks and runs, the first series of #123 (#127), as it landed on main
+
+# Move createMessageId to src/ids/ as createTimeOrderedId
+dbaca9ffe4df508ec47c3d69032d723a184a8512
+
+# Name recording events as sending messages: recordEvent, UnrecordedEvent
+7dfb2caaae1c0e66e471441da3242b1af3c78088
+
+# Move the task events to the tasks' schema
+a4b954569e9b2b30396cf2d3597358985cb9ad0d
+
+# Move chain-stopped to the listeners' schema
+8f1961df9cf7ad5a0fdbdb44663568c4b4f53321
+
+# Move NewTask to the tasks' schema
+7bc5f6aadc44586c47bf3901c8dcf2fb8f7ad365
+
+# Move the state's .gitignore out of saveState, for appended state too
+0913e1b8696ae7b4fb37015f997e8a4a369ba668
+
+# Move formatTaggedMessage to the messages, for catching up too
+7334e1c79f16ae43b6235e0bfa00a7f4d6173ec0
+
+# Rename task_complete and task_fail to task_mark-as-done and task_mark-as-failed
+a9ddef7866859501ba8fe253f3d7471633c76abe
+
+# Rename createAnsweringCompany to createCompanyWithLlmEmployee
+c4a8854ec88e11a99ae9050b2cc92ea874e8b188
+
+# Rename NewTask to UncreatedTask, and getNewTasks to getTasksToCreate
+d2590269f0e5a02d42f8e86f1d4907c3854752aa
+
+# Rename task-completed to task-done, and the state succeeded to done
+0a8208a4fdba56fa1534461cd2340b5575374026
