@@ -1,10 +1,8 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { spawnGit } from "../../../git/spawn-git.ts"
-import { useFakeAnthropicServer } from "../../../llm/anthropic-messages/use-fake-anthropic-server.ts"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-const { runCli, runCliWithEnv, getProjectPath, runCliAsync } =
-    useTemporaryProject()
+const { runCli, runCliWithEnv, getProjectPath } = useTemporaryProject()
 
 describe("llmco thread create", () => {
     const today = new Date().toISOString().slice(0, 10)
@@ -89,75 +87,21 @@ describe("--as-position", () => {
     })
 })
 
-describe("an LLM employee answers when its position is mentioned", () => {
-    const fakeServer = useFakeAnthropicServer()
-
-    const apiKeyEnv = { TEST_ANTHROPIC_KEY: "sk-test" }
-
+describe("the positions its first message mentions", () => {
     beforeEach(() => {
         runCli("init", "-n", "Acme")
-        runCli(
-            "provider",
-            "create",
-            "anthropic",
-            "-n",
-            "A",
-            "-e",
-            "TEST_ANTHROPIC_KEY",
-        )
-        runCli(
-            "provider",
-            "connection",
-            "create",
-            "anthropic",
-            "anthropic-messages",
-            "-u",
-            fakeServer.getUrl(),
-        )
-        runCli(
-            "model",
-            "create",
-            "anthropic",
-            "opus",
-            "-n",
-            "Opus",
-            "-a",
-            "claude-opus-5-5",
-        )
-        runCli(
-            "position",
-            "create",
-            "backend-developer",
-            "-t",
-            "Backend Developer",
-        )
-        const hire = [
-            "employee",
-            "create",
-            "llm",
-            "claude",
-            "-n",
-            "Claude Senior",
-        ]
-        runCli(...hire, "-p", "anthropic", "-m", "opus")
-        runCli("position", "assign", "backend-developer", "claude")
+        runCli("position", "create", "backend-developer", "-t", "Backend")
     })
 
-    test("thread create -b gets its first message answered too", async () => {
-        fakeServer.respondWith({ text: "Budget approved." })
+    test("thread create -b gives each a task, which llmco run runs", () => {
+        const body = "@backend-developer 50 € for the API?"
 
-        const creation = await runCliAsync(
-            apiKeyEnv,
-            "thread",
-            "create",
-            "-s",
-            "Budget",
-            "-b",
-            "@backend-developer 50 € for the API?",
-        )
-        const [id, answer] = creation.stdout.split("\n")
+        const creation = runCli("thread", "create", "-s", "Budget", "-b", body)
 
-        expect(id).toMatch(/-budget$/)
-        expect(answer).toBe("Budget approved.")
+        const createdTaskPattern =
+            /Created task "[^"]+" for @backend-developer: catch-up-thread\./
+        expect(creation.exitCode).toBe(0)
+        expect(creation.stderr).toMatch(createdTaskPattern)
+        expect(creation.stderr).toContain("Run `llmco run`")
     })
 })

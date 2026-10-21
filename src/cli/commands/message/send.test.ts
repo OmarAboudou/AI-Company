@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
-import { useFakeAnthropicServer } from "../../../llm/anthropic-messages/use-fake-anthropic-server.ts"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
-const { runCli, runCliWithStdin, getProjectPath, runCliWithEnv, runCliAsync } =
+const { runCli, runCliWithStdin, getProjectPath, runCliWithEnv } =
     useTemporaryProject()
 
 describe("llmco message send", () => {
@@ -145,123 +144,24 @@ describe("--as-position", () => {
     })
 })
 
-describe("the answers of the positions it mentions", () => {
-    const interimDirectors = ["position", "interim", "directors"]
-
-    const fakeServer = useFakeAnthropicServer()
-
-    const apiKeyEnv = { TEST_ANTHROPIC_KEY: "sk-test" }
-
-    const question = "@backend-developer Hono or Express?"
-
+describe("the positions it mentions", () => {
     let threadId = ""
 
     beforeEach(() => {
         runCli("init", "-n", "Acme")
-        runCli(
-            "provider",
-            "create",
-            "anthropic",
-            "-n",
-            "A",
-            "-e",
-            "TEST_ANTHROPIC_KEY",
-        )
-        runCli(
-            "provider",
-            "connection",
-            "create",
-            "anthropic",
-            "anthropic-messages",
-            "-u",
-            fakeServer.getUrl(),
-        )
-        runCli(
-            "model",
-            "create",
-            "anthropic",
-            "opus",
-            "-n",
-            "Opus",
-            "-a",
-            "claude-opus-5-5",
-        )
-        runCli(
-            "position",
-            "create",
-            "backend-developer",
-            "-t",
-            "Backend Developer",
-        )
-        const hire = [
-            "employee",
-            "create",
-            "llm",
-            "claude",
-            "-n",
-            "Claude Senior",
-        ]
-        runCli(...hire, "-p", "anthropic", "-m", "opus")
-        runCli("position", "assign", "backend-developer", "claude")
-        threadId = runCli("thread", "create", "-s", "Framework").stdout.trim()
+        runCli("position", "create", "backend-developer", "-t", "Backend")
+        threadId = runCli("thread", "create", "-s", "Stack").stdout.trim()
     })
 
-    function send(body: string, env: Record<string, string> = apiKeyEnv) {
-        return runCliAsync(env, "message", "send", threadId, "-b", body)
-    }
+    test("message send gives each a task, which llmco run runs", () => {
+        const body = "@backend-developer Hono or Express?"
 
-    test("message send prints the answer as it streams", async () => {
-        fakeServer.respondWith({ text: "Hono, for Bun." })
+        const sending = runCli("message", "send", threadId, "-b", body)
 
-        const sending = await send(question)
-
+        const createdTaskPattern =
+            /Created task "[^"]+" for @backend-developer: catch-up-thread\./
         expect(sending.exitCode).toBe(0)
-        expect(sending.stdout).toBe("Hono, for Bun.\n")
-        expect(sending.stderr).toContain("Claude Senior answers as Backend")
-    })
-
-    test("a vacant position leaves the message waiting", async () => {
-        runCli("position", "create", "qa-tester", "-t", "QA Tester")
-
-        const sending = await send("@qa-tester a test plan?")
-
-        expect(sending.exitCode).toBe(0)
-        expect(sending.stderr).toContain("@qa-tester is vacant")
-        expect(fakeServer.requests).toHaveLength(0)
-    })
-
-    test("a position worked by a human leaves the message waiting", async () => {
-        runCli("employee", "create", "human", "julie", "-n", "Julie")
-        runCli("position", "assign", "backend-developer", "julie", "-r")
-
-        const sending = await send(question)
-
-        expect(sending.stderr).toContain("worked by Julie, a human")
-        expect(fakeServer.requests).toHaveLength(0)
-    })
-
-    test("an API error is reported, and the mention stays awaited", async () => {
-        fakeServer.respondWith({ status: 401, error: "invalid x-api-key" })
-
-        const sending = await send(question)
-        const list = runCli("thread", "list").stdout
-
-        expect(sending.exitCode).toBe(1)
-        expect(sending.stderr).toContain("invalid x-api-key")
-        expect(list).toContain("awaiting @backend-developer")
-    })
-
-    test("a position assigned temporarily to the directors leaves the message waiting", async () => {
-        runCli(...interimDirectors, "backend-developer")
-
-        const sending = await send(question)
-        const list = runCli("thread", "list").stdout
-
-        expect(sending.exitCode).toBe(0)
-        expect(sending.stderr).toContain(
-            "@backend-developer is worked by the directors",
-        )
-        expect(fakeServer.requests).toHaveLength(0)
-        expect(list).toContain("awaiting @backend-developer")
+        expect(sending.stderr).toMatch(createdTaskPattern)
+        expect(sending.stderr).toContain("Run `llmco run`")
     })
 })

@@ -119,7 +119,10 @@ describe("answerAsLlmEmployee", () => {
         await sendAndAnswer(question)
 
         const [, answer] = await listMessages(projectRoot, threadId)
-        const [questionSent, answerSent] = await listEvents(projectRoot)
+        const events = await listEvents(projectRoot)
+        const [questionSent, answerSent] = events.filter(
+            ({ type }) => type === "message-sent",
+        )
         expect(questionSent?.depth).toBe(0)
         expect(answerSent).toMatchObject({ depth: 1, messageId: answer?.id })
     })

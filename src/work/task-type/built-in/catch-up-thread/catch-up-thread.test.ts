@@ -6,7 +6,7 @@ import {
     defineEventType,
     type JournalEvent,
 } from "../../../../journal/schema.ts"
-import { listEvents, loadEvent } from "../../../../journal/storage.ts"
+import { loadEvent } from "../../../../journal/storage.ts"
 import { messageSentEventType } from "../../../../messaging/message/schema.ts"
 import { sendMessage } from "../../../../messaging/message/send-message.ts"
 import { createThread } from "../../../../messaging/thread/create-thread.ts"
@@ -50,12 +50,12 @@ afterEach(async () => {
 
 async function askDeveloper(question: string) {
     const body = `@backend-developer ${question}`
-    const { message } = await sendMessage(projectRoot, threadId, { body })
-    const messageSentEvent = (await listEvents(projectRoot)).at(-1)
-    if (messageSentEvent === undefined) {
-        throw new Error("Sending the message recorded no event")
+    const sending = await sendMessage(projectRoot, threadId, { body })
+    const [catchUp] = sending.createdTasks
+    if (catchUp === undefined) {
+        throw new Error("Sending the question created no task")
     }
-    return { messageId: message.id, messageSentEvent }
+    return { messageId: sending.message.id, catchUp }
 }
 
 async function createCatchUp(causeEvent: JournalEvent): Promise<Task> {
@@ -91,7 +91,7 @@ const remindedEventType = defineEventType({
 describe("catch-up-thread", () => {
     test("runs on the thread's unread entries, with tools to answer", async () => {
         const question = await askDeveloper("Hono or Express?")
-        const task = await createCatchUp(question.messageSentEvent)
+        const task = question.catchUp
 
         const session = await createSession(task)
 
@@ -105,10 +105,9 @@ describe("catch-up-thread", () => {
 
     test("gives only the entries after the position's read marker", async () => {
         const question = await askDeveloper("Hono or Express?")
-        const firstTask = await createCatchUp(question.messageSentEvent)
-        await completeCatchUp(firstTask, question.messageId)
+        await completeCatchUp(question.catchUp, question.messageId)
         const followUp = await askDeveloper("And the database?")
-        const secondTask = await createCatchUp(followUp.messageSentEvent)
+        const secondTask = followUp.catchUp
 
         const session = await createSession(secondTask)
 
@@ -126,9 +125,8 @@ describe("catch-up-thread", () => {
     test("completes at once when an earlier task read its cause", async () => {
         const question = await askDeveloper("Hono or Express?")
         const followUp = await askDeveloper("And the database?")
-        const firstTask = await createCatchUp(question.messageSentEvent)
-        const secondTask = await createCatchUp(followUp.messageSentEvent)
-        await completeCatchUp(firstTask, followUp.messageId)
+        await completeCatchUp(question.catchUp, followUp.messageId)
+        const secondTask = followUp.catchUp
 
         const session = await createSession(secondTask)
 
@@ -163,8 +161,7 @@ describe("catch-up-thread", () => {
 
     test("completes at once when nothing is unread", async () => {
         const question = await askDeveloper("Hono or Express?")
-        const firstTask = await createCatchUp(question.messageSentEvent)
-        await completeCatchUp(firstTask, question.messageId)
+        await completeCatchUp(question.catchUp, question.messageId)
         const remindedEvent = await recordEvent(
             projectRoot,
             remindedEventType,
