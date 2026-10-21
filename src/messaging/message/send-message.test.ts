@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { createGitRepository } from "../../git/create-git-repository.ts"
+import { listEvents } from "../../journal/storage.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.ts"
 import { saveEmployee } from "../../organization/employee/storage.ts"
 import { assignPositionTemporarily } from "../../organization/position/assign-position-temporarily.ts"
@@ -55,6 +56,24 @@ describe("sendMessage", () => {
         const messages = await listMessages(projectRoot, threadId)
         expect(await listBodies()).toEqual(["First.", "Second."])
         expect(messages.at(-1)).toEqual(message)
+    })
+
+    test("records in the journal that a person sent it, at depth 0", async () => {
+        const before = await listEvents(projectRoot)
+
+        const { message } = await sendMessage(projectRoot, threadId, {
+            body: "@qa-tester, a test plan?",
+        })
+
+        const messageSentEvent = {
+            type: "message-sent",
+            depth: 0,
+            threadId,
+            messageId: message.id,
+            mentions: ["qa-tester"],
+        }
+        expect(before).toEqual([])
+        expect(await listEvents(projectRoot)).toMatchObject([messageSentEvent])
     })
 
     test("records its author and the positions it mentions", async () => {
@@ -117,6 +136,7 @@ describe("sendMessage", () => {
         await expect(sending).rejects.toThrow(UserError)
         await expect(sending).rejects.toThrow("Mentioning a specific employee")
         expect(await listBodies()).toEqual([])
+        expect(await listEvents(projectRoot)).toEqual([])
     })
 
     test("refuses an unknown thread", async () => {

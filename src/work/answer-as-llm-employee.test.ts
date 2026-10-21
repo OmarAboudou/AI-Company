@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
+import { listEvents } from "../journal/storage.ts"
 import { useFakeAnthropicServer } from "../llm/anthropic-messages/use-fake-anthropic-server.ts"
 import { createLlmConnection } from "../llm/connection/create-llm-connection.ts"
 import { updateLlmModel } from "../llm/model/update-llm-model.ts"
@@ -110,6 +111,17 @@ describe("answerAsLlmEmployee", () => {
             employee: { id: "claude", name: "Claude Senior" },
             body: "Hono, for Bun.",
         })
+    })
+
+    test("records the answer as sent, a step deeper than the question", async () => {
+        fakeServer.respondWith({ text: "Hono, for Bun." })
+
+        await sendAndAnswer(question)
+
+        const [, answer] = await listMessages(projectRoot, threadId)
+        const [questionSent, answerSent] = await listEvents(projectRoot)
+        expect(questionSent?.depth).toBe(0)
+        expect(answerSent).toMatchObject({ depth: 1, messageId: answer?.id })
     })
 
     test("sends the model, the system prompt and the thread", async () => {

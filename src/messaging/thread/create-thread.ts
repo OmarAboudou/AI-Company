@@ -56,6 +56,7 @@ export async function createThread(
             projectRoot,
             thread.id,
             unsentFirstMessage,
+            { depth: 0 },
         ),
         unknownMentionIds: unsentFirstMessage.unknownMentionIds,
     }

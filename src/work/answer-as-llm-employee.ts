@@ -126,7 +126,12 @@ export async function answerAsLlmEmployee(
         body,
         ...(await resolveMentions(projectRoot, body, position.id)),
     }
-    const answer = await sendUnsentMessage(projectRoot, threadId, unsentAnswer)
+    const answer = await sendUnsentMessage(
+        projectRoot,
+        threadId,
+        unsentAnswer,
+        { depth: 1 },
+    )
     await saveProviderResponse(projectRoot, answer, {
         providerId: provider.id,
         modelId: model.id,
