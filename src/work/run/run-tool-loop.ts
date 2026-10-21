@@ -3,10 +3,11 @@ import {
     type AnthropicMessagesCall,
     callAnthropicMessages,
 } from "../../llm/anthropic-messages/call-anthropic-messages.ts"
+import { getAnthropicTools } from "../../llm/anthropic-messages/get-anthropic-tools.ts"
 import type { TokenUsage } from "../../llm/conversation/schema.ts"
 import type { TaskEnding, Tool, ToolContext } from "../tool/define-tool.ts"
+import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
 import { runToolCall } from "../tool/run-tool-call.ts"
-import { getAnthropicTools } from "./get-anthropic-tools.ts"
 import { appendRunTranscriptLine } from "./storage.ts"
 
 export type RunProgress =
@@ -84,7 +85,7 @@ async function runToolUses(
 
 export async function runToolLoop(loop: ToolLoop): Promise<RunToolLoopResult> {
     const { ctx, connection, apiKey, apiId, systemPrompt, onProgress } = loop
-    const tools = getAnthropicTools(loop.tools)
+    const tools = getAnthropicTools(getToolDefinitions(loop.tools))
     const turns: Anthropic.MessageParam[] = []
     let usage: TokenUsage = {
         inputTokens: 0,

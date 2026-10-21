@@ -3,12 +3,13 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { z } from "zod"
+import { getAnthropicTools } from "../../llm/anthropic-messages/get-anthropic-tools.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
 import { taskMarkAsDoneTool } from "../tool/built-in/task/mark-as-done.ts"
 import { taskMarkAsFailedTool } from "../tool/built-in/task/mark-as-failed.ts"
 import { defineTool } from "../tool/define-tool.ts"
 import { exampleToolContext } from "../tool/example-tool-context.testing.ts"
-import { getAnthropicTools } from "./get-anthropic-tools.ts"
+import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
 import {
     maxToolCallsPerRun,
     type RunProgress,
@@ -76,8 +77,9 @@ describe("runToolLoop", () => {
         await runFakeLoop()
 
         const body = fakeServer.requests[0]?.body
+        const anthropicTools = getAnthropicTools(getToolDefinitions(tools))
         expect(body?.system[0]?.text).toBe("You are Claude Senior.")
-        expect(body?.tools).toEqual(getAnthropicTools(tools))
+        expect(body?.tools).toEqual(anthropicTools)
         expect(body?.messages).toMatchObject([
             {
                 role: "user",
