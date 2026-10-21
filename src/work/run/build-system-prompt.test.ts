@@ -27,7 +27,8 @@ const context: SystemPromptContext = {
 describe("buildSystemPrompt", () => {
     test("starts with who the employee is, where and as what", () => {
         const prompt = buildSystemPrompt(context)
-        const identityLine = "You are Claude Senior, Backend Developer at Acme."
+        const identityLine =
+            "You are Claude Senior, Backend Developer (@backend-developer) at Acme."
 
         expect(prompt.split("\n")[0]).toBe(identityLine)
     })
@@ -74,19 +75,11 @@ describe("buildSystemPrompt", () => {
         expect(prompt).toContain("# Your position: Backend Developer")
     })
 
-    test("tells that tasks end with task_complete or task_fail", () => {
+    test("ends with the rule of every task: only tools act", () => {
         const prompt = buildSystemPrompt(context)
 
-        expect(prompt).toContain("call task_complete with a summary")
-        expect(prompt).toContain("call task_fail with the reason")
-    })
-
-    test("names the entries' tag, the director and the position's messages", () => {
-        const prompt = buildSystemPrompt(context)
-
-        expect(prompt).toContain('<message number="5" from="Omar Aboudou"')
-        expect(prompt).toContain("Messages from @director come from")
-        expect(prompt).toContain("those from @backend-developer are your")
-        expect(prompt).toContain("mention it as @position-id")
+        const rule =
+            "Only your tools act: what you write outside them reaches no one. End each task with task_complete, or with task_fail if you can't do it."
+        expect(prompt).toEndWith(`# Your tasks\n\n${rule}`)
     })
 })
