@@ -4,6 +4,8 @@ import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { requireAtLeastOneOption } from "../../require-at-least-one-option.ts"
 import { requireDirector } from "../../require-director.ts"
+import { createModelOption } from "./create-model-option.ts"
+import { createProviderOption } from "./create-provider-option.ts"
 
 export function registerEmployeeUpdateCommand(employeeCommand: Command): void {
     employeeCommand
@@ -16,14 +18,8 @@ export function registerEmployeeUpdateCommand(employeeCommand: Command): void {
             formatIdArgumentDescription("employee", "claude-senior"),
         )
         .option("-n, --name <name>", "employee name")
-        .option(
-            "-p, --provider <provider-id>",
-            "LLM provider id, e.g. anthropic (see llmco provider list), for an LLM employee",
-        )
-        .option(
-            "-m, --model <model-id>",
-            "id of one of the provider's models in llmco, e.g. claude-opus-5-5 (see llmco model list), for an LLM employee",
-        )
+        .addOption(createProviderOption())
+        .addOption(createModelOption())
         .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
             requireAtLeastOneOption(options)

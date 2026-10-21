@@ -4,6 +4,7 @@ import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { requireAtLeastOneOption } from "../../require-at-least-one-option.ts"
 import { requireDirector } from "../../require-director.ts"
+import { createApiIdOption } from "./create-api-id-option.ts"
 import { createProtocolOption } from "./create-protocol-option.ts"
 
 export function registerModelUpdateCommand(modelCommand: Command): void {
@@ -19,10 +20,7 @@ export function registerModelUpdateCommand(modelCommand: Command): void {
             formatIdArgumentDescription("model", "claude-opus-5-5"),
         )
         .option("-n, --name <name>", "model name")
-        .option(
-            "-a, --api-id <api-id>",
-            "id of the model on the provider's side, as its API expects it, e.g. claude-opus-5-5 or llama3.1:8b",
-        )
+        .addOption(createApiIdOption())
         .addOption(createProtocolOption())
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, options) => {

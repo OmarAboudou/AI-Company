@@ -4,6 +4,7 @@ import { formatIdArgumentDescription } from "../../../id-argument-descriptions.t
 import { projectRoot } from "../../../project-root.ts"
 import { requireDirector } from "../../../require-director.ts"
 import { createAuthOption } from "./create-auth-option.ts"
+import { createBaseUrlOption } from "./create-base-url-option.ts"
 import { createProtocolArgument } from "./create-protocol-argument.ts"
 
 export function registerProviderConnectionCreateCommand(
@@ -17,10 +18,7 @@ export function registerProviderConnectionCreateCommand(
             formatIdArgumentDescription("provider", "anthropic"),
         )
         .addArgument(createProtocolArgument())
-        .requiredOption(
-            "-u, --base-url <url>",
-            "URL the protocol's paths are appended to, e.g. https://api.anthropic.com",
-        )
+        .addOption(createBaseUrlOption().makeOptionMandatory())
         .addOption(createAuthOption())
         .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol, { baseUrl, auth }) => {
