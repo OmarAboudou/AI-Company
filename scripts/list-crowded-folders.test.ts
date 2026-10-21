@@ -53,14 +53,15 @@ describe("listCrowdedFolders", () => {
         expect(after).toEqual([{ path: folderPath, sourceEntryCount: 16 }])
     })
 
-    test("doesn't count the tests nor the file named after the folder", async () => {
+    test("doesn't count the tests, what only tests use, nor the file named after the folder", async () => {
         const eponymousFileName = `${basename(folderPath)}.ts`
-        await createFiles("", [...createFileNames(15), "file-0.test.ts"])
+        const testFileNames = ["file-0.test.ts", "create-fixture.testing.ts"]
+        await createFiles("", [...createFileNames(15), ...testFileNames])
         await createFiles("", [eponymousFileName])
 
         const crowdedFolders = await listCrowdedFolders(folderPath)
 
-        expect(await readdir(folderPath)).toHaveLength(17)
+        expect(await readdir(folderPath)).toHaveLength(18)
         expect(crowdedFolders).toEqual([])
     })
 
