@@ -2,10 +2,10 @@ import { parseId } from "../../ids/parse-id.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
 import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
+import { requireLlmConnection } from "../connection/require-llm-connection.ts"
 import { type Protocol, protocols } from "../connection/schema.ts"
 import { loadExistingLlmProvider } from "../provider/load-existing-llm-provider.ts"
 import type { LlmProvider } from "../provider/schema.ts"
-import { requireProviderConnection } from "./require-provider-connection.ts"
 import { type LlmModel, LlmModelConfigSchema } from "./schema.ts"
 import { hasLlmModel, saveLlmModel } from "./storage.ts"
 
@@ -14,7 +14,7 @@ function chooseProtocol(
     requestedProtocol: Protocol | undefined,
 ): Protocol {
     if (requestedProtocol !== undefined) {
-        requireProviderConnection(provider, requestedProtocol)
+        requireLlmConnection(provider, requestedProtocol)
         return requestedProtocol
     }
     const connectedProtocols = protocols.filter(

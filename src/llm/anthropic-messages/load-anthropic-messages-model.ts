@@ -1,4 +1,5 @@
 import { UserError } from "../../user-error.ts"
+import { requireLlmConnection } from "../connection/require-llm-connection.ts"
 import type { Connections } from "../connection/schema.ts"
 import type { LlmModel } from "../model/schema.ts"
 import { loadLlmModel } from "../model/storage.ts"
@@ -26,12 +27,7 @@ export async function loadAnthropicMessagesModel(
             `Model "${model.id}" of provider "${provider.id}" is called through ${model.protocol}, which llmco can't call yet.`,
         )
     }
-    const connection = provider.connections?.["anthropic-messages"]
-    if (connection === undefined) {
-        throw new UserError(
-            `Provider "${provider.id}" has no anthropic-messages connection. Run \`llmco provider connection create\`.`,
-        )
-    }
+    const connection = requireLlmConnection(provider, "anthropic-messages")
     const apiKey = await readApiKey(projectRoot, provider)
     return { provider, model, connection, apiKey }
 }
