@@ -9,9 +9,9 @@ import { createTemporaryCompany } from "../../organization/company/create-tempor
 import { loadCompany, saveCompany } from "../../organization/company/storage.ts"
 import { savePosition } from "../../organization/position/storage.ts"
 import { listTasks, saveTask } from "../task/storage.ts"
+import { catchUpListener } from "./catch-up-listener.ts"
 import { defineListener } from "./define-listener.ts"
 import { dispatchEvents } from "./dispatch-events.ts"
-import { mentionListener } from "./mention-listener.ts"
 import { loadDispatchedEventIds } from "./storage.ts"
 
 let projectRoot: string
@@ -49,8 +49,8 @@ const reviewListener = defineListener({
     ],
 })
 
-function dispatchToMentionListener() {
-    return dispatchEvents(projectRoot, [mentionListener])
+function dispatchToCatchUpListener() {
+    return dispatchEvents(projectRoot, [catchUpListener])
 }
 
 async function listTaskCreatedDepths(): Promise<number[]> {
@@ -64,7 +64,7 @@ describe("dispatchEvents", () => {
     test("creates the tasks that listeners return, a step deeper", async () => {
         const questionSent = await createMessageSentEvent(["backend-developer"])
 
-        const { createdTasks } = await dispatchToMentionListener()
+        const { createdTasks } = await dispatchToCatchUpListener()
 
         expect(createdTasks).toMatchObject([
             {
@@ -80,7 +80,7 @@ describe("dispatchEvents", () => {
 
     test("gives each event to every listener subscribed to it", async () => {
         await createMessageSentEvent(["backend-developer"])
-        const listeners = [mentionListener, reviewListener]
+        const listeners = [catchUpListener, reviewListener]
 
         const { createdTasks } = await dispatchEvents(projectRoot, listeners)
 
@@ -92,7 +92,7 @@ describe("dispatchEvents", () => {
         const questionSent = await createMessageSentEvent(["backend-developer"])
         const noteSent = await createMessageSentEvent([])
 
-        await dispatchToMentionListener()
+        await dispatchToCatchUpListener()
 
         const dispatchedEventIds = await loadDispatchedEventIds(projectRoot)
         const eventIds = new Set([questionSent.id, noteSent.id])
@@ -101,10 +101,10 @@ describe("dispatchEvents", () => {
 
     test("gives an event only once", async () => {
         await createMessageSentEvent(["backend-developer"])
-        await dispatchToMentionListener()
+        await dispatchToCatchUpListener()
         const answerSent = await createMessageSentEvent(["director"], 1)
 
-        const { createdTasks } = await dispatchToMentionListener()
+        const { createdTasks } = await dispatchToCatchUpListener()
 
         expect(createdTasks).toMatchObject([{ causeEventId: answerSent.id }])
         expect(await listTasks(projectRoot)).toHaveLength(2)
@@ -112,10 +112,10 @@ describe("dispatchEvents", () => {
 
     test("never creates a task twice, even on a machine giving events again", async () => {
         await createMessageSentEvent(["backend-developer"])
-        await dispatchToMentionListener()
+        await dispatchToCatchUpListener()
         await rm(join(projectRoot, ".llmco", ".state"), { recursive: true })
 
-        const { createdTasks } = await dispatchToMentionListener()
+        const { createdTasks } = await dispatchToCatchUpListener()
 
         expect(createdTasks).toEqual([])
         expect(await listTasks(projectRoot)).toHaveLength(1)
@@ -131,7 +131,7 @@ describe("dispatchEvents", () => {
         }
         await saveEvent(projectRoot, threadClosed)
 
-        const { createdTasks } = await dispatchToMentionListener()
+        const { createdTasks } = await dispatchToCatchUpListener()
 
         const dispatchedEventIds = await loadDispatchedEventIds(projectRoot)
         expect(createdTasks).toEqual([])
@@ -149,7 +149,7 @@ describe("dispatchEvents at the end of a chain", () => {
         await setMaxTaskDepth(2)
         await createMessageSentEvent(["qa-tester"], 1)
 
-        const { createdTasks } = await dispatchToMentionListener()
+        const { createdTasks } = await dispatchToCatchUpListener()
 
         expect(createdTasks).toHaveLength(1)
         expect(await listTaskCreatedDepths()).toEqual([2])
@@ -159,7 +159,7 @@ describe("dispatchEvents at the end of a chain", () => {
         await setMaxTaskDepth(2)
         const answerSent = await createMessageSentEvent(["qa-tester"], 2)
 
-        const dispatching = await dispatchToMentionListener()
+        const dispatching = await dispatchToCatchUpListener()
 
         const [chainStoppedEvent] = dispatching.chainStoppedEvents
         const lastEvent = (await listEvents(projectRoot)).at(-1)
@@ -181,7 +181,7 @@ describe("dispatchEvents at the end of a chain", () => {
         await createMessageSentEvent(["qa-tester"], 199)
         await createMessageSentEvent(["backend-developer"], 200)
 
-        const dispatching = await dispatchToMentionListener()
+        const dispatching = await dispatchToCatchUpListener()
 
         expect(dispatching.createdTasks).toHaveLength(1)
         expect(dispatching.chainStoppedEvents).toHaveLength(1)
@@ -190,10 +190,10 @@ describe("dispatchEvents at the end of a chain", () => {
 
     test("records a stopped chain once, even giving its event again", async () => {
         await createMessageSentEvent(["qa-tester"], 200)
-        await dispatchToMentionListener()
+        await dispatchToCatchUpListener()
         await rm(join(projectRoot, ".llmco", ".state"), { recursive: true })
 
-        const { chainStoppedEvents } = await dispatchToMentionListener()
+        const { chainStoppedEvents } = await dispatchToCatchUpListener()
 
         expect(chainStoppedEvents).toEqual([])
     })
@@ -230,7 +230,7 @@ describe("dispatchEvents through the positions' id history", () => {
     })
 
     test("creates the task of a position renamed since, under its new id", async () => {
-        const { createdTasks } = await dispatchToMentionListener()
+        const { createdTasks } = await dispatchToCatchUpListener()
 
         expect(createdTasks).toMatchObject([{ positionId: "api-developer" }])
     })
@@ -245,7 +245,7 @@ describe("dispatchEvents through the positions' id history", () => {
             causeEventId: questionSentId,
         })
 
-        const { createdTasks } = await dispatchToMentionListener()
+        const { createdTasks } = await dispatchToCatchUpListener()
 
         expect(createdTasks).toEqual([])
     })
