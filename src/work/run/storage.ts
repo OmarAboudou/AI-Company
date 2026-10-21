@@ -1,17 +1,19 @@
 import { join } from "node:path"
-import type Anthropic from "@anthropic-ai/sdk"
 import { appendStateLine } from "../../files/append-state-line.ts"
 import { getStateFolderPath } from "../../files/get-state-folder-path.ts"
+import type {
+    ConversationTurn,
+    ToolDefinition,
+} from "../../llm/conversation/schema.ts"
 
 export type NewRunTranscriptLine =
     | {
           type: "start"
           apiId: string
           systemPrompt: string
-          tools: Anthropic.Tool[]
+          tools: ToolDefinition[]
       }
-    | { type: "user"; content: Anthropic.ContentBlockParam[] }
-    | { type: "assistant"; message: Anthropic.Message }
+    | ({ type: "turn" } & ConversationTurn)
 
 export type RunTranscriptLine = { at: string } & NewRunTranscriptLine
 

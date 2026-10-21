@@ -1,10 +1,15 @@
-import type Anthropic from "@anthropic-ai/sdk"
 import {
     type AnthropicMessagesCall,
     callAnthropicMessages,
 } from "../../llm/anthropic-messages/call-anthropic-messages.ts"
-import { getAnthropicTools } from "../../llm/anthropic-messages/get-anthropic-tools.ts"
-import type { TokenUsage } from "../../llm/conversation/schema.ts"
+import type {
+    Conversation,
+    ConversationTurn,
+    TokenUsage,
+    ToolCallBlock,
+    ToolResultBlock,
+    TurnStop,
+} from "../../llm/conversation/schema.ts"
 import type { TaskEnding, Tool, ToolContext } from "../tool/define-tool.ts"
 import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
 import { runToolCall } from "../tool/run-tool-call.ts"
@@ -18,9 +23,10 @@ export type RunProgress =
 
 export type ToolLoop = Pick<
     AnthropicMessagesCall,
-    "connection" | "apiKey" | "apiId" | "systemPrompt"
+    "connection" | "apiKey" | "apiId"
 > & {
     ctx: ToolContext
+    systemPrompt: string
     userMessage: string
     tools: Record<string, Tool>
     onProgress: (progress: RunProgress) => void
@@ -34,49 +40,46 @@ export const reminderText =
 // Settings (#35) will let management choose it.
 export const maxToolCallsPerRun = 50
 
-function getStopFailureReason(message: Anthropic.Message): string | undefined {
-    switch (message.stop_reason) {
-        case "refusal": {
-            const category = message.stop_details?.category
-            return `The model's provider declined to go on (refusal${category ? `, ${category}` : ""}).`
-        }
-        case "max_tokens":
+function getStopFailureReason(stop: TurnStop): string | undefined {
+    switch (stop.reason) {
+        case "refusal":
+            return `The model's provider declined to go on (refusal${stop.category ? `, ${stop.category}` : ""}).`
+        case "max-length":
             return "The model's turn was cut at its maximum length."
-        case "model_context_window_exceeded":
+        case "context-window-exceeded":
             return "The run's conversation outgrew the model's context window."
-        default:
+        case "end":
             return undefined
     }
 }
 
-function addUsage(usage: TokenUsage, addedUsage: Anthropic.Usage): TokenUsage {
+function addUsage(usage: TokenUsage, addedUsage: TokenUsage): TokenUsage {
     return {
-        inputTokens: usage.inputTokens + addedUsage.input_tokens,
-        outputTokens: usage.outputTokens + addedUsage.output_tokens,
+        inputTokens: usage.inputTokens + addedUsage.inputTokens,
+        outputTokens: usage.outputTokens + addedUsage.outputTokens,
         cacheReadInputTokens:
-            usage.cacheReadInputTokens +
-            (addedUsage.cache_read_input_tokens ?? 0),
+            usage.cacheReadInputTokens + addedUsage.cacheReadInputTokens,
         cacheCreationInputTokens:
             usage.cacheCreationInputTokens +
-            (addedUsage.cache_creation_input_tokens ?? 0),
+            addedUsage.cacheCreationInputTokens,
     }
 }
 
-async function runToolUses(
-    toolUses: Anthropic.ToolUseBlock[],
+async function runToolCalls(
+    toolCalls: ToolCallBlock[],
     { tools, ctx, onProgress }: ToolLoop,
 ) {
-    const toolResults: Anthropic.ToolResultBlockParam[] = []
+    const toolResults: ToolResultBlock[] = []
     let taskEnding: TaskEnding | undefined
-    for (const { id, name, input } of toolUses) {
+    for (const { id, name, input } of toolCalls) {
         onProgress({ kind: "tool-call", name, input })
         const result = await runToolCall(tools, { name, input }, ctx)
         onProgress({ kind: "tool-result", name, ...result })
         toolResults.push({
-            type: "tool_result",
-            tool_use_id: id,
-            content: result.text,
-            ...(result.isError && { is_error: true }),
+            type: "tool-result",
+            toolCallId: id,
+            text: result.text,
+            isError: result.isError,
         })
         taskEnding ??= result.taskEnding
     }
@@ -84,9 +87,12 @@ async function runToolUses(
 }
 
 export async function runToolLoop(loop: ToolLoop): Promise<RunToolLoopResult> {
-    const { ctx, connection, apiKey, apiId, systemPrompt, onProgress } = loop
-    const tools = getAnthropicTools(getToolDefinitions(loop.tools))
-    const turns: Anthropic.MessageParam[] = []
+    const { ctx, connection, apiKey, apiId, onProgress } = loop
+    const conversation: Conversation = {
+        systemPrompt: loop.systemPrompt,
+        tools: getToolDefinitions(loop.tools),
+        turns: [],
+    }
     let usage: TokenUsage = {
         inputTokens: 0,
         outputTokens: 0,
@@ -95,54 +101,52 @@ export async function runToolLoop(loop: ToolLoop): Promise<RunToolLoopResult> {
     }
     let hasBeenReminded = false
     let toolCallCount = 0
-    async function addUserTurn(content: Anthropic.ContentBlockParam[]) {
-        turns.push({ role: "user", content })
+    async function addTurn(turn: ConversationTurn) {
+        conversation.turns.push(turn)
         await appendRunTranscriptLine(ctx.projectRoot, ctx.runId, {
-            type: "user",
-            content,
+            type: "turn",
+            ...turn,
         })
     }
     await appendRunTranscriptLine(ctx.projectRoot, ctx.runId, {
         type: "start",
         apiId,
-        systemPrompt,
-        tools,
+        systemPrompt: conversation.systemPrompt,
+        tools: conversation.tools,
     })
-    await addUserTurn([{ type: "text", text: loop.userMessage }])
+    await addTurn({
+        role: "user",
+        blocks: [{ type: "text", text: loop.userMessage }],
+    })
     while (true) {
-        const message = await callAnthropicMessages({
+        const modelTurn = await callAnthropicMessages({
             connection,
             apiKey,
             apiId,
-            systemPrompt,
-            tools,
-            turns,
+            conversation,
             onText: (text) => onProgress({ kind: "text", text }),
         })
-        turns.push({ role: "assistant", content: message.content })
-        await appendRunTranscriptLine(ctx.projectRoot, ctx.runId, {
-            type: "assistant",
-            message,
-        })
-        usage = addUsage(usage, message.usage)
+        await addTurn(modelTurn)
+        const { modelResponse } = modelTurn
+        usage = addUsage(usage, modelResponse.usage)
         // A refusal or a cut can stop a tool call halfway through its input,
         // so none of this turn's calls runs.
-        const stopFailureReason = getStopFailureReason(message)
+        const stopFailureReason = getStopFailureReason(modelResponse.stop)
         if (stopFailureReason !== undefined) {
             return {
                 taskEnding: { state: "failed", reason: stopFailureReason },
                 usage,
             }
         }
-        const toolUses = message.content.filter(
-            (block) => block.type === "tool_use",
+        const toolCalls = modelTurn.blocks.filter(
+            (block) => block.type === "tool-call",
         )
-        if (toolCallCount + toolUses.length > maxToolCallsPerRun) {
+        if (toolCallCount + toolCalls.length > maxToolCallsPerRun) {
             const reason = `The run went beyond ${maxToolCallsPerRun} tool calls without ending its task.`
             return { taskEnding: { state: "failed", reason }, usage }
         }
-        toolCallCount += toolUses.length
-        if (toolUses.length === 0) {
+        toolCallCount += toolCalls.length
+        if (toolCalls.length === 0) {
             if (hasBeenReminded) {
                 const reason =
                     "The model ended two turns without calling a tool, the second after a reminder."
@@ -150,11 +154,14 @@ export async function runToolLoop(loop: ToolLoop): Promise<RunToolLoopResult> {
             }
             hasBeenReminded = true
             onProgress({ kind: "reminder", text: reminderText })
-            await addUserTurn([{ type: "text", text: reminderText }])
+            await addTurn({
+                role: "user",
+                blocks: [{ type: "text", text: reminderText }],
+            })
             continue
         }
-        const { toolResults, taskEnding } = await runToolUses(toolUses, loop)
-        await addUserTurn(toolResults)
+        const { toolResults, taskEnding } = await runToolCalls(toolCalls, loop)
+        await addTurn({ role: "user", blocks: toolResults })
         if (taskEnding !== undefined) {
             return { taskEnding, usage }
         }

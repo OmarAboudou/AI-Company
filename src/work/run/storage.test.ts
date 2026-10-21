@@ -23,11 +23,12 @@ const runId = "20261018-140324-000-1b2c"
 describe("appendRunTranscriptLine and listRunTranscriptLines", () => {
     test("write a run's lines in .llmco/.state/runs/, then read them", async () => {
         const clockTime = Date.now()
-        const content = [{ type: "text" as const, text: "Catch up." }]
+        const blocks = [{ type: "text" as const, text: "Catch up." }]
 
         await appendRunTranscriptLine(projectRoot, runId, {
-            type: "user",
-            content,
+            type: "turn",
+            role: "user",
+            blocks,
         })
 
         const transcriptPath = join(
@@ -42,7 +43,12 @@ describe("appendRunTranscriptLine and listRunTranscriptLines", () => {
             runId,
         )) as RunTranscriptLine[]
         const transcriptText = await Bun.file(transcriptPath).text()
-        expect(line).toEqual({ at: expect.any(String), type: "user", content })
+        expect(line).toEqual({
+            at: expect.any(String),
+            type: "turn",
+            role: "user",
+            blocks,
+        })
         expect(Date.parse(line?.at ?? "")).toBeGreaterThanOrEqual(clockTime)
         expect(transcriptText).toBe(`${JSON.stringify(line)}\n`)
     })

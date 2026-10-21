@@ -1,17 +1,25 @@
 import { describe, expect, test } from "bun:test"
-import type Anthropic from "@anthropic-ai/sdk"
 import { UserError } from "../../user-error.ts"
+import type {
+    ConversationTurn,
+    ToolDefinition,
+} from "../conversation/schema.ts"
 import { callAnthropicMessages } from "./call-anthropic-messages.ts"
+import { getAnthropicTools } from "./get-anthropic-tools.ts"
 import { useFakeAnthropicServer } from "./use-fake-anthropic-server.testing.ts"
 
-const sendingTool: Anthropic.Tool = {
+const sendingTool: ToolDefinition = {
     name: "message_send",
     description: "Send a message in a thread.",
-    input_schema: {
+    inputSchema: {
         type: "object",
         properties: { body: { type: "string" } },
         required: ["body"],
     },
+}
+
+function createUserTurn(text: string): ConversationTurn {
+    return { role: "user", blocks: [{ type: "text", text }] }
 }
 
 describe("callAnthropicMessages", () => {
@@ -22,11 +30,11 @@ describe("callAnthropicMessages", () => {
         {
             auth,
             tools = [],
-            turns = [{ role: "user", content: "Hono or Express?" }],
+            turns = [createUserTurn("Hono or Express?")],
         }: {
             auth?: "x-api-key" | "bearer"
-            tools?: Anthropic.Tool[]
-            turns?: Anthropic.MessageParam[]
+            tools?: ToolDefinition[]
+            turns?: ConversationTurn[]
         } = {},
     ) {
         const streamedTexts: string[] = []
@@ -34,22 +42,28 @@ describe("callAnthropicMessages", () => {
             connection: { baseUrl: fakeServer.getUrl(), ...(auth && { auth }) },
             apiKey,
             apiId: "claude-opus-5-5",
-            systemPrompt: "You are Claude Senior.",
-            tools,
-            turns,
+            conversation: {
+                systemPrompt: "You are Claude Senior.",
+                tools,
+                turns,
+            },
             onText: (text) => streamedTexts.push(text),
         })
         return { streamedTexts, response }
     }
 
-    test("streams the text, then returns the message to store", async () => {
+    test("streams the text, then returns the model's turn to store", async () => {
         fakeServer.respondWith({ text: "Hono, for Bun." })
 
         const { streamedTexts, response } = callFakeServer("sk-test")
-        const storedResponse = JSON.parse(JSON.stringify(await response))
+        const turn = await response
+        const storedPayload = JSON.parse(
+            JSON.stringify(turn.modelResponse.payload),
+        )
 
         expect(streamedTexts).toEqual(["Hono, ", "for ", "Bun."])
-        expect(storedResponse.content).toEqual([
+        expect(turn.blocks).toEqual([{ type: "text", text: "Hono, for Bun." }])
+        expect(storedPayload.content).toEqual([
             { type: "text", text: "Hono, for Bun." },
         ])
     })
@@ -62,23 +76,23 @@ describe("callAnthropicMessages", () => {
         fakeServer.respondWith({ toolCalls })
 
         const tools = [sendingTool]
-        const message = await callFakeServer("sk-test", { tools }).response
+        const turn = await callFakeServer("sk-test", { tools }).response
 
-        const madeToolCalls = message.content.flatMap((block) =>
-            block.type === "tool_use"
+        const madeToolCalls = turn.blocks.flatMap((block) =>
+            block.type === "tool-call"
                 ? [{ name: block.name, input: block.input }]
                 : [],
         )
-        expect(fakeServer.requests[0]?.body.tools).toEqual(tools)
+        const anthropicTools = getAnthropicTools(tools)
+        expect(fakeServer.requests[0]?.body.tools).toEqual(anthropicTools)
         expect(madeToolCalls).toEqual(toolCalls)
-        expect(message.stop_reason).toBe("tool_use")
     })
 
     test("marks the system prompt and the turns' end for the prompt cache", async () => {
-        const turns: Anthropic.MessageParam[] = [
-            { role: "user", content: [{ type: "text", text: "Hono?" }] },
-            { role: "assistant", content: [{ type: "text", text: "Yes." }] },
-            { role: "user", content: [{ type: "text", text: "Why?" }] },
+        const turns: ConversationTurn[] = [
+            createUserTurn("Hono?"),
+            { role: "assistant", blocks: [{ type: "text", text: "Yes." }] },
+            createUserTurn("Why?"),
         ]
 
         await callFakeServer("sk-test", { turns }).response

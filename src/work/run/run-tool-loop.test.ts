@@ -167,17 +167,23 @@ describe("runToolLoop", () => {
         })
     })
 
-    test("keeps the transcript, line by line", async () => {
+    test("keeps the transcript in llmco's blocks, a line per turn", async () => {
         fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
 
         await runFakeLoop()
 
         const lines = await listRunTranscriptLines(projectRoot, runId)
+        const modelResponse = { payload: { stop_reason: "tool_use" } }
         expect(lines).toMatchObject([
             { type: "start", systemPrompt: "You are Claude Senior." },
-            { type: "user", content: [{ text: "Write two notes." }] },
-            { type: "assistant", message: { stop_reason: "tool_use" } },
-            { type: "user", content: [{ type: "tool_result" }] },
+            { type: "turn", role: "user", blocks: [{ type: "text" }] },
+            {
+                type: "turn",
+                role: "assistant",
+                blocks: [{ type: "tool-call", name: "task_mark-as-done" }],
+                modelResponse,
+            },
+            { type: "turn", role: "user", blocks: [{ type: "tool-result" }] },
         ])
     })
 })
