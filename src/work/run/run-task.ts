@@ -54,7 +54,7 @@ export async function runTask(
         depth: taskDepth,
         taskId: task.id,
         runId,
-        employeeId: employee.id,
+        worker: { kind: "employee", employeeId: employee.id },
         model: { providerId: provider.id, modelId: model.id },
     })
     const { toolNames, boundToolInputs, result: sessionResult } = session

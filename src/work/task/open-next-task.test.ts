@@ -76,7 +76,7 @@ describe("openNextTask", () => {
         expect(startedEvent).toMatchObject({
             taskId: shipping.task.id,
             runId: openedTask?.run.id,
-            employeeId: "julie",
+            worker: { kind: "employee", employeeId: "julie" },
         })
         expect(startedEvent).not.toHaveProperty("model")
     })
@@ -119,6 +119,25 @@ describe("openNextTask", () => {
         expect(second.openedTask?.run.id).toBe(first.openedTask?.run.id)
         expect(second.openedTask?.isResumed).toBe(true)
         expect(await listTaskStartedEvents()).toHaveLength(1)
+    })
+
+    test("starts afresh a task whose run someone else started", async () => {
+        const shipping = await ask("@qa-tester Can we ship on Friday?")
+        const modelRunId = "20261018-140324-000-1b2c"
+        const journal = await loadJournal(projectRoot)
+        await recordEvent(journal, taskStartedEventType, {
+            depth: 1,
+            taskId: shipping.task.id,
+            runId: modelRunId,
+            worker: { kind: "employee", employeeId: "claude" },
+            model: { providerId: "anthropic", modelId: "opus" },
+        })
+
+        const { openedTask } = await openNextTask(projectRoot, julieEnvironment)
+
+        expect(openedTask?.task).toEqual(shipping.task)
+        expect(openedTask?.isResumed).toBe(false)
+        expect(openedTask?.run.id).not.toBe(modelRunId)
     })
 
     test("opens nothing when no task waits for the person", async () => {
@@ -174,7 +193,7 @@ describe("openNextTask among the person's positions", () => {
         expect(openedTask?.run.conversation.systemPrompt).toStartWith(
             "You are Omar Aboudou, Director (@director) at Acme.",
         )
-        expect(startedEvent).not.toHaveProperty("employeeId")
+        expect(startedEvent?.worker).toEqual({ kind: "directors" })
     })
 })
 

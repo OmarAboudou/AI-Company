@@ -2,6 +2,7 @@ import { z } from "zod"
 import { IdSchema } from "../../ids/id-schema.ts"
 import { defineEventType, type EventOfType } from "../../journal/schema.ts"
 import { TokenUsageSchema } from "../../llm/conversation/schema.ts"
+import { WorkerSchema } from "../../organization/position/schema.ts"
 import { RunIdSchema } from "../run/schema.ts"
 
 export const TaskSchema = z
@@ -65,9 +66,9 @@ export const taskStartedEventType = defineEventType({
     fields: {
         taskId: TaskIdSchema,
         runId: RunIdSchema,
-        employeeId: IdSchema.optional().meta({
+        worker: WorkerSchema.meta({
             description:
-                "Id of the employee doing the run, i.e. the name of its folder in .llmco/employees. Absent when the directors do it.",
+                "Who does the run, working the task's position: an employee, or the directors themselves.",
         }),
         model: z
             .strictObject({ providerId: IdSchema, modelId: IdSchema })

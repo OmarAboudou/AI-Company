@@ -30,6 +30,7 @@ const developerTaskEvents = {
         id: "20261018-140324-000-0a02",
         type: "task-started",
         runId: "20261018-140324-000-1b2c",
+        worker: { kind: "employee", employeeId: "claude" },
     },
     done: {
         id: "20261018-140351-000-0a03",

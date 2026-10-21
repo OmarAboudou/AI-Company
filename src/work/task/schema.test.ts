@@ -58,7 +58,7 @@ describe("the task event types", () => {
 
     test.each([
         [taskCreatedEventType, {}],
-        [taskStartedEventType, { runId }],
+        [taskStartedEventType, { runId, worker: { kind: "directors" } }],
         [
             taskDoneEventType,
             { summary: "Answered: Hono, for Bun.", result: {} },
@@ -95,14 +95,28 @@ describe("the task event types", () => {
     })
 
     test("accept a run's start, with its employee and model", () => {
+        const worker = { kind: "employee", employeeId: "claude" }
         const model = { providerId: "anthropic", modelId: "opus" }
-        const event = { ...taskEvent, type: "task-started", runId, model }
+        const event = {
+            ...taskEvent,
+            type: "task-started",
+            runId,
+            worker,
+            model,
+        }
 
         expect(isAcceptedBy(taskStartedEventType, event)).toBe(true)
     })
 
     test("require the run that starts a task", () => {
-        const event = { ...taskEvent, type: "task-started" }
+        const worker = { kind: "directors" }
+        const event = { ...taskEvent, type: "task-started", worker }
+
+        expect(isAcceptedBy(taskStartedEventType, event)).toBe(false)
+    })
+
+    test("require who does the run", () => {
+        const event = { ...taskEvent, type: "task-started", runId }
 
         expect(isAcceptedBy(taskStartedEventType, event)).toBe(false)
     })

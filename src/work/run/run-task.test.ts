@@ -98,7 +98,7 @@ describe("runTask", () => {
             depth: 1,
             taskId: task.id,
             runId: run?.runId,
-            employeeId: "claude",
+            worker: { kind: "employee", employeeId: "claude" },
             model: { providerId: "anthropic", modelId: "opus" },
         })
     })
