@@ -7,6 +7,7 @@ import {
     type WaitingTask,
 } from "../../work/run/run-ready-tasks.ts"
 import type { RunTaskResult } from "../../work/run/run-task.ts"
+import { formatToolInput } from "../format-tool-input.ts"
 import { printColumns } from "../print-columns.ts"
 import { projectRoot } from "../project-root.ts"
 
@@ -31,17 +32,6 @@ function formatTaskEnd({ taskEnding, run }: RunTaskResult): string[] {
     return run === undefined
         ? [`${endLine} No model was called.`]
         : [endLine, formatUsage(run.usage)]
-}
-
-function formatToolInput(input: unknown): string[] {
-    if (typeof input !== "object" || input === null) {
-        return [`  ${JSON.stringify(input)}`]
-    }
-    return Object.entries(input).flatMap(([name, value]) =>
-        typeof value === "string" && value.includes("\n")
-            ? [`  ${name}:`, ...value.split("\n").map((line) => `    ${line}`)]
-            : [`  ${name}: ${JSON.stringify(value)}`],
-    )
 }
 
 function formatToolResult(text: string): string {
