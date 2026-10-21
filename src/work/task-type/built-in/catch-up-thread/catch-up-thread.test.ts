@@ -59,12 +59,12 @@ async function askDeveloper(question: string) {
 }
 
 async function createCatchUp(causeEvent: JournalEvent): Promise<Task> {
-    const newTask = {
+    const uncreatedTask = {
         type: "catch-up-thread",
         positionId: position.id,
         params: { threadId },
     }
-    return createTask(projectRoot, newTask, causeEvent)
+    return createTask(projectRoot, uncreatedTask, causeEvent)
 }
 
 async function completeCatchUp(task: Task, lastReadEntryId: string) {

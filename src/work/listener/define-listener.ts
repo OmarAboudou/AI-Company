@@ -1,9 +1,9 @@
 import type { EventOfType, EventType } from "../../journal/schema.ts"
-import type { NewTask } from "../task/schema.ts"
+import type { UncreatedTask } from "../task/schema.ts"
 
 export type Listener<Type extends EventType = EventType> = {
     eventType: Type
-    getNewTasks(event: EventOfType<Type>): NewTask[]
+    getTasksToCreate(event: EventOfType<Type>): UncreatedTask[]
 }
 
 export function defineListener<Type extends EventType>(

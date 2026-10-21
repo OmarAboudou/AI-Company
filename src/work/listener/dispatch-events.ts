@@ -12,8 +12,8 @@ import { getTaskPositionId } from "../task/get-task-position-id.ts"
 import {
     type ChainStoppedEvent,
     chainStoppedEventType,
-    type NewTask,
     type Task,
+    type UncreatedTask,
 } from "../task/schema.ts"
 import { listTasks } from "../task/storage.ts"
 import type { Listener } from "./define-listener.ts"
@@ -24,29 +24,31 @@ export type DispatchEventsResult = {
     chainStoppedEvents: ChainStoppedEvent[]
 }
 
-function getNewTasks(
+function getTasksToCreate(
     listeners: Listener[],
     event: JournalEvent,
     positions: IdHistory[],
-): NewTask[] {
+): UncreatedTask[] {
     return listeners.flatMap((listener) => {
         const listenedEvent = getEventOfType(event, listener.eventType)
         if (listenedEvent === undefined) {
             return []
         }
-        return listener.getNewTasks(listenedEvent).map((newTask) => ({
-            ...newTask,
-            positionId: getCurrentId(
-                positions,
-                newTask.positionId,
-                event.occurredAt,
-            ),
-        }))
+        return listener
+            .getTasksToCreate(listenedEvent)
+            .map((uncreatedTask) => ({
+                ...uncreatedTask,
+                positionId: getCurrentId(
+                    positions,
+                    uncreatedTask.positionId,
+                    event.occurredAt,
+                ),
+            }))
     })
 }
 
 function isCreated(
-    newTask: NewTask,
+    uncreatedTask: UncreatedTask,
     causeEventId: string,
     tasks: Task[],
     positions: IdHistory[],
@@ -54,14 +56,14 @@ function isCreated(
     return tasks.some(
         (task) =>
             task.causeEventId === causeEventId &&
-            task.type === newTask.type &&
-            getTaskPositionId(task, positions) === newTask.positionId &&
-            Bun.deepEquals(task.params, newTask.params),
+            task.type === uncreatedTask.type &&
+            getTaskPositionId(task, positions) === uncreatedTask.positionId &&
+            Bun.deepEquals(task.params, uncreatedTask.params),
     )
 }
 
 function isStopped(
-    newTask: NewTask,
+    uncreatedTask: UncreatedTask,
     causeEventId: string,
     events: JournalEvent[],
     positions: IdHistory[],
@@ -77,7 +79,7 @@ function isStopped(
             stoppedTask.positionId,
             occurredAt,
         )
-        return Bun.deepEquals({ ...stoppedTask, positionId }, newTask)
+        return Bun.deepEquals({ ...stoppedTask, positionId }, uncreatedTask)
     })
 }
 
@@ -98,25 +100,33 @@ export async function dispatchEvents(
     const createdTasks: Task[] = []
     const chainStoppedEvents: ChainStoppedEvent[] = []
     for (const event of newEvents) {
-        for (const newTask of getNewTasks(listeners, event, positions)) {
-            const newTaskDepth = event.depth + 1
+        for (const uncreatedTask of getTasksToCreate(
+            listeners,
+            event,
+            positions,
+        )) {
+            const taskDepth = event.depth + 1
             const knownEvents = [...events, ...chainStoppedEvents]
             const knownTasks = [...tasks, ...createdTasks]
-            if (newTaskDepth > maxTaskDepth) {
-                if (!isStopped(newTask, event.id, knownEvents, positions)) {
+            if (taskDepth > maxTaskDepth) {
+                if (
+                    !isStopped(uncreatedTask, event.id, knownEvents, positions)
+                ) {
                     const chainStoppedEvent = await recordEvent(
                         projectRoot,
                         chainStoppedEventType,
                         {
                             depth: event.depth,
                             causeEventId: event.id,
-                            stoppedTask: newTask,
+                            stoppedTask: uncreatedTask,
                         },
                     )
                     chainStoppedEvents.push(chainStoppedEvent)
                 }
-            } else if (!isCreated(newTask, event.id, knownTasks, positions)) {
-                const task = await createTask(projectRoot, newTask, event)
+            } else if (
+                !isCreated(uncreatedTask, event.id, knownTasks, positions)
+            ) {
+                const task = await createTask(projectRoot, uncreatedTask, event)
                 createdTasks.push(task)
             }
         }

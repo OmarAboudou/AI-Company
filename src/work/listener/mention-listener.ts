@@ -3,7 +3,7 @@ import { defineListener } from "./define-listener.ts"
 
 export const mentionListener = defineListener({
     eventType: messageSentEventType,
-    getNewTasks: ({ threadId, mentions }) =>
+    getTasksToCreate: ({ threadId, mentions }) =>
         mentions.map((positionId) => ({
             type: "catch-up-thread",
             positionId,

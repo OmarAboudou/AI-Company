@@ -39,12 +39,12 @@ async function askPosition(positionId: string): Promise<string> {
             mentions: [positionId],
         },
     )
-    const newTask = {
+    const uncreatedTask = {
         type: "catch-up-thread",
         positionId,
         params: { threadId },
     }
-    await createTask(projectRoot, newTask, messageSentEvent)
+    await createTask(projectRoot, uncreatedTask, messageSentEvent)
     return threadId
 }
 

@@ -61,8 +61,8 @@ async function askPosition(
             mentions: [positionId],
         },
     )
-    const newTask = { type, positionId, params: { threadId } }
-    return createTask(projectRoot, newTask, messageSentEvent)
+    const uncreatedTask = { type, positionId, params: { threadId } }
+    return createTask(projectRoot, uncreatedTask, messageSentEvent)
 }
 
 async function startTask(task: Task) {
