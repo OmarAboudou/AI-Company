@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { z } from "zod"
 import { UserError } from "../../user-error.ts"
 import { defineTool } from "./define-tool.ts"
-import { exampleToolContext } from "./example-tool-context.ts"
+import { exampleToolContext } from "./example-tool-context.testing.ts"
 import { runToolCall } from "./run-tool-call.ts"
 
 const greetingTool = defineTool({

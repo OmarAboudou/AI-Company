@@ -3,7 +3,7 @@ import { rm } from "node:fs/promises"
 import { saveMessage } from "../../messaging/message/storage.ts"
 import { saveThread } from "../../messaging/thread/storage.ts"
 import { UserError } from "../../user-error.ts"
-import { createTemporaryCompany } from "../company/create-temporary-company.ts"
+import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
 import { requireUnusedEmployeeId } from "./require-unused-employee-id.ts"
 import { saveEmployee } from "./storage.ts"
 

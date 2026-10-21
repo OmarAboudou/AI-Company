@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import type Anthropic from "@anthropic-ai/sdk"
 import { UserError } from "../../user-error.ts"
 import { callAnthropicMessages } from "./call-anthropic-messages.ts"
-import { useFakeAnthropicServer } from "./use-fake-anthropic-server.ts"
+import { useFakeAnthropicServer } from "./use-fake-anthropic-server.testing.ts"
 
 const sendingTool: Anthropic.Tool = {
     name: "message_send",

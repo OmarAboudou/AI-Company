@@ -2,7 +2,7 @@ import { afterEach, beforeEach } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { createGitRepository } from "../git/create-git-repository.ts"
+import { createGitRepository } from "../git/create-git-repository.testing.ts"
 
 const cliPath = join(import.meta.dir, "main.ts")
 

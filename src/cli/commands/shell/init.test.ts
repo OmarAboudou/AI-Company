@@ -2,8 +2,12 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { chmod, mkdir } from "node:fs/promises"
 import { join } from "node:path"
-import { useTemporaryProject } from "../../use-temporary-project.ts"
-import { isShellInstalled, runShell, type ShellRun } from "./run-shell.ts"
+import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
+import {
+    isShellInstalled,
+    runShell,
+    type ShellRun,
+} from "./run-shell.testing.ts"
 import { shells } from "./shells.ts"
 
 const { runCli, runCliWithEnv, getProjectPath, getHomePath } =

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import type { CommandUnknownOpts } from "@commander-js/extra-typings"
 import { createProgram } from "./program.ts"
-import { useTemporaryProject } from "./use-temporary-project.ts"
+import { useTemporaryProject } from "./use-temporary-project.testing.ts"
 
 const { runCli, runCliWithEnv } = useTemporaryProject()
 

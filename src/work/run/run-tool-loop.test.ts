@@ -3,11 +3,11 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { z } from "zod"
-import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.ts"
+import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
 import { taskMarkAsDoneTool } from "../tool/built-in/task/mark-as-done.ts"
 import { taskMarkAsFailedTool } from "../tool/built-in/task/mark-as-failed.ts"
 import { defineTool } from "../tool/define-tool.ts"
-import { exampleToolContext } from "../tool/example-tool-context.ts"
+import { exampleToolContext } from "../tool/example-tool-context.testing.ts"
 import { getAnthropicTools } from "./get-anthropic-tools.ts"
 import {
     maxToolCallsPerRun,

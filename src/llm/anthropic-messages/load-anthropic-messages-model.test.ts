@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
-import { createTemporaryCompany } from "../../organization/company/create-temporary-company.ts"
+import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { UserError } from "../../user-error.ts"
 import { createLlmConnection } from "../connection/create-llm-connection.ts"
 import { createLlmModel } from "../model/create-llm-model.ts"
