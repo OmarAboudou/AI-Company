@@ -104,7 +104,6 @@ export async function openNextTask(
             task,
             position,
             human,
-            taskDepth,
             session,
         })
         const openedTask = {

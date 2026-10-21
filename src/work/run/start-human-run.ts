@@ -1,6 +1,7 @@
 import { readGitCommitter } from "../../git/read-git-committer.ts"
 import { createTimeOrderedId } from "../../ids/create-time-ordered-id.ts"
 import { recordEvent } from "../../journal/record-event.ts"
+import { requireJournalEvent } from "../../journal/require-journal-event.ts"
 import type { Journal } from "../../journal/schema.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
 import type { CurrentHuman } from "../../organization/human/read-current-human.ts"
@@ -18,7 +19,6 @@ export type HumanRunStart = {
     task: Task
     position: Position
     human: CurrentHuman
-    taskDepth: number
     session: Extract<TaskSession, { kind: "run" }>
 }
 
@@ -30,13 +30,14 @@ function readWorkerName(projectRoot: string, human: CurrentHuman): string {
 
 export async function startHumanRun(
     journal: Journal,
-    { task, position, human, taskDepth, session }: HumanRunStart,
+    { task, position, human, session }: HumanRunStart,
 ): Promise<Run> {
     const { projectRoot } = journal
     const company = await loadCompany(projectRoot)
     const runId = createTimeOrderedId(readMonotonicTime())
+    const causeEvent = requireJournalEvent(journal, task.causeEventId)
     await recordEvent(journal, taskStartedEventType, {
-        depth: taskDepth,
+        depth: causeEvent.depth,
         taskId: task.id,
         runId,
         worker:
