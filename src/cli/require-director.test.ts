@@ -79,6 +79,8 @@ const freeCommandNames = [
     "task next",
     "turn add text",
     "turn add tool",
+    "turn show",
+    "turn clear",
     "current-human show",
     "current-human set",
     "current-human clear",

@@ -1,5 +1,7 @@
 import type { Command } from "@commander-js/extra-typings"
 import { registerTurnAddCommands } from "./add/add.ts"
+import { registerTurnClearCommand } from "./clear.ts"
+import { registerTurnShowCommand } from "./show.ts"
 
 export function registerTurnCommands(program: Command): void {
     const turnCommand = program
@@ -8,4 +10,6 @@ export function registerTurnCommands(program: Command): void {
             "Prepare your next turn in your task in progress (see task next), then send it, as an LLM employee's: texts and tool calls.",
         )
     registerTurnAddCommands(turnCommand)
+    registerTurnShowCommand(turnCommand)
+    registerTurnClearCommand(turnCommand)
 }
