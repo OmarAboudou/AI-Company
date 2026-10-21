@@ -40,11 +40,11 @@ export async function createCompanyWithLlmEmployee(
     createGitRepository(projectRoot, committer)
     await Promise.all([
         createLlmEmployee(projectRoot, baseUrl),
-        createEmployee(projectRoot, "julie", { name: "Julie", kind: "human" }),
         ...["backend-developer", "qa-tester"].map((id) =>
             createPosition(projectRoot, id, { title: id, description: "" }),
         ),
     ])
+    await createEmployee(projectRoot, "julie", { name: "Julie", kind: "human" })
     await assignPosition(projectRoot, "backend-developer", "claude")
     const { thread } = await createThread(projectRoot, {}, { subject: "Stack" })
     return { projectRoot, threadId: thread.id }
