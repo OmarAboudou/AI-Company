@@ -78,7 +78,7 @@ llmco run                                              # runs what is ready, the
 
 People work their tasks as LLM employees do: the same message, the same tools, turn by turn. llmco thus works without any LLM: two people, each in a terminal as a human employee, talk through their tasks. You work the tasks of the positions you work (see `llmco current-human`), only the selected position's when one is set; as a director, those of the director's position and of the positions assigned temporarily to the directors.
 
-`llmco task work` works them one after the other. It shows each task as a model gets it, its system prompt, its message and its tools, then asks what to do: call a tool, write a text, show, clear or send your turn. For a tool, it asks which one, then each of its inputs, a message's body in your editor (`$VISUAL` or `$EDITOR`). Sending the turn runs its calls and shows their results: `task_mark-as-done` or `task_mark-as-failed` ends the task, and a turn without any call gets the reminder a model gets. Once no task waits, the session waits for the next one, until Ctrl+D.
+`llmco task work` works them one after the other. It shows each task as a model gets it, its system prompt, its message and its tools, then asks what to do: call a tool, write a text, show, clear or send your turn. For a tool, it asks which one, then each of its inputs, a message's body in your editor (`$VISUAL` or `$EDITOR`). Sending the turn runs its calls and shows their results: `task_mark-as-done` or `task_mark-as-failed` ends the task, and a turn without any call gets the reminder a model gets. Once no task waits, the session waits for the next one, until Ctrl+C, or Ctrl+D as in a shell. What you prepared stays in your turn.
 
 ```bash
 llmco current-human set julie
