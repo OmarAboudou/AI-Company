@@ -65,6 +65,15 @@ describe("listCrowdedFolders", () => {
         expect(crowdedFolders).toEqual([])
     })
 
+    test("doesn't count the folder's README", async () => {
+        await createFiles("", [...createFileNames(15), "README.md"])
+
+        const crowdedFolders = await listCrowdedFolders(folderPath)
+
+        expect(await readdir(folderPath)).toHaveLength(16)
+        expect(crowdedFolders).toEqual([])
+    })
+
     test("looks into every subfolder", async () => {
         await createFiles("commands/thread", createFileNames(16))
 

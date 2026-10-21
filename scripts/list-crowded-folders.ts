@@ -13,7 +13,8 @@ function isSourceEntry(folderName: string, entry: Dirent): boolean {
     return (
         !entry.name.endsWith(".test.ts") &&
         !entry.name.endsWith(".testing.ts") &&
-        entry.name !== `${folderName}.ts`
+        entry.name !== `${folderName}.ts` &&
+        entry.name !== "README.md"
     )
 }
 
