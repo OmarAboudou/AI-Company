@@ -6,7 +6,7 @@ import { loadDispatchedEventIds, saveDispatchedEventIds } from "./storage.ts"
 
 export type DispatchEventsResult = Pick<
     Dispatching,
-    "createdTasks" | "chainStoppedEvents"
+    "createdTasks" | "doneTasks" | "chainStoppedEvents"
 >
 
 export async function dispatchEvents(
@@ -26,7 +26,8 @@ export async function dispatchEvents(
             if (listenedEvent === undefined) {
                 continue
             }
-            for (const effect of listener.getEffects(listenedEvent)) {
+            const effects = listener.getEffects(listenedEvent, dispatching)
+            for (const effect of effects) {
                 await applyListenerEffect(effect, event, dispatching)
             }
         }
@@ -35,6 +36,6 @@ export async function dispatchEvents(
     if (newEvents.length > 0) {
         await saveDispatchedEventIds(projectRoot, dispatchedEventIds)
     }
-    const { createdTasks, chainStoppedEvents } = dispatching
-    return { createdTasks, chainStoppedEvents }
+    const { createdTasks, doneTasks, chainStoppedEvents } = dispatching
+    return { createdTasks, doneTasks, chainStoppedEvents }
 }

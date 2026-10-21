@@ -20,8 +20,11 @@ function createMessageSentEvent(
     }
 }
 
+const emptyCompany = { tasks: [], taskStates: new Map(), positions: [] }
+
 function getEffects(mentions: string[]) {
-    return catchUpListener.getEffects(createMessageSentEvent(mentions))
+    const event = createMessageSentEvent(mentions)
+    return catchUpListener.getEffects(event, emptyCompany)
 }
 
 describe("catchUpListener", () => {

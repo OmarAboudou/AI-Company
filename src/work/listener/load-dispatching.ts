@@ -4,6 +4,7 @@ import { listEvents } from "../../journal/storage.ts"
 import { defaultMaxTaskDepth } from "../../organization/company/schema.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
 import { listPositions } from "../../organization/position/storage.ts"
+import { getTaskStates, type TaskState } from "../task/get-task-states.ts"
 import type { ChainStoppedEvent, Task } from "../task/schema.ts"
 import { listTasks } from "../task/storage.ts"
 
@@ -11,9 +12,11 @@ export type Dispatching = {
     projectRoot: string
     events: JournalEvent[]
     tasks: Task[]
+    taskStates: Map<string, TaskState>
     positions: IdHistory[]
     maxTaskDepth: number
     createdTasks: Task[]
+    doneTasks: Task[]
     chainStoppedEvents: ChainStoppedEvent[]
 }
 
@@ -30,9 +33,11 @@ export async function loadDispatching(
         projectRoot,
         events,
         tasks,
+        taskStates: getTaskStates(tasks, events),
         positions,
         maxTaskDepth: company.maxTaskDepth ?? defaultMaxTaskDepth,
         createdTasks: [],
+        doneTasks: [],
         chainStoppedEvents: [],
     }
 }
