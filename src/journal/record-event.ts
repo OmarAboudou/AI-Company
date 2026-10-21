@@ -7,17 +7,17 @@ type WithoutIdAndTime<Event> = Event extends unknown
     ? Omit<Event, "id" | "occurredAt">
     : never
 
-export type NewJournalEvent = WithoutIdAndTime<JournalEvent>
+export type UnrecordedEvent = WithoutIdAndTime<JournalEvent>
 
-export async function createEvent<NewEvent extends NewJournalEvent>(
+export async function recordEvent<Unrecorded extends UnrecordedEvent>(
     projectRoot: string,
-    newEvent: NewEvent,
-): Promise<NewEvent & Pick<JournalEvent, "id" | "occurredAt">> {
+    unrecordedEvent: Unrecorded,
+): Promise<Unrecorded & Pick<JournalEvent, "id" | "occurredAt">> {
     const occurredAt = readMonotonicTime()
     const event = {
         id: createTimeOrderedId(occurredAt),
         occurredAt,
-        ...newEvent,
+        ...unrecordedEvent,
     }
     await saveEvent(projectRoot, event)
     return event

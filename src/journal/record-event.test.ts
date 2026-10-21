@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { createEvent, type NewJournalEvent } from "./create-event.ts"
+import { recordEvent, type UnrecordedEvent } from "./record-event.ts"
 import { listEvents } from "./storage.ts"
 
 let projectRoot: string
@@ -15,7 +15,7 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const questionSent: NewJournalEvent = {
+const questionSent: UnrecordedEvent = {
     type: "message-sent",
     depth: 0,
     threadId: "2026-10-18-choice-of-framework",
@@ -23,24 +23,24 @@ const questionSent: NewJournalEvent = {
     mentions: ["backend-developer"],
 }
 
-describe("createEvent", () => {
+describe("recordEvent", () => {
     test("saves the event with the time it happens", async () => {
         const clockTime = Date.now()
 
-        const event = await createEvent(projectRoot, questionSent)
+        const event = await recordEvent(projectRoot, questionSent)
 
         expect(event).toMatchObject(questionSent)
         expect(Date.parse(event.occurredAt)).toBeGreaterThanOrEqual(clockTime)
         expect(await listEvents(projectRoot)).toEqual([event])
     })
 
-    test("keeps the order of creation, even within a millisecond", async () => {
-        const createdEvents = await Promise.all(
+    test("keeps the order of recording, even within a millisecond", async () => {
+        const recordedEvents = await Promise.all(
             Array.from({ length: 20 }, () =>
-                createEvent(projectRoot, questionSent),
+                recordEvent(projectRoot, questionSent),
             ),
         )
 
-        expect(await listEvents(projectRoot)).toEqual(createdEvents)
+        expect(await listEvents(projectRoot)).toEqual(recordedEvents)
     })
 })

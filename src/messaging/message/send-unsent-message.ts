@@ -1,5 +1,5 @@
 import { createTimeOrderedId } from "../../ids/create-time-ordered-id.ts"
-import { createEvent } from "../../journal/create-event.ts"
+import { recordEvent } from "../../journal/record-event.ts"
 import { getNextSentAt } from "./get-next-sent-at.ts"
 import type { Message, UnsentMessage } from "./schema.ts"
 import { listMessages, saveMessage } from "./storage.ts"
@@ -21,7 +21,7 @@ export async function sendUnsentMessage(
     // The event comes first: should the sending stop between the two, an
     // event naming no message asks for nothing new, whereas a message
     // without its event would mention positions that are never asked.
-    await createEvent(projectRoot, {
+    await recordEvent(projectRoot, {
         type: "message-sent",
         depth,
         threadId,

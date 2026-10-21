@@ -1,6 +1,6 @@
 import { getCurrentId } from "../../ids/get-current-id.ts"
 import type { IdHistory } from "../../ids/id-history-schema.ts"
-import { createEvent } from "../../journal/create-event.ts"
+import { recordEvent } from "../../journal/record-event.ts"
 import type { ChainStoppedEvent, JournalEvent } from "../../journal/schema.ts"
 import { listEvents } from "../../journal/storage.ts"
 import { defaultMaxTaskDepth } from "../../organization/company/schema.ts"
@@ -101,7 +101,7 @@ export async function dispatchEvents(
             const knownTasks = [...tasks, ...createdTasks]
             if (depth > maxTaskDepth) {
                 if (!isStopped(newTask, event.id, knownEvents, positions)) {
-                    const chainStoppedEvent = await createEvent(projectRoot, {
+                    const chainStoppedEvent = await recordEvent(projectRoot, {
                         type: "chain-stopped",
                         depth: event.depth,
                         causeEventId: event.id,

@@ -1,5 +1,5 @@
 import { createTimeOrderedId } from "../../ids/create-time-ordered-id.ts"
-import { createEvent } from "../../journal/create-event.ts"
+import { recordEvent } from "../../journal/record-event.ts"
 import { readMonotonicTime } from "../../read-monotonic-time.ts"
 import type { Task } from "./schema.ts"
 import { saveTask } from "./storage.ts"
@@ -18,7 +18,7 @@ export async function createTask(
     // its cause again finds the task and doesn't create it twice. The other
     // way round, it would find no task, and leave a task-created naming none.
     await saveTask(projectRoot, task)
-    await createEvent(projectRoot, {
+    await recordEvent(projectRoot, {
         type: "task-created",
         depth: task.depth,
         taskId: task.id,
