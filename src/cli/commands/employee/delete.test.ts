@@ -1,4 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createCompany } from "../../../organization/company/create-company.ts"
+import { createEmployee } from "../../../organization/employee/create-employee.ts"
+import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
@@ -18,11 +21,23 @@ function createEmployeeWorker(employeeId: string) {
 }
 
 describe("llmco employee delete", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("employee", "create", "human", "omar", "-n", "Omar")
-        runCli("position", "create", "developer", "-t", "Developer")
-        runCli("position", "create", "qa-tester", "-t", "QA Tester")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await Promise.all([
+            createEmployee(projectRoot, "omar", {
+                name: "Omar",
+                kind: "human",
+            }),
+            createPosition(projectRoot, "developer", {
+                title: "Developer",
+                description: "",
+            }),
+            createPosition(projectRoot, "qa-tester", {
+                title: "QA Tester",
+                description: "",
+            }),
+        ])
     })
 
     test("delete removes an employee who fills no position", () => {

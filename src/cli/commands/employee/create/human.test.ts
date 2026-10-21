@@ -1,33 +1,29 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createLlmConnection } from "../../../../llm/connection/create-llm-connection.ts"
+import { createLlmModel } from "../../../../llm/model/create-llm-model.ts"
+import { createLlmProvider } from "../../../../llm/provider/create-llm-provider.ts"
 import { saveMessage } from "../../../../messaging/message/storage.ts"
 import { saveThread } from "../../../../messaging/thread/storage.ts"
+import { createCompany } from "../../../../organization/company/create-company.ts"
 import { useTemporaryProject } from "../../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("llmco employee", () => {
-    beforeEach(() => {
-        runCli("init", "--name", "Acme")
-        runCli("provider", "create", "anthropic", "-n", "Anthropic")
-        runCli(
-            "provider",
-            "connection",
-            "create",
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" })
+        await createLlmConnection(
+            projectRoot,
             "anthropic",
             "anthropic-messages",
-            "-u",
-            "https://api.anthropic.com",
+            { baseUrl: "https://api.anthropic.com" },
         )
-        runCli(
-            "model",
-            "create",
-            "anthropic",
-            "claude-opus-5-5",
-            "-n",
-            "Claude Opus 5.5",
-            "-a",
-            "claude-opus-5-5",
-        )
+        await createLlmModel(projectRoot, "anthropic", "claude-opus-5-5", {
+            name: "Claude Opus 5.5",
+            apiId: "claude-opus-5-5",
+        })
     })
 
     test("create human rejects a model", () => {
@@ -51,8 +47,9 @@ describe("--reuse-id", () => {
     const committer = { name: "Omar Aboudou", email: "omar@example.com" }
     const threadId = "2026-10-18-budget"
 
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
     })
 
     async function archiveMessageBy(employeeId: string, sentAt: string) {
