@@ -21,8 +21,9 @@ export type TaskEnding =
 export type ToolResult = { text: string; taskEnding?: TaskEnding }
 
 export type Tool<InputSchema extends z.ZodObject = z.ZodObject> = {
-    description: string
-    buildBoundDescription?(boundInput: Partial<z.input<InputSchema>>): string
+    description:
+        | string
+        | ((boundInput: Partial<z.input<InputSchema>>) => string)
     inputSchema: InputSchema
     execute(input: z.infer<InputSchema>, ctx: ToolContext): Promise<ToolResult>
 }

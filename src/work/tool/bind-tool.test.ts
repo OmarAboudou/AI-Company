@@ -7,8 +7,8 @@ import { getToolDefinitions } from "./get-tool-definitions.ts"
 import { runToolCall } from "./run-tool-call.ts"
 
 const replyTool = defineTool({
-    description: "Reply in a thread.",
-    buildBoundDescription: () => "Reply in this thread.",
+    description: ({ threadId }) =>
+        threadId === undefined ? "Reply in a thread." : "Reply in this thread.",
     inputSchema: z.strictObject({
         threadId: z.string().min(1),
         body: z.string(),

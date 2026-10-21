@@ -17,8 +17,7 @@ function buildDescription(thread: string): string {
 }
 
 export const threadShowTool = defineTool({
-    description: buildDescription("a thread's"),
-    buildBoundDescription: ({ threadId }) =>
+    description: ({ threadId }) =>
         buildDescription(
             threadId === undefined ? "a thread's" : "this thread's",
         ),
