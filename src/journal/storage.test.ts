@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import type { EventOfType, messageSentEventType } from "./schema.ts"
 import { listEvents, saveEvent } from "./storage.ts"
 
 let projectRoot: string
@@ -15,49 +14,44 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-type MessageSentEvent = EventOfType<typeof messageSentEventType>
-
-const questionSent: MessageSentEvent = {
+const firstNoteWritten = {
     id: "20261018-140322-123-5d1e",
-    type: "message-sent",
+    type: "note-written",
     occurredAt: "2026-10-18T14:03:22.123Z",
     depth: 0,
-    threadId: "2026-10-18-choice-of-framework",
-    messageId: "20261018-140322-123-3f9a",
-    mentions: ["backend-developer"],
+    text: "Hono runs on Bun.",
 }
 
-const answerSent: MessageSentEvent = {
-    ...questionSent,
+const secondNoteWritten = {
+    ...firstNoteWritten,
     id: "20261018-140351-000-8c2a",
     occurredAt: "2026-10-18T14:03:51.000Z",
     depth: 1,
-    messageId: "20261018-140351-000-b27c",
-    mentions: [],
+    text: "Express doesn't.",
 }
 
 describe("saveEvent and listEvents", () => {
     test("write the event in the journal, then read it back", async () => {
-        await saveEvent(projectRoot, questionSent)
+        await saveEvent(projectRoot, firstNoteWritten)
 
         const eventPath = join(
             projectRoot,
             ".llmco",
             "journal",
-            `${questionSent.id}.json`,
+            `${firstNoteWritten.id}.json`,
         )
-        const { id, ...content } = questionSent
+        const { id, ...content } = firstNoteWritten
         expect(await Bun.file(eventPath).json()).toEqual(content)
-        expect(await listEvents(projectRoot)).toEqual([questionSent])
+        expect(await listEvents(projectRoot)).toEqual([firstNoteWritten])
     })
 
     test("list returns the events oldest first", async () => {
-        await saveEvent(projectRoot, answerSent)
-        await saveEvent(projectRoot, questionSent)
+        await saveEvent(projectRoot, secondNoteWritten)
+        await saveEvent(projectRoot, firstNoteWritten)
 
         expect(await listEvents(projectRoot)).toEqual([
-            questionSent,
-            answerSent,
+            firstNoteWritten,
+            secondNoteWritten,
         ])
     })
 
@@ -65,9 +59,9 @@ describe("saveEvent and listEvents", () => {
         expect(await listEvents(projectRoot)).toEqual([])
     })
 
-    test("list keeps an event of a type llmco doesn't know", async () => {
+    test("list keeps every event, whatever its type and fields", async () => {
         const threadClosed = {
-            ...questionSent,
+            ...firstNoteWritten,
             type: "thread-closed",
             reason: "Decided: Hono.",
         }
@@ -77,12 +71,15 @@ describe("saveEvent and listEvents", () => {
     })
 
     test("save never overwrites an event", async () => {
-        await saveEvent(projectRoot, questionSent)
-        const eventWithSameId = { ...answerSent, id: questionSent.id }
+        await saveEvent(projectRoot, firstNoteWritten)
+        const eventWithSameId = {
+            ...secondNoteWritten,
+            id: firstNoteWritten.id,
+        }
 
         const overwriting = saveEvent(projectRoot, eventWithSameId)
 
         await expect(overwriting).rejects.toThrow("EEXIST")
-        expect(await listEvents(projectRoot)).toEqual([questionSent])
+        expect(await listEvents(projectRoot)).toEqual([firstNoteWritten])
     })
 })
