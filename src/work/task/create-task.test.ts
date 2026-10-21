@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { listEvents } from "../../journal/storage.ts"
+import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { createTask } from "./create-task.ts"
 import { createTaskId } from "./create-task-id.ts"
 import { listTasks } from "./storage.ts"
@@ -36,7 +36,11 @@ async function readTaskFile(root: string, taskId: string): Promise<string> {
 
 describe("createTask", () => {
     test("saves the task under the id of what it is, asked when its cause happened", async () => {
-        const task = await createTask(projectRoot, developerNewTask, answerSent)
+        const task = await createTask(
+            await loadJournal(projectRoot),
+            developerNewTask,
+            answerSent,
+        )
 
         expect(task).toEqual({
             id: createTaskId(answerSent.id, developerNewTask),
@@ -55,8 +59,16 @@ describe("createTask", () => {
             type: developerNewTask.type,
         }
 
-        const task = await createTask(projectRoot, developerNewTask, answerSent)
-        await createTask(otherProjectRoot, reorderedTask, answerSent)
+        const task = await createTask(
+            await loadJournal(projectRoot),
+            developerNewTask,
+            answerSent,
+        )
+        await createTask(
+            await loadJournal(otherProjectRoot),
+            reorderedTask,
+            answerSent,
+        )
 
         const [taskText, otherTaskText] = await Promise.all([
             readTaskFile(projectRoot, task.id),
@@ -67,7 +79,11 @@ describe("createTask", () => {
     })
 
     test("records its creation a step deeper than its cause", async () => {
-        const task = await createTask(projectRoot, developerNewTask, answerSent)
+        const task = await createTask(
+            await loadJournal(projectRoot),
+            developerNewTask,
+            answerSent,
+        )
 
         expect(await listEvents(projectRoot)).toMatchObject([
             { type: "task-created", depth: 2, taskId: task.id },

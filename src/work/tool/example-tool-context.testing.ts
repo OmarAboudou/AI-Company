@@ -2,6 +2,7 @@ import type { ToolContext } from "./define-tool.ts"
 
 export const exampleToolContext: ToolContext = {
     projectRoot: "/tmp/acme",
+    journal: { projectRoot: "/tmp/acme", events: [] },
     task: {
         id: "20261018-140323-000-77aa",
         askedAt: "2026-10-18T14:03:23.000Z",

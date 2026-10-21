@@ -1,10 +1,12 @@
 import type { z } from "zod"
+import type { Journal } from "../../journal/schema.ts"
 import type { Employee } from "../../organization/employee/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import type { Task } from "../task/schema.ts"
 
 export type ToolContext = {
     projectRoot: string
+    journal: Journal
     task: Task
     taskDepth: number
     position: Position

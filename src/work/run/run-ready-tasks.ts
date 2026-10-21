@@ -1,3 +1,4 @@
+import { loadJournal, refreshJournal } from "../../journal/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
 import type { LlmEmployee } from "../../organization/employee/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
@@ -33,9 +34,13 @@ export async function runReadyTasks(
     onProgress: (progress: RunReadyTasksProgress) => void,
 ): Promise<RunReadyTasksResult> {
     await requireCompany(projectRoot)
+    const journal = await loadJournal(projectRoot)
     while (true) {
+        // Another process, a person's terminal for one, may have written
+        // events since the last turn.
+        await refreshJournal(journal)
         const { chainStoppedEvents } = await dispatchEvents(
-            projectRoot,
+            journal,
             builtInListeners,
         )
         for (const chainStoppedEvent of chainStoppedEvents) {
@@ -54,7 +59,7 @@ export async function runReadyTasks(
         const { task, position, employee } = readyTask
         onProgress({ kind: "task-started", task, position, employee })
         try {
-            const result = await runTask(projectRoot, environment, {
+            const result = await runTask(journal, environment, {
                 task,
                 position,
                 employee,

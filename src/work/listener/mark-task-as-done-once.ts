@@ -10,7 +10,7 @@ export async function markTaskAsDoneOnce(
     { taskId, summary, result }: MarkTaskAsDoneEffect,
     dispatching: Dispatching,
 ): Promise<void> {
-    const { projectRoot, tasks, taskStates } = dispatching
+    const { journal, tasks, taskStates } = dispatching
     const task = tasks.find(({ id }) => id === taskId)
     if (task === undefined || !isPendingTask(task, taskStates)) {
         return
@@ -21,8 +21,8 @@ export async function markTaskAsDoneOnce(
             `A listener marked task "${task.id}" as done, of type "${task.type}", which llmco doesn't know.`,
         )
     }
-    const causeEvent = await loadEvent(projectRoot, task.causeEventId)
-    await recordEvent(projectRoot, taskDoneEventType, {
+    const causeEvent = await loadEvent(journal.projectRoot, task.causeEventId)
+    await recordEvent(journal, taskDoneEventType, {
         depth: causeEvent.depth + 1,
         taskId,
         summary,

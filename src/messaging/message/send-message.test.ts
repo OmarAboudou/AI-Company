@@ -3,7 +3,7 @@ import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { createGitRepository } from "../../git/create-git-repository.testing.ts"
 import { recordEvent } from "../../journal/record-event.ts"
-import { listEvents } from "../../journal/storage.ts"
+import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { saveEmployee } from "../../organization/employee/storage.ts"
 import { assignPositionTemporarily } from "../../organization/position/assign-position-temporarily.ts"
@@ -93,13 +93,17 @@ describe("sendMessage", () => {
     })
 
     test("marks as done what earlier messages asked of its position", async () => {
-        await recordEvent(projectRoot, messageSentEventType, {
-            depth: 1,
-            threadId,
-            messageId: "20261018-140322-123-3f9a",
-            positionId: "backend-developer",
-            mentions: ["director"],
-        })
+        await recordEvent(
+            await loadJournal(projectRoot),
+            messageSentEventType,
+            {
+                depth: 1,
+                threadId,
+                messageId: "20261018-140322-123-3f9a",
+                positionId: "backend-developer",
+                mentions: ["director"],
+            },
+        )
 
         const { message } = await sendInThread("Hono.")
 

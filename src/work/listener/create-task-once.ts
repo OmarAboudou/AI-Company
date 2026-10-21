@@ -14,9 +14,9 @@ function isExistingFileError(error: unknown): boolean {
 function isStopped(
     stoppedTask: UncreatedTask,
     causeEventId: string,
-    { events, chainStoppedEvents, positions }: Dispatching,
+    { journal, positions }: Dispatching,
 ): boolean {
-    return [...events, ...chainStoppedEvents].some((event) => {
+    return journal.events.some((event) => {
         const chainStoppedEvent = getEventOfType(event, chainStoppedEventType)
         if (chainStoppedEvent?.causeEventId !== causeEventId) {
             return false
@@ -39,7 +39,7 @@ async function stopChainOnce(
     causeEvent: JournalEvent,
     dispatching: Dispatching,
 ): Promise<void> {
-    const { projectRoot, positions } = dispatching
+    const { journal, positions } = dispatching
     const stoppedTask = {
         ...askedTask,
         positionId: getCurrentId(
@@ -52,7 +52,7 @@ async function stopChainOnce(
         return
     }
     const chainStoppedEvent = await recordEvent(
-        projectRoot,
+        journal,
         chainStoppedEventType,
         { depth: causeEvent.depth, causeEventId: causeEvent.id, stoppedTask },
     )
@@ -73,7 +73,7 @@ export async function createTaskOnce(
     }
     try {
         const task = await createTask(
-            dispatching.projectRoot,
+            dispatching.journal,
             askedTask,
             causeEvent,
         )

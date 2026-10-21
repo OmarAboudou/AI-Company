@@ -1,3 +1,4 @@
+import { loadJournal } from "../../journal/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
 import { builtInListeners } from "../../work/listener/built-in-listeners.ts"
 import { dispatchEvents } from "../../work/listener/dispatch-events.ts"
@@ -28,14 +29,14 @@ export async function sendMessage(
         archive: { thread, messages: threadMessages },
         asPositionId,
     })
-    const unsentMessage = await createUnsentMessage(projectRoot, author, body)
-    const message = await sendUnsentMessage(
-        projectRoot,
-        thread.id,
-        unsentMessage,
-        { depth: 0 },
-    )
-    const { createdTasks } = await dispatchEvents(projectRoot, builtInListeners)
+    const [unsentMessage, journal] = await Promise.all([
+        createUnsentMessage(projectRoot, author, body),
+        loadJournal(projectRoot),
+    ])
+    const message = await sendUnsentMessage(journal, thread.id, unsentMessage, {
+        depth: 0,
+    })
+    const { createdTasks } = await dispatchEvents(journal, builtInListeners)
     return {
         message,
         unknownMentionIds: unsentMessage.unknownMentionIds,

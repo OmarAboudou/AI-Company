@@ -1,4 +1,5 @@
 import { getEventOfType } from "../../journal/get-event-of-type.ts"
+import type { Journal } from "../../journal/schema.ts"
 import { applyListenerEffect } from "./apply-listener-effect.ts"
 import type { Listener } from "./define-listener.ts"
 import { type Dispatching, loadDispatching } from "./load-dispatching.ts"
@@ -10,14 +11,15 @@ export type DispatchEventsResult = Pick<
 >
 
 export async function dispatchEvents(
-    projectRoot: string,
+    journal: Journal,
     listeners: Listener[],
 ): Promise<DispatchEventsResult> {
+    const { projectRoot } = journal
     const [dispatchedEventIds, dispatching] = await Promise.all([
         loadDispatchedEventIds(projectRoot),
-        loadDispatching(projectRoot),
+        loadDispatching(journal),
     ])
-    const newEvents = dispatching.events.filter(
+    const newEvents = journal.events.filter(
         ({ id }) => !dispatchedEventIds.has(id),
     )
     for (const event of newEvents) {

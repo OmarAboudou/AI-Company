@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { IdSchema } from "../../ids/id-schema.ts"
 import { recordEvent } from "../../journal/record-event.ts"
 import { defineEventType } from "../../journal/schema.ts"
-import { saveEvent } from "../../journal/storage.ts"
+import { loadJournal, saveEvent } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { listTasks } from "../task/storage.ts"
@@ -26,7 +26,7 @@ afterEach(async () => {
 const threadId = "2026-10-18-choice-of-framework"
 
 async function createMessageSentEvent(mentions: string[], depth = 0) {
-    return recordEvent(projectRoot, messageSentEventType, {
+    return recordEvent(await loadJournal(projectRoot), messageSentEventType, {
         depth,
         threadId,
         messageId: "20261018-140322-123-3f9a",
@@ -72,8 +72,8 @@ const notingListener = defineListener({
             })),
 })
 
-function dispatchToCatchUpListener() {
-    return dispatchEvents(projectRoot, [catchUpListener])
+async function dispatchToCatchUpListener() {
+    return dispatchEvents(await loadJournal(projectRoot), [catchUpListener])
 }
 
 describe("dispatchEvents", () => {
@@ -96,7 +96,10 @@ describe("dispatchEvents", () => {
         await createMessageSentEvent(["backend-developer"])
         const listeners = [catchUpListener, reviewListener]
 
-        const { createdTasks } = await dispatchEvents(projectRoot, listeners)
+        const { createdTasks } = await dispatchEvents(
+            await loadJournal(projectRoot),
+            listeners,
+        )
 
         const taskTypes = createdTasks.map(({ type }) => type)
         expect(taskTypes).toEqual(["catch-up-thread", "review-thread"])
@@ -137,14 +140,18 @@ describe("dispatchEvents", () => {
 
     test("shows listeners the tasks that earlier events created", async () => {
         await createMessageSentEvent(["qa-tester"])
-        await recordEvent(projectRoot, positionNotedEventType, {
-            depth: 0,
-            positionId: "qa-tester",
-        })
+        await recordEvent(
+            await loadJournal(projectRoot),
+            positionNotedEventType,
+            {
+                depth: 0,
+                positionId: "qa-tester",
+            },
+        )
         const listeners = [catchUpListener, notingListener]
 
         const { createdTasks, doneTasks } = await dispatchEvents(
-            projectRoot,
+            await loadJournal(projectRoot),
             listeners,
         )
 

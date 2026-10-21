@@ -6,7 +6,7 @@ import {
     defineEventType,
     type JournalEvent,
 } from "../../../../journal/schema.ts"
-import { loadEvent } from "../../../../journal/storage.ts"
+import { loadEvent, loadJournal } from "../../../../journal/storage.ts"
 import { createUnsentMessage } from "../../../../messaging/message/create-unsent-message.ts"
 import { messageSentEventType } from "../../../../messaging/message/schema.ts"
 import { sendMessage } from "../../../../messaging/message/send-message.ts"
@@ -64,11 +64,11 @@ async function createCatchUp(causeEvent: JournalEvent): Promise<Task> {
         positionId: position.id,
         params: { threadId },
     }
-    return createTask(projectRoot, uncreatedTask, causeEvent)
+    return createTask(await loadJournal(projectRoot), uncreatedTask, causeEvent)
 }
 
 async function markCatchUpAsDone(task: Task, lastReadEntryId: string) {
-    await recordEvent(projectRoot, taskDoneEventType, {
+    await recordEvent(await loadJournal(projectRoot), taskDoneEventType, {
         depth: 1,
         taskId: task.id,
         summary: "Answered.",
@@ -149,7 +149,7 @@ describe("catch-up-thread", () => {
     test("is done at once when the asking message was never written", async () => {
         await askDeveloper("Hono or Express?")
         const unwrittenMessageSent = await recordEvent(
-            projectRoot,
+            await loadJournal(projectRoot),
             messageSentEventType,
             {
                 depth: 0,
@@ -173,7 +173,7 @@ describe("catch-up-thread", () => {
         const question = await askDeveloper("Hono or Express?")
         await markCatchUpAsDone(question.catchUp, question.messageId)
         const remindedEvent = await recordEvent(
-            projectRoot,
+            await loadJournal(projectRoot),
             remindedEventType,
             {
                 depth: 0,
@@ -204,7 +204,7 @@ describe("catch-up-thread", () => {
             "Hono, for Bun.",
         )
         const answer = await sendUnsentMessage(
-            projectRoot,
+            await loadJournal(projectRoot),
             threadId,
             unsentAnswer,
             { depth: 1, runId },
