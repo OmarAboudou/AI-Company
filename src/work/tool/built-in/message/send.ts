@@ -19,7 +19,10 @@ export const messageSendTool = defineTool({
             description:
                 "Id of the thread, e.g. 2026-10-18-choice-of-framework.",
         }),
-        body: z.string().meta({ description: "The message, in Markdown." }),
+        body: z.string().meta({
+            description: "The message, in Markdown.",
+            contentMediaType: "text/markdown",
+        }),
     }),
     async execute({ threadId, body }, ctx) {
         const { projectRoot, position, worker } = ctx
