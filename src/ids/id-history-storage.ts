@@ -1,4 +1,5 @@
 import { readJsonFile } from "../files/read-json-file.ts"
+import { saveJsonFile } from "../files/save-json-file.ts"
 import { type IdHistoryRecord, IdHistorySchema } from "./id-history-schema.ts"
 
 export async function loadIdHistory(
@@ -18,8 +19,5 @@ export async function saveIdHistory(
     if (createdAt === undefined && formerIds === undefined) {
         return
     }
-    await Bun.write(
-        path,
-        `${JSON.stringify({ createdAt, formerIds }, null, 4)}\n`,
-    )
+    await saveJsonFile(path, { createdAt, formerIds })
 }

@@ -2,6 +2,7 @@ import { join } from "node:path"
 import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
 import { readTextFile } from "../../files/read-text-file.ts"
+import { saveJsonFile } from "../../files/save-json-file.ts"
 import { type Company, CompanyConfigSchema } from "./schema.ts"
 
 function getCompanyFilePaths(projectRoot: string) {
@@ -32,7 +33,7 @@ export async function saveCompany(
     const paths = getCompanyFilePaths(projectRoot)
     const { description, ...config } = company
     await Promise.all([
-        Bun.write(paths.config, `${JSON.stringify(config, null, 4)}\n`),
+        saveJsonFile(paths.config, config),
         Bun.write(paths.description, description),
     ])
 }

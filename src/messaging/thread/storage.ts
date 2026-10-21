@@ -2,6 +2,7 @@ import { join } from "node:path"
 import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
 import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
+import { saveJsonFile } from "../../files/save-json-file.ts"
 import { type Thread, ThreadConfigSchema } from "./schema.ts"
 
 function getThreadsFolderPath(projectRoot: string): string {
@@ -47,8 +48,5 @@ export async function saveThread(
     thread: Thread,
 ): Promise<void> {
     const { id, ...config } = thread
-    await Bun.write(
-        getThreadConfigPath(projectRoot, id),
-        `${JSON.stringify(config, null, 4)}\n`,
-    )
+    await saveJsonFile(getThreadConfigPath(projectRoot, id), config)
 }

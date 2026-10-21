@@ -2,6 +2,7 @@ import { cp, rm } from "node:fs/promises"
 import { join } from "node:path"
 import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
+import { saveJsonFile } from "../../files/save-json-file.ts"
 import { getLlmProviderFolderPath } from "../provider/storage.ts"
 import { type LlmModel, LlmModelConfigSchema } from "./schema.ts"
 
@@ -71,9 +72,9 @@ export async function saveLlmModel(
     model: LlmModel,
 ): Promise<void> {
     const { providerId, id, ...config } = model
-    await Bun.write(
+    await saveJsonFile(
         getLlmModelConfigFilePath(projectRoot, providerId, id),
-        `${JSON.stringify(config, null, 4)}\n`,
+        config,
     )
 }
 

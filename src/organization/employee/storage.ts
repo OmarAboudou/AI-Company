@@ -3,6 +3,7 @@ import { join } from "node:path"
 import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
 import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
+import { saveJsonFile } from "../../files/save-json-file.ts"
 import { loadIdHistory, saveIdHistory } from "../../ids/id-history-storage.ts"
 import { type Employee, EmployeeConfigSchema } from "./schema.ts"
 
@@ -57,10 +58,7 @@ export async function saveEmployee(
 ): Promise<void> {
     const { id, createdAt, formerIds, ...config } = employee
     await Promise.all([
-        Bun.write(
-            getEmployeeConfigFilePath(projectRoot, id),
-            `${JSON.stringify(config, null, 4)}\n`,
-        ),
+        saveJsonFile(getEmployeeConfigFilePath(projectRoot, id), config),
         saveIdHistory(getEmployeeHistoryFilePath(projectRoot, id), {
             createdAt,
             formerIds,

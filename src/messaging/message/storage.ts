@@ -2,6 +2,7 @@ import { join } from "node:path"
 import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
 import { readTextFile } from "../../files/read-text-file.ts"
+import { saveJsonFile } from "../../files/save-json-file.ts"
 import { getThreadFolderPath } from "../thread/storage.ts"
 import { type Message, MessageConfigSchema } from "./schema.ts"
 
@@ -52,7 +53,7 @@ export async function saveMessage(
     const { threadId, id, body, ...config } = message
     const messagePaths = getMessagePaths(projectRoot, threadId, id)
     await Promise.all([
-        Bun.write(messagePaths.config, `${JSON.stringify(config, null, 4)}\n`),
+        saveJsonFile(messagePaths.config, config),
         Bun.write(messagePaths.body, body),
     ])
 }

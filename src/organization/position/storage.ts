@@ -5,6 +5,7 @@ import { getStateFolderPath } from "../../files/get-state-folder-path.ts"
 import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
 import { readTextFile } from "../../files/read-text-file.ts"
+import { saveJsonFile } from "../../files/save-json-file.ts"
 import { saveState } from "../../files/save-state.ts"
 import { loadIdHistory, saveIdHistory } from "../../ids/id-history-storage.ts"
 import {
@@ -69,7 +70,7 @@ export async function savePosition(
     const { id, description, createdAt, formerIds, ...config } = position
     const paths = getPositionFilePaths(projectRoot, id)
     await Promise.all([
-        Bun.write(paths.config, `${JSON.stringify(config, null, 4)}\n`),
+        saveJsonFile(paths.config, config),
         Bun.write(paths.description, description),
         saveIdHistory(paths.history, { createdAt, formerIds }),
     ])
