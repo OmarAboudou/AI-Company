@@ -22,8 +22,7 @@ describe("llmco run", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })
-        const [{ thread }] = await Promise.all([
-            createThread(projectRoot, {}, { subject: "Stack" }),
+        await Promise.all([
             createLlmProvider(projectRoot, "anthropic", {
                 name: "A",
                 apiKeySource: { kind: "env", variable: "TEST_ANTHROPIC_KEY" },
@@ -33,6 +32,11 @@ describe("llmco run", () => {
                 description: "",
             }),
         ])
+        const { thread } = await createThread(
+            projectRoot,
+            {},
+            { subject: "Stack" },
+        )
         threadId = thread.id
         await createLlmConnection(
             projectRoot,
