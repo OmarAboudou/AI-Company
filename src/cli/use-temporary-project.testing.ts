@@ -2,7 +2,9 @@ import { afterEach, beforeEach } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import type { Subprocess } from "bun"
 import { createGitRepository } from "../git/create-git-repository.testing.ts"
+import { startInteractiveCli } from "./start-interactive-cli.testing.ts"
 
 const cliPath = join(import.meta.dir, "main.ts")
 
@@ -11,6 +13,7 @@ type RunOptions = { stdin?: string; env?: Record<string, string> }
 export function useTemporaryProject() {
     let projectRoot = ""
     let home = ""
+    const startedProcesses: Subprocess[] = []
 
     beforeEach(async () => {
         ;[projectRoot, home] = await Promise.all([
@@ -24,6 +27,9 @@ export function useTemporaryProject() {
     })
 
     afterEach(async () => {
+        for (const startedProcess of startedProcesses.splice(0)) {
+            startedProcess.kill()
+        }
         await Promise.all(
             [projectRoot, home].map((folderPath) =>
                 rm(folderPath, { recursive: true, force: true }),
@@ -78,6 +84,15 @@ export function useTemporaryProject() {
         return { exitCode, stdout, stderr }
     }
 
+    function start(env: Record<string, string>, args: string[]) {
+        const interactiveCli = startInteractiveCli(
+            [process.execPath, cliPath, ...args],
+            { cwd: projectRoot, env: readCliEnvironment(env) },
+        )
+        startedProcesses.push(interactiveCli.process)
+        return interactiveCli
+    }
+
     return {
         runCli: (...args: string[]) => run({}, args),
         runCliWithStdin: (stdin: string, ...args: string[]) =>
@@ -86,6 +101,8 @@ export function useTemporaryProject() {
             run({ env }, args),
         runCliAsync: (env: Record<string, string>, ...args: string[]) =>
             runAsync({ env }, args),
+        startCliWithEnv: (env: Record<string, string>, ...args: string[]) =>
+            start(env, args),
         getProjectPath: (...segments: string[]) =>
             join(projectRoot, ...segments),
         getHomePath: (...segments: string[]) => join(home, ...segments),
