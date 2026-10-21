@@ -26,7 +26,9 @@ export const messageSendTool = defineTool({
         const thread = await loadExistingThread(projectRoot, threadId)
         const author = {
             position: { id: position.id, title: position.title },
-            employee: { id: employee.id, name: employee.name },
+            ...(employee !== undefined && {
+                employee: { id: employee.id, name: employee.name },
+            }),
             committer: readGitCommitter(projectRoot),
         }
         const unsentMessage = await createUnsentMessage(

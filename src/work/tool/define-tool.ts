@@ -10,7 +10,7 @@ export type ToolContext = {
     task: Task
     depth: number
     position: Position
-    employee: Employee
+    employee?: Employee
     runId: string
 }
 
