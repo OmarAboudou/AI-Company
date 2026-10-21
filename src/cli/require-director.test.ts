@@ -73,6 +73,7 @@ const freeCommandNames = [
     "thread list",
     "thread show",
     "message send",
+    "run",
     "current-human show",
     "current-human set",
     "current-human clear",
