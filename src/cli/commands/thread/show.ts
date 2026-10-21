@@ -1,7 +1,6 @@
 import type { Command } from "@commander-js/extra-typings"
 import { formatDateTime } from "../../../format-date-time.ts"
-import { getAuthorName } from "../../../messaging/message/get-author-name.ts"
-import type { Author } from "../../../messaging/message/schema.ts"
+import { formatAuthorSignature } from "../../../messaging/message/format-author-signature.ts"
 import { listMessages } from "../../../messaging/message/storage.ts"
 import { getMemberIds } from "../../../messaging/thread/get-member-ids.ts"
 import { loadExistingThread } from "../../../messaging/thread/load-existing-thread.ts"
@@ -11,11 +10,6 @@ import { loadPendingPositionIdsByThread } from "../../../work/task/load-pending-
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { formatMentions } from "./format-mentions.ts"
-
-function formatSignature(author: Author): string {
-    const { position } = author
-    return `${getAuthorName(author)}, ${position.title} (@${position.id})`
-}
 
 export function registerThreadShowCommand(threadCommand: Command): void {
     threadCommand
@@ -51,7 +45,7 @@ export function registerThreadShowCommand(threadCommand: Command): void {
             const markdownLines = [
                 `# ${thread.subject}`,
                 "",
-                `Created by ${formatSignature(thread.createdBy)}, ${formatDateTime(thread.createdAt)}.`,
+                `Created by ${formatAuthorSignature(thread.createdBy)}, ${formatDateTime(thread.createdAt)}.`,
                 `Members: ${formatMentions(getMemberIds(thread, messages, positions))}.`,
             ]
             if (pendingPositionIds.length > 0) {
@@ -62,7 +56,7 @@ export function registerThreadShowCommand(threadCommand: Command): void {
             for (const message of messages) {
                 markdownLines.push(
                     "",
-                    `## ${formatSignature(message)} · ${formatDateTime(message.sentAt)}`,
+                    `## ${formatAuthorSignature(message)} · ${formatDateTime(message.sentAt)}`,
                     "",
                     message.body.trimEnd(),
                 )

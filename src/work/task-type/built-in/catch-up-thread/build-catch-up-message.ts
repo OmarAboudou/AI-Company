@@ -1,6 +1,6 @@
 import { formatDateTime } from "../../../../format-date-time.ts"
+import { formatAuthorSignature } from "../../../../messaging/message/format-author-signature.ts"
 import { formatTaggedMessage } from "../../../../messaging/message/format-tagged-message.ts"
-import { getAuthorName } from "../../../../messaging/message/get-author-name.ts"
 import type { Message } from "../../../../messaging/message/schema.ts"
 import { formatEntryNumbers } from "../../../../messaging/thread/format-entry-numbers.ts"
 import type { Thread } from "../../../../messaging/thread/schema.ts"
@@ -19,7 +19,7 @@ export function buildCatchUpMessage({
     readCount,
 }: CatchUp): string {
     const { createdBy } = thread
-    const creatorName = `${getAuthorName(createdBy)}, ${createdBy.position.title} (@${createdBy.position.id})`
+    const creatorSignature = formatAuthorSignature(createdBy)
     const memberMentions = memberIds.map((id) => `@${id}`).join(", ")
     const taggedEntries = messages
         .slice(readCount)
@@ -30,7 +30,7 @@ export function buildCatchUpMessage({
     return [
         `# Thread "${thread.subject}" (${thread.id})`,
         "",
-        `Created by ${creatorName}, on ${formatDateTime(thread.createdAt)}. Its members: ${memberMentions}.`,
+        `Created by ${creatorSignature}, on ${formatDateTime(thread.createdAt)}. Its members: ${memberMentions}.`,
         "",
         ...(readCount > 0
             ? [
