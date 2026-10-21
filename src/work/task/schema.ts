@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { IdSchema } from "../../ids/id-schema.ts"
 import { defineEventType } from "../../journal/schema.ts"
+import { RunIdSchema, TokenUsageSchema } from "../run/schema.ts"
 
 export const TaskSchema = z
     .strictObject({
@@ -51,8 +52,22 @@ export const taskCreatedEventType = defineEventType({
 
 export const taskStartedEventType = defineEventType({
     type: "task-started",
-    description: "Whoever works the task's position started it.",
-    fields: { taskId: TaskIdSchema },
+    description: "Whoever works the task's position started a run of it.",
+    fields: {
+        taskId: TaskIdSchema,
+        runId: RunIdSchema,
+        employeeId: IdSchema.optional().meta({
+            description:
+                "Id of the employee doing the run, i.e. the name of its folder in .llmco/employees. Absent when the directors do it.",
+        }),
+        model: z
+            .strictObject({ providerId: IdSchema, modelId: IdSchema })
+            .optional()
+            .meta({
+                description:
+                    "The model an LLM employee does the run with: its provider's id and its own, in .llmco/llm-providers.",
+            }),
+    },
 })
 
 export const taskCompletedEventType = defineEventType({
@@ -63,6 +78,11 @@ export const taskCompletedEventType = defineEventType({
         summary: z.string().trim().min(1).meta({
             description: "What was done, as whoever did it sums it up.",
         }),
+        runId: RunIdSchema.optional().meta({
+            description:
+                "Id of the run that completed the task. Absent when it was completed outside a run.",
+        }),
+        usage: TokenUsageSchema.optional(),
     },
 })
 
@@ -74,5 +94,10 @@ export const taskFailedEventType = defineEventType({
         reason: z.string().trim().min(1).meta({
             description: "Why the task was given up.",
         }),
+        runId: RunIdSchema.optional().meta({
+            description:
+                "Id of the run that gave the task up. Absent when it was given up outside a run.",
+        }),
+        usage: TokenUsageSchema.optional(),
     },
 })

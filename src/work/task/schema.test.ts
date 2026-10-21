@@ -53,9 +53,11 @@ describe("the task event types", () => {
         taskId: "20261018-140323-000-77aa",
     }
 
+    const runId = "20261018-140324-000-1b2c"
+
     test.each([
         [taskCreatedEventType, {}],
-        [taskStartedEventType, {}],
+        [taskStartedEventType, { runId }],
         [taskCompletedEventType, { summary: "Answered: Hono, for Bun." }],
         [taskFailedEventType, { reason: "The thread asks nothing." }],
     ])("accept their events, with the task's id", (eventType, fields) => {
@@ -74,5 +76,32 @@ describe("the task event types", () => {
         const event = { ...taskEvent, type: "task-failed" }
 
         expect(isAcceptedBy(taskFailedEventType, event)).toBe(false)
+    })
+
+    test("accept a run's start, with its employee and model", () => {
+        const model = { providerId: "anthropic", modelId: "opus" }
+        const event = { ...taskEvent, type: "task-started", runId, model }
+
+        expect(isAcceptedBy(taskStartedEventType, event)).toBe(true)
+    })
+
+    test("require the run that starts a task", () => {
+        const event = { ...taskEvent, type: "task-started" }
+
+        expect(isAcceptedBy(taskStartedEventType, event)).toBe(false)
+    })
+
+    test("accept a run's end, with the tokens it used", () => {
+        const usage = {
+            inputTokens: 1200,
+            outputTokens: 340,
+            cacheReadInputTokens: 9000,
+            cacheCreationInputTokens: 800,
+        }
+        const summary = "Answered: Hono, for Bun."
+        const event = { ...taskEvent, type: "task-completed", summary }
+
+        const runEnd = { ...event, runId, usage }
+        expect(isAcceptedBy(taskCompletedEventType, runEnd)).toBe(true)
     })
 })

@@ -26,7 +26,11 @@ const eventFields = {
 
 const developerTaskEvents = {
     created: { id: "20261018-140323-000-0a01", type: "task-created" },
-    started: { id: "20261018-140324-000-0a02", type: "task-started" },
+    started: {
+        id: "20261018-140324-000-0a02",
+        type: "task-started",
+        runId: "20261018-140324-000-1b2c",
+    },
     completed: {
         id: "20261018-140351-000-0a03",
         type: "task-completed",

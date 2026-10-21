@@ -38,6 +38,12 @@
                         "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
                     },
                     "description": "Ids of the positions the message mentions, as its message.json records them."
+                },
+                "runId": {
+                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .llmco/.state/runs. Absent for a person's message.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
                 }
             },
             "required": [
@@ -99,11 +105,41 @@
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
                     "description": "Id of the task, i.e. the name of its file in .llmco/tasks."
+                },
+                "runId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the run, i.e. the name of its transcript in .llmco/.state/runs, kept on the machine that ran it."
+                },
+                "employeeId": {
+                    "description": "Id of the employee doing the run, i.e. the name of its folder in .llmco/employees. Absent when the directors do it.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                },
+                "model": {
+                    "description": "The model an LLM employee does the run with: its provider's id and its own, in .llmco/llm-providers.",
+                    "type": "object",
+                    "properties": {
+                        "providerId": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                            "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                        },
+                        "modelId": {
+                            "type": "string",
+                            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                            "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                        }
+                    },
+                    "required": ["providerId", "modelId"],
+                    "additionalProperties": false
                 }
             },
-            "required": ["type", "occurredAt", "depth", "taskId"],
+            "required": ["type", "occurredAt", "depth", "taskId", "runId"],
             "additionalProperties": false,
-            "description": "Whoever works the task's position started it."
+            "description": "Whoever works the task's position started a run of it."
         },
         {
             "type": "object",
@@ -131,6 +167,45 @@
                     "type": "string",
                     "minLength": 1,
                     "description": "What was done, as whoever did it sums it up."
+                },
+                "runId": {
+                    "description": "Id of the run that completed the task. Absent when it was completed outside a run.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                },
+                "usage": {
+                    "type": "object",
+                    "properties": {
+                        "inputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        },
+                        "outputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        },
+                        "cacheReadInputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        },
+                        "cacheCreationInputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        }
+                    },
+                    "required": [
+                        "inputTokens",
+                        "outputTokens",
+                        "cacheReadInputTokens",
+                        "cacheCreationInputTokens"
+                    ],
+                    "additionalProperties": false,
+                    "description": "The tokens that the run's requests used, as the provider counted them: the input tokens read from the prompt cache and those written to it count apart from the others, at their own prices."
                 }
             },
             "required": ["type", "occurredAt", "depth", "taskId", "summary"],
@@ -163,6 +238,45 @@
                     "type": "string",
                     "minLength": 1,
                     "description": "Why the task was given up."
+                },
+                "runId": {
+                    "description": "Id of the run that gave the task up. Absent when it was given up outside a run.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                },
+                "usage": {
+                    "type": "object",
+                    "properties": {
+                        "inputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        },
+                        "outputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        },
+                        "cacheReadInputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        },
+                        "cacheCreationInputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        }
+                    },
+                    "required": [
+                        "inputTokens",
+                        "outputTokens",
+                        "cacheReadInputTokens",
+                        "cacheCreationInputTokens"
+                    ],
+                    "additionalProperties": false,
+                    "description": "The tokens that the run's requests used, as the provider counted them: the input tokens read from the prompt cache and those written to it count apart from the others, at their own prices."
                 }
             },
             "required": ["type", "occurredAt", "depth", "taskId", "reason"],
