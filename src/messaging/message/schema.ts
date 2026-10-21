@@ -59,6 +59,10 @@ export const messageSentEventType = defineEventType({
             description:
                 "Id of the message, i.e. the name of its folder in the thread's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message.",
         }),
+        positionId: IdSchema.meta({
+            description:
+                "Id of the position the message was written from, as its message.json records it.",
+        }),
         mentions: z.array(IdSchema).meta({
             description:
                 "Ids of the positions the message mentions, as its message.json records them.",

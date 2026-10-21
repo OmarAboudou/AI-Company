@@ -33,6 +33,7 @@ async function createMessageSentEvent(mentions: string[], depth = 0) {
         depth,
         threadId,
         messageId: "20261018-140322-123-3f9a",
+        positionId: "director",
         mentions,
     })
 }
@@ -207,6 +208,7 @@ describe("dispatchEvents through the positions' id history", () => {
         depth: 0,
         threadId,
         messageId: "20261018-140322-123-3f9a",
+        positionId: "director",
         mentions: ["backend-developer"],
     }
 

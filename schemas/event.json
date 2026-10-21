@@ -30,6 +30,12 @@
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
                     "description": "Id of the message, i.e. the name of its folder in the thread's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
                 },
+                "positionId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the position the message was written from, as its message.json records it."
+                },
                 "mentions": {
                     "type": "array",
                     "items": {
@@ -52,6 +58,7 @@
                 "depth",
                 "threadId",
                 "messageId",
+                "positionId",
                 "mentions"
             ],
             "additionalProperties": false,

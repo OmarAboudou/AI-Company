@@ -32,6 +32,7 @@ function createMessageSentEvent(
         depth: sendingRunId === undefined ? 0 : 1,
         threadId,
         messageId,
+        positionId: "backend-developer",
         mentions: [],
         ...(sendingRunId !== undefined && { runId: sendingRunId }),
     }

@@ -36,6 +36,7 @@ async function askPosition(positionId: string): Promise<string> {
             depth: 0,
             threadId,
             messageId: "20261019-100000-000-a1b2",
+            positionId: "director",
             mentions: [positionId],
         },
     )

@@ -69,6 +69,7 @@ describe("sendMessage", () => {
             depth: 0,
             threadId,
             messageId: message.id,
+            positionId: "director",
             mentions: ["qa-tester"],
         }
         expect(before).toEqual([])
@@ -96,6 +97,7 @@ describe("sendMessage", () => {
             depth: 1,
             threadId,
             messageId: "20261018-140322-123-3f9a",
+            positionId: "backend-developer",
             mentions: ["director"],
         })
 
