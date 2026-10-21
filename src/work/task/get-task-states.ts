@@ -2,20 +2,20 @@ import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import type { EventType, JournalEvent } from "../../journal/schema.ts"
 import {
     type Task,
-    taskCompletedEventType,
     taskCreatedEventType,
+    taskDoneEventType,
     taskFailedEventType,
     taskStartedEventType,
 } from "./schema.ts"
 
-export type TaskState = "waiting" | "running" | "succeeded" | "failed"
+export type TaskState = "waiting" | "running" | "done" | "failed"
 
 type TaskEventContent = Omit<JournalEvent, "id"> & { taskId: string }
 
 const statesAfterEventTypes: [EventType<TaskEventContent>, TaskState][] = [
     [taskCreatedEventType, "waiting"],
     [taskStartedEventType, "running"],
-    [taskCompletedEventType, "succeeded"],
+    [taskDoneEventType, "done"],
     [taskFailedEventType, "failed"],
 ]
 

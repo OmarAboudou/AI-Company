@@ -17,7 +17,7 @@ import { createTask } from "../task/create-task.ts"
 import { getTaskStates } from "../task/get-task-states.ts"
 import {
     type Task,
-    taskCompletedEventType,
+    taskDoneEventType,
     taskFailedEventType,
     taskStartedEventType,
 } from "../task/schema.ts"
@@ -95,14 +95,14 @@ async function findEvent<Content extends Omit<JournalEvent, "id">>(
     return events.map((event) => getEventOfType(event, eventType)).find(Boolean)
 }
 
-const completion = {
+const markAsDoneCall = {
     name: "task_mark-as-done",
     input: { summary: "Answered: Hono, for Bun." },
 }
 
 describe("runTask", () => {
     test("records the run's start, by its employee with its model", async () => {
-        fakeServer.respondWith({ toolCalls: [completion] })
+        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
 
         const { run } = await runFakeTask()
 
@@ -116,7 +116,7 @@ describe("runTask", () => {
     })
 
     test("gives the runs' system prompt and the task's user message", async () => {
-        fakeServer.respondWith({ toolCalls: [completion] })
+        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
 
         await runFakeTask()
 
@@ -133,7 +133,7 @@ describe("runTask", () => {
     })
 
     test("gives the task type's tools, and those that end the task", async () => {
-        fakeServer.respondWith({ toolCalls: [completion] })
+        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
 
         await runFakeTask()
 
@@ -146,12 +146,12 @@ describe("runTask", () => {
         ])
     })
 
-    test("records the task completed, with the tokens the run used", async () => {
-        fakeServer.respondWith({ toolCalls: [completion] })
+    test("records the task done, with the tokens the run used", async () => {
+        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
 
         const { run } = await runFakeTask()
 
-        expect(await findEvent(taskCompletedEventType)).toMatchObject({
+        expect(await findEvent(taskDoneEventType)).toMatchObject({
             depth: 1,
             taskId: task.id,
             runId: run?.runId,
@@ -164,15 +164,15 @@ describe("runTask", () => {
             },
         })
         const events = await listEvents(projectRoot)
-        expect(getTaskStates([task], events).get(task.id)).toBe("succeeded")
+        expect(getTaskStates([task], events).get(task.id)).toBe("done")
     })
 
     test("records the last entry shown, when the run sends nothing", async () => {
-        fakeServer.respondWith({ toolCalls: [completion] })
+        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
 
         await runFakeTask()
 
-        expect(await findEvent(taskCompletedEventType)).toMatchObject({
+        expect(await findEvent(taskDoneEventType)).toMatchObject({
             lastReadEntryId: questionId,
         })
     })
@@ -180,13 +180,16 @@ describe("runTask", () => {
     test("records the messages the run sent as read too", async () => {
         const answer = { threadId, body: "Hono, for Bun." }
         fakeServer.respondWith({
-            toolCalls: [{ name: "message_send", input: answer }, completion],
+            toolCalls: [
+                { name: "message_send", input: answer },
+                markAsDoneCall,
+            ],
         })
 
         await runFakeTask()
 
         const answerMessage = (await listMessages(projectRoot, threadId)).at(-1)
-        expect(await findEvent(taskCompletedEventType)).toMatchObject({
+        expect(await findEvent(taskDoneEventType)).toMatchObject({
             lastReadEntryId: answerMessage?.id,
         })
     })
@@ -202,9 +205,9 @@ describe("runTask", () => {
         expect(await findEvent(taskFailedEventType)).toMatchObject({ reason })
     })
 
-    test("completes a task whose cause was read, without a run", async () => {
+    test("marks as done a task whose cause was read, without a run", async () => {
         const readTask = await createCatchUp()
-        await recordEvent(projectRoot, taskCompletedEventType, {
+        await recordEvent(projectRoot, taskDoneEventType, {
             depth: 1,
             taskId: task.id,
             summary: "Answered: Hono, for Bun.",
@@ -215,11 +218,11 @@ describe("runTask", () => {
 
         const summary =
             "Already read: an earlier task read the thread up to entry #1."
-        expect(result).toEqual({ taskEnding: { state: "succeeded", summary } })
+        expect(result).toEqual({ taskEnding: { state: "done", summary } })
         expect(fakeServer.requests).toHaveLength(0)
         const events = await listEvents(projectRoot)
         const readTaskState = getTaskStates([readTask], events).get(readTask.id)
-        expect(readTaskState).toBe("succeeded")
+        expect(readTaskState).toBe("done")
     })
 
     test("leaves the task running when the provider's API fails", async () => {

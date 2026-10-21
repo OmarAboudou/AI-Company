@@ -12,6 +12,6 @@ export const taskMarkAsDoneTool = defineTool({
     }),
     execute: async ({ summary }) => ({
         text: "Task marked as done.",
-        taskEnding: { state: "succeeded", summary },
+        taskEnding: { state: "done", summary },
     }),
 })

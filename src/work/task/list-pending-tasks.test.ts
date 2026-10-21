@@ -7,11 +7,7 @@ import { saveEmployee } from "../../organization/employee/storage.ts"
 import { savePosition } from "../../organization/position/storage.ts"
 import { createTask } from "./create-task.ts"
 import { listPendingTasks } from "./list-pending-tasks.ts"
-import {
-    type Task,
-    taskCompletedEventType,
-    taskStartedEventType,
-} from "./schema.ts"
+import { type Task, taskDoneEventType, taskStartedEventType } from "./schema.ts"
 
 let projectRoot: string
 
@@ -119,11 +115,11 @@ describe("listPendingTasks", () => {
 
     test("lists a task left running, and not one that ended", async () => {
         const runningTask = await askPosition("backend-developer")
-        const completedTask = await askPosition("backend-developer")
-        await Promise.all([startTask(runningTask), startTask(completedTask)])
-        await recordEvent(projectRoot, taskCompletedEventType, {
+        const doneTask = await askPosition("backend-developer")
+        await Promise.all([startTask(runningTask), startTask(doneTask)])
+        await recordEvent(projectRoot, taskDoneEventType, {
             depth: 1,
-            taskId: completedTask.id,
+            taskId: doneTask.id,
             summary: "Answered.",
         })
 

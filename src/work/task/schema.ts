@@ -70,9 +70,10 @@ export const taskStartedEventType = defineEventType({
     },
 })
 
-export const taskCompletedEventType = defineEventType({
-    type: "task-completed",
-    description: "The task was done.",
+export const taskDoneEventType = defineEventType({
+    type: "task-done",
+    description:
+        "The task was marked as done: whoever worked it says that it is finished.",
     fields: {
         taskId: TaskIdSchema,
         summary: z.string().trim().min(1).meta({
@@ -80,12 +81,12 @@ export const taskCompletedEventType = defineEventType({
         }),
         runId: RunIdSchema.optional().meta({
             description:
-                "Id of the run that completed the task. Absent when it was completed outside a run.",
+                "Id of the run in which the task was marked as done. Absent when it was done outside a run, as when a message from its position marks a catch-up as done.",
         }),
         usage: TokenUsageSchema.optional(),
         lastReadEntryId: IdSchema.optional().meta({
             description:
-                "For a task catching up on a thread: the last of the thread's entries read, i.e. the name of its folder in the thread's messages. The latest of these events among a position's catch-up tasks for a thread is the position's read marker there: it moves only when such a task completes.",
+                "For a task catching up on a thread: the last of the thread's entries read, i.e. the name of its folder in the thread's messages. The latest of these events among a position's catch-up tasks for a thread is the position's read marker there: it moves only when such a task is done.",
         }),
     },
 })

@@ -97,7 +97,7 @@ describe("sendMessage", () => {
         ])
     })
 
-    test("completes what earlier messages asked of its position", async () => {
+    test("marks as done what earlier messages asked of its position", async () => {
         await recordEvent(projectRoot, messageSentEventType, {
             depth: 1,
             threadId,
@@ -117,7 +117,7 @@ describe("sendMessage", () => {
             ({ positionId }) => positionId === "director",
         )
         expect(events.at(-1)).toMatchObject({
-            type: "task-completed",
+            type: "task-done",
             taskId: directorCatchUp?.id,
             lastReadEntryId: message.id,
         })

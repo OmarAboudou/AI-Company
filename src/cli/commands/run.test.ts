@@ -52,7 +52,7 @@ describe("llmco run", () => {
         expect(running.stderr).toContain("Claude runs task")
         expect(running.stderr).toContain("→ message_send\n")
         expect(running.stderr).toContain("← Sent as entry #2 of thread")
-        expect(running.stderr).toContain("Task completed: Answered.")
+        expect(running.stderr).toContain("Task done: Answered.")
         expect(running.stderr).toContain("Tokens: 10 in, 100 read from")
     })
 

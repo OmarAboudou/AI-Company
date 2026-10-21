@@ -58,7 +58,7 @@ async function listTaskStates() {
     return tasks.map(({ id }) => taskStates.get(id))
 }
 
-const completion = {
+const markAsDoneCall = {
     name: "task_mark-as-done",
     input: { summary: "Answered: Hono." },
 }
@@ -71,7 +71,7 @@ describe("runReadyTasks", () => {
     test("runs the task of a mentioned position an LLM works", async () => {
         await sendQuestion("@backend-developer Hono or Express?")
         fakeServer.respondWith({
-            toolCalls: [createAnswer("@director Hono."), completion],
+            toolCalls: [createAnswer("@director Hono."), markAsDoneCall],
         })
 
         const { waitingTasks } = await runFakeTasks()
@@ -81,7 +81,7 @@ describe("runReadyTasks", () => {
             "@backend-developer Hono or Express?",
             "@director Hono.",
         ])
-        expect(await listTaskStates()).toEqual(["succeeded", "waiting"])
+        expect(await listTaskStates()).toEqual(["done", "waiting"])
         expect(waitingTasks).toMatchObject([
             { positionId: "director", reason: "worked-by-directors" },
         ])
@@ -89,7 +89,7 @@ describe("runReadyTasks", () => {
 
     test("reports each task as it starts and ends", async () => {
         await sendQuestion("@backend-developer Hono or Express?")
-        fakeServer.respondWith({ toolCalls: [completion] })
+        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
 
         await runFakeTasks()
 
@@ -105,11 +105,11 @@ describe("runReadyTasks", () => {
     test("runs the tasks its runs create, until none is ready", async () => {
         await sendQuestion("@backend-developer Hono or Express?")
         const testRequest = createAnswer("@qa-tester Can you test Hono?")
-        fakeServer.respondWith({ toolCalls: [testRequest, completion] })
+        fakeServer.respondWith({ toolCalls: [testRequest, markAsDoneCall] })
 
         const { waitingTasks } = await runFakeTasks()
 
-        expect(await listTaskStates()).toEqual(["succeeded", "waiting"])
+        expect(await listTaskStates()).toEqual(["done", "waiting"])
         expect(waitingTasks).toMatchObject([
             { positionId: "qa-tester", reason: "vacant-position" },
         ])
@@ -120,7 +120,7 @@ describe("runReadyTasks", () => {
         await saveCompany(projectRoot, { ...company, maxTaskDepth: 1 })
         await sendQuestion("@backend-developer Hono or Express?")
         const testRequest = createAnswer("@qa-tester Can you test Hono?")
-        fakeServer.respondWith({ toolCalls: [testRequest, completion] })
+        fakeServer.respondWith({ toolCalls: [testRequest, markAsDoneCall] })
 
         const { waitingTasks } = await runFakeTasks()
 
@@ -139,7 +139,7 @@ describe("runReadyTasks", () => {
         await sendQuestion("@backend-developer Hono or Express?")
         fakeServer.respondWith(
             { status: 401, error: "invalid x-api-key" },
-            { toolCalls: [completion] },
+            { toolCalls: [markAsDoneCall] },
         )
 
         const failedRun = runFakeTasks()
@@ -148,6 +148,6 @@ describe("runReadyTasks", () => {
         await expect(failedRun).rejects.toThrow("stays pending")
         expect(await listTaskStates()).toEqual(["running"])
         await runFakeTasks()
-        expect(await listTaskStates()).toEqual(["succeeded"])
+        expect(await listTaskStates()).toEqual(["done"])
     })
 })

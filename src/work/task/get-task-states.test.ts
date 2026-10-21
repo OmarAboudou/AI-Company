@@ -31,9 +31,9 @@ const developerTaskEvents = {
         type: "task-started",
         runId: "20261018-140324-000-1b2c",
     },
-    completed: {
+    done: {
         id: "20261018-140351-000-0a03",
-        type: "task-completed",
+        type: "task-done",
         summary: "Answered: Hono, for Bun.",
     },
     failed: {
@@ -65,10 +65,10 @@ describe("getTaskStates", () => {
         expect(state).toBe("running")
     })
 
-    test("has succeeded once the task is done", () => {
-        const state = getDeveloperTaskState(["created", "started", "completed"])
+    test("is done once marked as done", () => {
+        const state = getDeveloperTaskState(["created", "started", "done"])
 
-        expect(state).toBe("succeeded")
+        expect(state).toBe("done")
     })
 
     test("has failed once the task is given up", () => {
