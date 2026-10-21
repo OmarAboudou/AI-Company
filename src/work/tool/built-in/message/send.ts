@@ -1,14 +1,11 @@
 import { z } from "zod"
 import { readGitCommitter } from "../../../../git/read-git-committer.ts"
 import { createUnsentMessage } from "../../../../messaging/message/create-unsent-message.ts"
+import { formatUnknownMentionMessage } from "../../../../messaging/message/format-unknown-mention-message.ts"
 import { sendUnsentMessage } from "../../../../messaging/message/send-unsent-message.ts"
 import { listMessages } from "../../../../messaging/message/storage.ts"
 import { loadExistingThread } from "../../../../messaging/thread/load-existing-thread.ts"
 import { defineTool } from "../../define-tool.ts"
-
-function formatUnknownMention(mentionId: string): string {
-    return `"@${mentionId}" names no position, so it mentions nobody.`
-}
 
 export const messageSendTool = defineTool({
     description:
@@ -45,7 +42,9 @@ export const messageSendTool = defineTool({
         return {
             text: [
                 `Sent as entry #${entryNumber} of thread ${thread.id}.`,
-                ...unsentMessage.unknownMentionIds.map(formatUnknownMention),
+                ...unsentMessage.unknownMentionIds.map(
+                    formatUnknownMentionMessage,
+                ),
             ].join("\n"),
         }
     },
