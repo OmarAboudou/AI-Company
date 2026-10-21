@@ -8,7 +8,7 @@ import { createEmployee } from "../organization/employee/create-employee.ts"
 import { assignPosition } from "../organization/position/assign-position.ts"
 import { createPosition } from "../organization/position/create-position.ts"
 
-export type AnsweringCompany = { projectRoot: string; threadId: string }
+export type CompanyWithLlmEmployee = { projectRoot: string; threadId: string }
 
 const committer = { name: "Test User", email: "test@example.com" }
 
@@ -33,9 +33,9 @@ async function createLlmEmployee(
     })
 }
 
-export async function createAnsweringCompany(
+export async function createCompanyWithLlmEmployee(
     baseUrl: string,
-): Promise<AnsweringCompany> {
+): Promise<CompanyWithLlmEmployee> {
     const projectRoot = await createTemporaryCompany()
     createGitRepository(projectRoot, committer)
     await Promise.all([
