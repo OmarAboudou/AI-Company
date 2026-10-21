@@ -1,41 +1,48 @@
 import { describe, expect, test } from "bun:test"
+import { z } from "zod"
 import { UserError } from "../user-error.ts"
 import { getEventOfType } from "./get-event-of-type.ts"
-import {
-    type EventOfType,
-    messageSentEventType,
-    taskCreatedEventType,
-} from "./schema.ts"
+import { defineEventType, type EventOfType } from "./schema.ts"
 
-const questionSent: EventOfType<typeof messageSentEventType> = {
+const noteWrittenEventType = defineEventType({
+    type: "note-written",
+    description: "A note was written.",
+    fields: { text: z.string().min(1) },
+})
+
+const noteErasedEventType = defineEventType({
+    type: "note-erased",
+    description: "A note was erased.",
+    fields: {},
+})
+
+const noteWritten: EventOfType<typeof noteWrittenEventType> = {
     id: "20261018-140322-123-5d1e",
-    type: "message-sent",
+    type: "note-written",
     occurredAt: "2026-10-18T14:03:22.123Z",
     depth: 0,
-    threadId: "2026-10-18-choice-of-framework",
-    messageId: "20261018-140322-123-3f9a",
-    mentions: ["backend-developer"],
+    text: "Hono runs on Bun.",
 }
 
 describe("getEventOfType", () => {
     test("gives an event of the type, checked against its schema", () => {
-        const event = getEventOfType(questionSent, messageSentEventType)
+        const event = getEventOfType(noteWritten, noteWrittenEventType)
 
-        expect(event).toEqual(questionSent)
+        expect(event).toEqual(noteWritten)
     })
 
     test("gives nothing for an event of another type", () => {
-        const event = getEventOfType(questionSent, taskCreatedEventType)
+        const event = getEventOfType(noteWritten, noteErasedEventType)
 
         expect(event).toBeUndefined()
     })
 
     test("refuses an event of the type that its schema rejects", () => {
-        const invalidEvent = { ...questionSent, mentions: ["QA Tester"] }
+        const invalidEvent = { ...noteWritten, text: "" }
         const refusalMessage =
             "Invalid .llmco/journal/20261018-140322-123-5d1e.json:"
 
-        const getting = () => getEventOfType(invalidEvent, messageSentEventType)
+        const getting = () => getEventOfType(invalidEvent, noteWrittenEventType)
 
         expect(getting).toThrow(UserError)
         expect(getting).toThrow(refusalMessage)
