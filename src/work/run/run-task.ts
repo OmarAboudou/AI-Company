@@ -84,6 +84,7 @@ async function loadLastReadEntryId(
 
 export async function runTask(
     projectRoot: string,
+    environment: NodeJS.ProcessEnv,
     {
         task,
         position,
@@ -117,7 +118,7 @@ export async function runTask(
     }
     const [{ provider, model, connection, apiKey }, company] =
         await Promise.all([
-            loadAnthropicMessagesModel(projectRoot, employee),
+            loadAnthropicMessagesModel(projectRoot, environment, employee),
             loadCompany(projectRoot),
         ])
     const runId = createTimeOrderedId(readMonotonicTime())

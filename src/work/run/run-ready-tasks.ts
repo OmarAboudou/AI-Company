@@ -29,6 +29,7 @@ export type RunReadyTasksResult = { waitingTasks: WaitingTask[] }
 
 export async function runReadyTasks(
     projectRoot: string,
+    environment: NodeJS.ProcessEnv,
     onProgress: (progress: RunReadyTasksProgress) => void,
 ): Promise<RunReadyTasksResult> {
     await requireCompany(projectRoot)
@@ -53,7 +54,7 @@ export async function runReadyTasks(
         const { task, position, employee } = readyTask
         onProgress({ kind: "task-started", task, position, employee })
         try {
-            const result = await runTask(projectRoot, {
+            const result = await runTask(projectRoot, environment, {
                 task,
                 position,
                 employee,

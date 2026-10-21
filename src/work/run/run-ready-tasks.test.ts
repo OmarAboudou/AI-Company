@@ -12,15 +12,15 @@ import { listTasks } from "../task/storage.ts"
 import { type RunReadyTasksProgress, runReadyTasks } from "./run-ready-tasks.ts"
 
 const fakeServer = useFakeAnthropicServer()
-const variableNames = ["LLMCO_CURRENT_HUMAN_ID", "TEST_ANTHROPIC_KEY"] as const
+const variableNames = ["LLMCO_CURRENT_HUMAN_ID"] as const
 const shellValues = variableNames.map((name) => process.env[name])
+const environment = { TEST_ANTHROPIC_KEY: "sk-test" }
 let projectRoot: string
 let threadId: string
 let progresses: RunReadyTasksProgress[]
 
 beforeEach(async () => {
     delete process.env.LLMCO_CURRENT_HUMAN_ID
-    process.env.TEST_ANTHROPIC_KEY = "sk-test"
     const companyWithLlmEmployee = await createCompanyWithLlmEmployee(
         fakeServer.getUrl(),
     )
@@ -42,7 +42,9 @@ afterEach(async () => {
 })
 
 function runFakeTasks() {
-    return runReadyTasks(projectRoot, (progress) => progresses.push(progress))
+    return runReadyTasks(projectRoot, environment, (progress) =>
+        progresses.push(progress),
+    )
 }
 
 async function sendQuestion(body: string) {
