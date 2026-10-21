@@ -1,6 +1,5 @@
 import type { IdHistory } from "../../ids/id-history-schema.ts"
-import type { JournalEvent } from "../../journal/schema.ts"
-import { listEvents } from "../../journal/storage.ts"
+import type { Journal } from "../../journal/schema.ts"
 import { defaultMaxTaskDepth } from "../../organization/company/schema.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
 import { listPositions } from "../../organization/position/storage.ts"
@@ -9,8 +8,7 @@ import type { ChainStoppedEvent, Task } from "../task/schema.ts"
 import { listTasks } from "../task/storage.ts"
 
 export type Dispatching = {
-    projectRoot: string
-    events: JournalEvent[]
+    journal: Journal
     tasks: Task[]
     taskStates: Map<string, TaskState>
     positions: IdHistory[]
@@ -20,18 +18,15 @@ export type Dispatching = {
     chainStoppedEvents: ChainStoppedEvent[]
 }
 
-export async function loadDispatching(
-    projectRoot: string,
-): Promise<Dispatching> {
-    const [events, tasks, positions, company] = await Promise.all([
-        listEvents(projectRoot),
+export async function loadDispatching(journal: Journal): Promise<Dispatching> {
+    const { projectRoot, events } = journal
+    const [tasks, positions, company] = await Promise.all([
         listTasks(projectRoot),
         listPositions(projectRoot),
         loadCompany(projectRoot),
     ])
     return {
-        projectRoot,
-        events,
+        journal,
         tasks,
         taskStates: getTaskStates(tasks, events),
         positions,

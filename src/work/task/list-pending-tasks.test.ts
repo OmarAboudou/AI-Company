@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { recordEvent } from "../../journal/record-event.ts"
+import { loadJournal } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { saveEmployee } from "../../organization/employee/storage.ts"
@@ -49,7 +50,7 @@ async function askPosition(
 ): Promise<Task> {
     const threadId = "2026-10-18-choice-of-framework"
     const messageSentEvent = await recordEvent(
-        projectRoot,
+        await loadJournal(projectRoot),
         messageSentEventType,
         {
             depth: 0,
@@ -60,11 +61,15 @@ async function askPosition(
         },
     )
     const uncreatedTask = { type, positionId, params: { threadId } }
-    return createTask(projectRoot, uncreatedTask, messageSentEvent)
+    return createTask(
+        await loadJournal(projectRoot),
+        uncreatedTask,
+        messageSentEvent,
+    )
 }
 
 async function startTask(task: Task) {
-    await recordEvent(projectRoot, taskStartedEventType, {
+    await recordEvent(await loadJournal(projectRoot), taskStartedEventType, {
         depth: 1,
         taskId: task.id,
         runId: "20261018-140324-000-1b2c",
@@ -136,7 +141,7 @@ describe("listPendingTasks", () => {
         const runningTask = await askPosition("backend-developer")
         const doneTask = await askPosition("backend-developer")
         await Promise.all([startTask(runningTask), startTask(doneTask)])
-        await recordEvent(projectRoot, taskDoneEventType, {
+        await recordEvent(await loadJournal(projectRoot), taskDoneEventType, {
             depth: 1,
             taskId: doneTask.id,
             summary: "Answered.",

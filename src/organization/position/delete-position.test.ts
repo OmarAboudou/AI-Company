@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { recordEvent } from "../../journal/record-event.ts"
+import { loadJournal } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { UserError } from "../../user-error.ts"
 import { createTask } from "../../work/task/create-task.ts"
@@ -30,7 +31,7 @@ const developer = { id: "developer", title: "Developer", description: "" }
 async function askPosition(positionId: string): Promise<string> {
     const threadId = "2026-10-19-release"
     const messageSentEvent = await recordEvent(
-        projectRoot,
+        await loadJournal(projectRoot),
         messageSentEventType,
         {
             depth: 0,
@@ -45,7 +46,11 @@ async function askPosition(positionId: string): Promise<string> {
         positionId,
         params: { threadId },
     }
-    await createTask(projectRoot, uncreatedTask, messageSentEvent)
+    await createTask(
+        await loadJournal(projectRoot),
+        uncreatedTask,
+        messageSentEvent,
+    )
     return threadId
 }
 

@@ -1,3 +1,4 @@
+import { loadJournal } from "../../journal/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
 import { parseConfig } from "../../parse-config.ts"
 import { builtInListeners } from "../../work/listener/built-in-listeners.ts"
@@ -54,13 +55,14 @@ export async function createThread(
             createdTasks: [],
         }
     }
+    const journal = await loadJournal(projectRoot)
     const firstMessage = await sendUnsentMessage(
-        projectRoot,
+        journal,
         thread.id,
         unsentFirstMessage,
         { depth: 0 },
     )
-    const { createdTasks } = await dispatchEvents(projectRoot, builtInListeners)
+    const { createdTasks } = await dispatchEvents(journal, builtInListeners)
     return {
         thread,
         firstMessage,

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { recordEvent } from "../../journal/record-event.ts"
+import { loadJournal } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { createTask } from "./create-task.ts"
@@ -21,7 +22,7 @@ afterEach(async () => {
 
 async function askPosition(positionId: string, threadId: string) {
     const messageSentEvent = await recordEvent(
-        projectRoot,
+        await loadJournal(projectRoot),
         messageSentEventType,
         {
             depth: 0,
@@ -36,7 +37,11 @@ async function askPosition(positionId: string, threadId: string) {
         positionId,
         params: { threadId },
     }
-    return createTask(projectRoot, uncreatedTask, messageSentEvent)
+    return createTask(
+        await loadJournal(projectRoot),
+        uncreatedTask,
+        messageSentEvent,
+    )
 }
 
 describe("loadPendingPositionIdsByThread", () => {
@@ -59,7 +64,7 @@ describe("loadPendingPositionIdsByThread", () => {
 
     test("leaves out the tasks that ended", async () => {
         const task = await askPosition("qa-tester", frameworkThreadId)
-        await recordEvent(projectRoot, taskFailedEventType, {
+        await recordEvent(await loadJournal(projectRoot), taskFailedEventType, {
             depth: 1,
             taskId: task.id,
             reason: "The thread asks nothing.",

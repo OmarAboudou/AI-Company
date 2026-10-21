@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { recordEvent } from "../../journal/record-event.ts"
 import type { JournalEvent } from "../../journal/schema.ts"
-import { listEvents, saveEvent } from "../../journal/storage.ts"
+import { listEvents, loadJournal, saveEvent } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { loadCompany, saveCompany } from "../../organization/company/storage.ts"
@@ -26,8 +26,8 @@ afterEach(async () => {
 
 const threadId = "2026-10-18-choice-of-framework"
 
-function recordQuestionSent(depth = 0) {
-    return recordEvent(projectRoot, messageSentEventType, {
+async function recordQuestionSent(depth = 0) {
+    return recordEvent(await loadJournal(projectRoot), messageSentEventType, {
         depth,
         threadId,
         messageId: "20261018-140322-123-3f9a",
@@ -44,7 +44,7 @@ async function createInNewDispatching(
     uncreatedTask: UncreatedTask,
     causeEvent: JournalEvent,
 ) {
-    const dispatching = await loadDispatching(projectRoot)
+    const dispatching = await loadDispatching(await loadJournal(projectRoot))
     await createTaskOnce(uncreatedTask, causeEvent, dispatching)
     return dispatching
 }
@@ -79,8 +79,14 @@ describe("createTaskOnce", () => {
 
     test("leaves a task that another process wrote meanwhile", async () => {
         const questionSent = await recordQuestionSent()
-        const dispatching = await loadDispatching(projectRoot)
-        await createTask(projectRoot, createCatchUp(), questionSent)
+        const dispatching = await loadDispatching(
+            await loadJournal(projectRoot),
+        )
+        await createTask(
+            await loadJournal(projectRoot),
+            createCatchUp(),
+            questionSent,
+        )
 
         await createTaskOnce(createCatchUp(), questionSent, dispatching)
 
@@ -214,7 +220,11 @@ describe("createTaskOnce through the positions' id history", () => {
 
     test("recognizes the task asked before the position was renamed", async () => {
         const askedTask = createCatchUp("backend-developer")
-        await createTask(projectRoot, askedTask, questionSent)
+        await createTask(
+            await loadJournal(projectRoot),
+            askedTask,
+            questionSent,
+        )
 
         const { createdTasks } = await createInNewDispatching(
             askedTask,

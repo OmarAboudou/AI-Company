@@ -36,7 +36,7 @@ export const messageSendTool = defineTool({
             body,
         )
         const message = await sendUnsentMessage(
-            projectRoot,
+            ctx.journal,
             thread.id,
             unsentMessage,
             { depth: ctx.taskDepth, runId: ctx.runId },

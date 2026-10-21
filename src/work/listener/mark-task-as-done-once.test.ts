@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { z } from "zod"
 import { recordEvent } from "../../journal/record-event.ts"
-import { listEvents } from "../../journal/storage.ts"
+import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { createTask } from "../task/create-task.ts"
@@ -18,19 +18,27 @@ let catchUp: Task
 
 beforeEach(async () => {
     projectRoot = await createTemporaryCompany()
-    const questionSent = await recordEvent(projectRoot, messageSentEventType, {
-        depth: 0,
-        threadId,
-        messageId: "20261018-140322-123-3f9a",
-        positionId: "director",
-        mentions: ["qa-tester"],
-    })
+    const questionSent = await recordEvent(
+        await loadJournal(projectRoot),
+        messageSentEventType,
+        {
+            depth: 0,
+            threadId,
+            messageId: "20261018-140322-123-3f9a",
+            positionId: "director",
+            mentions: ["qa-tester"],
+        },
+    )
     const uncreatedTask = {
         type: "catch-up-thread",
         positionId: "qa-tester",
         params: { threadId },
     }
-    catchUp = await createTask(projectRoot, uncreatedTask, questionSent)
+    catchUp = await createTask(
+        await loadJournal(projectRoot),
+        uncreatedTask,
+        questionSent,
+    )
 })
 
 afterEach(async () => {
@@ -49,7 +57,7 @@ function createMarking(
 }
 
 async function markInNewDispatching(marking = createMarking()) {
-    const dispatching = await loadDispatching(projectRoot)
+    const dispatching = await loadDispatching(await loadJournal(projectRoot))
     await markTaskAsDoneOnce(marking, dispatching)
     return dispatching
 }
@@ -84,7 +92,7 @@ describe("markTaskAsDoneOnce", () => {
     })
 
     test("leaves a task that already ended", async () => {
-        await recordEvent(projectRoot, taskFailedEventType, {
+        await recordEvent(await loadJournal(projectRoot), taskFailedEventType, {
             depth: 1,
             taskId: catchUp.id,
             reason: "The thread asks nothing.",

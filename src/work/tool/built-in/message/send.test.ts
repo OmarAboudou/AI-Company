@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
-import { listEvents } from "../../../../journal/storage.ts"
+import { listEvents, loadJournal } from "../../../../journal/storage.ts"
 import { listMessages } from "../../../../messaging/message/storage.ts"
 import { loadEmployee } from "../../../../organization/employee/storage.ts"
 import { loadPosition } from "../../../../organization/position/storage.ts"
@@ -20,13 +20,15 @@ beforeEach(async () => {
         await createCompanyWithLlmEmployee("http://127.0.0.1")
     projectRoot = companyWithLlmEmployee.projectRoot
     threadId = companyWithLlmEmployee.threadId
-    const [position, employee] = await Promise.all([
+    const [position, employee, journal] = await Promise.all([
         loadPosition(projectRoot, "backend-developer"),
         loadEmployee(projectRoot, "claude"),
+        loadJournal(projectRoot),
     ])
     ctx = {
         ...exampleToolContext,
         projectRoot,
+        journal,
         taskDepth: 3,
         position,
         employee,

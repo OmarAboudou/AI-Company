@@ -4,13 +4,15 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { z } from "zod"
 import { recordEvent } from "./record-event.ts"
-import { defineEventType } from "./schema.ts"
-import { listEvents } from "./storage.ts"
+import { defineEventType, type Journal } from "./schema.ts"
+import { listEvents, loadJournal } from "./storage.ts"
 
 let projectRoot: string
+let journal: Journal
 
 beforeEach(async () => {
     projectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
+    journal = await loadJournal(projectRoot)
 })
 
 afterEach(async () => {
@@ -26,7 +28,7 @@ const noteWrittenEventType = defineEventType({
 const noteWritten = { depth: 0, text: "Hono runs on Bun." }
 
 function recordNoteWritten() {
-    return recordEvent(projectRoot, noteWrittenEventType, noteWritten)
+    return recordEvent(journal, noteWrittenEventType, noteWritten)
 }
 
 describe("recordEvent", () => {
@@ -40,24 +42,31 @@ describe("recordEvent", () => {
         expect(await listEvents(projectRoot)).toEqual([event])
     })
 
+    test("adds the event to the journal's view", async () => {
+        const event = await recordNoteWritten()
+
+        expect(journal.events).toEqual([event])
+    })
+
     test("refuses an event that its type's schema rejects", async () => {
         const invalidNoteWritten = { ...noteWritten, text: "" }
 
         const recording = recordEvent(
-            projectRoot,
+            journal,
             noteWrittenEventType,
             invalidNoteWritten,
         )
 
         await expect(recording).rejects.toThrow("Too small")
         expect(await listEvents(projectRoot)).toEqual([])
+        expect(journal.events).toEqual([])
     })
 
     test("refuses a field that its type doesn't define", async () => {
         const noteWrittenWithPriority = { ...noteWritten, priority: "high" }
 
         const recording = recordEvent(
-            projectRoot,
+            journal,
             noteWrittenEventType,
             noteWrittenWithPriority,
         )

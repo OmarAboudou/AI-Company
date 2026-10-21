@@ -3,7 +3,7 @@ import { rm } from "node:fs/promises"
 import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import { recordEvent } from "../../journal/record-event.ts"
 import type { EventType, JournalEvent } from "../../journal/schema.ts"
-import { listEvents } from "../../journal/storage.ts"
+import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
 import { sendMessage } from "../../messaging/message/send-message.ts"
 import { listMessages } from "../../messaging/message/storage.ts"
@@ -63,12 +63,12 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-function runFakeTask(
+async function runFakeTask(
     taskToRun: Task = task,
     runEnvironment: NodeJS.ProcessEnv = environment,
 ) {
     const onProgress = () => {}
-    return runTask(projectRoot, runEnvironment, {
+    return runTask(await loadJournal(projectRoot), runEnvironment, {
         task: taskToRun,
         position,
         employee,
@@ -211,7 +211,7 @@ describe("runTask", () => {
     test("marks as done a task whose cause was read, without a run", async () => {
         const followUp = await askDeveloper("And the database?")
         const readTask = followUp.catchUp
-        await recordEvent(projectRoot, taskDoneEventType, {
+        await recordEvent(await loadJournal(projectRoot), taskDoneEventType, {
             depth: 1,
             taskId: task.id,
             summary: "Answered both.",

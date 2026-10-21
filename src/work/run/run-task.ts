@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { createTimeOrderedId } from "../../ids/create-time-ordered-id.ts"
 import { recordEvent } from "../../journal/record-event.ts"
+import type { Journal } from "../../journal/schema.ts"
 import { loadEvent } from "../../journal/storage.ts"
 import { loadAnthropicMessagesModel } from "../../llm/anthropic-messages/load-anthropic-messages-model.ts"
 import type { TokenUsage } from "../../llm/conversation/schema.ts"
@@ -74,7 +75,7 @@ function parseTaskParams(task: Task, taskType: TaskType): unknown {
 }
 
 export async function runTask(
-    projectRoot: string,
+    journal: Journal,
     environment: NodeJS.ProcessEnv,
     {
         task,
@@ -88,6 +89,7 @@ export async function runTask(
         onProgress: (progress: RunProgress) => void
     },
 ): Promise<RunTaskResult> {
+    const { projectRoot } = journal
     const taskType = requireTaskType(task)
     const params = parseTaskParams(task, taskType)
     const causeEvent = await loadEvent(projectRoot, task.causeEventId)
@@ -96,7 +98,7 @@ export async function runTask(
     const session = await taskType.createSession(params, ctx)
     if (session.kind === "done") {
         const { summary } = session
-        await recordEvent(projectRoot, taskDoneEventType, {
+        await recordEvent(journal, taskDoneEventType, {
             depth: taskDepth,
             taskId: task.id,
             summary,
@@ -110,7 +112,7 @@ export async function runTask(
             loadCompany(projectRoot),
         ])
     const runId = createTimeOrderedId(readMonotonicTime())
-    await recordEvent(projectRoot, taskStartedEventType, {
+    await recordEvent(journal, taskStartedEventType, {
         depth: taskDepth,
         taskId: task.id,
         runId,
@@ -118,7 +120,15 @@ export async function runTask(
         model: { providerId: provider.id, modelId: model.id },
     })
     const { taskEnding, usage } = await runToolLoop({
-        ctx: { projectRoot, task, taskDepth, position, employee, runId },
+        ctx: {
+            projectRoot,
+            journal,
+            task,
+            taskDepth,
+            position,
+            employee,
+            runId,
+        },
         connection,
         apiKey,
         apiId: model.apiId,
@@ -138,13 +148,13 @@ export async function runTask(
                       { runId, sessionResult },
                       ctx,
                   )
-        await recordEvent(projectRoot, taskDoneEventType, {
+        await recordEvent(journal, taskDoneEventType, {
             ...runEnd,
             summary: taskEnding.summary,
             result: taskType.resultSchema.parse(result),
         })
     } else {
-        await recordEvent(projectRoot, taskFailedEventType, {
+        await recordEvent(journal, taskFailedEventType, {
             ...runEnd,
             reason: taskEnding.reason,
         })
