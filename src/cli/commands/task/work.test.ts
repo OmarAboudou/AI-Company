@@ -13,6 +13,7 @@ const { startCliWithEnv, getProjectPath } = useTemporaryProject()
 
 const enterKey = "\r"
 const downKey = "\x1b[B"
+const ctrlCKey = "\x03"
 const ctrlDKey = "\x04"
 
 const sessionTimeoutMs = 30_000
@@ -60,7 +61,7 @@ function startJulieSession(editorText = "@director Yes.") {
 
 describe("llmco task work", () => {
     test(
-        "works a task as the person answers, then waits until Ctrl+D",
+        "works a task as the person answers, then waits until Ctrl+C",
         async () => {
             await askTester()
             const session = startJulieSession("@director Yes, the tests pass.")
@@ -84,8 +85,10 @@ describe("llmco task work", () => {
             await session.waitForOutput("Turn 1: what now?")
             session.write(`${downKey.repeat(4)}${enterKey}`)
             await session.waitForOutput("\nTask done: Answered.\n")
-            await session.waitForOutput("Waiting for your next task.")
-            session.write(ctrlDKey)
+            await session.waitForOutput(
+                "Waiting for your next task. Ctrl+C to stop.",
+            )
+            session.write(ctrlCKey)
             const { exitCode, stdout } = await session.exited()
 
             const [, answer] = await listMessages(getProjectPath(), threadId)
@@ -118,9 +121,10 @@ describe("llmco task work", () => {
                 "Your turn is empty: call a tool or write a text.",
             )
             session.write(ctrlDKey)
-            const { exitCode } = await session.exited()
+            const { exitCode, stdout } = await session.exited()
 
             expect(exitCode).toBe(0)
+            expect(stdout).toEndWith("\nSession ended.\n")
         },
         sessionTimeoutMs,
     )
@@ -135,7 +139,22 @@ describe("llmco task work", () => {
 
             await session.waitForOutput('Task "')
             await session.waitForOutput("Turn 1: what now?")
-            session.write(ctrlDKey)
+            session.write(ctrlCKey)
+            const { exitCode, stdout } = await session.exited()
+            expect(exitCode).toBe(0)
+            expect(stdout).toEndWith("\nSession ended.\n")
+        },
+        sessionTimeoutMs,
+    )
+
+    test(
+        "ends on the SIGINT a terminal sends for Ctrl+C between questions",
+        async () => {
+            const session = startJulieSession()
+            await session.waitForOutput("Waiting for your next task.")
+
+            session.process.kill("SIGINT")
+
             const { exitCode, stdout } = await session.exited()
             expect(exitCode).toBe(0)
             expect(stdout).toEndWith("\nSession ended.\n")

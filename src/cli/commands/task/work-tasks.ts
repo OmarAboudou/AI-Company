@@ -32,7 +32,7 @@ async function workTasksUntilStopped(
                 continue
             }
             if (!isWaiting) {
-                console.log("\nWaiting for your next task. Ctrl+D to stop.")
+                console.log("\nWaiting for your next task. Ctrl+C to stop.")
                 isWaiting = true
             }
             stop.listenWhileWaiting()
@@ -61,10 +61,6 @@ export async function workTasks(
         }
     } finally {
         stop.dispose()
-    }
-    if (stop.isInterrupted()) {
-        process.exitCode = 130
-        return
     }
     console.log("\nSession ended.")
 }

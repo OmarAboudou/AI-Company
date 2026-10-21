@@ -5,22 +5,35 @@ type Keypress = { ctrl?: boolean; name?: string }
 export type SessionStop = {
     signal: AbortSignal
     stopped: Promise<void>
-    isInterrupted(): boolean
     listenWhileWaiting(): void
     dispose(): void
+}
+
+function isStopKey(key: Keypress | undefined): boolean {
+    return key?.ctrl === true && (key.name === "c" || key.name === "d")
 }
 
 export function createSessionStop(input: NodeJS.ReadStream): SessionStop {
     const controller = new AbortController()
     const onKeypress = (_: unknown, key: Keypress | undefined) => {
-        if (key?.ctrl === true && (key.name === "d" || key.name === "c")) {
-            controller.abort(key.name === "c" ? "interrupt" : "stop")
+        if (isStopKey(key)) {
+            controller.abort()
         }
     }
-    const onEnd = () => controller.abort("stop")
+    const onEnd = () => controller.abort()
+    // While llmco works between two questions, the terminal turns Ctrl+C
+    // into SIGINT: the session ends once that work is done, and a second
+    // Ctrl+C ends it at once, should that work hang.
+    const onInterrupt = () => {
+        if (controller.signal.aborted) {
+            process.exit(130)
+        }
+        controller.abort()
+    }
     emitKeypressEvents(input)
     input.on("keypress", onKeypress)
     input.on("end", onEnd)
+    process.on("SIGINT", onInterrupt)
     const stopped = new Promise<void>((resolve) => {
         controller.signal.addEventListener("abort", () => resolve(), {
             once: true,
@@ -29,9 +42,8 @@ export function createSessionStop(input: NodeJS.ReadStream): SessionStop {
     return {
         signal: controller.signal,
         stopped,
-        isInterrupted: () => controller.signal.reason === "interrupt",
         // Between questions, Inquirer leaves the terminal in line mode,
-        // where Ctrl+D only ends a line that was typed first.
+        // where Ctrl+D only ends an empty line and the keys pressed show.
         listenWhileWaiting: () => {
             if (input.isTTY) {
                 input.setRawMode(true)
@@ -41,6 +53,7 @@ export function createSessionStop(input: NodeJS.ReadStream): SessionStop {
         dispose: () => {
             input.off("keypress", onKeypress)
             input.off("end", onEnd)
+            process.off("SIGINT", onInterrupt)
             if (input.isTTY) {
                 input.setRawMode(false)
             }
