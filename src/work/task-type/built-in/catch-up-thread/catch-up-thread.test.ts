@@ -14,7 +14,7 @@ import { createTemporaryCompany } from "../../../../organization/company/create-
 import type { Position } from "../../../../organization/position/schema.ts"
 import { savePosition } from "../../../../organization/position/storage.ts"
 import { createTask } from "../../../task/create-task.ts"
-import { type Task, taskCompletedEventType } from "../../../task/schema.ts"
+import { type Task, taskDoneEventType } from "../../../task/schema.ts"
 import { catchUpThreadTaskType } from "./catch-up-thread.ts"
 
 const variableName = "LLMCO_CURRENT_HUMAN_ID"
@@ -67,8 +67,8 @@ async function createCatchUp(causeEvent: JournalEvent): Promise<Task> {
     return createTask(projectRoot, uncreatedTask, causeEvent)
 }
 
-async function completeCatchUp(task: Task, lastReadEntryId: string) {
-    await recordEvent(projectRoot, taskCompletedEventType, {
+async function markCatchUpAsDone(task: Task, lastReadEntryId: string) {
+    await recordEvent(projectRoot, taskDoneEventType, {
         depth: 1,
         taskId: task.id,
         summary: "Answered.",
@@ -105,7 +105,7 @@ describe("catch-up-thread", () => {
 
     test("gives only the entries after the position's read marker", async () => {
         const question = await askDeveloper("Hono or Express?")
-        await completeCatchUp(question.catchUp, question.messageId)
+        await markCatchUpAsDone(question.catchUp, question.messageId)
         const followUp = await askDeveloper("And the database?")
         const secondTask = followUp.catchUp
 
@@ -122,10 +122,10 @@ describe("catch-up-thread", () => {
         })
     })
 
-    test("completes at once when an earlier task read its cause", async () => {
+    test("is done at once when an earlier task read its cause", async () => {
         const question = await askDeveloper("Hono or Express?")
         const followUp = await askDeveloper("And the database?")
-        await completeCatchUp(question.catchUp, followUp.messageId)
+        await markCatchUpAsDone(question.catchUp, followUp.messageId)
         const secondTask = followUp.catchUp
 
         const session = await createSession(secondTask)
@@ -137,7 +137,7 @@ describe("catch-up-thread", () => {
         })
     })
 
-    test("completes at once when the asking message was never written", async () => {
+    test("is done at once when the asking message was never written", async () => {
         await askDeveloper("Hono or Express?")
         const unwrittenMessageSent = await recordEvent(
             projectRoot,
@@ -159,9 +159,9 @@ describe("catch-up-thread", () => {
         })
     })
 
-    test("completes at once when nothing is unread", async () => {
+    test("is done at once when nothing is unread", async () => {
         const question = await askDeveloper("Hono or Express?")
-        await completeCatchUp(question.catchUp, question.messageId)
+        await markCatchUpAsDone(question.catchUp, question.messageId)
         const remindedEvent = await recordEvent(
             projectRoot,
             remindedEventType,

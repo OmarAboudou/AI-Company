@@ -10,9 +10,9 @@ import {
 import { createTemporaryCompany } from "../../../../organization/company/create-temporary-company.ts"
 import { createTask } from "../../../task/create-task.ts"
 import { getTaskStates } from "../../../task/get-task-states.ts"
-import { type Task, taskCompletedEventType } from "../../../task/schema.ts"
+import { type Task, taskDoneEventType } from "../../../task/schema.ts"
 import { listTasks } from "../../../task/storage.ts"
-import { completeCatchUps } from "./complete-catch-ups.ts"
+import { markCatchUpsAsDone } from "./mark-catch-ups-as-done.ts"
 
 const threadId = "2026-10-18-choice-of-framework"
 let projectRoot: string
@@ -60,21 +60,21 @@ async function listStates(tasks: Task[]) {
     return tasks.map(({ id }) => taskStates.get(id))
 }
 
-describe("completeCatchUps", () => {
-    test("completes the position's catch-ups of the thread, read up to its message", async () => {
+describe("markCatchUpsAsDone", () => {
+    test("marks the position's catch-ups of the thread as done, read up to its message", async () => {
         const catchUp = await askPosition("director")
 
-        const completedTasks = await completeCatchUps(projectRoot, {
+        const doneTasks = await markCatchUpsAsDone(projectRoot, {
             positionId: "director",
             message: answer,
         })
 
         const events = await listEvents(projectRoot)
-        const taskCompletedEvent = events
-            .map((event) => getEventOfType(event, taskCompletedEventType))
+        const taskDoneEvent = events
+            .map((event) => getEventOfType(event, taskDoneEventType))
             .find(Boolean)
-        expect(completedTasks).toEqual([catchUp])
-        expect(taskCompletedEvent).toMatchObject({
+        expect(doneTasks).toEqual([catchUp])
+        expect(taskDoneEvent).toMatchObject({
             depth: 3,
             taskId: catchUp.id,
             lastReadEntryId: answer.id,
@@ -85,7 +85,7 @@ describe("completeCatchUps", () => {
         const testerCatchUp = await askPosition("qa-tester")
         const budgetCatchUp = await askPosition("director", "2026-10-18-budget")
 
-        await completeCatchUps(projectRoot, {
+        await markCatchUpsAsDone(projectRoot, {
             positionId: "director",
             message: answer,
         })
@@ -96,17 +96,17 @@ describe("completeCatchUps", () => {
 
     test("leaves a catch-up that already ended", async () => {
         const catchUp = await askPosition("director")
-        await recordEvent(projectRoot, taskCompletedEventType, {
+        await recordEvent(projectRoot, taskDoneEventType, {
             depth: 3,
             taskId: catchUp.id,
             summary: "Answered.",
         })
 
-        const completedTasks = await completeCatchUps(projectRoot, {
+        const doneTasks = await markCatchUpsAsDone(projectRoot, {
             positionId: "director",
             message: answer,
         })
 
-        expect(completedTasks).toEqual([])
+        expect(doneTasks).toEqual([])
     })
 })

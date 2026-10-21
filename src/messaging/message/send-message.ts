@@ -2,7 +2,7 @@ import { requireCompany } from "../../organization/company/require-company.ts"
 import { builtInListeners } from "../../work/listener/built-in-listeners.ts"
 import { dispatchEvents } from "../../work/listener/dispatch-events.ts"
 import type { Task } from "../../work/task/schema.ts"
-import { completeCatchUps } from "../../work/task-type/built-in/catch-up-thread/complete-catch-ups.ts"
+import { markCatchUpsAsDone } from "../../work/task-type/built-in/catch-up-thread/mark-catch-ups-as-done.ts"
 import { loadExistingThread } from "../thread/load-existing-thread.ts"
 import { createUnsentMessage } from "./create-unsent-message.ts"
 import { readCurrentAuthor } from "./read-current-author.ts"
@@ -30,7 +30,7 @@ export async function sendMessage(
     })
     const unsentMessage = await createUnsentMessage(projectRoot, author, body)
     // The catch-ups that earlier messages ask of the author must exist for
-    // this message to complete them.
+    // this message to mark them as done.
     await dispatchEvents(projectRoot, builtInListeners)
     const message = await sendUnsentMessage(
         projectRoot,
@@ -38,7 +38,7 @@ export async function sendMessage(
         unsentMessage,
         { depth: 0 },
     )
-    await completeCatchUps(projectRoot, {
+    await markCatchUpsAsDone(projectRoot, {
         positionId: author.position.id,
         message,
     })

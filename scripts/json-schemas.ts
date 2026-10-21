@@ -18,8 +18,8 @@ import { DispatchedEventsSchema } from "../src/work/listener/schema.ts"
 import {
     chainStoppedEventType,
     TaskSchema,
-    taskCompletedEventType,
     taskCreatedEventType,
+    taskDoneEventType,
     taskFailedEventType,
     taskStartedEventType,
 } from "../src/work/task/schema.ts"
@@ -32,7 +32,7 @@ const BuiltInEventSchema = z
         messageSentEventType.schema,
         taskCreatedEventType.schema,
         taskStartedEventType.schema,
-        taskCompletedEventType.schema,
+        taskDoneEventType.schema,
         taskFailedEventType.schema,
         chainStoppedEventType.schema,
     ])

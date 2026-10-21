@@ -11,7 +11,7 @@ import { readMonotonicTime } from "../../read-monotonic-time.ts"
 import { UserError } from "../../user-error.ts"
 import {
     type Task,
-    taskCompletedEventType,
+    taskDoneEventType,
     taskFailedEventType,
     taskStartedEventType,
 } from "../task/schema.ts"
@@ -108,12 +108,12 @@ export async function runTask(
     })
     if (session.kind === "done") {
         const { summary } = session
-        await recordEvent(projectRoot, taskCompletedEventType, {
+        await recordEvent(projectRoot, taskDoneEventType, {
             depth: taskDepth,
             taskId: task.id,
             summary,
         })
-        return { taskEnding: { state: "succeeded", summary } }
+        return { taskEnding: { state: "done", summary } }
     }
     const [{ provider, model, connection, apiKey }, company] =
         await Promise.all([
@@ -139,12 +139,12 @@ export async function runTask(
         onProgress,
     })
     const runEnd = { depth: taskDepth, taskId: task.id, runId, usage }
-    if (taskEnding.state === "succeeded") {
+    if (taskEnding.state === "done") {
         const { lastShownEntry } = session
         const lastReadEntryId =
             lastShownEntry &&
             (await loadLastReadEntryId(projectRoot, runId, lastShownEntry))
-        await recordEvent(projectRoot, taskCompletedEventType, {
+        await recordEvent(projectRoot, taskDoneEventType, {
             ...runEnd,
             summary: taskEnding.summary,
             ...(lastReadEntryId !== undefined && { lastReadEntryId }),

@@ -2,7 +2,7 @@ import type { IdHistory } from "../../../../ids/id-history-schema.ts"
 import { getEventOfType } from "../../../../journal/get-event-of-type.ts"
 import type { JournalEvent } from "../../../../journal/schema.ts"
 import { getTaskPositionId } from "../../../task/get-task-position-id.ts"
-import { type Task, taskCompletedEventType } from "../../../task/schema.ts"
+import { type Task, taskDoneEventType } from "../../../task/schema.ts"
 
 export function getLastReadEntryId(
     tasks: Task[],
@@ -22,12 +22,12 @@ export function getLastReadEntryId(
     )
     let lastReadEntryId: string | undefined
     for (const event of events) {
-        const taskCompletedEvent = getEventOfType(event, taskCompletedEventType)
+        const taskDoneEvent = getEventOfType(event, taskDoneEventType)
         if (
-            taskCompletedEvent?.lastReadEntryId !== undefined &&
-            catchUpTaskIds.has(taskCompletedEvent.taskId)
+            taskDoneEvent?.lastReadEntryId !== undefined &&
+            catchUpTaskIds.has(taskDoneEvent.taskId)
         ) {
-            lastReadEntryId = taskCompletedEvent.lastReadEntryId
+            lastReadEntryId = taskDoneEvent.lastReadEntryId
         }
     }
     return lastReadEntryId

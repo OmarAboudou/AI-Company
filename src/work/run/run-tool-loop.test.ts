@@ -47,7 +47,7 @@ const tools = {
     "task_mark-as-failed": taskMarkAsFailedTool,
 }
 
-const completion = {
+const markAsDoneCall = {
     name: "task_mark-as-done",
     input: { summary: "Wrote the notes." },
 }
@@ -71,7 +71,7 @@ function getRequestTurns(requestIndex: number) {
 
 describe("runToolLoop", () => {
     test("starts a fresh conversation: system prompt, tools, task's message", async () => {
-        fakeServer.respondWith({ toolCalls: [completion] })
+        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
 
         await runFakeLoop()
 
@@ -94,7 +94,7 @@ describe("runToolLoop", () => {
                     { name: "note_write", input: { text: "second" } },
                 ],
             },
-            { toolCalls: [completion] },
+            { toolCalls: [markAsDoneCall] },
         )
 
         await runFakeLoop()
@@ -107,18 +107,18 @@ describe("runToolLoop", () => {
         ])
     })
 
-    test("ends after the turn that completes the task, calling no model", async () => {
+    test("ends after the turn that marks the task as done, calling no model", async () => {
         fakeServer.respondWith({
             toolCalls: [
                 { name: "note_write", input: { text: "first" } },
-                completion,
+                markAsDoneCall,
             ],
         })
 
         const { taskEnding } = await runFakeLoop()
 
         expect(taskEnding).toEqual({
-            state: "succeeded",
+            state: "done",
             summary: "Wrote the notes.",
         })
         expect(fakeServer.requests).toHaveLength(1)
@@ -139,20 +139,20 @@ describe("runToolLoop", () => {
     test("gives a refused call back as an error, and goes on", async () => {
         fakeServer.respondWith(
             { toolCalls: [{ name: "note_write", input: {} }] },
-            { toolCalls: [completion] },
+            { toolCalls: [markAsDoneCall] },
         )
 
         const { taskEnding } = await runFakeLoop()
 
         const [toolResult] = getRequestTurns(1).at(-1)?.content ?? []
         expect(toolResult?.is_error).toBe(true)
-        expect(taskEnding.state).toBe("succeeded")
+        expect(taskEnding.state).toBe("done")
     })
 
     test("sums the tokens of the run's requests", async () => {
         fakeServer.respondWith(
             { toolCalls: [{ name: "note_write", input: { text: "first" } }] },
-            { toolCalls: [completion] },
+            { toolCalls: [markAsDoneCall] },
         )
 
         const { usage } = await runFakeLoop()
@@ -166,7 +166,7 @@ describe("runToolLoop", () => {
     })
 
     test("keeps the transcript, line by line", async () => {
-        fakeServer.respondWith({ toolCalls: [completion] })
+        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
 
         await runFakeLoop()
 
@@ -181,10 +181,10 @@ describe("runToolLoop", () => {
 })
 
 describe("runToolLoop after a turn without any tool call", () => {
-    test("reminds the model to complete or fail its task", async () => {
+    test("reminds the model to mark its task as done or failed", async () => {
         fakeServer.respondWith(
             { text: "I wrote the notes." },
-            { toolCalls: [completion] },
+            { toolCalls: [markAsDoneCall] },
         )
         const progresses: RunProgress[] = []
 
@@ -200,7 +200,7 @@ describe("runToolLoop after a turn without any tool call", () => {
             content: [{ type: "text", text: reminderText }],
         })
         expect(progresses).toContainEqual(reminderProgress)
-        expect(taskEnding.state).toBe("succeeded")
+        expect(taskEnding.state).toBe("done")
     })
 
     test("fails the task after a second one", async () => {

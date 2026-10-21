@@ -5,10 +5,10 @@ import { listPositions } from "../../../../organization/position/storage.ts"
 import { getTaskPositionId } from "../../../task/get-task-position-id.ts"
 import { getTaskStates } from "../../../task/get-task-states.ts"
 import { isPendingTask } from "../../../task/is-pending-task.ts"
-import { type Task, taskCompletedEventType } from "../../../task/schema.ts"
+import { type Task, taskDoneEventType } from "../../../task/schema.ts"
 import { listTasks } from "../../../task/storage.ts"
 
-export async function completeCatchUps(
+export async function markCatchUpsAsDone(
     projectRoot: string,
     { positionId, message }: { positionId: string; message: Message },
 ): Promise<Task[]> {
@@ -27,7 +27,7 @@ export async function completeCatchUps(
     )
     for (const task of catchUps) {
         const causeEvent = await loadEvent(projectRoot, task.causeEventId)
-        await recordEvent(projectRoot, taskCompletedEventType, {
+        await recordEvent(projectRoot, taskDoneEventType, {
             depth: causeEvent.depth + 1,
             taskId: task.id,
             summary: "Sent a message in the thread.",

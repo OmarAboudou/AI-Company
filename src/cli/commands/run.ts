@@ -24,8 +24,8 @@ function formatUsage(usage: TokenUsage): string {
 
 function formatTaskEnd({ taskEnding, run }: RunTaskResult): string[] {
     const endLine =
-        taskEnding.state === "succeeded"
-            ? `Task completed: ${taskEnding.summary}`
+        taskEnding.state === "done"
+            ? `Task done: ${taskEnding.summary}`
             : `Task failed: ${taskEnding.reason}`
     return run === undefined
         ? [`${endLine} No model was called.`]

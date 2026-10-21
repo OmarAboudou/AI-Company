@@ -3,8 +3,8 @@ import type { EventType } from "../../journal/schema.ts"
 import {
     chainStoppedEventType,
     TaskSchema,
-    taskCompletedEventType,
     taskCreatedEventType,
+    taskDoneEventType,
     taskFailedEventType,
     taskStartedEventType,
 } from "./schema.ts"
@@ -59,7 +59,7 @@ describe("the task event types", () => {
     test.each([
         [taskCreatedEventType, {}],
         [taskStartedEventType, { runId }],
-        [taskCompletedEventType, { summary: "Answered: Hono, for Bun." }],
+        [taskDoneEventType, { summary: "Answered: Hono, for Bun." }],
         [taskFailedEventType, { reason: "The thread asks nothing." }],
     ])("accept their events, with the task's id", (eventType, fields) => {
         const event = { ...taskEvent, type: eventType.type, ...fields }
@@ -67,10 +67,10 @@ describe("the task event types", () => {
         expect(isAcceptedBy(eventType, event)).toBe(true)
     })
 
-    test("require a summary to complete a task", () => {
-        const event = { ...taskEvent, type: "task-completed", summary: " " }
+    test("require a summary to mark a task as done", () => {
+        const event = { ...taskEvent, type: "task-done", summary: " " }
 
-        expect(isAcceptedBy(taskCompletedEventType, event)).toBe(false)
+        expect(isAcceptedBy(taskDoneEventType, event)).toBe(false)
     })
 
     test("require a reason to give a task up", () => {
@@ -100,10 +100,10 @@ describe("the task event types", () => {
             cacheCreationInputTokens: 800,
         }
         const summary = "Answered: Hono, for Bun."
-        const event = { ...taskEvent, type: "task-completed", summary }
+        const event = { ...taskEvent, type: "task-done", summary }
 
         const runEnd = { ...event, runId, usage }
-        expect(isAcceptedBy(taskCompletedEventType, runEnd)).toBe(true)
+        expect(isAcceptedBy(taskDoneEventType, runEnd)).toBe(true)
     })
 })
 

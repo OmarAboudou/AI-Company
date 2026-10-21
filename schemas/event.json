@@ -144,7 +144,7 @@
         {
             "type": "object",
             "properties": {
-                "type": { "type": "string", "const": "task-completed" },
+                "type": { "type": "string", "const": "task-done" },
                 "occurredAt": {
                     "type": "string",
                     "format": "date-time",
@@ -169,7 +169,7 @@
                     "description": "What was done, as whoever did it sums it up."
                 },
                 "runId": {
-                    "description": "Id of the run that completed the task. Absent when it was completed outside a run.",
+                    "description": "Id of the run in which the task was marked as done. Absent when it was done outside a run, as when a message from its position marks a catch-up as done.",
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
@@ -208,7 +208,7 @@
                     "description": "The tokens that the run's requests used, as the provider counted them: the input tokens read from the prompt cache and those written to it count apart from the others, at their own prices."
                 },
                 "lastReadEntryId": {
-                    "description": "For a task catching up on a thread: the last of the thread's entries read, i.e. the name of its folder in the thread's messages. The latest of these events among a position's catch-up tasks for a thread is the position's read marker there: it moves only when such a task completes.",
+                    "description": "For a task catching up on a thread: the last of the thread's entries read, i.e. the name of its folder in the thread's messages. The latest of these events among a position's catch-up tasks for a thread is the position's read marker there: it moves only when such a task is done.",
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
@@ -216,7 +216,7 @@
             },
             "required": ["type", "occurredAt", "depth", "taskId", "summary"],
             "additionalProperties": false,
-            "description": "The task was done."
+            "description": "The task was marked as done: whoever worked it says that it is finished."
         },
         {
             "type": "object",

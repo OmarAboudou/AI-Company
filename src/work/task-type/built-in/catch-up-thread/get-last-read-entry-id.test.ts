@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import type { EventOfType } from "../../../../journal/schema.ts"
-import type { Task, taskCompletedEventType } from "../../../task/schema.ts"
+import type { Task, taskDoneEventType } from "../../../task/schema.ts"
 import { getLastReadEntryId } from "./get-last-read-entry-id.ts"
 
 const threadId = "2026-10-18-choice-of-framework"
@@ -23,13 +23,13 @@ const secondCatchUp: Task = {
     causeEventId: "20261018-140459-000-6e2f",
 }
 
-function createCompletedEvent(
+function createDoneEvent(
     task: Task,
     lastReadEntryId?: string,
-): EventOfType<typeof taskCompletedEventType> {
+): EventOfType<typeof taskDoneEventType> {
     return {
-        id: `${task.id}-completed`,
-        type: "task-completed",
+        id: `${task.id}-done`,
+        type: "task-done",
         occurredAt: "2026-10-18T14:06:00.000Z",
         depth: 1,
         taskId: task.id,
@@ -39,7 +39,7 @@ function createCompletedEvent(
 }
 
 describe("getLastReadEntryId", () => {
-    test("is absent until a catch-up of the thread completes", () => {
+    test("is absent until a catch-up of the thread is done", () => {
         const tasks = [firstCatchUp]
 
         const lastReadEntryId = getLastReadEntryId(tasks, [], [], reader)
@@ -47,11 +47,11 @@ describe("getLastReadEntryId", () => {
         expect(lastReadEntryId).toBeUndefined()
     })
 
-    test("is the entry that the latest completed catch-up read", () => {
+    test("is the entry read by the last catch-up marked as done", () => {
         const tasks = [firstCatchUp, secondCatchUp]
         const events = [
-            createCompletedEvent(firstCatchUp, questionId),
-            createCompletedEvent(secondCatchUp, followUpId),
+            createDoneEvent(firstCatchUp, questionId),
+            createDoneEvent(secondCatchUp, followUpId),
         ]
 
         const lastReadEntryId = getLastReadEntryId(tasks, events, [], reader)
@@ -59,11 +59,11 @@ describe("getLastReadEntryId", () => {
         expect(lastReadEntryId).toBe(followUpId)
     })
 
-    test("stays when a catch-up completes without reading", () => {
+    test("stays when a catch-up is done without reading", () => {
         const tasks = [firstCatchUp, secondCatchUp]
         const events = [
-            createCompletedEvent(firstCatchUp, questionId),
-            createCompletedEvent(secondCatchUp),
+            createDoneEvent(firstCatchUp, questionId),
+            createDoneEvent(secondCatchUp),
         ]
 
         const lastReadEntryId = getLastReadEntryId(tasks, events, [], reader)
@@ -79,8 +79,8 @@ describe("getLastReadEntryId", () => {
         }
         const tasks = [testerCatchUp, budgetCatchUp]
         const events = [
-            createCompletedEvent(testerCatchUp, questionId),
-            createCompletedEvent(budgetCatchUp, followUpId),
+            createDoneEvent(testerCatchUp, questionId),
+            createDoneEvent(budgetCatchUp, followUpId),
         ]
 
         const lastReadEntryId = getLastReadEntryId(tasks, events, [], reader)
@@ -96,7 +96,7 @@ describe("getLastReadEntryId", () => {
             ],
         }
         const tasks = [firstCatchUp]
-        const events = [createCompletedEvent(firstCatchUp, questionId)]
+        const events = [createDoneEvent(firstCatchUp, questionId)]
         const renamedReader = { positionId: "api-developer", threadId }
 
         const lastReadEntryId = getLastReadEntryId(

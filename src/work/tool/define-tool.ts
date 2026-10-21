@@ -13,7 +13,7 @@ export type ToolContext = {
 }
 
 export type TaskEnding =
-    | { state: "succeeded"; summary: string }
+    | { state: "done"; summary: string }
     | { state: "failed"; reason: string }
 
 export type ToolResult = { text: string; taskEnding?: TaskEnding }

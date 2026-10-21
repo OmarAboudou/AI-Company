@@ -43,7 +43,7 @@ llmco thread show <thread-id>                          # in Markdown
 llmco thread show <thread-id> --json | jq -r .body     # one message per line
 ```
 
-Mentioning a position with `@<position-id>` gives it a task, to catch up on the thread; a message without mention asks nothing of anyone. Sending a message from a position completes its tasks in that thread.
+Mentioning a position with `@<position-id>` gives it a task, to catch up on the thread; a message without mention asks nothing of anyone. Sending a message from a position marks its tasks in that thread as done.
 
 Whoever works a position is its default employee, unless the position is assigned temporarily: to another employee, or to the directors, the people working on the repository, so that no LLM does its tasks meanwhile. The temporary assignment stays on your machine, in `.llmco/.state/`, which git ignores.
 
