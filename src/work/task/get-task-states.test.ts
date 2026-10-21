@@ -9,7 +9,6 @@ const developerTask: Task = {
     type: "catch-up-thread",
     params: { threadId: "2026-10-18-choice-of-framework" },
     positionId: "backend-developer",
-    depth: 1,
     causeEventId: "20261018-140322-123-5d1e",
 }
 

@@ -52,6 +52,13 @@ function dispatchToMentionListener() {
     return dispatchEvents(projectRoot, [mentionListener])
 }
 
+async function listTaskCreatedDepths(): Promise<number[]> {
+    const events = await listEvents(projectRoot)
+    return events
+        .filter(({ type }) => type === "task-created")
+        .map(({ depth }) => depth)
+}
+
 describe("dispatchEvents", () => {
     test("creates the tasks that listeners return, a step deeper", async () => {
         const questionSent = await createMessageSentEvent(["backend-developer"])
@@ -63,11 +70,11 @@ describe("dispatchEvents", () => {
                 type: "catch-up-thread",
                 params: { threadId },
                 positionId: "backend-developer",
-                depth: 1,
                 causeEventId: questionSent.id,
             },
         ])
         expect(await listTasks(projectRoot)).toEqual(createdTasks)
+        expect(await listTaskCreatedDepths()).toEqual([1])
     })
 
     test("gives each event to every listener subscribed to it", async () => {
@@ -143,7 +150,8 @@ describe("dispatchEvents at the end of a chain", () => {
 
         const { createdTasks } = await dispatchToMentionListener()
 
-        expect(createdTasks).toMatchObject([{ depth: 2 }])
+        expect(createdTasks).toHaveLength(1)
+        expect(await listTaskCreatedDepths()).toEqual([2])
     })
 
     test("records a stopped chain instead of a deeper task", async () => {
@@ -174,8 +182,9 @@ describe("dispatchEvents at the end of a chain", () => {
 
         const dispatching = await dispatchToMentionListener()
 
-        expect(dispatching.createdTasks).toMatchObject([{ depth: 200 }])
+        expect(dispatching.createdTasks).toHaveLength(1)
         expect(dispatching.chainStoppedEvents).toHaveLength(1)
+        expect(await listTaskCreatedDepths()).toEqual([200])
     })
 
     test("records a stopped chain once, even giving its event again", async () => {
@@ -231,7 +240,6 @@ describe("dispatchEvents through the positions' id history", () => {
             type: "catch-up-thread",
             params: { threadId },
             positionId: "backend-developer",
-            depth: 1,
             causeEventId: questionSentId,
         })
 

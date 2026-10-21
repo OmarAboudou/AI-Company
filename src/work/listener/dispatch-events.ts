@@ -95,10 +95,10 @@ export async function dispatchEvents(
     const chainStoppedEvents: ChainStoppedEvent[] = []
     for (const event of newEvents) {
         for (const newTask of getNewTasks(listeners, event, positions)) {
-            const depth = event.depth + 1
+            const newTaskDepth = event.depth + 1
             const knownEvents = [...events, ...chainStoppedEvents]
             const knownTasks = [...tasks, ...createdTasks]
-            if (depth > maxTaskDepth) {
+            if (newTaskDepth > maxTaskDepth) {
                 if (!isStopped(newTask, event.id, knownEvents, positions)) {
                     const chainStoppedEvent = await recordEvent(
                         projectRoot,
@@ -112,11 +112,7 @@ export async function dispatchEvents(
                     chainStoppedEvents.push(chainStoppedEvent)
                 }
             } else if (!isCreated(newTask, event.id, knownTasks, positions)) {
-                const task = await createTask(projectRoot, {
-                    ...newTask,
-                    depth,
-                    causeEventId: event.id,
-                })
+                const task = await createTask(projectRoot, newTask, event)
                 createdTasks.push(task)
             }
         }
