@@ -14,11 +14,13 @@ import {
     taskStartedEventType,
 } from "../task/schema.ts"
 import type { TaskEnding } from "../tool/define-tool.ts"
+import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
 import { beginTask } from "./begin-task.ts"
 import { buildSystemPrompt } from "./build-system-prompt.ts"
 import { getRunTools } from "./get-run-tools.ts"
 import { runToolLoop } from "./run-tool-loop.ts"
 import type { RunProgress } from "./schema.ts"
+import { startRun } from "./start-run.ts"
 
 export type RunTaskResult = {
     taskEnding: TaskEnding
@@ -59,7 +61,22 @@ export async function runTask(
         employeeId: employee.id,
         model: { providerId: provider.id, modelId: model.id },
     })
+    const { toolNames, boundToolInputs, result: sessionResult } = session
+    const tools = getRunTools(toolNames, boundToolInputs)
+    const run = await startRun(projectRoot, {
+        id: runId,
+        apiId: model.apiId,
+        systemPrompt: buildSystemPrompt({
+            company,
+            position,
+            workerName: employee.name,
+        }),
+        tools: getToolDefinitions(tools),
+        userMessage: session.userMessage,
+        session: { toolNames, boundToolInputs, result: sessionResult },
+    })
     const { taskEnding, usage } = await runToolLoop({
+        run,
         ctx: {
             projectRoot,
             journal,
@@ -72,18 +89,11 @@ export async function runTask(
         connection,
         apiKey,
         apiId: model.apiId,
-        systemPrompt: buildSystemPrompt({
-            company,
-            position,
-            workerName: employee.name,
-        }),
-        userMessage: session.userMessage,
-        tools: getRunTools(session.toolNames, session.boundToolInputs),
+        tools,
         onProgress,
     })
     const runEnd = { depth: taskDepth, taskId: task.id, runId, usage }
     if (taskEnding.state === "done") {
-        const sessionResult = session.result
         const result =
             taskType.getRunResult === undefined
                 ? sessionResult

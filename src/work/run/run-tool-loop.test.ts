@@ -13,6 +13,7 @@ import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
 import { reminderText } from "./apply-assistant-turn.ts"
 import { runToolLoop } from "./run-tool-loop.ts"
 import type { RunProgress } from "./schema.ts"
+import { startRun } from "./start-run.ts"
 import { loadRun } from "./storage.ts"
 
 const fakeServer = useFakeAnthropicServer()
@@ -50,14 +51,21 @@ const markAsDoneCall = {
     input: { summary: "Wrote the notes." },
 }
 
-function runFakeLoop(progresses: RunProgress[] = []) {
+async function runFakeLoop(progresses: RunProgress[] = []) {
+    const run = await startRun(projectRoot, {
+        id: runId,
+        apiId: "claude-opus-5-5",
+        systemPrompt: "You are Claude Senior.",
+        tools: getToolDefinitions(tools),
+        userMessage: "Write two notes.",
+        session: { toolNames: ["note_write"], result: {} },
+    })
     return runToolLoop({
+        run,
         ctx: { ...exampleToolContext, projectRoot, runId },
         connection: { baseUrl: fakeServer.getUrl() },
         apiKey: "sk-test",
         apiId: "claude-opus-5-5",
-        systemPrompt: "You are Claude Senior.",
-        userMessage: "Write two notes.",
         tools,
         onProgress: (progress) => progresses.push(progress),
     })

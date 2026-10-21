@@ -26,10 +26,15 @@ const runStart = {
         },
     ],
     userMessage: "Catch up on this thread.",
+    session: {
+        toolNames: ["message_send"],
+        boundToolInputs: { message_send: { threadId: "2026-10-18-stack" } },
+        result: { lastReadEntryId: "20261018-140322-123-3f9a" },
+    },
 }
 
 describe("startRun", () => {
-    test("gives the run its system prompt, its tools, then the task's message", async () => {
+    test("gives the run its system prompt, its tools, then the task's message, keeping its session", async () => {
         const run = await startRun(projectRoot, runStart)
 
         expect(run).toEqual({
@@ -46,6 +51,7 @@ describe("startRun", () => {
                     },
                 ],
             },
+            session: runStart.session,
         })
     })
 

@@ -8,7 +8,7 @@ import type {
     ToolDefinition,
 } from "../../llm/conversation/schema.ts"
 import { UserError } from "../../user-error.ts"
-import { type Run, RunTranscriptLineSchema } from "./schema.ts"
+import { type Run, type RunSession, RunTranscriptLineSchema } from "./schema.ts"
 
 export type NewRunTranscriptLine =
     | {
@@ -16,6 +16,7 @@ export type NewRunTranscriptLine =
           apiId?: string
           systemPrompt: string
           tools: ToolDefinition[]
+          session: RunSession
       }
     | ({ type: "turn" } & ConversationTurn)
 
@@ -62,6 +63,6 @@ export async function loadRun(projectRoot: string, id: string): Promise<Run> {
         const { at, type, ...turn } = line
         return turn
     })
-    const { systemPrompt, tools } = startLine
-    return { id, conversation: { systemPrompt, tools, turns } }
+    const { systemPrompt, tools, session } = startLine
+    return { id, conversation: { systemPrompt, tools, turns }, session }
 }

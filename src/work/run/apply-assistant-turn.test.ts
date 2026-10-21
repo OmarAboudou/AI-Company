@@ -51,6 +51,7 @@ beforeEach(async () => {
         systemPrompt: "You are Julie.",
         tools: getToolDefinitions(tools),
         userMessage: "Write two notes.",
+        session: { toolNames: ["note_write"], result: {} },
     })
 })
 
