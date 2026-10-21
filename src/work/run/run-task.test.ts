@@ -145,7 +145,11 @@ describe("runTask", () => {
             "Send a message in this thread,",
         )
         expect(sendingTool?.input_schema.properties).toEqual({
-            body: { type: "string", description: "The message, in Markdown." },
+            body: {
+                type: "string",
+                description: "The message, in Markdown.",
+                contentMediaType: "text/markdown",
+            },
         })
     })
 
