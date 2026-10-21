@@ -1,15 +1,9 @@
-import { parseId } from "../../ids/parse-id.ts"
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
-import { loadCompany } from "../company/storage.ts"
 import { loadExistingEmployee } from "../employee/load-existing-employee.ts"
-import { loadExistingPosition } from "./load-existing-position.ts"
+import { loadExistingPositionAssignment } from "./load-existing-position-assignment.ts"
 import type { Worker } from "./schema.ts"
-import {
-    loadPositionState,
-    savePosition,
-    savePositionState,
-} from "./storage.ts"
+import { savePosition, savePositionState } from "./storage.ts"
 
 export type AssignPositionResult = {
     positionId: string
@@ -26,13 +20,12 @@ export async function assignPosition(
     { shouldReplace = false }: { shouldReplace?: boolean } = {},
 ): Promise<AssignPositionResult> {
     await requireCompany(projectRoot)
-    const [position, employee, company, state] = await Promise.all([
-        loadExistingPosition(projectRoot, rawPositionId),
-        loadExistingEmployee(projectRoot, rawEmployeeId),
-        loadCompany(projectRoot),
-        loadPositionState(projectRoot, parseId("position", rawPositionId)),
-    ])
-    if (position.id === company.directorPositionId) {
+    const [{ position, isDirectorPosition, state }, employee] =
+        await Promise.all([
+            loadExistingPositionAssignment(projectRoot, rawPositionId),
+            loadExistingEmployee(projectRoot, rawEmployeeId),
+        ])
+    if (isDirectorPosition) {
         throw new UserError(
             `Position "${position.id}" is the director's position: the people working on this repository hold it, identified by git, not an employee.`,
         )
