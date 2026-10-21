@@ -23,13 +23,9 @@ export const TaskSchema = z
             description:
                 "Id of the task it is a part of, in a tree of tasks. Absent for a task of its own.",
         }),
-        depth: z.int().min(1).meta({
-            description:
-                "How many tasks led to it, itself included, each caused by the one before: d + 1 for a task created from an event of depth d, so 1 for one created from a person's action.",
-        }),
         causeEventId: IdSchema.meta({
             description:
-                "Id of the event the task was created for, i.e. the name of its file in .llmco/journal.",
+                "Id of the event the task was created for, i.e. the name of its file in .llmco/journal. The task's depth is that event's, plus one.",
         }),
     })
     .meta({

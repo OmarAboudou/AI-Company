@@ -33,27 +33,14 @@
             "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
             "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
         },
-        "depth": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 9007199254740991,
-            "description": "How many tasks led to it, itself included, each caused by the one before: d + 1 for a task created from an event of depth d, so 1 for one created from a person's action."
-        },
         "causeEventId": {
             "type": "string",
             "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
             "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-            "description": "Id of the event the task was created for, i.e. the name of its file in .llmco/journal."
+            "description": "Id of the event the task was created for, i.e. the name of its file in .llmco/journal. The task's depth is that event's, plus one."
         }
     },
-    "required": [
-        "createdAt",
-        "type",
-        "params",
-        "positionId",
-        "depth",
-        "causeEventId"
-    ],
+    "required": ["createdAt", "type", "params", "positionId", "causeEventId"],
     "additionalProperties": false,
     "title": "llmco task",
     "description": "A task for a position, in .llmco/tasks/<task-id>.json, the id being the time it was created followed by a random suffix. Never modified: the task's state comes from the journal's events."

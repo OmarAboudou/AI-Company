@@ -13,7 +13,6 @@ const catchUpTask = {
     type: "catch-up-thread",
     params: { threadId: "2026-10-18-choice-of-framework" },
     positionId: "backend-developer",
-    depth: 1,
     causeEventId: "20261018-140322-123-5d1e",
 }
 
@@ -22,7 +21,7 @@ function accepts(task: unknown): boolean {
 }
 
 describe("TaskSchema", () => {
-    test("accepts a type, parameters, a position, a depth and a cause", () => {
+    test("accepts a type, parameters, a position and a cause", () => {
         expect(TaskSchema.parse(catchUpTask)).toEqual(catchUpTask)
     })
 
@@ -30,10 +29,6 @@ describe("TaskSchema", () => {
         const parentTaskId = "20261018-140323-000-77aa"
 
         expect(accepts({ ...catchUpTask, parentTaskId })).toBe(true)
-    })
-
-    test("rejects a depth of 0, a person's action", () => {
-        expect(accepts({ ...catchUpTask, depth: 0 })).toBe(false)
     })
 
     test("rejects parameters that aren't an object", () => {

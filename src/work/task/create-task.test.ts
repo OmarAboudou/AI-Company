@@ -16,30 +16,38 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const developerTaskDefinition = {
+const developerNewTask = {
     type: "catch-up-thread",
     params: { threadId: "2026-10-18-choice-of-framework" },
     positionId: "backend-developer",
+}
+
+const answerSent = {
+    id: "20261018-140351-000-8c2a",
+    type: "message-sent",
+    occurredAt: "2026-10-18T14:03:51.000Z",
     depth: 1,
-    causeEventId: "20261018-140322-123-5d1e",
 }
 
 describe("createTask", () => {
-    test("saves the task with the time it is created", async () => {
+    test("saves the task, with the time it is created and its cause", async () => {
         const clockTime = Date.now()
 
-        const task = await createTask(projectRoot, developerTaskDefinition)
+        const task = await createTask(projectRoot, developerNewTask, answerSent)
 
-        expect(task).toMatchObject(developerTaskDefinition)
+        expect(task).toMatchObject({
+            ...developerNewTask,
+            causeEventId: answerSent.id,
+        })
         expect(Date.parse(task.createdAt)).toBeGreaterThanOrEqual(clockTime)
         expect(await listTasks(projectRoot)).toEqual([task])
     })
 
-    test("records its creation in the journal, at its depth", async () => {
-        const task = await createTask(projectRoot, developerTaskDefinition)
+    test("records its creation a step deeper than its cause", async () => {
+        const task = await createTask(projectRoot, developerNewTask, answerSent)
 
         expect(await listEvents(projectRoot)).toMatchObject([
-            { type: "task-created", depth: 1, taskId: task.id },
+            { type: "task-created", depth: 2, taskId: task.id },
         ])
     })
 })
