@@ -1,7 +1,12 @@
 import { getCurrentId } from "../../ids/get-current-id.ts"
 import type { IdHistory } from "../../ids/id-history-schema.ts"
+import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import { recordEvent } from "../../journal/record-event.ts"
-import type { ChainStoppedEvent, JournalEvent } from "../../journal/schema.ts"
+import {
+    type ChainStoppedEvent,
+    chainStoppedEventType,
+    type JournalEvent,
+} from "../../journal/schema.ts"
 import { listEvents } from "../../journal/storage.ts"
 import { defaultMaxTaskDepth } from "../../organization/company/schema.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
@@ -24,12 +29,11 @@ function getNewTasks(
     positions: IdHistory[],
 ): NewTask[] {
     return listeners.flatMap((listener) => {
-        // TypeScript can't tell that the handler looked up for an event's
-        // type takes that type of event.
-        const handleEvent = listener.on[event.type] as
-            | ((event: JournalEvent) => NewTask[])
-            | undefined
-        return (handleEvent?.(event) ?? []).map((newTask) => ({
+        const listenedEvent = getEventOfType(event, listener.eventType)
+        if (listenedEvent === undefined) {
+            return []
+        }
+        return listener.getNewTasks(listenedEvent).map((newTask) => ({
             ...newTask,
             positionId: getCurrentId(
                 positions,
@@ -62,13 +66,11 @@ function isStopped(
     positions: IdHistory[],
 ): boolean {
     return events.some((event) => {
-        if (
-            event.type !== "chain-stopped" ||
-            event.causeEventId !== causeEventId
-        ) {
+        const chainStoppedEvent = getEventOfType(event, chainStoppedEventType)
+        if (chainStoppedEvent?.causeEventId !== causeEventId) {
             return false
         }
-        const { stoppedTask, occurredAt } = event
+        const { stoppedTask, occurredAt } = chainStoppedEvent
         const positionId = getCurrentId(
             positions,
             stoppedTask.positionId,
