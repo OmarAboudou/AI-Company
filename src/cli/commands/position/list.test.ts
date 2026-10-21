@@ -1,4 +1,11 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createLlmConnection } from "../../../llm/connection/create-llm-connection.ts"
+import { createLlmModel } from "../../../llm/model/create-llm-model.ts"
+import { createLlmProvider } from "../../../llm/provider/create-llm-provider.ts"
+import { createCompany } from "../../../organization/company/create-company.ts"
+import { createEmployee } from "../../../organization/employee/create-employee.ts"
+import { assignPosition } from "../../../organization/position/assign-position.ts"
+import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
@@ -7,8 +14,9 @@ const interimEmployee = ["position", "interim", "employee"]
 const interimDirectors = ["position", "interim", "directors"]
 
 describe("llmco position", () => {
-    beforeEach(() => {
-        runCli("init", "--name", "Acme")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
     })
 
     test("list aligns titles and employees after the ids, sorted by id", () => {
@@ -24,43 +32,40 @@ describe("llmco position", () => {
 })
 
 describe("llmco position assign and unassign", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("position", "create", "developer", "-t", "Developer")
-        runCli("position", "create", "qa-tester", "-t", "QA Tester")
-        runCli("employee", "create", "human", "omar", "-n", "Omar")
-        runCli("provider", "create", "anthropic", "-n", "Anthropic")
-        runCli(
-            "provider",
-            "connection",
-            "create",
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await Promise.all([
+            createPosition(projectRoot, "developer", {
+                title: "Developer",
+                description: "",
+            }),
+            createPosition(projectRoot, "qa-tester", {
+                title: "QA Tester",
+                description: "",
+            }),
+            createEmployee(projectRoot, "omar", {
+                name: "Omar",
+                kind: "human",
+            }),
+            createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" }),
+        ])
+        await createLlmConnection(
+            projectRoot,
             "anthropic",
             "anthropic-messages",
-            "-u",
-            "https://api.anthropic.com",
+            { baseUrl: "https://api.anthropic.com" },
         )
-        runCli(
-            "model",
-            "create",
-            "anthropic",
-            "claude-opus-5-5",
-            "-n",
-            "Claude Opus 5.5",
-            "-a",
-            "claude-opus-5-5",
-        )
-        runCli(
-            "employee",
-            "create",
-            "llm",
-            "claude-senior",
-            "-n",
-            "Claude Senior",
-            "-p",
-            "anthropic",
-            "-m",
-            "claude-opus-5-5",
-        )
+        await createLlmModel(projectRoot, "anthropic", "claude-opus-5-5", {
+            name: "Claude Opus 5.5",
+            apiId: "claude-opus-5-5",
+        })
+        await createEmployee(projectRoot, "claude-senior", {
+            name: "Claude Senior",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "claude-opus-5-5",
+        })
     })
 
     test("list and show display the default employee", () => {
@@ -78,14 +83,29 @@ describe("llmco position assign and unassign", () => {
 })
 
 describe("llmco position assign-temporarily and unassign-temporarily", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("position", "create", "developer", "-t", "Developer")
-        runCli("position", "create", "designer", "-t", "Designer")
-        runCli("employee", "create", "human", "omar", "-n", "Omar")
-        runCli("employee", "create", "human", "julie", "-n", "Julie")
-        runCli("employee", "create", "human", "bob", "-n", "Bob")
-        runCli("position", "assign", "developer", "omar")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await Promise.all([
+            createPosition(projectRoot, "developer", {
+                title: "Developer",
+                description: "",
+            }),
+            createPosition(projectRoot, "designer", {
+                title: "Designer",
+                description: "",
+            }),
+            createEmployee(projectRoot, "omar", {
+                name: "Omar",
+                kind: "human",
+            }),
+            createEmployee(projectRoot, "julie", {
+                name: "Julie",
+                kind: "human",
+            }),
+            createEmployee(projectRoot, "bob", { name: "Bob", kind: "human" }),
+        ])
+        await assignPosition(projectRoot, "developer", "omar")
     })
 
     test("list shows who works a position temporarily", () => {

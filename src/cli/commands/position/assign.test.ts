@@ -1,9 +1,14 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createLlmConnection } from "../../../llm/connection/create-llm-connection.ts"
+import { createLlmModel } from "../../../llm/model/create-llm-model.ts"
+import { createLlmProvider } from "../../../llm/provider/create-llm-provider.ts"
+import { createCompany } from "../../../organization/company/create-company.ts"
+import { createEmployee } from "../../../organization/employee/create-employee.ts"
+import { assignPositionTemporarily } from "../../../organization/position/assign-position-temporarily.ts"
+import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
-
-const interimEmployee = ["position", "interim", "employee"]
 
 function getPositionStatePath(id: string): string {
     return getProjectPath(".llmco", ".state", "positions", `${id}.json`)
@@ -15,43 +20,40 @@ async function loadPositionStateFile(id: string): Promise<unknown> {
 }
 
 describe("llmco position assign and unassign", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("position", "create", "developer", "-t", "Developer")
-        runCli("position", "create", "qa-tester", "-t", "QA Tester")
-        runCli("employee", "create", "human", "omar", "-n", "Omar")
-        runCli("provider", "create", "anthropic", "-n", "Anthropic")
-        runCli(
-            "provider",
-            "connection",
-            "create",
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await Promise.all([
+            createPosition(projectRoot, "developer", {
+                title: "Developer",
+                description: "",
+            }),
+            createPosition(projectRoot, "qa-tester", {
+                title: "QA Tester",
+                description: "",
+            }),
+            createEmployee(projectRoot, "omar", {
+                name: "Omar",
+                kind: "human",
+            }),
+            createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" }),
+        ])
+        await createLlmConnection(
+            projectRoot,
             "anthropic",
             "anthropic-messages",
-            "-u",
-            "https://api.anthropic.com",
+            { baseUrl: "https://api.anthropic.com" },
         )
-        runCli(
-            "model",
-            "create",
-            "anthropic",
-            "claude-opus-5-5",
-            "-n",
-            "Claude Opus 5.5",
-            "-a",
-            "claude-opus-5-5",
-        )
-        runCli(
-            "employee",
-            "create",
-            "llm",
-            "claude-senior",
-            "-n",
-            "Claude Senior",
-            "-p",
-            "anthropic",
-            "-m",
-            "claude-opus-5-5",
-        )
+        await createLlmModel(projectRoot, "anthropic", "claude-opus-5-5", {
+            name: "Claude Opus 5.5",
+            apiId: "claude-opus-5-5",
+        })
+        await createEmployee(projectRoot, "claude-senior", {
+            name: "Claude Senior",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "claude-opus-5-5",
+        })
     })
 
     async function loadPositionConfigFile(id: string): Promise<unknown> {
@@ -127,11 +129,23 @@ describe("a temporary assignment through the position's lifecycle", () => {
         temporaryAssignment: { kind: "employee", employeeId: "julie" },
     }
 
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("position", "create", "developer", "-t", "Developer")
-        runCli("employee", "create", "human", "julie", "-n", "Julie")
-        runCli(...interimEmployee, "developer", "julie")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await Promise.all([
+            createPosition(projectRoot, "developer", {
+                title: "Developer",
+                description: "",
+            }),
+            createEmployee(projectRoot, "julie", {
+                name: "Julie",
+                kind: "human",
+            }),
+        ])
+        await assignPositionTemporarily(projectRoot, "developer", {
+            kind: "employee",
+            rawEmployeeId: "julie",
+        })
     })
 
     test("assign of the temporary assignee ends its temporary assignment", async () => {
