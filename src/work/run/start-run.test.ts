@@ -1,0 +1,57 @@
+import { afterEach, beforeEach, describe, expect, test } from "bun:test"
+import { mkdtemp, rm } from "node:fs/promises"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+import { startRun } from "./start-run.ts"
+import { loadRun } from "./storage.ts"
+
+let projectRoot: string
+
+beforeEach(async () => {
+    projectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
+})
+
+afterEach(async () => {
+    await rm(projectRoot, { recursive: true, force: true })
+})
+
+const runStart = {
+    id: "20261018-140324-000-1b2c",
+    systemPrompt: "You are Julie.",
+    tools: [
+        {
+            name: "task_mark-as-done",
+            description: "Mark your task as done.",
+            inputSchema: { type: "object" },
+        },
+    ],
+    userMessage: "Catch up on this thread.",
+}
+
+describe("startRun", () => {
+    test("gives the run its system prompt, its tools, then the task's message", async () => {
+        const run = await startRun(projectRoot, runStart)
+
+        expect(run).toEqual({
+            id: runStart.id,
+            conversation: {
+                systemPrompt: "You are Julie.",
+                tools: runStart.tools,
+                turns: [
+                    {
+                        role: "user",
+                        blocks: [
+                            { type: "text", text: "Catch up on this thread." },
+                        ],
+                    },
+                ],
+            },
+        })
+    })
+
+    test("writes the run's transcript, from which it can be read back", async () => {
+        const startedRun = await startRun(projectRoot, runStart)
+
+        expect(await loadRun(projectRoot, runStart.id)).toEqual(startedRun)
+    })
+})
