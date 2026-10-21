@@ -25,7 +25,8 @@ import {
 import type { TaskEnding, Tool } from "../tool/define-tool.ts"
 import { buildSystemPrompt } from "./build-system-prompt.ts"
 import { getLastEntryIdReadByRun } from "./get-last-entry-id-read-by-run.ts"
-import { type RunProgress, runToolLoop } from "./run-tool-loop.ts"
+import { runToolLoop } from "./run-tool-loop.ts"
+import type { RunProgress } from "./schema.ts"
 
 export type RunTaskResult = {
     taskEnding: TaskEnding

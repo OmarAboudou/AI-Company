@@ -12,10 +12,10 @@ import { exampleToolContext } from "../tool/example-tool-context.testing.ts"
 import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
 import {
     maxToolCallsPerRun,
-    type RunProgress,
     reminderText,
     runToolLoop,
 } from "./run-tool-loop.ts"
+import type { RunProgress } from "./schema.ts"
 import { loadRun } from "./storage.ts"
 
 const fakeServer = useFakeAnthropicServer()

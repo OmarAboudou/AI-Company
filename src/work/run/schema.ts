@@ -47,3 +47,9 @@ export type Run = {
     id: string
     conversation: Conversation
 }
+
+export type RunProgress =
+    | { kind: "text"; text: string }
+    | { kind: "tool-call"; name: string; input: unknown }
+    | { kind: "tool-result"; name: string; text: string; isError: boolean }
+    | { kind: "reminder"; text: string }
