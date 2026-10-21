@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { IdSchema } from "../../ids/id-schema.ts"
+import { defineEventType } from "../../journal/schema.ts"
 import { ProtocolSchema } from "../../llm/connection/schema.ts"
 import {
     CommitterSchema,
@@ -65,3 +66,22 @@ export const ProviderResponseSchema = z
     })
 
 export type ProviderResponse = z.infer<typeof ProviderResponseSchema>
+
+export const messageSentEventType = defineEventType({
+    type: "message-sent",
+    description: "A message was added to a thread.",
+    fields: {
+        threadId: IdSchema.meta({
+            description:
+                "Id of the thread, i.e. the name of its folder in .llmco/threads.",
+        }),
+        messageId: IdSchema.meta({
+            description:
+                "Id of the message, i.e. the name of its folder in the thread's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message.",
+        }),
+        mentions: z.array(IdSchema).meta({
+            description:
+                "Ids of the positions the message mentions, as its message.json records them.",
+        }),
+    },
+})

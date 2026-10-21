@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { MessageConfigSchema } from "./schema.ts"
+import { MessageConfigSchema, messageSentEventType } from "./schema.ts"
 
 const question = {
     position: { id: "director", title: "Director" },
@@ -43,5 +43,28 @@ describe("MessageConfigSchema", () => {
 
     test("rejects an unknown key, such as the body", () => {
         expect(accepts({ ...question, body: "Hi" })).toBe(false)
+    })
+})
+
+describe("messageSentEventType", () => {
+    const messageSentEvent = {
+        type: "message-sent",
+        occurredAt: "2026-10-18T14:03:22.123Z",
+        depth: 0,
+        threadId: "2026-10-18-choice-of-framework",
+        messageId: "20261018-140322-123-3f9a",
+        mentions: ["backend-developer"],
+    }
+
+    function isAccepted(event: unknown): boolean {
+        return messageSentEventType.schema.safeParse(event).success
+    }
+
+    test("accepts a message sent, with its thread, id and mentions", () => {
+        expect(isAccepted(messageSentEvent)).toBe(true)
+    })
+
+    test("rejects an unknown key, such as the message's body", () => {
+        expect(isAccepted({ ...messageSentEvent, body: "Hi" })).toBe(false)
     })
 })

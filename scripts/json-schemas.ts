@@ -3,7 +3,6 @@ import { IdHistorySchema } from "../src/ids/id-history-schema.ts"
 import {
     chainStoppedEventType,
     JournalEventSchema,
-    messageSentEventType,
     taskCompletedEventType,
     taskCreatedEventType,
     taskFailedEventType,
@@ -13,6 +12,7 @@ import { LlmModelConfigSchema } from "../src/llm/model/schema.ts"
 import { LlmProviderConfigSchema } from "../src/llm/provider/schema.ts"
 import {
     MessageConfigSchema,
+    messageSentEventType,
     ProviderResponseSchema,
 } from "../src/messaging/message/schema.ts"
 import { ThreadConfigSchema } from "../src/messaging/thread/schema.ts"

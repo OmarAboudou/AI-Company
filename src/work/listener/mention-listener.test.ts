@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test"
-import type { EventOfType, messageSentEventType } from "../../journal/schema.ts"
+import type { EventOfType } from "../../journal/schema.ts"
+import type { messageSentEventType } from "../../messaging/message/schema.ts"
 import { mentionListener } from "./mention-listener.ts"
 
 const threadId = "2026-10-18-choice-of-framework"
