@@ -8,7 +8,7 @@ export type ToolContext = {
     projectRoot: string
     journal: Journal
     task: Task
-    taskDepth: number
+    depth: number
     position: Position
     employee: Employee
     runId: string

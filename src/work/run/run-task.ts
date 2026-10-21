@@ -124,7 +124,7 @@ export async function runTask(
             projectRoot,
             journal,
             task,
-            taskDepth,
+            depth: taskDepth,
             position,
             employee,
             runId,

@@ -11,7 +11,7 @@ export const exampleToolContext: ToolContext = {
         positionId: "backend-developer",
         causeEventId: "20261018-140322-123-5d1e",
     },
-    taskDepth: 1,
+    depth: 1,
     position: {
         id: "backend-developer",
         title: "Backend Developer",

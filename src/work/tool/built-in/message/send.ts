@@ -38,7 +38,7 @@ export const messageSendTool = defineTool({
             ctx.journal,
             thread.id,
             unsentMessage,
-            { depth: ctx.taskDepth, runId: ctx.runId },
+            { depth: ctx.depth, runId: ctx.runId },
         )
         const threadMessages = await listMessages(projectRoot, thread.id)
         const entryNumber =

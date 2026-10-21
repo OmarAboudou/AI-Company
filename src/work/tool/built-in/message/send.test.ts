@@ -29,7 +29,7 @@ beforeEach(async () => {
         ...exampleToolContext,
         projectRoot,
         journal,
-        taskDepth: 3,
+        depth: 3,
         position,
         employee,
     }
