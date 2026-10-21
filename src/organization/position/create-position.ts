@@ -1,5 +1,5 @@
-import { z } from "zod"
 import { parseId } from "../../ids/parse-id.ts"
+import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { type Position, PositionConfigSchema } from "./schema.ts"
@@ -15,13 +15,10 @@ export async function createPosition(
     if (await hasPosition(projectRoot, id)) {
         throw new UserError(`Position "${id}" already exists.`)
     }
-    const validation = PositionConfigSchema.safeParse({ title })
-    if (!validation.success) {
-        throw new UserError(z.prettifyError(validation.error))
-    }
+    const config = parseConfig(PositionConfigSchema, { title })
     const position = {
         id,
-        ...validation.data,
+        ...config,
         createdAt: new Date().toISOString(),
         description,
     }

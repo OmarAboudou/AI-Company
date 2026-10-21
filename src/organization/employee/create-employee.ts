@@ -1,5 +1,5 @@
-import { z } from "zod"
 import { parseId } from "../../ids/parse-id.ts"
+import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { requireEmployeeModel } from "./require-employee-model.ts"
@@ -15,19 +15,16 @@ import { hasEmployee, saveEmployee } from "./storage.ts"
 export async function createEmployee(
     projectRoot: string,
     rawId: string,
-    config: EmployeeConfig,
+    rawConfig: EmployeeConfig,
     { shouldReuseId = false }: { shouldReuseId?: boolean } = {},
 ): Promise<Employee> {
     await requireCompany(projectRoot)
     const id = parseId("employee", rawId)
     requireUnreservedEmployeeId(id)
-    const validation = EmployeeConfigSchema.safeParse(config)
-    if (!validation.success) {
-        throw new UserError(z.prettifyError(validation.error))
-    }
+    const config = parseConfig(EmployeeConfigSchema, rawConfig)
     const [isTaken] = await Promise.all([
         hasEmployee(projectRoot, id),
-        requireEmployeeModel(projectRoot, validation.data),
+        requireEmployeeModel(projectRoot, config),
     ])
     if (isTaken) {
         throw new UserError(`Employee "${id}" already exists.`)
@@ -35,7 +32,7 @@ export async function createEmployee(
     await requireUnusedEmployeeId(projectRoot, id, { shouldReuseId })
     const employee = {
         id,
-        ...validation.data,
+        ...config,
         createdAt: new Date().toISOString(),
     }
     await saveEmployee(projectRoot, employee)

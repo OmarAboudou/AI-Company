@@ -1,6 +1,6 @@
-import { z } from "zod"
 import { parseId } from "../../ids/parse-id.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
+import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
 import { type Protocol, protocols } from "../connection/schema.ts"
 import { loadExistingLlmProvider } from "../provider/load-existing-llm-provider.ts"
@@ -52,15 +52,12 @@ export async function createLlmModel(
             `Provider "${provider.id}" already has a model "${modelId}".`,
         )
     }
-    const validation = LlmModelConfigSchema.safeParse({
+    const modelConfig = parseConfig(LlmModelConfigSchema, {
         name,
         apiId,
         protocol: chooseProtocol(provider, protocol),
     })
-    if (!validation.success) {
-        throw new UserError(z.prettifyError(validation.error))
-    }
-    const model = { providerId: provider.id, id: modelId, ...validation.data }
+    const model = { providerId: provider.id, id: modelId, ...modelConfig }
     await saveLlmModel(projectRoot, model)
     return model
 }

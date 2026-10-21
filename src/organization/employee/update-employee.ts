@@ -1,5 +1,5 @@
-import { z } from "zod"
 import { getDefinedValues } from "../../get-defined-values.ts"
+import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { loadExistingEmployee } from "./load-existing-employee.ts"
@@ -25,17 +25,14 @@ export async function updateEmployee(
             `Employee "${id}" is a human: it has no provider or model.`,
         )
     }
-    const validation = EmployeeConfigSchema.safeParse({
+    const updatedConfig = parseConfig(EmployeeConfigSchema, {
         ...config,
         ...getDefinedValues(changes),
     })
-    if (!validation.success) {
-        throw new UserError(z.prettifyError(validation.error))
-    }
-    await requireEmployeeModel(projectRoot, validation.data)
+    await requireEmployeeModel(projectRoot, updatedConfig)
     const updatedEmployee = {
         id,
-        ...validation.data,
+        ...updatedConfig,
         createdAt,
         formerIds,
     }

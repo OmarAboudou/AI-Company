@@ -1,5 +1,4 @@
-import { z } from "zod"
-import { UserError } from "../../user-error.ts"
+import { parseConfig } from "../../parse-config.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { loadExistingPosition } from "./load-existing-position.ts"
 import { type Position, PositionConfigSchema } from "./schema.ts"
@@ -13,16 +12,13 @@ export async function updatePosition(
     await requireCompany(projectRoot)
     const { id, description, createdAt, formerIds, ...config } =
         await loadExistingPosition(projectRoot, rawId)
-    const validation = PositionConfigSchema.safeParse({
+    const updatedConfig = parseConfig(PositionConfigSchema, {
         ...config,
         title: changes.title ?? config.title,
     })
-    if (!validation.success) {
-        throw new UserError(z.prettifyError(validation.error))
-    }
     const updatedPosition = {
         id,
-        ...validation.data,
+        ...updatedConfig,
         createdAt,
         formerIds,
         description: changes.description ?? description,

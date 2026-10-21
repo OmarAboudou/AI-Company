@@ -1,7 +1,7 @@
-import { z } from "zod"
 import { getDefinedValues } from "../../get-defined-values.ts"
 import { parseId } from "../../ids/parse-id.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
+import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
 import {
     type ApiKeySource,
@@ -20,14 +20,11 @@ export async function createLlmProvider(
     if (await hasLlmProvider(projectRoot, id)) {
         throw new UserError(`Provider "${id}" already exists.`)
     }
-    const validation = LlmProviderConfigSchema.safeParse({
+    const providerConfig = parseConfig(LlmProviderConfigSchema, {
         name,
         ...getDefinedValues({ apiKeySource }),
     })
-    if (!validation.success) {
-        throw new UserError(z.prettifyError(validation.error))
-    }
-    const provider = { id, ...validation.data }
+    const provider = { id, ...providerConfig }
     await saveLlmProvider(projectRoot, provider)
     return provider
 }

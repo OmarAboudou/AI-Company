@@ -1,7 +1,6 @@
-import { z } from "zod"
 import { getDefinedValues } from "../../get-defined-values.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
-import { UserError } from "../../user-error.ts"
+import { parseConfig } from "../../parse-config.ts"
 import { loadExistingLlmProvider } from "./load-existing-llm-provider.ts"
 import {
     type ApiKeySource,
@@ -17,14 +16,11 @@ export async function updateLlmProvider(
 ): Promise<LlmProvider> {
     await requireCompany(projectRoot)
     const { id, ...config } = await loadExistingLlmProvider(projectRoot, rawId)
-    const validation = LlmProviderConfigSchema.safeParse({
+    const updatedConfig = parseConfig(LlmProviderConfigSchema, {
         ...config,
         ...getDefinedValues(changes),
     })
-    if (!validation.success) {
-        throw new UserError(z.prettifyError(validation.error))
-    }
-    const updatedProvider = { id, ...validation.data }
+    const updatedProvider = { id, ...updatedConfig }
     await saveLlmProvider(projectRoot, updatedProvider)
     return updatedProvider
 }
