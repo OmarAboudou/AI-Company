@@ -1,46 +1,24 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
-import { createGitRepository } from "../../git/create-git-repository.testing.ts"
 import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import { recordEvent } from "../../journal/record-event.ts"
 import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { sendMessage } from "../../messaging/message/send-message.ts"
-import { createThread } from "../../messaging/thread/create-thread.ts"
-import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
-import { createEmployee } from "../../organization/employee/create-employee.ts"
-import { assignPosition } from "../../organization/position/assign-position.ts"
-import { createPosition } from "../../organization/position/create-position.ts"
 import { unassignPosition } from "../../organization/position/unassign-position.ts"
+import {
+    createCompanyWithHumanEmployee,
+    julieEnvironment,
+} from "../create-company-with-human-employee.testing.ts"
 import { openNextTask } from "./open-next-task.ts"
 import { taskDoneEventType, taskStartedEventType } from "./schema.ts"
 
-const julieEnvironment = { LLMCO_CURRENT_HUMAN_ID: "julie" }
 let projectRoot: string
 let threadId: string
 
 beforeEach(async () => {
-    projectRoot = await createTemporaryCompany()
-    createGitRepository(projectRoot, {
-        name: "Omar Aboudou",
-        email: "omar@example.com",
-    })
-    await createEmployee(projectRoot, "julie", { name: "Julie", kind: "human" })
-    await createPosition(projectRoot, "qa-tester", {
-        title: "QA",
-        description: "",
-    })
-    await createPosition(projectRoot, "designer", {
-        title: "Designer",
-        description: "",
-    })
-    await assignPosition(projectRoot, "qa-tester", "julie")
-    await assignPosition(projectRoot, "designer", "julie")
-    const { thread } = await createThread(
-        projectRoot,
-        {},
-        { subject: "Release" },
-    )
-    threadId = thread.id
+    const company = await createCompanyWithHumanEmployee()
+    projectRoot = company.projectRoot
+    threadId = company.threadId
 })
 
 afterEach(async () => {
