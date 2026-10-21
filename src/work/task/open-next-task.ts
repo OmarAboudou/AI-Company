@@ -1,31 +1,25 @@
-import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import { requireJournalEvent } from "../../journal/require-journal-event.ts"
-import type { Journal } from "../../journal/schema.ts"
 import { loadJournal } from "../../journal/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
 import { defaultMaxTaskDepth } from "../../organization/company/schema.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
 import { getPositionsWorkedBy } from "../../organization/human/get-positions-worked-by.ts"
-import {
-    type CurrentHuman,
-    readCurrentHuman,
-} from "../../organization/human/read-current-human.ts"
+import { readCurrentHuman } from "../../organization/human/read-current-human.ts"
 import { readCurrentPositionId } from "../../organization/human/read-current-position-id.ts"
-import { requireSelectedPosition } from "../../organization/human/require-selected-position.ts"
+import { requirePositionsToWork } from "../../organization/human/require-positions-to-work.ts"
 import { listPositionAssignments } from "../../organization/position/list-position-assignments.ts"
 import type { Position } from "../../organization/position/schema.ts"
-import { UserError } from "../../user-error.ts"
 import { builtInListeners } from "../listener/built-in-listeners.ts"
 import { dispatchEvents } from "../listener/dispatch-events.ts"
 import { beginTask } from "../run/begin-task.ts"
+import { loadResumableRun } from "../run/load-resumable-run.ts"
 import type { Run } from "../run/schema.ts"
 import { startHumanRun } from "../run/start-human-run.ts"
-import { hasRun, loadRun } from "../run/storage.ts"
 import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
 import { getTaskPositionId } from "./get-task-position-id.ts"
 import { getTaskStates } from "./get-task-states.ts"
 import { isPendingTask } from "./is-pending-task.ts"
-import { type Task, taskStartedEventType } from "./schema.ts"
+import type { Task } from "./schema.ts"
 import { listTasks } from "./storage.ts"
 
 export type OpenedTask = {
@@ -40,47 +34,6 @@ export type OpenedTask = {
 export type OpenNextTaskResult = {
     openedTask: OpenedTask | undefined
     doneTasks: { task: Task; summary: string }[]
-}
-
-function requirePositionsToWork(
-    human: CurrentHuman,
-    workedPositions: Position[],
-    currentPositionId: string | undefined,
-): Position[] {
-    if (currentPositionId !== undefined) {
-        return [requireSelectedPosition(workedPositions, currentPositionId)]
-    }
-    if (workedPositions.length === 0 && human.kind === "employee") {
-        const { id, name } = human.employee
-        throw new UserError(
-            `${name} (${id}) works no position, so no task waits for them. A director can assign one temporarily: \`llmco position assign-temporarily employee <position-id> ${id}\`.`,
-        )
-    }
-    return workedPositions
-}
-
-// A run this person started, on this machine, can go on; any other, such
-// as an interrupted model's, is started afresh, as llmco run would.
-async function loadResumableRun(
-    journal: Journal,
-    task: Task,
-    human: CurrentHuman,
-): Promise<Run | undefined> {
-    const taskStartedEvent = journal.events
-        .map((event) => getEventOfType(event, taskStartedEventType))
-        .findLast((startedEvent) => startedEvent?.taskId === task.id)
-    if (taskStartedEvent === undefined || taskStartedEvent.model) {
-        return undefined
-    }
-    const employeeId = human.kind === "employee" ? human.employee.id : undefined
-    if (taskStartedEvent.employeeId !== employeeId) {
-        return undefined
-    }
-    const { projectRoot } = journal
-    const { runId } = taskStartedEvent
-    return (await hasRun(projectRoot, runId))
-        ? loadRun(projectRoot, runId)
-        : undefined
 }
 
 export async function openNextTask(
