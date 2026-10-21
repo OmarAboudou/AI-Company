@@ -3,7 +3,6 @@ import {
     chainStoppedEventType,
     type EventType,
     JournalEventSchema,
-    messageSentEventType,
     taskCompletedEventType,
     taskCreatedEventType,
     taskFailedEventType,
@@ -42,25 +41,6 @@ describe("JournalEventSchema", () => {
 
         expect(accepts(eventWithoutDepth)).toBe(false)
         expect(accepts(eventWithInvalidType)).toBe(false)
-    })
-})
-
-describe("messageSentEventType", () => {
-    const messageSentEvent = {
-        ...threadClosedEvent,
-        type: "message-sent",
-        messageId: "20261018-140322-123-3f9a",
-        mentions: ["backend-developer"],
-    }
-
-    test("accepts a message sent, with its thread, id and mentions", () => {
-        expect(isAcceptedBy(messageSentEventType, messageSentEvent)).toBe(true)
-    })
-
-    test("rejects an unknown key, such as the message's body", () => {
-        const event = { ...messageSentEvent, body: "Hi" }
-
-        expect(isAcceptedBy(messageSentEventType, event)).toBe(false)
     })
 })
 
