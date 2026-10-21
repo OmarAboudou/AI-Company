@@ -1,9 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import {
-    chainStoppedEventType,
-    type EventType,
-    JournalEventSchema,
-} from "./schema.ts"
+import { JournalEventSchema } from "./schema.ts"
 
 const threadClosedEvent = {
     type: "thread-closed",
@@ -14,10 +10,6 @@ const threadClosedEvent = {
 
 function accepts(event: unknown): boolean {
     return JournalEventSchema.safeParse(event).success
-}
-
-function isAcceptedBy(eventType: EventType, event: unknown): boolean {
-    return eventType.schema.safeParse(event).success
 }
 
 describe("JournalEventSchema", () => {
@@ -37,31 +29,5 @@ describe("JournalEventSchema", () => {
 
         expect(accepts(eventWithoutDepth)).toBe(false)
         expect(accepts(eventWithInvalidType)).toBe(false)
-    })
-})
-
-describe("chainStoppedEventType", () => {
-    const chainStoppedEvent = {
-        type: "chain-stopped",
-        occurredAt: "2026-10-18T15:00:00.000Z",
-        depth: 200,
-        causeEventId: "20261018-145959-000-4b1d",
-        stoppedTask: {
-            type: "catch-up-thread",
-            positionId: "qa-tester",
-            params: { threadId: "2026-10-18-choice-of-framework" },
-        },
-    }
-
-    test("accepts a chain stopped, with the task it didn't create", () => {
-        expect(isAcceptedBy(chainStoppedEventType, chainStoppedEvent)).toBe(
-            true,
-        )
-    })
-
-    test("requires the task the chain stopped before", () => {
-        const { stoppedTask, ...event } = chainStoppedEvent
-
-        expect(isAcceptedBy(chainStoppedEventType, event)).toBe(false)
     })
 })

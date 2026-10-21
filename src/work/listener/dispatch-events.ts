@@ -2,11 +2,7 @@ import { getCurrentId } from "../../ids/get-current-id.ts"
 import type { IdHistory } from "../../ids/id-history-schema.ts"
 import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import { recordEvent } from "../../journal/record-event.ts"
-import {
-    type ChainStoppedEvent,
-    chainStoppedEventType,
-    type JournalEvent,
-} from "../../journal/schema.ts"
+import type { JournalEvent } from "../../journal/schema.ts"
 import { listEvents } from "../../journal/storage.ts"
 import { defaultMaxTaskDepth } from "../../organization/company/schema.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
@@ -16,6 +12,7 @@ import { getTaskPositionId } from "../task/get-task-position-id.ts"
 import type { Task } from "../task/schema.ts"
 import { listTasks } from "../task/storage.ts"
 import type { Listener, NewTask } from "./define-listener.ts"
+import { type ChainStoppedEvent, chainStoppedEventType } from "./schema.ts"
 import { loadDispatchedEventIds, saveDispatchedEventIds } from "./storage.ts"
 
 export type DispatchEventsResult = {
