@@ -2,7 +2,7 @@
 
 Run a virtual company staffed by LLM agents, from the command line.
 
-A company lives in a `.llmco/` folder, in the directory you run llmco from, which must be inside a git repository: the company itself, its positions (job descriptions), its employees (an LLM or a human), the LLM providers whose models its LLM employees run on, and the threads of messages its positions exchange. Everything is a plain file, to edit through the CLI or by hand.
+A company lives in a `.llmco/` folder, in the directory you run llmco from, which must be inside a git repository: the company itself, its positions (job descriptions), its employees (an LLM or a human), the LLM providers whose models its LLM employees run on, the threads of messages its positions exchange, their tasks, and the journal of what happens. Everything is a plain file, to edit through the CLI or by hand.
 
 `llmco init` also creates the director's position, the company's management.
 
@@ -26,9 +26,10 @@ llmco model create anthropic claude-opus-5-5 -n "Claude Opus 5.5" -a claude-opus
 llmco employee hire llm claude-senior -n "Claude Senior" -p anthropic -m claude-opus-5-5
 llmco position assign backend-developer claude-senior
 llmco thread create -s "Choice of framework" -b "@backend-developer Hono or Express for our API?"
+llmco run
 ```
 
-The last command prints the new thread's id, then Claude Senior's answer as it is written. `llmco --help` lists every command.
+`thread create` prints the new thread's id, and gives `@backend-developer` a task to catch up on the thread. `llmco run` runs it: Claude Senior reads the thread and answers in it, its run printed as it goes. `llmco --help` lists every command.
 
 ## Talking to employees
 
@@ -37,14 +38,14 @@ Positions talk through **threads**, like posts in a forum: a subject and message
 ```bash
 llmco message send <thread-id> -b "@backend-developer Why Hono?"
 llmco message send <thread-id> -F question.md         # or -F - for stdin
-llmco thread list                                      # with the positions each thread awaits
+llmco thread list                                      # with the positions that have a task pending there
 llmco thread show <thread-id>                          # in Markdown
 llmco thread show <thread-id> --json | jq -r .body     # one message per line
 ```
 
-Mentioning a position with `@<position-id>` asks whoever works it to act: an LLM employee answers right away, the answer printed as it streams; a human, or a vacant position, leaves the thread awaiting it. A message without mention asks nothing of anyone.
+Mentioning a position with `@<position-id>` gives it a task, to catch up on the thread; a message without mention asks nothing of anyone. Sending a message from a position completes its tasks in that thread.
 
-Whoever works a position is its default employee, unless the position is assigned temporarily: to another employee, or to the directors, the people working on the repository, so that no LLM answers its mentions meanwhile. The temporary assignment stays on your machine, in `.llmco/.state/`, which git ignores.
+Whoever works a position is its default employee, unless the position is assigned temporarily: to another employee, or to the directors, the people working on the repository, so that no LLM does its tasks meanwhile. The temporary assignment stays on your machine, in `.llmco/.state/`, which git ignores.
 
 ```bash
 llmco position interim employee backend-developer claude-junior   # another employee works it
@@ -59,6 +60,18 @@ llmco shell init bash --install         # once, then open a new terminal
 llmco current-human set julie           # the prompt shows (julie)
 llmco current-position set graphics     # (julie @graphics)
 llmco current-human clear               # (director)
+```
+
+## Running the company
+
+`llmco run` runs the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then it lists the tasks left waiting, for a vacant position, a human or the directors. An error of a provider's API stops it, and the next `llmco run` takes the task up again. Only `llmco run` calls LLMs: sending a message never does.
+
+Each run is a fresh conversation with the employee's model: who it is, the task's situation, such as the thread's unread messages, and tools to read earlier messages, to answer and to mark the task as done or failed. Its messages give tasks in turn, which the same `llmco run` runs. A chain of tasks, such as LLM employees mentioning each other, stops at the company's `maxTaskDepth`, 200 by default, set in `.llmco/company/config.json`.
+
+Everything that happens is recorded in the journal, `.llmco/journal/`, one file per event; tasks live in `.llmco/tasks/`. Each run's whole conversation stays on your machine, in `.llmco/.state/runs/`, which git ignores.
+
+```bash
+llmco run                                              # runs what is ready, then lists what waits
 ```
 
 ## Connecting to LLM providers
