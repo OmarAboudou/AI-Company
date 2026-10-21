@@ -16,7 +16,7 @@ import {
     reminderText,
     runToolLoop,
 } from "./run-tool-loop.ts"
-import { listRunTranscriptLines } from "./storage.ts"
+import { loadRun } from "./storage.ts"
 
 const fakeServer = useFakeAnthropicServer()
 let projectRoot: string
@@ -172,18 +172,17 @@ describe("runToolLoop", () => {
 
         await runFakeLoop()
 
-        const lines = await listRunTranscriptLines(projectRoot, runId)
+        const { conversation } = await loadRun(projectRoot, runId)
         const modelResponse = { payload: { stop_reason: "tool_use" } }
-        expect(lines).toMatchObject([
-            { type: "start", systemPrompt: "You are Claude Senior." },
-            { type: "turn", role: "user", blocks: [{ type: "text" }] },
+        expect(conversation.systemPrompt).toBe("You are Claude Senior.")
+        expect(conversation.turns).toMatchObject([
+            { role: "user", blocks: [{ type: "text" }] },
             {
-                type: "turn",
                 role: "assistant",
                 blocks: [{ type: "tool-call", name: "task_mark-as-done" }],
                 modelResponse,
             },
-            { type: "turn", role: "user", blocks: [{ type: "tool-result" }] },
+            { role: "user", blocks: [{ type: "tool-result" }] },
         ])
     })
 })
