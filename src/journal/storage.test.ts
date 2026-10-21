@@ -2,7 +2,12 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { listEvents, saveEvent } from "./storage.ts"
+import {
+    listEvents,
+    loadJournal,
+    refreshJournal,
+    saveEvent,
+} from "./storage.ts"
 
 let projectRoot: string
 
@@ -81,5 +86,47 @@ describe("saveEvent and listEvents", () => {
 
         await expect(overwriting).rejects.toThrow("EEXIST")
         expect(await listEvents(projectRoot)).toEqual([firstNoteWritten])
+    })
+})
+
+describe("loadJournal and refreshJournal", () => {
+    test("load every event into a view of the journal, oldest first", async () => {
+        await saveEvent(projectRoot, secondNoteWritten)
+        await saveEvent(projectRoot, firstNoteWritten)
+
+        const journal = await loadJournal(projectRoot)
+
+        expect(journal).toEqual({
+            projectRoot,
+            events: [firstNoteWritten, secondNoteWritten],
+        })
+    })
+
+    test("refresh adds only the events written since, each in its place", async () => {
+        await saveEvent(projectRoot, secondNoteWritten)
+        const journal = await loadJournal(projectRoot)
+        const thirdNoteWritten = {
+            ...secondNoteWritten,
+            id: "20261018-140400-000-9e3f",
+        }
+        await saveEvent(projectRoot, firstNoteWritten)
+        await saveEvent(projectRoot, thirdNoteWritten)
+
+        const newEvents = await refreshJournal(journal)
+
+        expect(newEvents).toEqual([firstNoteWritten, thirdNoteWritten])
+        expect(journal.events).toEqual([
+            firstNoteWritten,
+            secondNoteWritten,
+            thirdNoteWritten,
+        ])
+    })
+
+    test("refresh adds nothing when nothing was written since", async () => {
+        await saveEvent(projectRoot, firstNoteWritten)
+        const journal = await loadJournal(projectRoot)
+
+        expect(await refreshJournal(journal)).toEqual([])
+        expect(journal.events).toEqual([firstNoteWritten])
     })
 })
