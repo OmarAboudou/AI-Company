@@ -34,16 +34,14 @@ function getTasksToCreate(
         if (listenedEvent === undefined) {
             return []
         }
-        return listener
-            .getTasksToCreate(listenedEvent)
-            .map((uncreatedTask) => ({
-                ...uncreatedTask,
-                positionId: getCurrentId(
-                    positions,
-                    uncreatedTask.positionId,
-                    event.occurredAt,
-                ),
-            }))
+        return listener.getEffects(listenedEvent).map(({ task }) => ({
+            ...task,
+            positionId: getCurrentId(
+                positions,
+                task.positionId,
+                event.occurredAt,
+            ),
+        }))
     })
 }
 

@@ -5,11 +5,12 @@ import { defineListener } from "./define-listener.ts"
 
 export const catchUpListener = defineListener({
     eventType: messageSentEventType,
-    getTasksToCreate: ({ threadId, mentions }) =>
-        mentions.map((positionId) =>
-            createUncreatedTask(catchUpThreadTaskType, {
+    getEffects: ({ threadId, mentions }) =>
+        mentions.map((positionId) => ({
+            kind: "create-task",
+            task: createUncreatedTask(catchUpThreadTaskType, {
                 positionId,
                 params: { threadId },
             }),
-        ),
+        })),
 })
