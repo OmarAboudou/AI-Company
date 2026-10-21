@@ -5,6 +5,7 @@ import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.ts"
 import { saveEmployee } from "../../organization/employee/storage.ts"
 import { savePosition } from "../../organization/position/storage.ts"
+import { UserError } from "../../user-error.ts"
 import { createTask } from "./create-task.ts"
 import { listPendingTasks } from "./list-pending-tasks.ts"
 import { type Task, taskDoneEventType, taskStartedEventType } from "./schema.ts"
@@ -101,6 +102,23 @@ describe("listPendingTasks", () => {
             "vacant-position",
             "deleted-position",
         ])
+    })
+
+    test("refuses a position naming an employee who doesn't exist", async () => {
+        await savePosition(projectRoot, {
+            id: "designer",
+            title: "Designer",
+            description: "",
+            defaultEmployeeId: "bob",
+        })
+        await askPosition("designer")
+        const refusalMessage =
+            'Position "designer" names employee "bob", who doesn\'t exist.'
+
+        const listing = listPendingTasks(projectRoot)
+
+        await expect(listing).rejects.toThrow(UserError)
+        await expect(listing).rejects.toThrow(refusalMessage)
     })
 
     test("lists as waiting a task of a type it doesn't know", async () => {
