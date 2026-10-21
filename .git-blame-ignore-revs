@@ -231,3 +231,11 @@ d2590269f0e5a02d42f8e86f1d4907c3854752aa
 
 # Rename task-completed to task-done, and the state succeeded to done
 0a8208a4fdba56fa1534461cd2340b5575374026
+
+# The refactoring pass before the second series of #123 (#129), as it landed on main
+
+# Name an event type's schema after what it checks: recording
+69b4f4ca1f9e2e8c8183304822240328090dfef6
+
+# End the names of the files only tests use with .testing.ts
+a6170e9669675b40eb5aece16f31229904a66dd8
