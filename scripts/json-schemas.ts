@@ -14,6 +14,7 @@ import {
     PositionConfigSchema,
     PositionStateSchema,
 } from "../src/organization/position/schema.ts"
+import { DispatchedEventsSchema } from "../src/work/listener/schema.ts"
 import { TaskSchema } from "../src/work/task/schema.ts"
 
 const publicationUrl =
@@ -32,6 +33,7 @@ const zodSchemas = {
     task: TaskSchema,
     "id-history": IdHistorySchema,
     "position-state": PositionStateSchema,
+    "dispatched-events": DispatchedEventsSchema,
 }
 
 export const jsonSchemas = Object.fromEntries(
