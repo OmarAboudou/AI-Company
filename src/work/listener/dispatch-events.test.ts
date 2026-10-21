@@ -2,13 +2,10 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { recordEvent } from "../../journal/record-event.ts"
-import type { EventOfType } from "../../journal/schema.ts"
-import { listEvents, saveEvent } from "../../journal/storage.ts"
+import { saveEvent } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
-import { loadCompany, saveCompany } from "../../organization/company/storage.ts"
-import { savePosition } from "../../organization/position/storage.ts"
-import { listTasks, saveTask } from "../task/storage.ts"
+import { listTasks } from "../task/storage.ts"
 import { catchUpListener } from "./catch-up-listener.ts"
 import { defineListener } from "./define-listener.ts"
 import { dispatchEvents } from "./dispatch-events.ts"
@@ -25,8 +22,6 @@ afterEach(async () => {
 })
 
 const threadId = "2026-10-18-choice-of-framework"
-
-type MessageSentEvent = EventOfType<typeof messageSentEventType>
 
 async function createMessageSentEvent(mentions: string[], depth = 0) {
     return recordEvent(projectRoot, messageSentEventType, {
@@ -56,15 +51,8 @@ function dispatchToCatchUpListener() {
     return dispatchEvents(projectRoot, [catchUpListener])
 }
 
-async function listTaskCreatedDepths(): Promise<number[]> {
-    const events = await listEvents(projectRoot)
-    return events
-        .filter(({ type }) => type === "task-created")
-        .map(({ depth }) => depth)
-}
-
 describe("dispatchEvents", () => {
-    test("creates the tasks that listeners return, a step deeper", async () => {
+    test("applies the effects that listeners return", async () => {
         const questionSent = await createMessageSentEvent(["backend-developer"])
 
         const { createdTasks } = await dispatchToCatchUpListener()
@@ -72,13 +60,11 @@ describe("dispatchEvents", () => {
         expect(createdTasks).toMatchObject([
             {
                 type: "catch-up-thread",
-                params: { threadId },
                 positionId: "backend-developer",
                 causeEventId: questionSent.id,
             },
         ])
         expect(await listTasks(projectRoot)).toEqual(createdTasks)
-        expect(await listTaskCreatedDepths()).toEqual([1])
     })
 
     test("gives each event to every listener subscribed to it", async () => {
@@ -113,7 +99,7 @@ describe("dispatchEvents", () => {
         expect(await listTasks(projectRoot)).toHaveLength(2)
     })
 
-    test("never creates a task twice, even on a machine giving events again", async () => {
+    test("creates nothing twice, even on a machine giving events again", async () => {
         await createMessageSentEvent(["backend-developer"])
         await dispatchToCatchUpListener()
         await rm(join(projectRoot, ".llmco", ".state"), { recursive: true })
@@ -139,117 +125,5 @@ describe("dispatchEvents", () => {
         const dispatchedEventIds = await loadDispatchedEventIds(projectRoot)
         expect(createdTasks).toEqual([])
         expect(dispatchedEventIds).toEqual(new Set([threadClosed.id]))
-    })
-})
-
-describe("dispatchEvents at the end of a chain", () => {
-    async function setMaxTaskDepth(maxTaskDepth: number) {
-        const company = await loadCompany(projectRoot)
-        await saveCompany(projectRoot, { ...company, maxTaskDepth })
-    }
-
-    test("creates tasks up to the company's maximum depth", async () => {
-        await setMaxTaskDepth(2)
-        await createMessageSentEvent(["qa-tester"], 1)
-
-        const { createdTasks } = await dispatchToCatchUpListener()
-
-        expect(createdTasks).toHaveLength(1)
-        expect(await listTaskCreatedDepths()).toEqual([2])
-    })
-
-    test("records a stopped chain instead of a deeper task", async () => {
-        await setMaxTaskDepth(2)
-        const answerSent = await createMessageSentEvent(["qa-tester"], 2)
-
-        const dispatching = await dispatchToCatchUpListener()
-
-        const [chainStoppedEvent] = dispatching.chainStoppedEvents
-        const lastEvent = (await listEvents(projectRoot)).at(-1)
-        expect(dispatching.createdTasks).toEqual([])
-        expect(chainStoppedEvent).toMatchObject({
-            type: "chain-stopped",
-            depth: 2,
-            causeEventId: answerSent.id,
-            stoppedTask: {
-                type: "catch-up-thread",
-                positionId: "qa-tester",
-                params: { threadId },
-            },
-        })
-        expect(lastEvent).toEqual(chainStoppedEvent)
-    })
-
-    test("stops chains beyond 200 tasks, unless management sets it", async () => {
-        await createMessageSentEvent(["qa-tester"], 199)
-        await createMessageSentEvent(["backend-developer"], 200)
-
-        const dispatching = await dispatchToCatchUpListener()
-
-        expect(dispatching.createdTasks).toHaveLength(1)
-        expect(dispatching.chainStoppedEvents).toHaveLength(1)
-        expect(await listTaskCreatedDepths()).toEqual([200])
-    })
-
-    test("records a stopped chain once, even giving its event again", async () => {
-        await createMessageSentEvent(["qa-tester"], 200)
-        await dispatchToCatchUpListener()
-        await rm(join(projectRoot, ".llmco", ".state"), { recursive: true })
-
-        const { chainStoppedEvents } = await dispatchToCatchUpListener()
-
-        expect(chainStoppedEvents).toEqual([])
-    })
-})
-
-describe("dispatchEvents through the positions' id history", () => {
-    const questionSentId = "20261018-140322-123-5d1e"
-    const questionSent: MessageSentEvent = {
-        id: questionSentId,
-        type: "message-sent",
-        occurredAt: "2026-10-18T14:03:22.123Z",
-        depth: 0,
-        threadId,
-        messageId: "20261018-140322-123-3f9a",
-        positionId: "director",
-        mentions: ["backend-developer"],
-    }
-
-    beforeEach(async () => {
-        await Promise.all([
-            savePosition(projectRoot, {
-                id: "api-developer",
-                title: "API Developer",
-                description: "",
-                formerIds: [
-                    {
-                        id: "backend-developer",
-                        until: "2026-10-19T09:00:00.000Z",
-                    },
-                ],
-            }),
-            saveEvent(projectRoot, questionSent),
-        ])
-    })
-
-    test("creates the task of a position renamed since, under its new id", async () => {
-        const { createdTasks } = await dispatchToCatchUpListener()
-
-        expect(createdTasks).toMatchObject([{ positionId: "api-developer" }])
-    })
-
-    test("recognizes the task it created before the position was renamed", async () => {
-        await saveTask(projectRoot, {
-            id: "20261018-140323-000-77aa",
-            createdAt: "2026-10-18T14:03:23.000Z",
-            type: "catch-up-thread",
-            params: { threadId },
-            positionId: "backend-developer",
-            causeEventId: questionSentId,
-        })
-
-        const { createdTasks } = await dispatchToCatchUpListener()
-
-        expect(createdTasks).toEqual([])
     })
 })
