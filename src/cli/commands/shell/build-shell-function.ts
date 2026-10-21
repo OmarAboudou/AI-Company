@@ -1,4 +1,5 @@
 // biome-ignore-all lint/suspicious/noTemplateCurlyInString: these strings are shell code, whose ${…} the shell expands.
+import { shellCodeCommands } from "./shell-code-commands.ts"
 import { rcFileNames, type Shell } from "./shells.ts"
 
 const promptRegistrations: Record<Shell, string[]> = {
@@ -18,7 +19,7 @@ export function buildShellFunction(shell: Shell): string {
         `# llmco's shell function, which current-human and current-position set and clear need, and the prompt's label: add eval "$(llmco shell init ${shell})" to ~/${rcFileNames[shell]}`,
         "llmco() {",
         '    case "${1-} ${2-}" in',
-        '    "current-human set" | "current-human clear" | "whoami set" | "whoami clear" | "current-position set" | "current-position clear")',
+        `    ${shellCodeCommands.map((command) => `"${command}"`).join(" | ")})`,
         "        local shell_code",
         '        shell_code="$(command llmco "$@" --shell-code)" || return',
         '        eval "$shell_code"',
