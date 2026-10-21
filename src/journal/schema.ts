@@ -130,4 +130,13 @@ export const JournalEventSchema = z
 
 export type JournalEvent = z.infer<typeof JournalEventSchema> & { id: string }
 
-export type ChainStoppedEvent = Extract<JournalEvent, { type: "chain-stopped" }>
+export type EventType<Schema extends z.ZodType = z.ZodType> = {
+    type: string
+    schema: Schema
+}
+
+export type EventOfType<Type extends EventType> = z.infer<Type["schema"]> & {
+    id: string
+}
+
+export type ChainStoppedEvent = EventOfType<typeof chainStoppedEventType>

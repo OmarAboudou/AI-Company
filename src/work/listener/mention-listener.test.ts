@@ -17,9 +17,7 @@ function createMessageSentEvent(mentions: string[]) {
 }
 
 function getNewTasks(mentions: string[]) {
-    return mentionListener.on["message-sent"]?.(
-        createMessageSentEvent(mentions),
-    )
+    return mentionListener.getNewTasks(createMessageSentEvent(mentions))
 }
 
 describe("mentionListener", () => {

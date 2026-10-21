@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { recordEvent } from "../../journal/record-event.ts"
+import { messageSentEventType } from "../../journal/schema.ts"
 import { listEvents, saveEvent } from "../../journal/storage.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.ts"
 import { loadCompany, saveCompany } from "../../organization/company/storage.ts"
@@ -35,15 +36,14 @@ async function createMessageSentEvent(mentions: string[], depth = 0) {
 }
 
 const reviewListener = defineListener({
-    on: {
-        "message-sent": ({ threadId }) => [
-            {
-                type: "review-thread",
-                positionId: "qa-tester",
-                params: { threadId },
-            },
-        ],
-    },
+    eventType: messageSentEventType,
+    getNewTasks: ({ threadId }) => [
+        {
+            type: "review-thread",
+            positionId: "qa-tester",
+            params: { threadId },
+        },
+    ],
 })
 
 function dispatchToMentionListener() {
