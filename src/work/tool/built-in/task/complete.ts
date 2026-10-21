@@ -3,7 +3,7 @@ import { defineTool } from "../../define-tool.ts"
 
 export const taskCompleteTool = defineTool({
     description:
-        "Complete your task once it is done, with a summary of what you did. Your run ends with the turn that calls it: call it last, once every other tool of your work has run.",
+        "Complete your task once it is done, with a summary of what you did. Call it last, with or after the other tools your task needs: you get no turn after the one that calls it.",
     inputSchema: z.strictObject({
         summary: z.string().trim().min(1).meta({
             description:
@@ -11,7 +11,7 @@ export const taskCompleteTool = defineTool({
         }),
     }),
     execute: async ({ summary }) => ({
-        text: "Your task is completed: your run ends here.",
+        text: "Task completed.",
         taskEnding: { state: "succeeded", summary },
     }),
 })
