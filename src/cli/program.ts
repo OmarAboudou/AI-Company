@@ -8,6 +8,7 @@ import { registerMessageCommands } from "./commands/message/message.ts"
 import { registerModelCommands } from "./commands/model/model.ts"
 import { registerPositionCommands } from "./commands/position/position.ts"
 import { registerProviderCommands } from "./commands/provider/provider.ts"
+import { registerRunCommand } from "./commands/run.ts"
 import { registerShellCommands } from "./commands/shell/shell.ts"
 import { registerThreadCommands } from "./commands/thread/thread.ts"
 
@@ -24,6 +25,7 @@ export function createProgram(): Command {
     registerModelCommands(program)
     registerThreadCommands(program)
     registerMessageCommands(program)
+    registerRunCommand(program)
     registerCurrentHumanCommands(program)
     registerCurrentPositionCommands(program)
     registerShellCommands(program)
