@@ -1,5 +1,5 @@
 import type { Command } from "@commander-js/extra-typings"
-import { protocols } from "../../../llm/connection/schema.ts"
+import { getConnectedProtocols } from "../../../llm/connection/get-connected-protocols.ts"
 import { listLlmModels } from "../../../llm/model/storage.ts"
 import { loadExistingLlmProvider } from "../../../llm/provider/load-existing-llm-provider.ts"
 import type { ApiKeySource } from "../../../llm/provider/schema.ts"
@@ -31,9 +31,7 @@ export function registerProviderShowCommand(providerCommand: Command): void {
             const provider = await loadExistingLlmProvider(projectRoot, rawId)
             const models = await listLlmModels(projectRoot, provider.id)
             const modelIds = models.map(({ id }) => id)
-            const connectedProtocols = protocols.filter(
-                (protocol) => provider.connections?.[protocol] !== undefined,
-            )
+            const connectedProtocols = getConnectedProtocols(provider)
             const lines = [
                 `# ${provider.name}`,
                 "",
