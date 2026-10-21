@@ -33,45 +33,6 @@ export function defineEventType<
     return { type, schema }
 }
 
-const TaskIdSchema = IdSchema.meta({
-    description: "Id of the task, i.e. the name of its file in .llmco/tasks.",
-})
-
-export const taskCreatedEventType = defineEventType({
-    type: "task-created",
-    description:
-        "A task was created for a position, and waits for whoever works it.",
-    fields: { taskId: TaskIdSchema },
-})
-
-export const taskStartedEventType = defineEventType({
-    type: "task-started",
-    description: "Whoever works the task's position started it.",
-    fields: { taskId: TaskIdSchema },
-})
-
-export const taskCompletedEventType = defineEventType({
-    type: "task-completed",
-    description: "The task was done.",
-    fields: {
-        taskId: TaskIdSchema,
-        summary: z.string().trim().min(1).meta({
-            description: "What was done, as whoever did it sums it up.",
-        }),
-    },
-})
-
-export const taskFailedEventType = defineEventType({
-    type: "task-failed",
-    description: "The task was given up.",
-    fields: {
-        taskId: TaskIdSchema,
-        reason: z.string().trim().min(1).meta({
-            description: "Why the task was given up.",
-        }),
-    },
-})
-
 export const chainStoppedEventType = defineEventType({
     type: "chain-stopped",
     description:

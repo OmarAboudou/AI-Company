@@ -3,10 +3,6 @@ import { IdHistorySchema } from "../src/ids/id-history-schema.ts"
 import {
     chainStoppedEventType,
     JournalEventSchema,
-    taskCompletedEventType,
-    taskCreatedEventType,
-    taskFailedEventType,
-    taskStartedEventType,
 } from "../src/journal/schema.ts"
 import { LlmModelConfigSchema } from "../src/llm/model/schema.ts"
 import { LlmProviderConfigSchema } from "../src/llm/provider/schema.ts"
@@ -23,7 +19,13 @@ import {
     PositionStateSchema,
 } from "../src/organization/position/schema.ts"
 import { DispatchedEventsSchema } from "../src/work/listener/schema.ts"
-import { TaskSchema } from "../src/work/task/schema.ts"
+import {
+    TaskSchema,
+    taskCompletedEventType,
+    taskCreatedEventType,
+    taskFailedEventType,
+    taskStartedEventType,
+} from "../src/work/task/schema.ts"
 
 const publicationUrl =
     "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas"

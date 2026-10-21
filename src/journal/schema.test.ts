@@ -3,10 +3,6 @@ import {
     chainStoppedEventType,
     type EventType,
     JournalEventSchema,
-    taskCompletedEventType,
-    taskCreatedEventType,
-    taskFailedEventType,
-    taskStartedEventType,
 } from "./schema.ts"
 
 const threadClosedEvent = {
@@ -41,37 +37,6 @@ describe("JournalEventSchema", () => {
 
         expect(accepts(eventWithoutDepth)).toBe(false)
         expect(accepts(eventWithInvalidType)).toBe(false)
-    })
-})
-
-describe("the task event types", () => {
-    const taskEvent = {
-        occurredAt: "2026-10-18T14:03:23.000Z",
-        depth: 1,
-        taskId: "20261018-140323-000-77aa",
-    }
-
-    test.each([
-        [taskCreatedEventType, {}],
-        [taskStartedEventType, {}],
-        [taskCompletedEventType, { summary: "Answered: Hono, for Bun." }],
-        [taskFailedEventType, { reason: "The thread asks nothing." }],
-    ])("accept their events, with the task's id", (eventType, fields) => {
-        const event = { ...taskEvent, type: eventType.type, ...fields }
-
-        expect(isAcceptedBy(eventType, event)).toBe(true)
-    })
-
-    test("require a summary to complete a task", () => {
-        const event = { ...taskEvent, type: "task-completed", summary: " " }
-
-        expect(isAcceptedBy(taskCompletedEventType, event)).toBe(false)
-    })
-
-    test("require a reason to give a task up", () => {
-        const event = { ...taskEvent, type: "task-failed" }
-
-        expect(isAcceptedBy(taskFailedEventType, event)).toBe(false)
     })
 })
 

@@ -1,8 +1,7 @@
 import { createTimeOrderedId } from "../../ids/create-time-ordered-id.ts"
 import { recordEvent } from "../../journal/record-event.ts"
-import { taskCreatedEventType } from "../../journal/schema.ts"
 import { readMonotonicTime } from "../../read-monotonic-time.ts"
-import type { Task } from "./schema.ts"
+import { type Task, taskCreatedEventType } from "./schema.ts"
 import { saveTask } from "./storage.ts"
 
 export async function createTask(

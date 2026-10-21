@@ -1,13 +1,12 @@
 import { getEventOfType } from "../../journal/get-event-of-type.ts"
+import type { EventType, JournalEvent } from "../../journal/schema.ts"
 import {
-    type EventType,
-    type JournalEvent,
+    type Task,
     taskCompletedEventType,
     taskCreatedEventType,
     taskFailedEventType,
     taskStartedEventType,
-} from "../../journal/schema.ts"
-import type { Task } from "./schema.ts"
+} from "./schema.ts"
 
 export type TaskState = "waiting" | "running" | "succeeded" | "failed"
 
