@@ -1,5 +1,3 @@
-import { z } from "zod"
-import { IdSchema } from "../../../../ids/id-schema.ts"
 import { getEventOfType } from "../../../../journal/get-event-of-type.ts"
 import { listEvents } from "../../../../journal/storage.ts"
 import { messageSentEventType } from "../../../../messaging/message/schema.ts"
@@ -11,14 +9,10 @@ import { listTasks } from "../../../task/storage.ts"
 import { defineTaskType } from "../../define-task-type.ts"
 import { buildCatchUpMessage } from "./build-catch-up-message.ts"
 import { getLastReadEntryId } from "./get-last-read-entry-id.ts"
+import { CatchUpThreadParamsSchema } from "./schema.ts"
 
 export const catchUpThreadTaskType = defineTaskType({
-    paramsSchema: z.strictObject({
-        threadId: IdSchema.meta({
-            description:
-                "Id of the thread to catch up on, i.e. the name of its folder in .llmco/threads.",
-        }),
-    }),
+    paramsSchema: CatchUpThreadParamsSchema,
     async createSession({ threadId }, { projectRoot, position, causeEvent }) {
         const [thread, messages, tasks, events, positions] = await Promise.all([
             loadThread(projectRoot, threadId),
