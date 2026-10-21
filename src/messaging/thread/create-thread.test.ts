@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { createGitRepository } from "../../git/create-git-repository.ts"
+import { listEvents } from "../../journal/storage.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.ts"
 import { assignPositionTemporarily } from "../../organization/position/assign-position-temporarily.ts"
 import { savePosition } from "../../organization/position/storage.ts"
@@ -63,6 +64,7 @@ describe("createThread", () => {
         const messages = await listMessages(projectRoot, creation.thread.id)
         expect(creation.firstMessage).toBeUndefined()
         expect(messages).toEqual([])
+        expect(await listEvents(projectRoot)).toEqual([])
     })
 
     test("sends the body as the thread's first message", async () => {
@@ -77,6 +79,22 @@ describe("createThread", () => {
         expect(messages).toHaveLength(1)
         expect(messages[0]).toEqual(creation.firstMessage)
         expect(messages[0]).toMatchObject({ body, mentions: ["qa-tester"] })
+    })
+
+    test("records in the journal that a person sent the first message", async () => {
+        const creation = await createThread(projectRoot, {
+            subject: "Tests",
+            body: "@qa-tester, a test plan?",
+        })
+
+        const messageSentEvent = {
+            type: "message-sent",
+            depth: 0,
+            threadId: creation.thread.id,
+            messageId: creation.firstMessage?.id,
+            mentions: ["qa-tester"],
+        }
+        expect(await listEvents(projectRoot)).toMatchObject([messageSentEvent])
     })
 
     test("returns the mentions that name no position", async () => {

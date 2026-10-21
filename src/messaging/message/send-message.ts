@@ -25,7 +25,12 @@ export async function sendMessage(
     })
     const unsentMessage = await createUnsentMessage(projectRoot, author, body)
     return {
-        message: await sendUnsentMessage(projectRoot, thread.id, unsentMessage),
+        message: await sendUnsentMessage(
+            projectRoot,
+            thread.id,
+            unsentMessage,
+            { depth: 0 },
+        ),
         unknownMentionIds: unsentMessage.unknownMentionIds,
     }
 }
