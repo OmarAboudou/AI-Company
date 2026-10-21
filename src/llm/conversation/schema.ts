@@ -104,6 +104,8 @@ const ModelResponseSchema = z
             "The response of the model that took the turn, through its protocol. Absent for a person's turn.",
     })
 
+export type ModelResponse = z.infer<typeof ModelResponseSchema>
+
 export const AssistantTurnSchema = z
     .strictObject({
         role: z.literal("assistant"),
