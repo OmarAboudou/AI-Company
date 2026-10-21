@@ -1,8 +1,7 @@
 import type { Command } from "@commander-js/extra-typings"
-import { getAwaitedIds } from "../../../messaging/thread/get-awaited-ids.ts"
-import { listArchives } from "../../../messaging/thread/list-archives.ts"
+import { listThreads } from "../../../messaging/thread/storage.ts"
 import { requireCompany } from "../../../organization/company/require-company.ts"
-import { listPositions } from "../../../organization/position/storage.ts"
+import { loadPendingPositionIdsByThread } from "../../../work/task/load-pending-position-ids-by-thread.ts"
 import { printColumns } from "../../print-columns.ts"
 import { projectRoot } from "../../project-root.ts"
 import { formatMentions } from "./format-mentions.ts"
@@ -11,30 +10,27 @@ export function registerThreadListCommand(threadCommand: Command): void {
     threadCommand
         .command("list")
         .description(
-            "List the threads, oldest first, with the positions they await.",
+            "List the threads, oldest first, with the positions that have a pending task there.",
         )
         .action(async () => {
             await requireCompany(projectRoot)
-            const [archives, positions] = await Promise.all([
-                listArchives(projectRoot),
-                listPositions(projectRoot),
+            const [threads, pendingPositionIdsByThread] = await Promise.all([
+                listThreads(projectRoot),
+                loadPendingPositionIdsByThread(projectRoot),
             ])
-            if (archives.length === 0) {
+            if (threads.length === 0) {
                 console.log("No threads yet. Run `llmco thread create`.")
                 return
             }
             printColumns(
-                archives.map(({ thread, messages }) => {
-                    const awaitedIds = getAwaitedIds(
-                        thread,
-                        messages,
-                        positions,
-                    )
+                threads.map((thread) => {
+                    const pendingPositionIds =
+                        pendingPositionIdsByThread.get(thread.id) ?? []
                     return [
                         thread.id,
                         thread.subject,
-                        awaitedIds.length > 0
-                            ? `awaiting ${formatMentions(awaitedIds)}`
+                        pendingPositionIds.length > 0
+                            ? `tasks pending for ${formatMentions(pendingPositionIds)}`
                             : "",
                     ]
                 }),

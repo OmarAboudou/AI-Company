@@ -60,12 +60,12 @@ describe("mentions", () => {
         runCli("position", "create", "qa-tester", "-t", "QA Tester")
     })
 
-    test("thread show lists the members and the awaited positions", () => {
+    test("thread show lists the members and those with a pending task", () => {
         runCli("message", "send", threadId, "-b", "@qa-tester, a test plan?")
 
         const show = runCli("thread", "show", threadId).stdout
 
         expect(show).toContain("Members: @director, @qa-tester.\n")
-        expect(show).toContain("Awaiting: @qa-tester.\n")
+        expect(show).toContain("Tasks pending for @qa-tester.\n")
     })
 })
