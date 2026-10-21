@@ -30,6 +30,24 @@ export type RunToolLoopResult = { taskEnding: TaskEnding; usage: TokenUsage }
 export const reminderText =
     "You ended your turn without calling a tool, and only tools act: what you write outside them reaches no one. Call task_complete with a summary if your task is done, or task_fail with the reason if you can't do it."
 
+// Settings (#35) will let management choose it.
+export const maxToolCallsPerRun = 50
+
+function getStopFailureReason(message: Anthropic.Message): string | undefined {
+    switch (message.stop_reason) {
+        case "refusal": {
+            const category = message.stop_details?.category
+            return `The model's provider declined to go on (refusal${category ? `, ${category}` : ""}).`
+        }
+        case "max_tokens":
+            return "The model's turn was cut at its maximum length."
+        case "model_context_window_exceeded":
+            return "The run's conversation outgrew the model's context window."
+        default:
+            return undefined
+    }
+}
+
 function addUsage(usage: TokenUsage, addedUsage: Anthropic.Usage): TokenUsage {
     return {
         inputTokens: usage.inputTokens + addedUsage.input_tokens,
@@ -75,6 +93,7 @@ export async function runToolLoop(loop: ToolLoop): Promise<RunToolLoopResult> {
         cacheCreationInputTokens: 0,
     }
     let hasBeenReminded = false
+    let toolCallCount = 0
     async function addUserTurn(content: Anthropic.ContentBlockParam[]) {
         turns.push({ role: "user", content })
         await appendRunTranscriptLine(ctx.projectRoot, ctx.runId, {
@@ -105,9 +124,23 @@ export async function runToolLoop(loop: ToolLoop): Promise<RunToolLoopResult> {
             message,
         })
         usage = addUsage(usage, message.usage)
+        // A refusal or a cut can stop a tool call halfway through its input,
+        // so none of this turn's calls runs.
+        const stopFailureReason = getStopFailureReason(message)
+        if (stopFailureReason !== undefined) {
+            return {
+                taskEnding: { state: "failed", reason: stopFailureReason },
+                usage,
+            }
+        }
         const toolUses = message.content.filter(
             (block) => block.type === "tool_use",
         )
+        if (toolCallCount + toolUses.length > maxToolCallsPerRun) {
+            const reason = `The run went beyond ${maxToolCallsPerRun} tool calls without ending its task.`
+            return { taskEnding: { state: "failed", reason }, usage }
+        }
+        toolCallCount += toolUses.length
         if (toolUses.length === 0) {
             if (hasBeenReminded) {
                 const reason =

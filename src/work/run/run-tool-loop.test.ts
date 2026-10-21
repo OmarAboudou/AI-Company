@@ -8,7 +8,12 @@ import { taskCompleteTool } from "../tool/built-in/task/complete.ts"
 import { taskFailTool } from "../tool/built-in/task/fail.ts"
 import { defineTool, type ToolContext } from "../tool/define-tool.ts"
 import { getAnthropicTools } from "./get-anthropic-tools.ts"
-import { type RunProgress, reminderText, runToolLoop } from "./run-tool-loop.ts"
+import {
+    maxToolCallsPerRun,
+    type RunProgress,
+    reminderText,
+    runToolLoop,
+} from "./run-tool-loop.ts"
 import { listRunTranscriptLines } from "./storage.ts"
 
 const fakeServer = useFakeAnthropicServer()
@@ -220,4 +225,45 @@ describe("runToolLoop after a turn without any tool call", () => {
         })
         expect(fakeServer.requests).toHaveLength(2)
     })
+})
+
+describe("runToolLoop at its limits", () => {
+    function createNoteWritings(count: number) {
+        return Array.from({ length: count }, (_, index) => ({
+            name: "note_write",
+            input: { text: `note ${index}` },
+        }))
+    }
+
+    test("fails the task rather than go beyond its tool calls", async () => {
+        const firstToolCalls = createNoteWritings(maxToolCallsPerRun - 1)
+        fakeServer.respondWith(
+            { toolCalls: firstToolCalls },
+            { toolCalls: createNoteWritings(2) },
+        )
+
+        const { taskEnding } = await runFakeLoop()
+
+        const reason = `The run went beyond ${maxToolCallsPerRun} tool calls without ending its task.`
+        expect(taskEnding).toEqual({ state: "failed", reason })
+        expect(writtenNotes).toHaveLength(maxToolCallsPerRun - 1)
+    })
+
+    test.each([
+        ["refusal", "The model's provider declined to go on (refusal)."],
+        ["max_tokens", "The model's turn was cut at its maximum length."],
+    ] as const)(
+        "fails the task, running no tool, on a %s",
+        async (stopReason, reason) => {
+            fakeServer.respondWith({
+                toolCalls: createNoteWritings(1),
+                stopReason,
+            })
+
+            const { taskEnding } = await runFakeLoop()
+
+            expect(taskEnding).toEqual({ state: "failed", reason })
+            expect(writtenNotes).toEqual([])
+        },
+    )
 })
