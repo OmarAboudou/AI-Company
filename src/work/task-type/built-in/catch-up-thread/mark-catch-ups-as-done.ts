@@ -7,6 +7,7 @@ import { getTaskStates } from "../../../task/get-task-states.ts"
 import { isPendingTask } from "../../../task/is-pending-task.ts"
 import { type Task, taskDoneEventType } from "../../../task/schema.ts"
 import { listTasks } from "../../../task/storage.ts"
+import { catchUpThreadTypeName } from "./schema.ts"
 
 export async function markCatchUpsAsDone(
     projectRoot: string,
@@ -20,7 +21,7 @@ export async function markCatchUpsAsDone(
     const taskStates = getTaskStates(tasks, events)
     const catchUps = tasks.filter(
         (task) =>
-            task.type === "catch-up-thread" &&
+            task.type === catchUpThreadTypeName &&
             task.params.threadId === message.threadId &&
             getTaskPositionId(task, positions) === positionId &&
             isPendingTask(task, taskStates),

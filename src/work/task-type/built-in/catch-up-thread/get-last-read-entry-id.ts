@@ -3,6 +3,7 @@ import { getEventOfType } from "../../../../journal/get-event-of-type.ts"
 import type { JournalEvent } from "../../../../journal/schema.ts"
 import { getTaskPositionId } from "../../../task/get-task-position-id.ts"
 import { type Task, taskDoneEventType } from "../../../task/schema.ts"
+import { catchUpThreadTypeName } from "./schema.ts"
 
 export function getLastReadEntryId(
     tasks: Task[],
@@ -14,7 +15,7 @@ export function getLastReadEntryId(
         tasks
             .filter(
                 (task) =>
-                    task.type === "catch-up-thread" &&
+                    task.type === catchUpThreadTypeName &&
                     task.params.threadId === threadId &&
                     getTaskPositionId(task, positions) === positionId,
             )
