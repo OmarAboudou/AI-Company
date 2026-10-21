@@ -17,40 +17,38 @@ import { createTask } from "../../../task/create-task.ts"
 import { type Task, taskDoneEventType } from "../../../task/schema.ts"
 import { catchUpThreadTaskType } from "./catch-up-thread.ts"
 
-const variableName = "LLMCO_CURRENT_HUMAN_ID"
-const shellValue = process.env[variableName]
 const position: Position = {
     id: "backend-developer",
     title: "Backend Developer",
     description: "",
 }
+let environment: NodeJS.ProcessEnv
 let projectRoot: string
 let threadId: string
 
 beforeEach(async () => {
-    delete process.env[variableName]
+    environment = {}
     projectRoot = await createTemporaryCompany()
     createGitRepository(projectRoot, {
         name: "Omar Aboudou",
         email: "omar@example.com",
     })
     await savePosition(projectRoot, position)
-    const { thread } = await createThread(projectRoot, { subject: "Stack" })
+    const { thread } = await createThread(projectRoot, environment, {
+        subject: "Stack",
+    })
     threadId = thread.id
 })
 
 afterEach(async () => {
-    if (shellValue === undefined) {
-        delete process.env[variableName]
-    } else {
-        process.env[variableName] = shellValue
-    }
     await rm(projectRoot, { recursive: true, force: true })
 })
 
 async function askDeveloper(question: string) {
     const body = `@backend-developer ${question}`
-    const sending = await sendMessage(projectRoot, threadId, { body })
+    const sending = await sendMessage(projectRoot, environment, threadId, {
+        body,
+    })
     const [catchUp] = sending.createdTasks
     if (catchUp === undefined) {
         throw new Error("Sending the question created no task")

@@ -20,6 +20,7 @@ export type CreateThreadResult = {
 
 export async function createThread(
     projectRoot: string,
+    environment: NodeJS.ProcessEnv,
     {
         subject,
         body,
@@ -27,7 +28,9 @@ export async function createThread(
     }: { subject: string; body?: string; asPositionId?: string },
 ): Promise<CreateThreadResult> {
     await requireCompany(projectRoot)
-    const author = await readCurrentAuthor(projectRoot, { asPositionId })
+    const author = await readCurrentAuthor(projectRoot, environment, {
+        asPositionId,
+    })
     const unsentFirstMessage =
         body === undefined
             ? undefined

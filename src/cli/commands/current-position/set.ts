@@ -23,6 +23,7 @@ export function registerCurrentPositionSetCommand(
             requireShellFunction(shouldPrintShellCode)
             const position = await setCurrentPosition(
                 projectRoot,
+                process.env,
                 rawPositionId,
             )
             process.stdout.write(buildCurrentPositionCode(position.id))

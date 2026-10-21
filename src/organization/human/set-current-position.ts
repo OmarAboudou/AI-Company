@@ -7,11 +7,12 @@ import { requireWorkedPosition } from "./require-worked-position.ts"
 
 export async function setCurrentPosition(
     projectRoot: string,
+    environment: NodeJS.ProcessEnv,
     rawPositionId: string,
 ): Promise<Position> {
     await requireCompany(projectRoot)
     const [human, assignments] = await Promise.all([
-        readCurrentHuman(projectRoot),
+        readCurrentHuman(projectRoot, environment),
         listPositionAssignments(projectRoot),
     ])
     const workedAssignments = getPositionsWorkedBy(assignments, human)

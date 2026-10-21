@@ -15,14 +15,13 @@ import { messageSentEventType } from "./schema.ts"
 import { sendMessage } from "./send-message.ts"
 import { listMessages } from "./storage.ts"
 
-const variableName = "LLMCO_CURRENT_HUMAN_ID"
-const shellValue = process.env[variableName]
 const committer = { name: "Test User", email: "test@example.com" }
+let environment: NodeJS.ProcessEnv
 let projectRoot: string
 let threadId: string
 
 beforeEach(async () => {
-    delete process.env[variableName]
+    environment = {}
     projectRoot = await createTemporaryCompany()
     createGitRepository(projectRoot, committer)
     await savePosition(projectRoot, {
@@ -30,18 +29,19 @@ beforeEach(async () => {
         title: "QA Tester",
         description: "",
     })
-    const { thread } = await createThread(projectRoot, { subject: "Budget" })
+    const { thread } = await createThread(projectRoot, environment, {
+        subject: "Budget",
+    })
     threadId = thread.id
 })
 
 afterEach(async () => {
-    if (shellValue === undefined) {
-        delete process.env[variableName]
-    } else {
-        process.env[variableName] = shellValue
-    }
     await rm(projectRoot, { recursive: true, force: true })
 })
+
+function sendInThread(body: string) {
+    return sendMessage(projectRoot, environment, threadId, { body })
+}
 
 async function listBodies(): Promise<string[]> {
     const messages = await listMessages(projectRoot, threadId)
@@ -50,11 +50,9 @@ async function listBodies(): Promise<string[]> {
 
 describe("sendMessage", () => {
     test("adds the message at the end of the thread", async () => {
-        await sendMessage(projectRoot, threadId, { body: "First." })
+        await sendInThread("First.")
 
-        const { message } = await sendMessage(projectRoot, threadId, {
-            body: "Second.",
-        })
+        const { message } = await sendInThread("Second.")
 
         const messages = await listMessages(projectRoot, threadId)
         expect(await listBodies()).toEqual(["First.", "Second."])
@@ -64,9 +62,7 @@ describe("sendMessage", () => {
     test("records in the journal that a person sent it, at depth 0", async () => {
         const before = await listEvents(projectRoot)
 
-        const { message } = await sendMessage(projectRoot, threadId, {
-            body: "@qa-tester, a test plan?",
-        })
+        const { message } = await sendInThread("@qa-tester, a test plan?")
 
         const messageSentEvent = {
             type: "message-sent",
@@ -84,9 +80,7 @@ describe("sendMessage", () => {
     test("asks each position it mentions, with a task", async () => {
         const body = "@qa-tester, a test plan?"
 
-        const { createdTasks } = await sendMessage(projectRoot, threadId, {
-            body,
-        })
+        const { createdTasks } = await sendInThread(body)
 
         expect(createdTasks).toMatchObject([
             {
@@ -105,9 +99,7 @@ describe("sendMessage", () => {
             mentions: ["director"],
         })
 
-        const { message } = await sendMessage(projectRoot, threadId, {
-            body: "Hono.",
-        })
+        const { message } = await sendInThread("Hono.")
 
         const [tasks, events] = await Promise.all([
             listTasks(projectRoot),
@@ -126,7 +118,7 @@ describe("sendMessage", () => {
     test("records its author and the positions it mentions", async () => {
         const body = "@qa-tester, a test plan?"
 
-        const { message } = await sendMessage(projectRoot, threadId, { body })
+        const { message } = await sendInThread(body)
 
         expect(message).toMatchObject({
             position: { id: "director", title: "Director" },
@@ -139,7 +131,7 @@ describe("sendMessage", () => {
     test("returns the mentions that name no position", async () => {
         const body = "@qa-testers, a test plan?"
 
-        const sending = await sendMessage(projectRoot, threadId, { body })
+        const sending = await sendInThread(body)
 
         expect(sending.unknownMentionIds).toEqual(["qa-testers"])
         expect(sending.message.mentions).toEqual([])
@@ -160,16 +152,21 @@ describe("sendMessage", () => {
         await assignPositionTemporarily(projectRoot, "qa-tester", {
             kind: "directors",
         })
-        process.env[variableName] = "julie"
-        const { thread } = await createThread(projectRoot, {
+        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
+        const { thread } = await createThread(projectRoot, environment, {
             subject: "Logo",
             body: "@qa-tester, is the logo broken?",
         })
-        delete process.env[variableName]
+        delete environment.LLMCO_CURRENT_HUMAN_ID
 
-        const { message } = await sendMessage(projectRoot, thread.id, {
-            body: "It is.",
-        })
+        const { message } = await sendMessage(
+            projectRoot,
+            environment,
+            thread.id,
+            {
+                body: "It is.",
+            },
+        )
 
         expect(thread.createdBy.position.id).toBe("graphics")
         expect(message.position.id).toBe("qa-tester")
@@ -178,7 +175,7 @@ describe("sendMessage", () => {
     test("refuses a message it can't send, and sends nothing", async () => {
         const body = "@qa-tester:claude-senior, a review?"
 
-        const sending = sendMessage(projectRoot, threadId, { body })
+        const sending = sendInThread(body)
 
         await expect(sending).rejects.toThrow(UserError)
         await expect(sending).rejects.toThrow("Mentioning a specific employee")
@@ -187,9 +184,14 @@ describe("sendMessage", () => {
     })
 
     test("refuses an unknown thread", async () => {
-        const sending = sendMessage(projectRoot, "2026-10-18-nothing", {
-            body: "Hi",
-        })
+        const sending = sendMessage(
+            projectRoot,
+            environment,
+            "2026-10-18-nothing",
+            {
+                body: "Hi",
+            },
+        )
 
         await expect(sending).rejects.toThrow('No thread "2026-10-18-nothing".')
     })
@@ -197,9 +199,14 @@ describe("sendMessage", () => {
     test("refuses to run outside a company", async () => {
         const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const sending = sendMessage(folderWithoutCompany, threadId, {
-            body: "Hi",
-        })
+        const sending = sendMessage(
+            folderWithoutCompany,
+            environment,
+            threadId,
+            {
+                body: "Hi",
+            },
+        )
 
         await expect(sending).rejects.toThrow("Run `llmco init` first.")
     })

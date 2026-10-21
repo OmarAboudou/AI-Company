@@ -95,6 +95,7 @@ async function loadPositionToWriteFrom(
 
 export async function readCurrentAuthor(
     projectRoot: string,
+    environment: NodeJS.ProcessEnv,
     {
         archive,
         asPositionId,
@@ -104,7 +105,7 @@ export async function readCurrentAuthor(
     } = {},
 ): Promise<Author> {
     const [human, assignments, { directorPositionId }] = await Promise.all([
-        readCurrentHuman(projectRoot),
+        readCurrentHuman(projectRoot, environment),
         listPositionAssignments(projectRoot),
         loadCompany(projectRoot),
     ])
@@ -113,7 +114,7 @@ export async function readCurrentAuthor(
     const positionChoice = {
         human,
         workedPositions: workedAssignments.map(({ position }) => position),
-        currentPositionId: readCurrentPositionId(),
+        currentPositionId: readCurrentPositionId(environment),
         threadMemberIds:
             archive === undefined
                 ? []

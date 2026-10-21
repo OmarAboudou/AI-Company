@@ -12,15 +12,12 @@ import { listTasks } from "../task/storage.ts"
 import { type RunReadyTasksProgress, runReadyTasks } from "./run-ready-tasks.ts"
 
 const fakeServer = useFakeAnthropicServer()
-const variableNames = ["LLMCO_CURRENT_HUMAN_ID"] as const
-const shellValues = variableNames.map((name) => process.env[name])
 const environment = { TEST_ANTHROPIC_KEY: "sk-test" }
 let projectRoot: string
 let threadId: string
 let progresses: RunReadyTasksProgress[]
 
 beforeEach(async () => {
-    delete process.env.LLMCO_CURRENT_HUMAN_ID
     const companyWithLlmEmployee = await createCompanyWithLlmEmployee(
         fakeServer.getUrl(),
     )
@@ -30,14 +27,6 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-    for (const [index, name] of variableNames.entries()) {
-        const shellValue = shellValues[index]
-        if (shellValue === undefined) {
-            delete process.env[name]
-        } else {
-            process.env[name] = shellValue
-        }
-    }
     await rm(projectRoot, { recursive: true, force: true })
 })
 
@@ -48,7 +37,7 @@ function runFakeTasks() {
 }
 
 async function sendQuestion(body: string) {
-    await sendMessage(projectRoot, threadId, { body })
+    await sendMessage(projectRoot, environment, threadId, { body })
 }
 
 async function listTaskStates() {
