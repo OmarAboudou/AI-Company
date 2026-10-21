@@ -80,6 +80,5 @@ export function formatOpenedTask({
                       formatTurn(stagedTurn.blocks),
                   ),
               ]),
-        "Prepare your turn with `llmco turn add text` or `llmco turn add tool`, then send it with `llmco turn send`.",
     ].join("\n\n")
 }
