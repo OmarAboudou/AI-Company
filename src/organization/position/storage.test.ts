@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { spawnGit } from "../../git/spawn-git.ts"
 import { UserError } from "../../user-error.ts"
 import {
     copyPositionFolder,
@@ -201,14 +202,15 @@ describe("savePositionState", () => {
     })
 
     test("leaves nothing for git to commit", async () => {
-        Bun.spawnSync(["git", "init", "-q"], { cwd: projectRoot })
+        spawnGit(projectRoot, ["init", "-q"])
 
         await savePositionState(projectRoot, developer.id, interimState)
 
-        const gitStatus = Bun.spawnSync(
-            ["git", "status", "--porcelain", "--untracked-files=all"],
-            { cwd: projectRoot },
-        )
+        const gitStatus = spawnGit(projectRoot, [
+            "status",
+            "--porcelain",
+            "--untracked-files=all",
+        ])
         expect(gitStatus.stdout.toString()).toBe("")
     })
 

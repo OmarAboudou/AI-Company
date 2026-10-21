@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { spawnGit } from "../../git/spawn-git.ts"
 import { UserError } from "../../user-error.ts"
 import { readApiKey } from "./read-api-key.ts"
 import type { LlmProvider } from "./schema.ts"
@@ -15,7 +16,7 @@ beforeEach(async () => {
         mkdtemp(join(tmpdir(), "llmco-")),
         mkdtemp(join(tmpdir(), "llmco-keys-")),
     ])
-    Bun.spawnSync(["git", "init", "-q"], { cwd: projectRoot })
+    spawnGit(projectRoot, ["init", "-q"])
 })
 
 afterEach(async () => {

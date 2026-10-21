@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { spawnGit } from "../../git/spawn-git.ts"
 import { UserError } from "../../user-error.ts"
 import { loadPosition } from "../position/storage.ts"
 import { createCompany } from "./create-company.ts"
@@ -11,7 +12,7 @@ let projectRoot: string
 
 beforeEach(async () => {
     projectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
-    Bun.spawnSync(["git", "init", "-q"], { cwd: projectRoot })
+    spawnGit(projectRoot, ["init", "-q"])
 })
 
 afterEach(async () => {

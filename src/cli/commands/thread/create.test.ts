@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { spawnGit } from "../../../git/spawn-git.ts"
 import { useFakeAnthropicServer } from "../../../llm/anthropic-messages/use-fake-anthropic-server.ts"
 import { useTemporaryProject } from "../../use-temporary-project.ts"
 
@@ -6,10 +7,6 @@ const { runCli, runCliWithEnv, getProjectPath, runCliAsync } =
     useTemporaryProject()
 
 describe("llmco thread create", () => {
-    function runGit(...args: string[]) {
-        Bun.spawnSync(["git", ...args], { cwd: getProjectPath() })
-    }
-
     const today = new Date().toISOString().slice(0, 10)
 
     beforeEach(() => {
@@ -51,7 +48,7 @@ describe("llmco thread create", () => {
             GIT_CONFIG_GLOBAL: "/dev/null",
             GIT_CONFIG_NOSYSTEM: "1",
         }
-        runGit("config", "--unset", "user.name")
+        spawnGit(getProjectPath(), ["config", "--unset", "user.name"])
         const create = ["thread", "create", "-s", "Budget"]
 
         const creation = runCliWithEnv(envWithoutGitIdentity, ...create)

@@ -3,6 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { isInRepositoryButNotIgnored } from "./is-in-repository-but-not-ignored.ts"
+import { spawnGit } from "./spawn-git.ts"
 
 let folderPath: string
 
@@ -15,7 +16,7 @@ afterEach(async () => {
 })
 
 function runGitInFolder(...args: string[]) {
-    Bun.spawnSync(["git", ...args], { cwd: folderPath })
+    spawnGit(folderPath, args)
 }
 
 describe("isInRepositoryButNotIgnored", () => {
