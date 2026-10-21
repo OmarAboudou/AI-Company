@@ -1,5 +1,5 @@
 import type { ToolDefinition, UserTurn } from "../../llm/conversation/schema.ts"
-import type { Run } from "./schema.ts"
+import type { Run, RunSession } from "./schema.ts"
 import { appendRunTranscriptLine } from "./storage.ts"
 
 export type RunStart = {
@@ -8,17 +8,19 @@ export type RunStart = {
     systemPrompt: string
     tools: ToolDefinition[]
     userMessage: string
+    session: RunSession
 }
 
 export async function startRun(
     projectRoot: string,
-    { id, apiId, systemPrompt, tools, userMessage }: RunStart,
+    { id, apiId, systemPrompt, tools, userMessage, session }: RunStart,
 ): Promise<Run> {
     await appendRunTranscriptLine(projectRoot, id, {
         type: "start",
         ...(apiId !== undefined && { apiId }),
         systemPrompt,
         tools,
+        session,
     })
     const taskTurn: UserTurn = {
         role: "user",
@@ -28,5 +30,6 @@ export async function startRun(
         type: "turn",
         ...taskTurn,
     })
-    return { id, conversation: { systemPrompt, tools, turns: [taskTurn] } }
+    const conversation = { systemPrompt, tools, turns: [taskTurn] }
+    return { id, conversation, session }
 }

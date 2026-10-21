@@ -27,6 +27,7 @@ const runStart: NewRunTranscriptLine = {
     apiId: "claude-opus-5-5",
     systemPrompt: "You are Claude Senior.",
     tools: [],
+    session: { toolNames: [], result: {} },
 }
 
 const taskTurn: UserTurn = {
@@ -91,6 +92,7 @@ describe("loadRun", () => {
                 tools: [],
                 turns: [taskTurn, answeringTurn],
             },
+            session: { toolNames: [], result: {} },
         })
     })
 

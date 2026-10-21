@@ -4,21 +4,17 @@ import {
 } from "../../llm/anthropic-messages/call-anthropic-messages.ts"
 import type { TokenUsage } from "../../llm/conversation/schema.ts"
 import type { TaskEnding } from "../tool/define-tool.ts"
-import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
 import {
     applyAssistantTurn,
     type TurnApplication,
 } from "./apply-assistant-turn.ts"
-import { startRun } from "./start-run.ts"
+import type { Run } from "./schema.ts"
 
 export type ToolLoop = Pick<
     AnthropicMessagesCall,
     "connection" | "apiKey" | "apiId"
 > &
-    TurnApplication & {
-        systemPrompt: string
-        userMessage: string
-    }
+    TurnApplication & { run: Run }
 
 export type RunToolLoopResult = { taskEnding: TaskEnding; usage: TokenUsage }
 
@@ -35,14 +31,8 @@ function addUsage(usage: TokenUsage, addedUsage: TokenUsage): TokenUsage {
 }
 
 export async function runToolLoop(loop: ToolLoop): Promise<RunToolLoopResult> {
-    const { ctx, connection, apiKey, apiId, onProgress } = loop
-    let run = await startRun(ctx.projectRoot, {
-        id: ctx.runId,
-        apiId,
-        systemPrompt: loop.systemPrompt,
-        tools: getToolDefinitions(loop.tools),
-        userMessage: loop.userMessage,
-    })
+    const { connection, apiKey, apiId, onProgress } = loop
+    let { run } = loop
     let usage: TokenUsage = {
         inputTokens: 0,
         outputTokens: 0,
