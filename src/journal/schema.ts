@@ -32,8 +32,70 @@ const MessageSentEventSchema = z
     })
     .meta({ description: "A message was added to a thread." })
 
+const TaskIdSchema = IdSchema.meta({
+    description: "Id of the task, i.e. the name of its file in .llmco/tasks.",
+})
+
+const TaskCreatedEventSchema = z
+    .strictObject({
+        type: z.literal("task-created").meta({
+            description:
+                "task-created: a task was created for a position, and waits for whoever works it.",
+        }),
+        occurredAt: OccurredAtSchema,
+        depth: DepthSchema,
+        taskId: TaskIdSchema,
+    })
+    .meta({ description: "A task was created." })
+
+const TaskStartedEventSchema = z
+    .strictObject({
+        type: z.literal("task-started").meta({
+            description:
+                "task-started: whoever works the task's position started it.",
+        }),
+        occurredAt: OccurredAtSchema,
+        depth: DepthSchema,
+        taskId: TaskIdSchema,
+    })
+    .meta({ description: "A task was started." })
+
+const TaskCompletedEventSchema = z
+    .strictObject({
+        type: z.literal("task-completed").meta({
+            description: "task-completed: the task was done.",
+        }),
+        occurredAt: OccurredAtSchema,
+        depth: DepthSchema,
+        taskId: TaskIdSchema,
+        summary: z.string().trim().min(1).meta({
+            description: "What was done, as whoever did it sums it up.",
+        }),
+    })
+    .meta({ description: "A task was done." })
+
+const TaskFailedEventSchema = z
+    .strictObject({
+        type: z.literal("task-failed").meta({
+            description: "task-failed: the task was given up.",
+        }),
+        occurredAt: OccurredAtSchema,
+        depth: DepthSchema,
+        taskId: TaskIdSchema,
+        reason: z.string().trim().min(1).meta({
+            description: "Why the task was given up.",
+        }),
+    })
+    .meta({ description: "A task was given up." })
+
 export const JournalEventSchema = z
-    .discriminatedUnion("type", [MessageSentEventSchema])
+    .discriminatedUnion("type", [
+        MessageSentEventSchema,
+        TaskCreatedEventSchema,
+        TaskStartedEventSchema,
+        TaskCompletedEventSchema,
+        TaskFailedEventSchema,
+    ])
     .meta({
         title: "llmco event",
         description:
