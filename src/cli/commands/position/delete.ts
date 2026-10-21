@@ -15,10 +15,10 @@ export function registerPositionDeleteCommand(positionCommand: Command): void {
             "<position-id>",
             formatIdArgumentDescription("position", "backend-developer"),
         )
-        .option("-f, --force", "delete it even if threads await it")
+        .option("-f, --force", "delete it even with tasks pending in threads")
         .hook("preAction", requireDirector)
         .action(async (rawId, { force: shouldForce }) => {
-            const { position, awaitingThreadIds } = await deletePosition(
+            const { position, pendingThreadIds } = await deletePosition(
                 projectRoot,
                 rawId,
                 { shouldForce },
@@ -28,9 +28,9 @@ export function registerPositionDeleteCommand(positionCommand: Command): void {
                     ? `Deleted position "${position.id}"`
                     : `Deleted position "${position.id}"; its default employee "${position.defaultEmployeeId}" stays hired`
             console.log(
-                awaitingThreadIds.length === 0
+                pendingThreadIds.length === 0
                     ? `${deletedMessage}.`
-                    : `${deletedMessage}. Still awaited in: ${awaitingThreadIds.join(", ")}.`,
+                    : `${deletedMessage}. Its tasks stay pending in: ${pendingThreadIds.join(", ")}.`,
             )
         })
 }
