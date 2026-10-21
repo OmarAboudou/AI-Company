@@ -2,7 +2,7 @@
 
 The rules that decide where code and documentation go, and how big they grow. They never list the files: the tree shows them.
 
-`bun run lint` checks the boundaries, the import cycles and the length of files, and `bun run test` the length of folders.
+`bun run lint` checks the boundaries, the import cycles and the length of files, and `bun run test` the length of folders and their READMEs.
 
 ## The command line mirrors the commands
 
