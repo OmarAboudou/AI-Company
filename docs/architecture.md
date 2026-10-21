@@ -27,7 +27,7 @@ The rules that decide where code and documentation go, and how big they grow. Th
 ## Files are small, folders are short
 
 - Code starts as one file per operation and per rule, named after the function it exports, with the small functions only it uses: `get-current-worker.ts` exports `getCurrentWorker`. A concept's `schema.ts` and `storage.ts` stay whole.
-- A folder holds at most 15 source entries, files and subfolders, not counting tests nor the file named after the folder. Beyond that, the entries of one subject, which share an invariant or change together, are grouped: files merge into a file named after the subject, and subfolders, or files too long to merge, move into a subfolder named after it.
+- A folder holds at most 15 source entries, files and subfolders, not counting tests, the code only tests use, nor the file named after the folder. Beyond that, the entries of one subject, which share an invariant or change together, are grouped: files merge into a file named after the subject, and subfolders, or files too long to merge, move into a subfolder named after it.
 - In `src/cli/commands/`, whose folders mirror the commands, a folder beyond 15 entries means the command line itself has too many commands at that level: the commands are regrouped first, and their folders follow.
 - A file holds at most 300 lines. Beyond that, it splits by subject, into a subfolder if its folder would then hold more than 15 entries.
 - A function may thus move from its own file into its subject's file as its folder grows. Such a move is a commit of its own, changing nothing else.

@@ -10,7 +10,11 @@ function isSourceEntry(folderName: string, entry: Dirent): boolean {
     if (entry.isDirectory()) {
         return true
     }
-    return !entry.name.endsWith(".test.ts") && entry.name !== `${folderName}.ts`
+    return (
+        !entry.name.endsWith(".test.ts") &&
+        !entry.name.endsWith(".testing.ts") &&
+        entry.name !== `${folderName}.ts`
+    )
 }
 
 export async function listCrowdedFolders(
