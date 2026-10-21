@@ -7,6 +7,10 @@ import { createTaskId } from "../task/create-task-id.ts"
 import { chainStoppedEventType, type UncreatedTask } from "../task/schema.ts"
 import type { Dispatching } from "./load-dispatching.ts"
 
+function isExistingFileError(error: unknown): boolean {
+    return error instanceof Error && "code" in error && error.code === "EEXIST"
+}
+
 function isStopped(
     stoppedTask: UncreatedTask,
     causeEventId: string,
@@ -67,12 +71,19 @@ export async function createTaskOnce(
     if (dispatching.tasks.some(({ id }) => id === taskId)) {
         return
     }
-    const task = await createTask(
-        dispatching.projectRoot,
-        askedTask,
-        causeEvent,
-    )
-    dispatching.tasks.push(task)
-    dispatching.taskStates.set(task.id, "waiting")
-    dispatching.createdTasks.push(task)
+    try {
+        const task = await createTask(
+            dispatching.projectRoot,
+            askedTask,
+            causeEvent,
+        )
+        dispatching.tasks.push(task)
+        dispatching.taskStates.set(task.id, "waiting")
+        dispatching.createdTasks.push(task)
+    } catch (error) {
+        // Another process wrote the same task meanwhile, and records it.
+        if (!isExistingFileError(error)) {
+            throw error
+        }
+    }
 }
