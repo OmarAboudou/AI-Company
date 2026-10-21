@@ -53,6 +53,7 @@ describe("messageSentEventType", () => {
         depth: 0,
         threadId: "2026-10-18-choice-of-framework",
         messageId: "20261018-140322-123-3f9a",
+        positionId: "director",
         mentions: ["backend-developer"],
     }
 
@@ -60,8 +61,14 @@ describe("messageSentEventType", () => {
         return messageSentEventType.recordingSchema.safeParse(event).success
     }
 
-    test("accepts a message sent, with its thread, id and mentions", () => {
+    test("accepts a message sent, with its thread, id, author and mentions", () => {
         expect(isAccepted(messageSentEvent)).toBe(true)
+    })
+
+    test("requires the position it was written from", () => {
+        const { positionId, ...anonymousEvent } = messageSentEvent
+
+        expect(isAccepted(anonymousEvent)).toBe(false)
     })
 
     test("rejects an unknown key, such as the message's body", () => {

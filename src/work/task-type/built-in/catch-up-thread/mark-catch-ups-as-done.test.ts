@@ -33,6 +33,7 @@ async function askPosition(positionId: string, askedThreadId = threadId) {
             depth: 2,
             threadId: askedThreadId,
             messageId: "20261018-140322-123-3f9a",
+            positionId: "director",
             mentions: [positionId],
         },
     )

@@ -29,6 +29,7 @@ export async function sendUnsentMessage(
         depth,
         threadId,
         messageId: message.id,
+        positionId: message.position.id,
         mentions: message.mentions,
         ...(runId !== undefined && { runId }),
     })
