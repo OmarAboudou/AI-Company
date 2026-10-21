@@ -108,6 +108,15 @@ describe("openNextTask", () => {
         expect(openedTask?.maxTaskDepth).toBe(200)
     })
 
+    test("starts the person's run at its cause's depth, adding no link", async () => {
+        await ask("@qa-tester Can we ship on Friday?")
+
+        await openNextTask(projectRoot, julieEnvironment)
+
+        const [startedEvent] = await listTaskStartedEvents()
+        expect(startedEvent?.depth).toBe(0)
+    })
+
     test("resumes the task in progress rather than opening another", async () => {
         await ask("@qa-tester Can we ship on Friday?")
         await ask("@designer Is the logo ready?")
