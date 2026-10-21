@@ -7,6 +7,7 @@ import {
     loadJournal,
     refreshJournal,
     saveEvent,
+    watchJournal,
 } from "./storage.ts"
 
 let projectRoot: string
@@ -128,5 +129,34 @@ describe("loadJournal and refreshJournal", () => {
 
         expect(await refreshJournal(journal)).toEqual([])
         expect(journal.events).toEqual([firstNoteWritten])
+    })
+})
+
+describe("watchJournal", () => {
+    test("tells of the next event saved in the journal", async () => {
+        const journalWatch = await watchJournal(projectRoot)
+        const change = journalWatch.waitForChange()
+
+        await saveEvent(projectRoot, firstNoteWritten)
+
+        try {
+            await expect(change).resolves.toBeUndefined()
+        } finally {
+            journalWatch.stop()
+        }
+    })
+
+    test("tells at once of an event saved before the wait", async () => {
+        const journalWatch = await watchJournal(projectRoot)
+        await saveEvent(projectRoot, firstNoteWritten)
+        await journalWatch.waitForChange()
+
+        const change = journalWatch.waitForChange()
+
+        try {
+            await expect(change).resolves.toBeUndefined()
+        } finally {
+            journalWatch.stop()
+        }
     })
 })

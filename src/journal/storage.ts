@@ -1,3 +1,5 @@
+import { watch } from "node:fs"
+import { mkdir } from "node:fs/promises"
 import { join } from "node:path"
 import { getLlmcoFolderPath } from "../files/get-llmco-folder-path.ts"
 import { listJsonFileIds } from "../files/list-json-file-ids.ts"
@@ -60,4 +62,33 @@ export async function refreshJournal(
     events.push(...newEvents)
     events.sort(({ id }, { id: otherId }) => (id < otherId ? -1 : 1))
     return newEvents
+}
+
+export type JournalWatch = {
+    forgetChanges(): void
+    waitForChange(): Promise<void>
+    stop(): void
+}
+
+export async function watchJournal(projectRoot: string): Promise<JournalWatch> {
+    const folderPath = getJournalFolderPath(projectRoot)
+    await mkdir(folderPath, { recursive: true })
+    let hasChanged = false
+    let onChange = () => {}
+    const watcher = watch(folderPath, () => {
+        hasChanged = true
+        onChange()
+    })
+    return {
+        forgetChanges: () => {
+            hasChanged = false
+        },
+        waitForChange: () =>
+            hasChanged
+                ? Promise.resolve()
+                : new Promise((resolve) => {
+                      onChange = resolve
+                  }),
+        stop: () => watcher.close(),
+    }
 }
