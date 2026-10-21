@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import type { CommandUnknownOpts } from "@commander-js/extra-typings"
+import { createCompany } from "../organization/company/create-company.ts"
+import { createEmployee } from "../organization/employee/create-employee.ts"
 import { createProgram } from "./program.ts"
 import { useTemporaryProject } from "./use-temporary-project.testing.ts"
 
-const { runCli, runCliWithEnv } = useTemporaryProject()
+const { runCliWithEnv, getProjectPath } = useTemporaryProject()
 
 const julieEnv = { LLMCO_CURRENT_HUMAN_ID: "julie" }
 
@@ -93,9 +95,13 @@ function getLeafCommandNames(command: CommandUnknownOpts): string[] {
 }
 
 describe("management commands", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("employee", "create", "human", "julie", "-n", "Julie")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createEmployee(projectRoot, "julie", {
+            name: "Julie",
+            kind: "human",
+        })
     })
 
     test("every command is either reserved to directors or free", () => {
