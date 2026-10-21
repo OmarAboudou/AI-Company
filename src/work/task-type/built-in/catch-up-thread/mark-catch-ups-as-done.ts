@@ -32,7 +32,7 @@ export async function markCatchUpsAsDone(
             depth: causeEvent.depth + 1,
             taskId: task.id,
             summary: "Sent a message in the thread.",
-            lastReadEntryId: message.id,
+            result: { lastReadEntryId: message.id },
         })
     }
     return catchUps

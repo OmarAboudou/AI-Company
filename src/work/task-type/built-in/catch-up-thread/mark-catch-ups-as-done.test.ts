@@ -77,7 +77,7 @@ describe("markCatchUpsAsDone", () => {
         expect(taskDoneEvent).toMatchObject({
             depth: 3,
             taskId: catchUp.id,
-            lastReadEntryId: answer.id,
+            result: { lastReadEntryId: answer.id },
         })
     })
 
@@ -100,6 +100,7 @@ describe("markCatchUpsAsDone", () => {
             depth: 3,
             taskId: catchUp.id,
             summary: "Answered.",
+            result: {},
         })
 
         const doneTasks = await markCatchUpsAsDone(projectRoot, {

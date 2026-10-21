@@ -207,14 +207,21 @@
                     "additionalProperties": false,
                     "description": "The tokens that the run's requests used, as the provider counted them: the input tokens read from the prompt cache and those written to it count apart from the others, at their own prices."
                 },
-                "lastReadEntryId": {
-                    "description": "For a task catching up on a thread: the last of the thread's entries read, i.e. the name of its folder in the thread's messages. The latest of these events among a position's catch-up tasks for a thread is the position's read marker there: it moves only when such a task is done.",
-                    "type": "string",
-                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                "result": {
+                    "type": "object",
+                    "propertyNames": { "type": "string" },
+                    "additionalProperties": {},
+                    "description": "What the task produced, as its type defines and checks it, e.g. the lastReadEntryId of a task catching up on a thread: the last of the thread's entries it read."
                 }
             },
-            "required": ["type", "occurredAt", "depth", "taskId", "summary"],
+            "required": [
+                "type",
+                "occurredAt",
+                "depth",
+                "taskId",
+                "summary",
+                "result"
+            ],
             "additionalProperties": false,
             "description": "The task was marked as done: whoever worked it says that it is finished."
         },

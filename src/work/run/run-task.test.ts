@@ -161,13 +161,13 @@ describe("runTask", () => {
         expect(getTaskStates([task], events).get(task.id)).toBe("done")
     })
 
-    test("records the last entry shown, when the run sends nothing", async () => {
+    test("records as its result the last entry shown, when the run sends nothing", async () => {
         fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
 
         await runFakeTask()
 
         expect(await findEvent(taskDoneEventType)).toMatchObject({
-            lastReadEntryId: questionId,
+            result: { lastReadEntryId: questionId },
         })
     })
 
@@ -184,7 +184,7 @@ describe("runTask", () => {
 
         const answerMessage = (await listMessages(projectRoot, threadId)).at(-1)
         expect(await findEvent(taskDoneEventType)).toMatchObject({
-            lastReadEntryId: answerMessage?.id,
+            result: { lastReadEntryId: answerMessage?.id },
         })
     })
 
@@ -205,7 +205,7 @@ describe("runTask", () => {
             depth: 1,
             taskId: task.id,
             summary: "Answered: Hono, for Bun.",
-            lastReadEntryId: questionId,
+            result: { lastReadEntryId: questionId },
         })
 
         const result = await runFakeTask(readTask)

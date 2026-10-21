@@ -2,8 +2,12 @@ import type { IdHistory } from "../../../../ids/id-history-schema.ts"
 import { getEventOfType } from "../../../../journal/get-event-of-type.ts"
 import type { JournalEvent } from "../../../../journal/schema.ts"
 import { getTaskPositionId } from "../../../task/get-task-position-id.ts"
+import { getTaskResult } from "../../../task/get-task-result.ts"
 import { type Task, taskDoneEventType } from "../../../task/schema.ts"
-import { catchUpThreadTypeName } from "./schema.ts"
+import {
+    CatchUpThreadResultReadingSchema,
+    catchUpThreadTypeName,
+} from "./schema.ts"
 
 export function getLastReadEntryId(
     tasks: Task[],
@@ -25,11 +29,16 @@ export function getLastReadEntryId(
     for (const event of events) {
         const taskDoneEvent = getEventOfType(event, taskDoneEventType)
         if (
-            taskDoneEvent?.lastReadEntryId !== undefined &&
-            catchUpTaskIds.has(taskDoneEvent.taskId)
+            taskDoneEvent === undefined ||
+            !catchUpTaskIds.has(taskDoneEvent.taskId)
         ) {
-            lastReadEntryId = taskDoneEvent.lastReadEntryId
+            continue
         }
+        const result = getTaskResult(
+            taskDoneEvent,
+            CatchUpThreadResultReadingSchema,
+        )
+        lastReadEntryId = result.lastReadEntryId ?? lastReadEntryId
     }
     return lastReadEntryId
 }

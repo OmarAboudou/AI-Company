@@ -59,7 +59,10 @@ describe("the task event types", () => {
     test.each([
         [taskCreatedEventType, {}],
         [taskStartedEventType, { runId }],
-        [taskDoneEventType, { summary: "Answered: Hono, for Bun." }],
+        [
+            taskDoneEventType,
+            { summary: "Answered: Hono, for Bun.", result: {} },
+        ],
         [taskFailedEventType, { reason: "The thread asks nothing." }],
     ])("accept their events, with the task's id", (eventType, fields) => {
         const event = { ...taskEvent, type: eventType.type, ...fields }
@@ -68,7 +71,19 @@ describe("the task event types", () => {
     })
 
     test("require a summary to mark a task as done", () => {
-        const event = { ...taskEvent, type: "task-done", summary: " " }
+        const event = {
+            ...taskEvent,
+            type: "task-done",
+            summary: " ",
+            result: {},
+        }
+
+        expect(isAcceptedBy(taskDoneEventType, event)).toBe(false)
+    })
+
+    test("require the result that the task's type gives", () => {
+        const summary = "Answered: Hono, for Bun."
+        const event = { ...taskEvent, type: "task-done", summary }
 
         expect(isAcceptedBy(taskDoneEventType, event)).toBe(false)
     })
@@ -100,7 +115,7 @@ describe("the task event types", () => {
             cacheCreationInputTokens: 800,
         }
         const summary = "Answered: Hono, for Bun."
-        const event = { ...taskEvent, type: "task-done", summary }
+        const event = { ...taskEvent, type: "task-done", summary, result: {} }
 
         const runEnd = { ...event, runId, usage }
         expect(isAcceptedBy(taskDoneEventType, runEnd)).toBe(true)

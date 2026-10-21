@@ -1,7 +1,7 @@
 import type { z } from "zod"
 import type { JournalEvent } from "../../journal/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
-import type { Task } from "../task/schema.ts"
+import type { Task, TaskResult } from "../task/schema.ts"
 import type { BuiltInToolName } from "../tool/built-in/built-in.ts"
 
 export type TaskTypeContext = {
@@ -11,26 +11,43 @@ export type TaskTypeContext = {
     causeEvent: JournalEvent
 }
 
-export type TaskSession =
+export type TaskSession<Result extends TaskResult = TaskResult> =
     | {
           kind: "run"
           userMessage: string
           toolNames: BuiltInToolName[]
-          lastShownEntry?: { threadId: string; entryId: string }
+          result: Result
       }
-    | { kind: "done"; summary: string }
+    | { kind: "done"; summary: string; result: Result }
 
-export type TaskType<ParamsSchema extends z.ZodType = z.ZodType> = {
+export type TaskRun<Result extends TaskResult = TaskResult> = {
+    runId: string
+    sessionResult: Result
+}
+
+export type TaskType<
+    ParamsSchema extends z.ZodType = z.ZodType,
+    ResultSchema extends z.ZodType<TaskResult> = z.ZodType<TaskResult>,
+> = {
     type: string
     paramsSchema: ParamsSchema
+    resultSchema: ResultSchema
     createSession(
         params: z.infer<ParamsSchema>,
         ctx: TaskTypeContext,
-    ): Promise<TaskSession>
+    ): Promise<TaskSession<z.infer<ResultSchema>>>
+    getRunResult?(
+        params: z.infer<ParamsSchema>,
+        run: TaskRun<z.infer<ResultSchema>>,
+        ctx: TaskTypeContext,
+    ): Promise<z.infer<ResultSchema>>
 }
 
-export function defineTaskType<ParamsSchema extends z.ZodType>(
-    taskType: TaskType<ParamsSchema>,
-): TaskType<ParamsSchema> {
+export function defineTaskType<
+    ParamsSchema extends z.ZodType,
+    ResultSchema extends z.ZodType<TaskResult>,
+>(
+    taskType: TaskType<ParamsSchema, ResultSchema>,
+): TaskType<ParamsSchema, ResultSchema> {
     return taskType
 }

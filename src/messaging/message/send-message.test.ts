@@ -111,7 +111,7 @@ describe("sendMessage", () => {
         expect(events.at(-1)).toMatchObject({
             type: "task-done",
             taskId: directorCatchUp?.id,
-            lastReadEntryId: message.id,
+            result: { lastReadEntryId: message.id },
         })
     })
 

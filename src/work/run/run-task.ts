@@ -1,10 +1,9 @@
 import { z } from "zod"
 import { createTimeOrderedId } from "../../ids/create-time-ordered-id.ts"
 import { recordEvent } from "../../journal/record-event.ts"
-import { listEvents, loadEvent } from "../../journal/storage.ts"
+import { loadEvent } from "../../journal/storage.ts"
 import { loadAnthropicMessagesModel } from "../../llm/anthropic-messages/load-anthropic-messages-model.ts"
 import type { TokenUsage } from "../../llm/conversation/schema.ts"
-import { listMessages } from "../../messaging/message/storage.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
 import type { LlmEmployee } from "../../organization/employee/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
@@ -17,7 +16,6 @@ import {
     taskStartedEventType,
 } from "../task/schema.ts"
 import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
-import { getLastEntryIdReadByRun } from "../task-type/built-in/catch-up-thread/get-last-entry-id-read-by-run.ts"
 import type { TaskType } from "../task-type/define-task-type.ts"
 import {
     type BuiltInToolName,
@@ -68,21 +66,6 @@ function parseTaskParams(task: Task, taskType: TaskType): unknown {
     return validation.data
 }
 
-async function loadLastReadEntryId(
-    projectRoot: string,
-    runId: string,
-    { threadId, entryId }: { threadId: string; entryId: string },
-): Promise<string> {
-    const [threadMessages, events] = await Promise.all([
-        listMessages(projectRoot, threadId),
-        listEvents(projectRoot),
-    ])
-    return getLastEntryIdReadByRun(threadMessages, events, {
-        runId,
-        lastShownEntryId: entryId,
-    })
-}
-
 export async function runTask(
     projectRoot: string,
     environment: NodeJS.ProcessEnv,
@@ -102,18 +85,15 @@ export async function runTask(
     const params = parseTaskParams(task, taskType)
     const causeEvent = await loadEvent(projectRoot, task.causeEventId)
     const taskDepth = causeEvent.depth + 1
-    const session = await taskType.createSession(params, {
-        projectRoot,
-        task,
-        position,
-        causeEvent,
-    })
+    const ctx = { projectRoot, task, position, causeEvent }
+    const session = await taskType.createSession(params, ctx)
     if (session.kind === "done") {
         const { summary } = session
         await recordEvent(projectRoot, taskDoneEventType, {
             depth: taskDepth,
             taskId: task.id,
             summary,
+            result: taskType.resultSchema.parse(session.result),
         })
         return { taskEnding: { state: "done", summary } }
     }
@@ -142,14 +122,19 @@ export async function runTask(
     })
     const runEnd = { depth: taskDepth, taskId: task.id, runId, usage }
     if (taskEnding.state === "done") {
-        const { lastShownEntry } = session
-        const lastReadEntryId =
-            lastShownEntry &&
-            (await loadLastReadEntryId(projectRoot, runId, lastShownEntry))
+        const sessionResult = session.result
+        const result =
+            taskType.getRunResult === undefined
+                ? sessionResult
+                : await taskType.getRunResult(
+                      params,
+                      { runId, sessionResult },
+                      ctx,
+                  )
         await recordEvent(projectRoot, taskDoneEventType, {
             ...runEnd,
             summary: taskEnding.summary,
-            ...(lastReadEntryId !== undefined && { lastReadEntryId }),
+            result: taskType.resultSchema.parse(result),
         })
     } else {
         await recordEvent(projectRoot, taskFailedEventType, {

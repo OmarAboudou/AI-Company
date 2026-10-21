@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import type { EventOfType } from "../../../../journal/schema.ts"
-import type { Task, taskDoneEventType } from "../../../task/schema.ts"
+import type { Task, TaskDoneEvent } from "../../../task/schema.ts"
 import { getLastReadEntryId } from "./get-last-read-entry-id.ts"
 
 const threadId = "2026-10-18-choice-of-framework"
@@ -23,10 +22,7 @@ const secondCatchUp: Task = {
     causeEventId: "20261018-140459-000-6e2f",
 }
 
-function createDoneEvent(
-    task: Task,
-    lastReadEntryId?: string,
-): EventOfType<typeof taskDoneEventType> {
+function createDoneEvent(task: Task, lastReadEntryId?: string): TaskDoneEvent {
     return {
         id: `${task.id}-done`,
         type: "task-done",
@@ -34,7 +30,7 @@ function createDoneEvent(
         depth: 1,
         taskId: task.id,
         summary: "Answered.",
-        ...(lastReadEntryId !== undefined && { lastReadEntryId }),
+        result: lastReadEntryId === undefined ? {} : { lastReadEntryId },
     }
 }
 
@@ -67,6 +63,22 @@ describe("getLastReadEntryId", () => {
         ]
 
         const lastReadEntryId = getLastReadEntryId(tasks, events, [], reader)
+
+        expect(lastReadEntryId).toBe(questionId)
+    })
+
+    test("reads a result that a newer llmco gave more fields", () => {
+        const doneEvent = createDoneEvent(firstCatchUp, questionId)
+        const readAt = "2026-10-18T14:06:00.000Z"
+        const extendedResult = { ...doneEvent.result, readAt }
+        const events = [{ ...doneEvent, result: extendedResult }]
+
+        const lastReadEntryId = getLastReadEntryId(
+            [firstCatchUp],
+            events,
+            [],
+            reader,
+        )
 
         expect(lastReadEntryId).toBe(questionId)
     })
