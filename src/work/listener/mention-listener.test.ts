@@ -19,15 +19,18 @@ function createMessageSentEvent(
     }
 }
 
-function getNewTasks(mentions: string[]) {
-    return mentionListener.getNewTasks(createMessageSentEvent(mentions))
+function getTasksToCreate(mentions: string[]) {
+    return mentionListener.getTasksToCreate(createMessageSentEvent(mentions))
 }
 
 describe("mentionListener", () => {
     test("asks each position a message mentions to catch up on its thread", () => {
-        const newTasks = getNewTasks(["backend-developer", "qa-tester"])
+        const uncreatedTasks = getTasksToCreate([
+            "backend-developer",
+            "qa-tester",
+        ])
 
-        expect(newTasks).toEqual([
+        expect(uncreatedTasks).toEqual([
             {
                 type: "catch-up-thread",
                 positionId: "backend-developer",
@@ -42,6 +45,6 @@ describe("mentionListener", () => {
     })
 
     test("asks nothing for a message without mentions", () => {
-        expect(getNewTasks([])).toEqual([])
+        expect(getTasksToCreate([])).toEqual([])
     })
 })

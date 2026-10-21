@@ -30,12 +30,12 @@ async function askPosition(positionId: string, threadId: string) {
             mentions: [positionId],
         },
     )
-    const newTask = {
+    const uncreatedTask = {
         type: "catch-up-thread",
         positionId,
         params: { threadId },
     }
-    return createTask(projectRoot, newTask, messageSentEvent)
+    return createTask(projectRoot, uncreatedTask, messageSentEvent)
 }
 
 describe("loadPendingPositionIdsByThread", () => {

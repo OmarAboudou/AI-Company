@@ -37,7 +37,7 @@ export const TaskSchema = z
 
 export type Task = z.infer<typeof TaskSchema> & { id: string }
 
-export type NewTask = Pick<Task, "type" | "positionId" | "params">
+export type UncreatedTask = Pick<Task, "type" | "positionId" | "params">
 
 const TaskIdSchema = IdSchema.meta({
     description: "Id of the task, i.e. the name of its file in .llmco/tasks.",

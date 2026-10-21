@@ -38,12 +38,12 @@ async function createCatchUp(): Promise<Task> {
     if (questionSent === undefined) {
         throw new Error("Sending the question recorded no event")
     }
-    const newTask = {
+    const uncreatedTask = {
         type: "catch-up-thread",
         positionId: "backend-developer",
         params: { threadId },
     }
-    return createTask(projectRoot, newTask, questionSent)
+    return createTask(projectRoot, uncreatedTask, questionSent)
 }
 
 beforeEach(async () => {
