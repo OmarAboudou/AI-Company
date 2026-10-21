@@ -1,11 +1,15 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createThread } from "../../../messaging/thread/create-thread.ts"
+import { createCompany } from "../../../organization/company/create-company.ts"
+import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
-const { runCli } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("llmco thread list", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
     })
 
     function createThread(...args: string[]) {
@@ -35,14 +39,31 @@ describe("llmco thread list", () => {
 describe("mentions", () => {
     let threadId = ""
 
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        threadId = runCli("thread", "create", "-s", "Budget").stdout.trim()
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        const { thread } = await createThread(
+            projectRoot,
+            {},
+            {
+                subject: "Budget",
+            },
+        )
+        threadId = thread.id
     })
 
-    beforeEach(() => {
-        runCli("position", "create", "backend-developer", "-t", "Backend")
-        runCli("position", "create", "qa-tester", "-t", "QA Tester")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await Promise.all([
+            createPosition(projectRoot, "backend-developer", {
+                title: "Backend",
+                description: "",
+            }),
+            createPosition(projectRoot, "qa-tester", {
+                title: "QA Tester",
+                description: "",
+            }),
+        ])
     })
 
     test("thread list shows the positions with a pending task there", () => {
