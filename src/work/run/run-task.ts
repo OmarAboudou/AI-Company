@@ -17,41 +17,16 @@ import {
     taskStartedEventType,
 } from "../task/schema.ts"
 import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
-import type {
-    BoundToolInputs,
-    TaskType,
-} from "../task-type/define-task-type.ts"
-import { bindTool } from "../tool/bind-tool.ts"
-import {
-    type BuiltInToolName,
-    builtInTools,
-} from "../tool/built-in/built-in.ts"
-import type { TaskEnding, Tool } from "../tool/define-tool.ts"
+import type { TaskType } from "../task-type/define-task-type.ts"
+import type { TaskEnding } from "../tool/define-tool.ts"
 import { buildSystemPrompt } from "./build-system-prompt.ts"
+import { getRunTools } from "./get-run-tools.ts"
 import { runToolLoop } from "./run-tool-loop.ts"
 import type { RunProgress } from "./schema.ts"
 
 export type RunTaskResult = {
     taskEnding: TaskEnding
     run?: { runId: string; usage: TokenUsage }
-}
-
-// Every run can end its task, whichever tools its type gives.
-const taskEndingToolNames: BuiltInToolName[] = [
-    "task_mark-as-done",
-    "task_mark-as-failed",
-]
-
-function getRunTools(
-    toolNames: BuiltInToolName[],
-    boundToolInputs: BoundToolInputs = {},
-): Record<string, Tool> {
-    return Object.fromEntries(
-        [...toolNames, ...taskEndingToolNames].map((name) => {
-            const tool: Tool = builtInTools[name]
-            return [name, bindTool(tool, boundToolInputs[name] ?? {})]
-        }),
-    )
 }
 
 function requireTaskType(task: Task): TaskType {
