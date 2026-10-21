@@ -6,7 +6,7 @@ import { sendMessage } from "../../messaging/message/send-message.ts"
 import { listMessages } from "../../messaging/message/storage.ts"
 import { loadCompany, saveCompany } from "../../organization/company/storage.ts"
 import { UserError } from "../../user-error.ts"
-import { createAnsweringCompany } from "../create-answering-company.ts"
+import { createCompanyWithLlmEmployee } from "../create-company-with-llm-employee.ts"
 import { getTaskStates } from "../task/get-task-states.ts"
 import { listTasks } from "../task/storage.ts"
 import { type RunReadyTasksProgress, runReadyTasks } from "./run-ready-tasks.ts"
@@ -21,9 +21,11 @@ let progresses: RunReadyTasksProgress[]
 beforeEach(async () => {
     delete process.env.LLMCO_CURRENT_HUMAN_ID
     process.env.TEST_ANTHROPIC_KEY = "sk-test"
-    const answeringCompany = await createAnsweringCompany(fakeServer.getUrl())
-    projectRoot = answeringCompany.projectRoot
-    threadId = answeringCompany.threadId
+    const companyWithLlmEmployee = await createCompanyWithLlmEmployee(
+        fakeServer.getUrl(),
+    )
+    projectRoot = companyWithLlmEmployee.projectRoot
+    threadId = companyWithLlmEmployee.threadId
     progresses = []
 })
 

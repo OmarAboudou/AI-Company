@@ -4,7 +4,7 @@ import { listEvents } from "../../../../journal/storage.ts"
 import { listMessages } from "../../../../messaging/message/storage.ts"
 import { loadEmployee } from "../../../../organization/employee/storage.ts"
 import { loadPosition } from "../../../../organization/position/storage.ts"
-import { createAnsweringCompany } from "../../../create-answering-company.ts"
+import { createCompanyWithLlmEmployee } from "../../../create-company-with-llm-employee.ts"
 import type { ToolContext } from "../../define-tool.ts"
 import { exampleToolContext } from "../../example-tool-context.ts"
 import { runToolCall } from "../../run-tool-call.ts"
@@ -15,9 +15,10 @@ let threadId: string
 let ctx: ToolContext
 
 beforeEach(async () => {
-    const answeringCompany = await createAnsweringCompany("http://127.0.0.1")
-    projectRoot = answeringCompany.projectRoot
-    threadId = answeringCompany.threadId
+    const companyWithLlmEmployee =
+        await createCompanyWithLlmEmployee("http://127.0.0.1")
+    projectRoot = companyWithLlmEmployee.projectRoot
+    threadId = companyWithLlmEmployee.threadId
     const [position, employee] = await Promise.all([
         loadPosition(projectRoot, "backend-developer"),
         loadEmployee(projectRoot, "claude"),

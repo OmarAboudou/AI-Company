@@ -12,7 +12,7 @@ import { loadEmployee } from "../../organization/employee/storage.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { loadPosition } from "../../organization/position/storage.ts"
 import { UserError } from "../../user-error.ts"
-import { createAnsweringCompany } from "../create-answering-company.ts"
+import { createCompanyWithLlmEmployee } from "../create-company-with-llm-employee.ts"
 import { createTask } from "../task/create-task.ts"
 import { getTaskStates } from "../task/get-task-states.ts"
 import {
@@ -49,9 +49,11 @@ async function createCatchUp(): Promise<Task> {
 beforeEach(async () => {
     delete process.env.LLMCO_CURRENT_HUMAN_ID
     process.env.TEST_ANTHROPIC_KEY = "sk-test"
-    const answeringCompany = await createAnsweringCompany(fakeServer.getUrl())
-    projectRoot = answeringCompany.projectRoot
-    threadId = answeringCompany.threadId
+    const companyWithLlmEmployee = await createCompanyWithLlmEmployee(
+        fakeServer.getUrl(),
+    )
+    projectRoot = companyWithLlmEmployee.projectRoot
+    threadId = companyWithLlmEmployee.threadId
     const body = "@backend-developer Hono or Express?"
     const { message } = await sendMessage(projectRoot, threadId, { body })
     questionId = message.id
