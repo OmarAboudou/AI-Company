@@ -1,13 +1,15 @@
 import { listEvents } from "../../journal/storage.ts"
-import { loadCompany } from "../../organization/company/storage.ts"
-import type { LlmEmployee } from "../../organization/employee/schema.ts"
-import { loadEmployee } from "../../organization/employee/storage.ts"
-import { getPositionAssignment } from "../../organization/position/get-position-assignment.ts"
-import type { Position } from "../../organization/position/schema.ts"
-import {
-    listPositions,
-    loadPositionState,
-} from "../../organization/position/storage.ts"
+import type {
+    Employee,
+    LlmEmployee,
+} from "../../organization/employee/schema.ts"
+import { listEmployees } from "../../organization/employee/storage.ts"
+import { listPositionAssignments } from "../../organization/position/list-position-assignments.ts"
+import type {
+    Position,
+    PositionAssignment,
+} from "../../organization/position/schema.ts"
+import { UserError } from "../../user-error.ts"
 import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
 import { getTaskPositionId } from "./get-task-position-id.ts"
 import { getTaskStates } from "./get-task-states.ts"
@@ -26,34 +28,36 @@ export type PendingTask =
     | { kind: "ready"; task: Task; position: Position; employee: LlmEmployee }
     | { kind: "waiting"; task: Task; positionId: string; reason: WaitingReason }
 
-async function loadPendingTask(
-    projectRoot: string,
+function getPendingTask(
     task: Task,
-    positions: Position[],
-    directorPositionId: string,
-): Promise<PendingTask> {
+    assignments: PositionAssignment[],
+    employees: Employee[],
+): PendingTask {
+    const positions = assignments.map(({ position }) => position)
     const positionId = getTaskPositionId(task, positions)
     const waitingTask = { kind: "waiting", task, positionId } as const
     if (builtInTaskTypes[task.type] === undefined) {
         return { ...waitingTask, reason: "unknown-type" }
     }
-    const position = positions.find(({ id }) => id === positionId)
-    if (position === undefined) {
+    const assignment = assignments.find(
+        ({ position }) => position.id === positionId,
+    )
+    if (assignment === undefined) {
         return { ...waitingTask, reason: "deleted-position" }
     }
-    const positionState = await loadPositionState(projectRoot, position.id)
-    const worker = getPositionAssignment(
-        position,
-        positionState,
-        directorPositionId,
-    ).currentWorker
-    if (worker === undefined) {
+    const { position, currentWorker } = assignment
+    if (currentWorker === undefined) {
         return { ...waitingTask, reason: "vacant-position" }
     }
-    if (worker.kind === "directors") {
+    if (currentWorker.kind === "directors") {
         return { ...waitingTask, reason: "worked-by-directors" }
     }
-    const employee = await loadEmployee(projectRoot, worker.employeeId)
+    const employee = employees.find(({ id }) => id === currentWorker.employeeId)
+    if (employee === undefined) {
+        throw new UserError(
+            `Position "${position.id}" names employee "${currentWorker.employeeId}", who doesn't exist. Run \`llmco position show ${position.id}\`.`,
+        )
+    }
     if (employee.kind === "human") {
         return { ...waitingTask, reason: "worked-by-human" }
     }
@@ -63,24 +67,14 @@ async function loadPendingTask(
 export async function listPendingTasks(
     projectRoot: string,
 ): Promise<PendingTask[]> {
-    const [tasks, events, positions, company] = await Promise.all([
+    const [tasks, events, assignments, employees] = await Promise.all([
         listTasks(projectRoot),
         listEvents(projectRoot),
-        listPositions(projectRoot),
-        loadCompany(projectRoot),
+        listPositionAssignments(projectRoot),
+        listEmployees(projectRoot),
     ])
     const taskStates = getTaskStates(tasks, events)
-    const { directorPositionId } = company
-    return Promise.all(
-        tasks
-            .filter((task) => isPendingTask(task, taskStates))
-            .map((task) =>
-                loadPendingTask(
-                    projectRoot,
-                    task,
-                    positions,
-                    directorPositionId,
-                ),
-            ),
-    )
+    return tasks
+        .filter((task) => isPendingTask(task, taskStates))
+        .map((task) => getPendingTask(task, assignments, employees))
 }
