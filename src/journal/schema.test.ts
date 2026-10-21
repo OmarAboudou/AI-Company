@@ -35,3 +35,30 @@ describe("JournalEventSchema", () => {
         expect(accepts({ ...messageSentEvent, body: "Hi" })).toBe(false)
     })
 })
+
+describe("JournalEventSchema for tasks", () => {
+    const taskEvent = {
+        occurredAt: "2026-10-18T14:03:23.000Z",
+        depth: 1,
+        taskId: "20261018-140323-000-77aa",
+    }
+
+    test.each([
+        { type: "task-created" },
+        { type: "task-started" },
+        { type: "task-completed", summary: "Answered: Hono, for Bun." },
+        { type: "task-failed", reason: "The thread asks nothing." },
+    ])("accepts $type with the task's id", (fields) => {
+        expect(accepts({ ...taskEvent, ...fields })).toBe(true)
+    })
+
+    test("requires a summary to complete a task", () => {
+        const event = { ...taskEvent, type: "task-completed", summary: " " }
+
+        expect(accepts(event)).toBe(false)
+    })
+
+    test("requires a reason to give a task up", () => {
+        expect(accepts({ ...taskEvent, type: "task-failed" })).toBe(false)
+    })
+})
