@@ -3,14 +3,13 @@ import { parseId } from "../../ids/parse-id.ts"
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { loadCompany, saveCompany } from "../company/storage.ts"
-import { loadExistingPosition } from "./load-existing-position.ts"
+import { loadExistingPositionAssignment } from "./load-existing-position-assignment.ts"
 import type { Position } from "./schema.ts"
 import {
     copyPositionFolder,
     deletePositionFolder,
     deletePositionState,
     hasPosition,
-    loadPositionState,
     savePosition,
     savePositionState,
 } from "./storage.ts"
@@ -27,12 +26,11 @@ export async function updatePositionId(
 ): Promise<UpdatePositionIdResult> {
     await requireCompany(projectRoot)
     const newId = parseId("position", rawNewId)
-    const [position, isTaken, company, state] = await Promise.all([
-        loadExistingPosition(projectRoot, rawId),
-        hasPosition(projectRoot, newId),
-        loadCompany(projectRoot),
-        loadPositionState(projectRoot, parseId("position", rawId)),
-    ])
+    const [{ position, isDirectorPosition, state }, isTaken] =
+        await Promise.all([
+            loadExistingPositionAssignment(projectRoot, rawId),
+            hasPosition(projectRoot, newId),
+        ])
     if (isTaken) {
         throw new UserError(`Position "${newId}" already exists.`)
     }
@@ -48,7 +46,8 @@ export async function updatePositionId(
         savePosition(projectRoot, renamedPosition),
         savePositionState(projectRoot, newId, state),
     ])
-    if (company.directorPositionId === position.id) {
+    if (isDirectorPosition) {
+        const company = await loadCompany(projectRoot)
         await saveCompany(projectRoot, {
             ...company,
             directorPositionId: newId,

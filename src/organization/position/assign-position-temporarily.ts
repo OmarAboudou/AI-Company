@@ -1,12 +1,10 @@
-import { parseId } from "../../ids/parse-id.ts"
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
-import { loadCompany } from "../company/storage.ts"
 import { loadExistingEmployee } from "../employee/load-existing-employee.ts"
 import { formatWorkerName } from "./format-worker-name.ts"
-import { loadExistingPosition } from "./load-existing-position.ts"
+import { loadExistingPositionAssignment } from "./load-existing-position-assignment.ts"
 import type { Worker } from "./schema.ts"
-import { loadPositionState, savePositionState } from "./storage.ts"
+import { savePositionState } from "./storage.ts"
 
 export type TemporaryAssignee =
     | { kind: "employee"; rawEmployeeId: string }
@@ -37,15 +35,14 @@ export async function assignPositionTemporarily(
     { shouldReplace = false }: { shouldReplace?: boolean } = {},
 ): Promise<AssignPositionTemporarilyResult> {
     await requireCompany(projectRoot)
-    const [position, employee, company, state] = await Promise.all([
-        loadExistingPosition(projectRoot, rawPositionId),
-        assignee.kind === "employee"
-            ? loadExistingEmployee(projectRoot, assignee.rawEmployeeId)
-            : undefined,
-        loadCompany(projectRoot),
-        loadPositionState(projectRoot, parseId("position", rawPositionId)),
-    ])
-    if (position.id === company.directorPositionId) {
+    const [{ position, isDirectorPosition, state }, employee] =
+        await Promise.all([
+            loadExistingPositionAssignment(projectRoot, rawPositionId),
+            assignee.kind === "employee"
+                ? loadExistingEmployee(projectRoot, assignee.rawEmployeeId)
+                : undefined,
+        ])
+    if (isDirectorPosition) {
         throw new UserError(
             `Position "${position.id}" is the director's position: the people working on this repository always hold it.`,
         )
