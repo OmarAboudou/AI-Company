@@ -3,11 +3,11 @@
     "$id": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/task.json",
     "type": "object",
     "properties": {
-        "createdAt": {
+        "askedAt": {
             "type": "string",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "When the task was created, in UTC."
+            "description": "When the task was asked for, i.e. when the event that caused it happened, in UTC: positionId names the position as it was called then."
         },
         "type": {
             "type": "string",
@@ -25,7 +25,7 @@
             "type": "string",
             "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
             "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-            "description": "Id of the position the task is for: whoever works the position does it."
+            "description": "Id of the position the task is for, as it was called when the task was asked for: whoever works the position does it."
         },
         "parentTaskId": {
             "description": "Id of the task it is a part of, in a tree of tasks. Absent for a task of its own.",
@@ -40,8 +40,8 @@
             "description": "Id of the event the task was created for, i.e. the name of its file in .llmco/journal. The task's depth is that event's, plus one."
         }
     },
-    "required": ["createdAt", "type", "params", "positionId", "causeEventId"],
+    "required": ["askedAt", "type", "params", "positionId", "causeEventId"],
     "additionalProperties": false,
     "title": "llmco task",
-    "description": "A task for a position, in .llmco/tasks/<task-id>.json, the id being the time it was created followed by a random suffix. Never modified: the task's state comes from the journal's events."
+    "description": "A task for a position, in .llmco/tasks/<task-id>.json, the id being its cause event's followed by a hash of its type, position and parameters, so that two machines asking for the same task write the same file. Never modified: the task's state comes from the journal's events."
 }

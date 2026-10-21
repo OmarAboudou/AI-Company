@@ -23,7 +23,7 @@ const answerSent: MessageSentEvent = {
 
 const directorCatchUp: Task = {
     id: "20261018-140323-000-77aa",
-    createdAt: "2026-10-18T14:03:23.000Z",
+    askedAt: "2026-10-18T14:03:23.000Z",
     type: "catch-up-thread",
     params: { threadId },
     positionId: "director",

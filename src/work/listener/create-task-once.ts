@@ -3,26 +3,12 @@ import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import { recordEvent } from "../../journal/record-event.ts"
 import type { JournalEvent } from "../../journal/schema.ts"
 import { createTask } from "../task/create-task.ts"
-import { getTaskPositionId } from "../task/get-task-position-id.ts"
+import { createTaskId } from "../task/create-task-id.ts"
 import { chainStoppedEventType, type UncreatedTask } from "../task/schema.ts"
 import type { Dispatching } from "./load-dispatching.ts"
 
-function isCreated(
-    uncreatedTask: UncreatedTask,
-    causeEventId: string,
-    { tasks, positions }: Dispatching,
-): boolean {
-    return tasks.some(
-        (task) =>
-            task.causeEventId === causeEventId &&
-            task.type === uncreatedTask.type &&
-            getTaskPositionId(task, positions) === uncreatedTask.positionId &&
-            Bun.deepEquals(task.params, uncreatedTask.params),
-    )
-}
-
 function isStopped(
-    uncreatedTask: UncreatedTask,
+    stoppedTask: UncreatedTask,
     causeEventId: string,
     { events, chainStoppedEvents, positions }: Dispatching,
 ): boolean {
@@ -31,23 +17,26 @@ function isStopped(
         if (chainStoppedEvent?.causeEventId !== causeEventId) {
             return false
         }
-        const { stoppedTask, occurredAt } = chainStoppedEvent
+        const { occurredAt } = chainStoppedEvent
         const positionId = getCurrentId(
             positions,
-            stoppedTask.positionId,
+            chainStoppedEvent.stoppedTask.positionId,
             occurredAt,
         )
-        return Bun.deepEquals({ ...stoppedTask, positionId }, uncreatedTask)
+        return Bun.deepEquals(
+            { ...chainStoppedEvent.stoppedTask, positionId },
+            stoppedTask,
+        )
     })
 }
 
-export async function createTaskOnce(
+async function stopChainOnce(
     askedTask: UncreatedTask,
     causeEvent: JournalEvent,
     dispatching: Dispatching,
 ): Promise<void> {
-    const { projectRoot, positions, maxTaskDepth } = dispatching
-    const uncreatedTask = {
+    const { projectRoot, positions } = dispatching
+    const stoppedTask = {
         ...askedTask,
         positionId: getCurrentId(
             positions,
@@ -55,25 +44,34 @@ export async function createTaskOnce(
             causeEvent.occurredAt,
         ),
     }
-    if (causeEvent.depth + 1 > maxTaskDepth) {
-        if (!isStopped(uncreatedTask, causeEvent.id, dispatching)) {
-            const chainStoppedEvent = await recordEvent(
-                projectRoot,
-                chainStoppedEventType,
-                {
-                    depth: causeEvent.depth,
-                    causeEventId: causeEvent.id,
-                    stoppedTask: uncreatedTask,
-                },
-            )
-            dispatching.chainStoppedEvents.push(chainStoppedEvent)
-        }
+    if (isStopped(stoppedTask, causeEvent.id, dispatching)) {
         return
     }
-    if (isCreated(uncreatedTask, causeEvent.id, dispatching)) {
+    const chainStoppedEvent = await recordEvent(
+        projectRoot,
+        chainStoppedEventType,
+        { depth: causeEvent.depth, causeEventId: causeEvent.id, stoppedTask },
+    )
+    dispatching.chainStoppedEvents.push(chainStoppedEvent)
+}
+
+export async function createTaskOnce(
+    askedTask: UncreatedTask,
+    causeEvent: JournalEvent,
+    dispatching: Dispatching,
+): Promise<void> {
+    if (causeEvent.depth + 1 > dispatching.maxTaskDepth) {
+        return stopChainOnce(askedTask, causeEvent, dispatching)
+    }
+    const taskId = createTaskId(causeEvent.id, askedTask)
+    if (dispatching.tasks.some(({ id }) => id === taskId)) {
         return
     }
-    const task = await createTask(projectRoot, uncreatedTask, causeEvent)
+    const task = await createTask(
+        dispatching.projectRoot,
+        askedTask,
+        causeEvent,
+    )
     dispatching.tasks.push(task)
     dispatching.taskStates.set(task.id, "waiting")
     dispatching.createdTasks.push(task)

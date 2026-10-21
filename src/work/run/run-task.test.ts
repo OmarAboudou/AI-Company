@@ -13,7 +13,6 @@ import type { Position } from "../../organization/position/schema.ts"
 import { loadPosition } from "../../organization/position/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { createCompanyWithLlmEmployee } from "../create-company-with-llm-employee.testing.ts"
-import { createTask } from "../task/create-task.ts"
 import { getTaskStates } from "../task/get-task-states.ts"
 import {
     type Task,
@@ -32,17 +31,15 @@ let task: Task
 let position: Position
 let employee: LlmEmployee
 
-async function createCatchUp(): Promise<Task> {
-    const questionSent = (await listEvents(projectRoot)).at(0)
-    if (questionSent === undefined) {
-        throw new Error("Sending the question recorded no event")
+async function askDeveloper(body: string) {
+    const sending = await sendMessage(projectRoot, environment, threadId, {
+        body: `@backend-developer ${body}`,
+    })
+    const [catchUp] = sending.createdTasks
+    if (catchUp === undefined) {
+        throw new Error("Asking the developer created no task")
     }
-    const uncreatedTask = {
-        type: "catch-up-thread",
-        positionId: "backend-developer",
-        params: { threadId },
-    }
-    return createTask(projectRoot, uncreatedTask, questionSent)
+    return { messageId: sending.message.id, catchUp }
 }
 
 beforeEach(async () => {
@@ -51,12 +48,9 @@ beforeEach(async () => {
     )
     projectRoot = companyWithLlmEmployee.projectRoot
     threadId = companyWithLlmEmployee.threadId
-    const body = "@backend-developer Hono or Express?"
-    const { message } = await sendMessage(projectRoot, environment, threadId, {
-        body,
-    })
-    questionId = message.id
-    task = await createCatchUp()
+    const question = await askDeveloper("Hono or Express?")
+    questionId = question.messageId
+    task = question.catchUp
     position = await loadPosition(projectRoot, "backend-developer")
     const claude = await loadEmployee(projectRoot, "claude")
     if (claude.kind !== "llm") {
@@ -215,18 +209,19 @@ describe("runTask", () => {
     })
 
     test("marks as done a task whose cause was read, without a run", async () => {
-        const readTask = await createCatchUp()
+        const followUp = await askDeveloper("And the database?")
+        const readTask = followUp.catchUp
         await recordEvent(projectRoot, taskDoneEventType, {
             depth: 1,
             taskId: task.id,
-            summary: "Answered: Hono, for Bun.",
-            result: { lastReadEntryId: questionId },
+            summary: "Answered both.",
+            result: { lastReadEntryId: followUp.messageId },
         })
 
         const result = await runFakeTask(readTask)
 
         const summary =
-            "Already read: an earlier task read the thread up to entry #1."
+            "Already read: an earlier task read the thread up to entry #2."
         expect(result).toEqual({ taskEnding: { state: "done", summary } })
         expect(fakeServer.requests).toHaveLength(0)
         const events = await listEvents(projectRoot)

@@ -4,6 +4,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { listEvents } from "../../journal/storage.ts"
 import { createTask } from "./create-task.ts"
+import { createTaskId } from "./create-task-id.ts"
 import { listTasks } from "./storage.ts"
 
 let projectRoot: string
@@ -29,18 +30,40 @@ const answerSent = {
     depth: 1,
 }
 
-describe("createTask", () => {
-    test("saves the task, with the time it is created and its cause", async () => {
-        const clockTime = Date.now()
+async function readTaskFile(root: string, taskId: string): Promise<string> {
+    return Bun.file(join(root, ".llmco", "tasks", `${taskId}.json`)).text()
+}
 
+describe("createTask", () => {
+    test("saves the task under the id of what it is, asked when its cause happened", async () => {
         const task = await createTask(projectRoot, developerNewTask, answerSent)
 
-        expect(task).toMatchObject({
+        expect(task).toEqual({
+            id: createTaskId(answerSent.id, developerNewTask),
+            askedAt: answerSent.occurredAt,
             ...developerNewTask,
             causeEventId: answerSent.id,
         })
-        expect(Date.parse(task.createdAt)).toBeGreaterThanOrEqual(clockTime)
         expect(await listTasks(projectRoot)).toEqual([task])
+    })
+
+    test("writes the same file for the same task, wherever it is created", async () => {
+        const otherProjectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
+        const reorderedTask = {
+            positionId: developerNewTask.positionId,
+            params: developerNewTask.params,
+            type: developerNewTask.type,
+        }
+
+        const task = await createTask(projectRoot, developerNewTask, answerSent)
+        await createTask(otherProjectRoot, reorderedTask, answerSent)
+
+        const [taskText, otherTaskText] = await Promise.all([
+            readTaskFile(projectRoot, task.id),
+            readTaskFile(otherProjectRoot, task.id),
+        ])
+        await rm(otherProjectRoot, { recursive: true, force: true })
+        expect(otherTaskText).toBe(taskText)
     })
 
     test("records its creation a step deeper than its cause", async () => {

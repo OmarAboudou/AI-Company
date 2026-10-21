@@ -6,8 +6,9 @@ import { RunIdSchema } from "../run/schema.ts"
 
 export const TaskSchema = z
     .strictObject({
-        createdAt: z.iso.datetime().meta({
-            description: "When the task was created, in UTC.",
+        askedAt: z.iso.datetime().meta({
+            description:
+                "When the task was asked for, i.e. when the event that caused it happened, in UTC: positionId names the position as it was called then.",
         }),
         type: IdSchema.meta({
             description:
@@ -19,7 +20,7 @@ export const TaskSchema = z
         }),
         positionId: IdSchema.meta({
             description:
-                "Id of the position the task is for: whoever works the position does it.",
+                "Id of the position the task is for, as it was called when the task was asked for: whoever works the position does it.",
         }),
         parentTaskId: IdSchema.optional().meta({
             description:
@@ -33,7 +34,7 @@ export const TaskSchema = z
     .meta({
         title: "llmco task",
         description:
-            "A task for a position, in .llmco/tasks/<task-id>.json, the id being the time it was created followed by a random suffix. Never modified: the task's state comes from the journal's events.",
+            "A task for a position, in .llmco/tasks/<task-id>.json, the id being its cause event's followed by a hash of its type, position and parameters, so that two machines asking for the same task write the same file. Never modified: the task's state comes from the journal's events.",
     })
 
 export type Task = z.infer<typeof TaskSchema> & { id: string }
