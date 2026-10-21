@@ -1,11 +1,14 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createCompany } from "../../../organization/company/create-company.ts"
+import { createEmployee } from "../../../organization/employee/create-employee.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
-const { runCli } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
-beforeEach(() => {
-    runCli("init", "-n", "Acme")
-    runCli("employee", "create", "human", "julie", "-n", "Julie")
+beforeEach(async () => {
+    const projectRoot = getProjectPath()
+    await createCompany(projectRoot, { name: "Acme", description: "" })
+    await createEmployee(projectRoot, "julie", { name: "Julie", kind: "human" })
 })
 
 describe("llmco current-human set", () => {
