@@ -3,10 +3,10 @@ import {
     type AnthropicMessagesCall,
     callAnthropicMessages,
 } from "../../llm/anthropic-messages/call-anthropic-messages.ts"
+import type { TokenUsage } from "../../llm/conversation/schema.ts"
 import type { TaskEnding, Tool, ToolContext } from "../tool/define-tool.ts"
 import { runToolCall } from "../tool/run-tool-call.ts"
 import { getAnthropicTools } from "./get-anthropic-tools.ts"
-import type { TokenUsage } from "./schema.ts"
 import { appendRunTranscriptLine } from "./storage.ts"
 
 export type RunProgress =
