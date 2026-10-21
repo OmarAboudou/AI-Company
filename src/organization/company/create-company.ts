@@ -1,5 +1,5 @@
-import { z } from "zod"
 import { requireGitRepository } from "../../git/require-git-repository.ts"
+import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
 import { savePosition } from "../position/storage.ts"
 import { type Company, CompanyConfigSchema } from "./schema.ts"
@@ -15,13 +15,10 @@ export async function createCompany(
     if (await hasCompany(projectRoot)) {
         throw new UserError("A company already exists in this directory.")
     }
-    const validation = CompanyConfigSchema.safeParse({
+    const companyConfig = parseConfig(CompanyConfigSchema, {
         name,
         directorPositionId,
     })
-    if (!validation.success) {
-        throw new UserError(z.prettifyError(validation.error))
-    }
     await savePosition(projectRoot, {
         id: directorPositionId,
         title: "Director",
@@ -30,7 +27,7 @@ export async function createCompany(
     })
     // The company comes last: until its config.json exists, llmco
     // sees no company, so an interrupted init can be run again.
-    const company = { ...validation.data, description }
+    const company = { ...companyConfig, description }
     await saveCompany(projectRoot, company)
     return company
 }

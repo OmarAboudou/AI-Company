@@ -1,5 +1,4 @@
-import { z } from "zod"
-import { UserError } from "../../user-error.ts"
+import { parseConfig } from "../../parse-config.ts"
 import {
     type LlmProvider,
     LlmProviderConfigSchema,
@@ -11,14 +10,11 @@ export async function saveLlmConnections(
     { id, ...config }: LlmProvider,
     connections: object,
 ): Promise<LlmProvider> {
-    const validation = LlmProviderConfigSchema.safeParse({
+    const providerConfig = parseConfig(LlmProviderConfigSchema, {
         ...config,
         connections,
     })
-    if (!validation.success) {
-        throw new UserError(z.prettifyError(validation.error))
-    }
-    const provider = { id, ...validation.data }
+    const provider = { id, ...providerConfig }
     await saveLlmProvider(projectRoot, provider)
     return provider
 }

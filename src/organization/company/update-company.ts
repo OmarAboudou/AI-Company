@@ -1,5 +1,4 @@
-import { z } from "zod"
-import { UserError } from "../../user-error.ts"
+import { parseConfig } from "../../parse-config.ts"
 import { requireCompany } from "./require-company.ts"
 import { type Company, CompanyConfigSchema } from "./schema.ts"
 import { loadCompany, saveCompany } from "./storage.ts"
@@ -10,15 +9,12 @@ export async function updateCompany(
 ): Promise<Company> {
     await requireCompany(projectRoot)
     const { description, ...config } = await loadCompany(projectRoot)
-    const validation = CompanyConfigSchema.safeParse({
+    const updatedConfig = parseConfig(CompanyConfigSchema, {
         ...config,
         name: changes.name ?? config.name,
     })
-    if (!validation.success) {
-        throw new UserError(z.prettifyError(validation.error))
-    }
     const updatedCompany = {
-        ...validation.data,
+        ...updatedConfig,
         description: changes.description ?? description,
     }
     await saveCompany(projectRoot, updatedCompany)

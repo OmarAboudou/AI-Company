@@ -1,6 +1,5 @@
-import { z } from "zod"
 import { requireCompany } from "../../organization/company/require-company.ts"
-import { UserError } from "../../user-error.ts"
+import { parseConfig } from "../../parse-config.ts"
 import { builtInListeners } from "../../work/listener/built-in-listeners.ts"
 import { dispatchEvents } from "../../work/listener/dispatch-events.ts"
 import type { Task } from "../../work/task/schema.ts"
@@ -34,21 +33,14 @@ export async function createThread(
             ? undefined
             : await createUnsentMessage(projectRoot, author, body)
     const createdAt = new Date().toISOString()
-    const validation = ThreadConfigSchema.safeParse({
+    const config = parseConfig(ThreadConfigSchema, {
         subject,
         createdAt,
         createdBy: author,
     })
-    if (!validation.success) {
-        throw new UserError(z.prettifyError(validation.error))
-    }
     const thread = {
-        id: await createThreadId(
-            projectRoot,
-            validation.data.subject,
-            createdAt,
-        ),
-        ...validation.data,
+        id: await createThreadId(projectRoot, config.subject, createdAt),
+        ...config,
     }
     await saveThread(projectRoot, thread)
     if (unsentFirstMessage === undefined) {
