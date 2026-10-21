@@ -41,6 +41,26 @@
     },
     "overrides": [
         {
+            "includes": ["src/cli/**", "!**/*.test.ts", "!**/*.testing.ts"],
+            "linter": {
+                "rules": {
+                    "style": {
+                        "noRestrictedImports": {
+                            "level": "error",
+                            "options": {
+                                "patterns": [
+                                    {
+                                        "group": ["**/*.testing.ts"],
+                                        "message": "Only tests import a .testing.ts file: production code never depends on what only tests use."
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
             "includes": ["src/**", "!src/cli/**"],
             "linter": {
                 "rules": {
@@ -57,6 +77,39 @@
                                     {
                                         "group": ["**/cli/**"],
                                         "message": "Nothing outside src/cli/ imports from it: the core receives what it needs, such as the project's root, as parameters."
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "includes": [
+                "src/**",
+                "!src/cli/**",
+                "!**/*.test.ts",
+                "!**/*.testing.ts"
+            ],
+            "linter": {
+                "rules": {
+                    "style": {
+                        "noRestrictedImports": {
+                            "level": "error",
+                            "options": {
+                                "paths": {
+                                    "commander": "Only src/cli/ imports commander: the core returns what a command prints, and throws a UserError to refuse.",
+                                    "@commander-js/extra-typings": "Only src/cli/ imports commander: the core returns what a command prints, and throws a UserError to refuse."
+                                },
+                                "patterns": [
+                                    {
+                                        "group": ["**/cli/**"],
+                                        "message": "Nothing outside src/cli/ imports from it: the core receives what it needs, such as the project's root, as parameters."
+                                    },
+                                    {
+                                        "group": ["**/*.testing.ts"],
+                                        "message": "Only tests import a .testing.ts file: production code never depends on what only tests use."
                                     }
                                 ]
                             }

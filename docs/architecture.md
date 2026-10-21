@@ -35,6 +35,7 @@ The rules that decide where code and documentation go, and how big they grow. Th
 ## Tests
 
 - A file's tests sit next to it, in a file of the same name: `delete.ts` and `delete.test.ts`.
+- Code that only tests use, such as a fake API server or a temporary company, sits next to the code it helps test, in a file ending in `.testing.ts`. Production code never imports it, as `bun run lint` checks.
 - An operation's rules are tested by calling the operation. A command keeps a few end-to-end tests of its arguments, its output and its exit code.
 
 ## Boundaries
