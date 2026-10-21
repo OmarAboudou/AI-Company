@@ -83,5 +83,9 @@ export const messageSentEventType = defineEventType({
             description:
                 "Ids of the positions the message mentions, as its message.json records them.",
         }),
+        runId: IdSchema.optional().meta({
+            description:
+                "Id of the run that posted the message, i.e. the name of its transcript in .llmco/.state/runs. Absent for a person's message.",
+        }),
     },
 })

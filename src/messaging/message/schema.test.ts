@@ -67,4 +67,10 @@ describe("messageSentEventType", () => {
     test("rejects an unknown key, such as the message's body", () => {
         expect(isAccepted({ ...messageSentEvent, body: "Hi" })).toBe(false)
     })
+
+    test("accepts the run that posted the message", () => {
+        const runId = "20261018-140324-000-1b2c"
+
+        expect(isAccepted({ ...messageSentEvent, runId })).toBe(true)
+    })
 })
