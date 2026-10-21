@@ -1,6 +1,14 @@
 import { z } from "zod"
 import { IdHistorySchema } from "../src/ids/id-history-schema.ts"
-import { JournalEventSchema } from "../src/journal/schema.ts"
+import {
+    chainStoppedEventType,
+    JournalEventSchema,
+    messageSentEventType,
+    taskCompletedEventType,
+    taskCreatedEventType,
+    taskFailedEventType,
+    taskStartedEventType,
+} from "../src/journal/schema.ts"
 import { LlmModelConfigSchema } from "../src/llm/model/schema.ts"
 import { LlmProviderConfigSchema } from "../src/llm/provider/schema.ts"
 import {
@@ -20,6 +28,17 @@ import { TaskSchema } from "../src/work/task/schema.ts"
 const publicationUrl =
     "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas"
 
+const BuiltInEventSchema = z
+    .discriminatedUnion("type", [
+        messageSentEventType.schema,
+        taskCreatedEventType.schema,
+        taskStartedEventType.schema,
+        taskCompletedEventType.schema,
+        taskFailedEventType.schema,
+        chainStoppedEventType.schema,
+    ])
+    .meta(JournalEventSchema.meta() ?? {})
+
 const zodSchemas = {
     company: CompanyConfigSchema,
     position: PositionConfigSchema,
@@ -29,7 +48,7 @@ const zodSchemas = {
     thread: ThreadConfigSchema,
     message: MessageConfigSchema,
     "provider-response": ProviderResponseSchema,
-    event: JournalEventSchema,
+    event: BuiltInEventSchema,
     task: TaskSchema,
     "id-history": IdHistorySchema,
     "position-state": PositionStateSchema,

@@ -2,12 +2,12 @@ import { describe, expect, test } from "bun:test"
 import { UserError } from "../user-error.ts"
 import { getEventOfType } from "./get-event-of-type.ts"
 import {
-    type JournalEvent,
+    type EventOfType,
     messageSentEventType,
     taskCreatedEventType,
 } from "./schema.ts"
 
-const questionSent: JournalEvent = {
+const questionSent: EventOfType<typeof messageSentEventType> = {
     id: "20261018-140322-123-5d1e",
     type: "message-sent",
     occurredAt: "2026-10-18T14:03:22.123Z",

@@ -2,10 +2,10 @@ import { z } from "zod"
 import { UserError } from "../user-error.ts"
 import type { EventType, JournalEvent } from "./schema.ts"
 
-export function getEventOfType<Schema extends z.ZodType>(
+export function getEventOfType<Content extends Omit<JournalEvent, "id">>(
     event: JournalEvent,
-    eventType: EventType<Schema>,
-): (z.output<Schema> & { id: string }) | undefined {
+    eventType: EventType<Content>,
+): (Content & { id: string }) | undefined {
     if (event.type !== eventType.type) {
         return undefined
     }
@@ -16,5 +16,5 @@ export function getEventOfType<Schema extends z.ZodType>(
             `Invalid .llmco/journal/${id}.json:\n${z.prettifyError(validation.error)}`,
         )
     }
-    return Object.assign({ id }, validation.data)
+    return { ...validation.data, id }
 }

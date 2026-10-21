@@ -1,24 +1,25 @@
 import { createTimeOrderedId } from "../ids/create-time-ordered-id.ts"
 import { readMonotonicTime } from "../read-monotonic-time.ts"
-import type { JournalEvent } from "./schema.ts"
+import type { EventType, JournalEvent } from "./schema.ts"
 import { saveEvent } from "./storage.ts"
 
-type WithoutIdAndTime<Event> = Event extends unknown
-    ? Omit<Event, "id" | "occurredAt">
-    : never
+export type UnrecordedEvent<Content extends Omit<JournalEvent, "id">> = Omit<
+    Content,
+    "type" | "occurredAt"
+>
 
-export type UnrecordedEvent = WithoutIdAndTime<JournalEvent>
-
-export async function recordEvent<Unrecorded extends UnrecordedEvent>(
+export async function recordEvent<Content extends Omit<JournalEvent, "id">>(
     projectRoot: string,
-    unrecordedEvent: Unrecorded,
-): Promise<Unrecorded & Pick<JournalEvent, "id" | "occurredAt">> {
+    eventType: EventType<Content>,
+    unrecordedEvent: UnrecordedEvent<Content>,
+): Promise<Content & { id: string }> {
     const occurredAt = readMonotonicTime()
-    const event = {
-        id: createTimeOrderedId(occurredAt),
+    const content = eventType.schema.parse({
+        type: eventType.type,
         occurredAt,
         ...unrecordedEvent,
-    }
+    })
+    const event = { ...content, id: createTimeOrderedId(occurredAt) }
     await saveEvent(projectRoot, event)
     return event
 }

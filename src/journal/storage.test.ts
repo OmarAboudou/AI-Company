@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import type { JournalEvent } from "./schema.ts"
+import type { EventOfType, messageSentEventType } from "./schema.ts"
 import { listEvents, saveEvent } from "./storage.ts"
 
 let projectRoot: string
@@ -15,7 +15,9 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const questionSent: JournalEvent = {
+type MessageSentEvent = EventOfType<typeof messageSentEventType>
+
+const questionSent: MessageSentEvent = {
     id: "20261018-140322-123-5d1e",
     type: "message-sent",
     occurredAt: "2026-10-18T14:03:22.123Z",
@@ -25,7 +27,7 @@ const questionSent: JournalEvent = {
     mentions: ["backend-developer"],
 }
 
-const answerSent: JournalEvent = {
+const answerSent: MessageSentEvent = {
     ...questionSent,
     id: "20261018-140351-000-8c2a",
     occurredAt: "2026-10-18T14:03:51.000Z",
@@ -61,6 +63,17 @@ describe("saveEvent and listEvents", () => {
 
     test("list is empty before the first event", async () => {
         expect(await listEvents(projectRoot)).toEqual([])
+    })
+
+    test("list keeps an event of a type llmco doesn't know", async () => {
+        const threadClosed = {
+            ...questionSent,
+            type: "thread-closed",
+            reason: "Decided: Hono.",
+        }
+        await saveEvent(projectRoot, threadClosed)
+
+        expect(await listEvents(projectRoot)).toEqual([threadClosed])
     })
 
     test("save never overwrites an event", async () => {
