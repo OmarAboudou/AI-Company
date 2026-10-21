@@ -6,6 +6,8 @@ import type { Connections } from "../connection/schema.ts"
 // model its own maximum.
 const maxTokens = 64_000
 
+const cacheControl: Anthropic.CacheControlEphemeral = { type: "ephemeral" }
+
 // Without a key, the SDK would look for credentials on this machine
 // (ANTHROPIC_API_KEY, `ant auth login` profiles) and could send them to
 // another server than Anthropic's.
@@ -23,6 +25,28 @@ export type AnthropicMessagesCall = {
     tools: Anthropic.Tool[]
     turns: Anthropic.MessageParam[]
     onText: (text: string) => void
+}
+
+function getTurnsCachedToTheEnd(
+    turns: Anthropic.MessageParam[],
+): Anthropic.MessageParam[] {
+    const lastTurn = turns.at(-1)
+    if (lastTurn === undefined) {
+        return turns
+    }
+    const content: Anthropic.ContentBlockParam[] =
+        typeof lastTurn.content === "string"
+            ? [{ type: "text", text: lastTurn.content }]
+            : lastTurn.content
+    const lastBlock = content.at(-1)
+    if (lastBlock?.type !== "text" && lastBlock?.type !== "tool_result") {
+        return turns
+    }
+    const cachedLastBlock = { ...lastBlock, cache_control: cacheControl }
+    return [
+        ...turns.slice(0, -1),
+        { ...lastTurn, content: [...content.slice(0, -1), cachedLastBlock] },
+    ]
 }
 
 export async function callAnthropicMessages({
@@ -46,9 +70,19 @@ export async function callAnthropicMessages({
             .stream({
                 model: apiId,
                 max_tokens: maxTokens,
-                system: systemPrompt,
+                // Two cache breakpoints: the system prompt's covers the tools
+                // and the system prompt, which every run of an employee in a
+                // position shares; the last block's covers the conversation,
+                // which each request of a tool loop extends.
+                system: [
+                    {
+                        type: "text",
+                        text: systemPrompt,
+                        cache_control: cacheControl,
+                    },
+                ],
                 ...(tools.length > 0 && { tools }),
-                messages: turns,
+                messages: getTurnsCachedToTheEnd(turns),
             })
             .on("text", onText)
             .finalMessage()

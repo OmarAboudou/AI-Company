@@ -32,7 +32,7 @@ export type ReceivedRequest = {
         model: string
         max_tokens: number
         stream: boolean
-        system: string
+        system: ReceivedBlock[]
         tools?: Anthropic.Tool[]
         messages: { role: string; content: ReceivedBlock[] }[]
     }
@@ -96,7 +96,12 @@ function formatEventStream({
                 content: [],
                 stop_reason: null,
                 stop_sequence: null,
-                usage: { input_tokens: 10, output_tokens: 1 },
+                usage: {
+                    input_tokens: 10,
+                    output_tokens: 1,
+                    cache_creation_input_tokens: 20,
+                    cache_read_input_tokens: 100,
+                },
             },
         }),
         ...blocks.flatMap(([contentBlock, deltas], index) =>

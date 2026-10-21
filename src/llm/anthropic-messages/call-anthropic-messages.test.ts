@@ -22,7 +22,12 @@ describe("callAnthropicMessages", () => {
         {
             auth,
             tools = [],
-        }: { auth?: "x-api-key" | "bearer"; tools?: Anthropic.Tool[] } = {},
+            turns = [{ role: "user", content: "Hono or Express?" }],
+        }: {
+            auth?: "x-api-key" | "bearer"
+            tools?: Anthropic.Tool[]
+            turns?: Anthropic.MessageParam[]
+        } = {},
     ) {
         const streamedTexts: string[] = []
         const response = callAnthropicMessages({
@@ -31,7 +36,7 @@ describe("callAnthropicMessages", () => {
             apiId: "claude-opus-5-5",
             systemPrompt: "You are Claude Senior.",
             tools,
-            turns: [{ role: "user", content: "Hono or Express?" }],
+            turns,
             onText: (text) => streamedTexts.push(text),
         })
         return { streamedTexts, response }
@@ -67,6 +72,32 @@ describe("callAnthropicMessages", () => {
         expect(fakeServer.requests[0]?.body.tools).toEqual(tools)
         expect(madeToolCalls).toEqual(toolCalls)
         expect(message.stop_reason).toBe("tool_use")
+    })
+
+    test("marks the system prompt and the turns' end for the prompt cache", async () => {
+        const turns: Anthropic.MessageParam[] = [
+            { role: "user", content: [{ type: "text", text: "Hono?" }] },
+            { role: "assistant", content: [{ type: "text", text: "Yes." }] },
+            { role: "user", content: [{ type: "text", text: "Why?" }] },
+        ]
+
+        await callFakeServer("sk-test", { turns }).response
+
+        const body = fakeServer.requests[0]?.body
+        const cachedBlocks = body?.messages
+            .flatMap(({ content }) => content)
+            .filter(({ cache_control }) => cache_control !== undefined)
+        const cacheControl = { type: "ephemeral" }
+        expect(body?.system).toEqual([
+            {
+                type: "text",
+                text: "You are Claude Senior.",
+                cache_control: cacheControl,
+            },
+        ])
+        expect(cachedBlocks).toEqual([
+            { type: "text", text: "Why?", cache_control: cacheControl },
+        ])
     })
 
     test("sends no tools to a model given none", async () => {
