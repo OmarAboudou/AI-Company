@@ -12,7 +12,7 @@ export async function sendUnsentMessage(
     projectRoot: string,
     threadId: string,
     { unknownMentionIds, ...messageContent }: UnsentMessage,
-    { depth }: { depth: number },
+    { depth, runId }: { depth: number; runId?: string },
 ): Promise<Message> {
     const threadMessages = await listMessages(projectRoot, threadId)
     const sentAt = getNextSentAt(threadMessages, new Date())
@@ -30,6 +30,7 @@ export async function sendUnsentMessage(
         threadId,
         messageId: message.id,
         mentions: message.mentions,
+        ...(runId !== undefined && { runId }),
     })
     await saveMessage(projectRoot, message)
     return message
