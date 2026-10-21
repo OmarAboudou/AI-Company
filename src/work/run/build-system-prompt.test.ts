@@ -15,17 +15,11 @@ const context: SystemPromptContext = {
         title: "Backend Developer",
         description: "You build the API.",
     },
-    employee: {
-        id: "claude-senior",
-        name: "Claude Senior",
-        kind: "llm",
-        providerId: "anthropic",
-        modelId: "claude-opus-5-5",
-    },
+    workerName: "Claude Senior",
 }
 
 describe("buildSystemPrompt", () => {
-    test("starts with who the employee is, where and as what", () => {
+    test("starts with who works the task, where and as what", () => {
         const prompt = buildSystemPrompt(context)
         const identityLine =
             "You are Claude Senior, Backend Developer (@backend-developer) at Acme."

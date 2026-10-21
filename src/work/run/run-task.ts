@@ -72,7 +72,11 @@ export async function runTask(
         connection,
         apiKey,
         apiId: model.apiId,
-        systemPrompt: buildSystemPrompt({ company, position, employee }),
+        systemPrompt: buildSystemPrompt({
+            company,
+            position,
+            workerName: employee.name,
+        }),
         userMessage: session.userMessage,
         tools: getRunTools(session.toolNames, session.boundToolInputs),
         onProgress,
