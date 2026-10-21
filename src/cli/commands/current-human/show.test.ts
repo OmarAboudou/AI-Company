@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createCompany } from "../../../organization/company/create-company.ts"
+import { createEmployee } from "../../../organization/employee/create-employee.ts"
+import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
-const { runCli, runCliWithEnv } = useTemporaryProject()
+const { runCli, runCliWithEnv, getProjectPath } = useTemporaryProject()
 
 const interimEmployee = ["position", "interim", "employee"]
 
@@ -11,13 +14,16 @@ function createEmployeeEnv(employeeId: string) {
 
 const julieEnv = createEmployeeEnv("julie")
 
-beforeEach(() => {
-    runCli("init", "-n", "Acme")
-    runCli("employee", "create", "human", "julie", "-n", "Julie")
-    runCli("employee", "create", "human", "bob", "-n", "Bob")
-    for (const id of ["graphics", "support", "design", "sales"]) {
-        runCli("position", "create", id, "-t", id)
-    }
+beforeEach(async () => {
+    const projectRoot = getProjectPath()
+    await createCompany(projectRoot, { name: "Acme", description: "" })
+    await Promise.all([
+        createEmployee(projectRoot, "julie", { name: "Julie", kind: "human" }),
+        createEmployee(projectRoot, "bob", { name: "Bob", kind: "human" }),
+        ...["graphics", "support", "design", "sales"].map((id) =>
+            createPosition(projectRoot, id, { title: id, description: "" }),
+        ),
+    ])
 })
 
 describe("llmco current-human", () => {
