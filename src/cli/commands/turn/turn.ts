@@ -1,6 +1,7 @@
 import type { Command } from "@commander-js/extra-typings"
 import { registerTurnAddCommands } from "./add/add.ts"
 import { registerTurnClearCommand } from "./clear.ts"
+import { registerTurnSendCommand } from "./send.ts"
 import { registerTurnShowCommand } from "./show.ts"
 
 export function registerTurnCommands(program: Command): void {
@@ -12,4 +13,5 @@ export function registerTurnCommands(program: Command): void {
     registerTurnAddCommands(turnCommand)
     registerTurnShowCommand(turnCommand)
     registerTurnClearCommand(turnCommand)
+    registerTurnSendCommand(turnCommand)
 }
