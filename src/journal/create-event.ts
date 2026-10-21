@@ -9,10 +9,10 @@ type WithoutIdAndTime<Event> = Event extends unknown
 
 export type NewJournalEvent = WithoutIdAndTime<JournalEvent>
 
-export async function createEvent(
+export async function createEvent<NewEvent extends NewJournalEvent>(
     projectRoot: string,
-    newEvent: NewJournalEvent,
-): Promise<JournalEvent> {
+    newEvent: NewEvent,
+): Promise<NewEvent & Pick<JournalEvent, "id" | "occurredAt">> {
     const occurredAt = readMonotonicTime()
     const event = {
         id: createTimeOrderedId(occurredAt),

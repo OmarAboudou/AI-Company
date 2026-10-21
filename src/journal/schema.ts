@@ -88,6 +88,31 @@ const TaskFailedEventSchema = z
     })
     .meta({ description: "A task was given up." })
 
+const ChainStoppedEventSchema = z
+    .strictObject({
+        type: z.literal("chain-stopped").meta({
+            description:
+                "chain-stopped: llmco created no task for an event, whose chain of tasks had reached the company's maxTaskDepth.",
+        }),
+        occurredAt: OccurredAtSchema,
+        depth: DepthSchema,
+        causeEventId: IdSchema.meta({
+            description:
+                "Id of the event the task would have been created for, i.e. the name of its file in .llmco/journal.",
+        }),
+        stoppedTask: z
+            .strictObject({
+                type: IdSchema,
+                positionId: IdSchema,
+                params: z.record(z.string(), z.unknown()),
+            })
+            .meta({
+                description:
+                    "The task the chain stopped before, as a listener asked for it: its type, the position it was for and its parameters.",
+            }),
+    })
+    .meta({ description: "A chain of tasks was stopped." })
+
 export const JournalEventSchema = z
     .discriminatedUnion("type", [
         MessageSentEventSchema,
@@ -95,6 +120,7 @@ export const JournalEventSchema = z
         TaskStartedEventSchema,
         TaskCompletedEventSchema,
         TaskFailedEventSchema,
+        ChainStoppedEventSchema,
     ])
     .meta({
         title: "llmco event",
@@ -103,3 +129,5 @@ export const JournalEventSchema = z
     })
 
 export type JournalEvent = z.infer<typeof JournalEventSchema> & { id: string }
+
+export type ChainStoppedEvent = Extract<JournalEvent, { type: "chain-stopped" }>

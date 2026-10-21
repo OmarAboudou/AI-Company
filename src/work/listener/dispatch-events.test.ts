@@ -2,8 +2,9 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { createEvent } from "../../journal/create-event.ts"
-import { saveEvent } from "../../journal/storage.ts"
+import { listEvents, saveEvent } from "../../journal/storage.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.ts"
+import { loadCompany, saveCompany } from "../../organization/company/storage.ts"
 import { savePosition } from "../../organization/position/storage.ts"
 import { listTasks, saveTask } from "../task/storage.ts"
 import { defineListener } from "./define-listener.ts"
@@ -108,6 +109,64 @@ describe("dispatchEvents", () => {
 
         expect(createdTasks).toEqual([])
         expect(await listTasks(projectRoot)).toHaveLength(1)
+    })
+})
+
+describe("dispatchEvents at the end of a chain", () => {
+    async function setMaxTaskDepth(maxTaskDepth: number) {
+        const company = await loadCompany(projectRoot)
+        await saveCompany(projectRoot, { ...company, maxTaskDepth })
+    }
+
+    test("creates tasks up to the company's maximum depth", async () => {
+        await setMaxTaskDepth(2)
+        await createMessageSentEvent(["qa-tester"], 1)
+
+        const { createdTasks } = await dispatchToMentionListener()
+
+        expect(createdTasks).toMatchObject([{ depth: 2 }])
+    })
+
+    test("records a stopped chain instead of a deeper task", async () => {
+        await setMaxTaskDepth(2)
+        const answerSent = await createMessageSentEvent(["qa-tester"], 2)
+
+        const dispatching = await dispatchToMentionListener()
+
+        const [chainStoppedEvent] = dispatching.chainStoppedEvents
+        const lastEvent = (await listEvents(projectRoot)).at(-1)
+        expect(dispatching.createdTasks).toEqual([])
+        expect(chainStoppedEvent).toMatchObject({
+            type: "chain-stopped",
+            depth: 2,
+            causeEventId: answerSent.id,
+            stoppedTask: {
+                type: "catch-up-thread",
+                positionId: "qa-tester",
+                params: { threadId },
+            },
+        })
+        expect(lastEvent).toEqual(chainStoppedEvent)
+    })
+
+    test("stops chains beyond 200 tasks, unless management sets it", async () => {
+        await createMessageSentEvent(["qa-tester"], 199)
+        await createMessageSentEvent(["backend-developer"], 200)
+
+        const dispatching = await dispatchToMentionListener()
+
+        expect(dispatching.createdTasks).toMatchObject([{ depth: 200 }])
+        expect(dispatching.chainStoppedEvents).toHaveLength(1)
+    })
+
+    test("records a stopped chain once, even giving its event again", async () => {
+        await createMessageSentEvent(["qa-tester"], 200)
+        await dispatchToMentionListener()
+        await rm(join(projectRoot, ".llmco", ".state"), { recursive: true })
+
+        const { chainStoppedEvents } = await dispatchToMentionListener()
+
+        expect(chainStoppedEvents).toEqual([])
     })
 })
 
