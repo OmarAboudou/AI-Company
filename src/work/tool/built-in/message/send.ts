@@ -22,12 +22,15 @@ export const messageSendTool = defineTool({
         body: z.string().meta({ description: "The message, in Markdown." }),
     }),
     async execute({ threadId, body }, ctx) {
-        const { projectRoot, position, employee } = ctx
+        const { projectRoot, position, worker } = ctx
         const thread = await loadExistingThread(projectRoot, threadId)
         const author = {
             position: { id: position.id, title: position.title },
-            ...(employee !== undefined && {
-                employee: { id: employee.id, name: employee.name },
+            ...(worker.kind === "employee" && {
+                employee: {
+                    id: worker.employee.id,
+                    name: worker.employee.name,
+                },
             }),
             committer: readGitCommitter(projectRoot),
         }

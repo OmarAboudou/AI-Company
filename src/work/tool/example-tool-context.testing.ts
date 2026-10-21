@@ -17,12 +17,15 @@ export const exampleToolContext: ToolContext = {
         title: "Backend Developer",
         description: "",
     },
-    employee: {
-        id: "claude-senior",
-        name: "Claude Senior",
-        kind: "llm",
-        providerId: "anthropic",
-        modelId: "opus",
+    worker: {
+        kind: "employee",
+        employee: {
+            id: "claude-senior",
+            name: "Claude Senior",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        },
     },
     runId: "20261018-140324-000-1b2c",
 }

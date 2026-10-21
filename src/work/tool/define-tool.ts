@@ -4,13 +4,17 @@ import type { Employee } from "../../organization/employee/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import type { Task } from "../task/schema.ts"
 
+export type RunWorker =
+    | { kind: "employee"; employee: Employee }
+    | { kind: "directors" }
+
 export type ToolContext = {
     projectRoot: string
     journal: Journal
     task: Task
     depth: number
     position: Position
-    employee?: Employee
+    worker: RunWorker
     runId: string
 }
 
