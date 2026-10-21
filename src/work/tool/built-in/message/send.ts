@@ -12,8 +12,7 @@ function buildDescription(thread: string): string {
 }
 
 export const messageSendTool = defineTool({
-    description: buildDescription("a thread"),
-    buildBoundDescription: ({ threadId }) =>
+    description: ({ threadId }) =>
         buildDescription(threadId === undefined ? "a thread" : "this thread"),
     inputSchema: z.strictObject({
         threadId: z.string().meta({

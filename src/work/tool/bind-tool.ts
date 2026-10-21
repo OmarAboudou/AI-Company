@@ -1,5 +1,6 @@
 import { z } from "zod"
 import type { Tool } from "./define-tool.ts"
+import { getToolDescription } from "./get-tool-description.ts"
 
 export function bindTool<InputSchema extends z.ZodObject>(
     tool: Tool<InputSchema>,
@@ -14,8 +15,7 @@ export function bindTool<InputSchema extends z.ZodObject>(
         ),
     )
     return {
-        description:
-            tool.buildBoundDescription?.(boundInput) ?? tool.description,
+        description: getToolDescription(tool, boundInput),
         inputSchema: z.strictObject(freeShape),
         execute: (freeInput, ctx) =>
             tool.execute(
