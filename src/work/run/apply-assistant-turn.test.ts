@@ -156,6 +156,19 @@ describe("applyAssistantTurn", () => {
         ])
     })
 
+    test("gives back the turn that answers it, without reporting progress", async () => {
+        const turn = createTurn(...createNoteWritings(1))
+
+        const { run, answeringTurn } = await applyAssistantTurn(
+            startedRun,
+            turn,
+            { tools, ctx: { ...exampleToolContext, projectRoot, runId } },
+        )
+
+        expect(answeringTurn?.role).toBe("user")
+        expect(run.conversation.turns.at(-1)).toEqual(answeringTurn)
+    })
+
     test("keeps the turn and its answer in the run's transcript", async () => {
         const turn = createTurn(...createNoteWritings(1))
 
