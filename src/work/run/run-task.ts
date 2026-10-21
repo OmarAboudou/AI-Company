@@ -17,6 +17,7 @@ import {
     taskStartedEventType,
 } from "../task/schema.ts"
 import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
+import { getLastEntryIdReadByRun } from "../task-type/built-in/catch-up-thread/get-last-entry-id-read-by-run.ts"
 import type { TaskType } from "../task-type/define-task-type.ts"
 import {
     type BuiltInToolName,
@@ -24,7 +25,6 @@ import {
 } from "../tool/built-in/built-in.ts"
 import type { TaskEnding, Tool } from "../tool/define-tool.ts"
 import { buildSystemPrompt } from "./build-system-prompt.ts"
-import { getLastEntryIdReadByRun } from "./get-last-entry-id-read-by-run.ts"
 import { runToolLoop } from "./run-tool-loop.ts"
 import type { RunProgress } from "./schema.ts"
 

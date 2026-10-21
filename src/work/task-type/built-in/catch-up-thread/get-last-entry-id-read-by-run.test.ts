@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test"
-import type { EventOfType } from "../../journal/schema.ts"
+import type { EventOfType } from "../../../../journal/schema.ts"
 import type {
     Message,
     messageSentEventType,
-} from "../../messaging/message/schema.ts"
+} from "../../../../messaging/message/schema.ts"
 import { getLastEntryIdReadByRun } from "./get-last-entry-id-read-by-run.ts"
 
 const runId = "20261018-140324-000-1b2c"
