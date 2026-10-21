@@ -6,7 +6,8 @@ import { z } from "zod"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.ts"
 import { taskCompleteTool } from "../tool/built-in/task/complete.ts"
 import { taskFailTool } from "../tool/built-in/task/fail.ts"
-import { defineTool, type ToolContext } from "../tool/define-tool.ts"
+import { defineTool } from "../tool/define-tool.ts"
+import { exampleToolContext } from "../tool/example-tool-context.ts"
 import { getAnthropicTools } from "./get-anthropic-tools.ts"
 import {
     maxToolCallsPerRun,
@@ -52,20 +53,8 @@ const completion = {
 }
 
 function runFakeLoop(progresses: RunProgress[] = []) {
-    const ctx: ToolContext = {
-        projectRoot,
-        task: {
-            id: "20261018-140323-000-77aa",
-            createdAt: "2026-10-18T14:03:23.000Z",
-            type: "catch-up-thread",
-            params: { threadId: "2026-10-18-choice-of-framework" },
-            positionId: "backend-developer",
-            causeEventId: "20261018-140322-123-5d1e",
-        },
-        runId,
-    }
     return runToolLoop({
-        ctx,
+        ctx: { ...exampleToolContext, projectRoot, runId },
         connection: { baseUrl: fakeServer.getUrl() },
         apiKey: "sk-test",
         apiId: "claude-opus-5-5",
