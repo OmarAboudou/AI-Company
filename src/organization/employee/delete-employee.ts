@@ -1,12 +1,9 @@
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
-import {
-    listPositions,
-    savePosition,
-    savePositionState,
-} from "../position/storage.ts"
+import { listPositionAssignments } from "../position/list-position-assignments.ts"
+import { savePosition, savePositionState } from "../position/storage.ts"
 import { getPositionsFilledBy } from "./get-positions-filled-by.ts"
-import { listPositionsWorkedTemporarilyBy } from "./list-positions-worked-temporarily-by.ts"
+import { getPositionsWorkedTemporarilyBy } from "./get-positions-worked-temporarily-by.ts"
 import { loadExistingEmployee } from "./load-existing-employee.ts"
 import type { Employee } from "./schema.ts"
 import { deleteEmployeeFolder } from "./storage.ts"
@@ -23,14 +20,14 @@ export async function deleteEmployee(
     { shouldForce = false }: { shouldForce?: boolean } = {},
 ): Promise<DeleteEmployeeResult> {
     await requireCompany(projectRoot)
-    const [employee, positions] = await Promise.all([
+    const [employee, assignments] = await Promise.all([
         loadExistingEmployee(projectRoot, rawId),
-        listPositions(projectRoot),
+        listPositionAssignments(projectRoot),
     ])
+    const positions = assignments.map(({ position }) => position)
     const filledPositions = getPositionsFilledBy(positions, employee.id)
-    const temporaryPositions = await listPositionsWorkedTemporarilyBy(
-        projectRoot,
-        positions,
+    const temporaryPositions = getPositionsWorkedTemporarilyBy(
+        assignments,
         employee.id,
     )
     const vacatedPositionIds = filledPositions.map(({ id }) => id)
