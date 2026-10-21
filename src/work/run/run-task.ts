@@ -1,7 +1,5 @@
-import { z } from "zod"
 import { createTimeOrderedId } from "../../ids/create-time-ordered-id.ts"
 import { recordEvent } from "../../journal/record-event.ts"
-import { requireJournalEvent } from "../../journal/require-journal-event.ts"
 import type { Journal } from "../../journal/schema.ts"
 import { loadAnthropicMessagesModel } from "../../llm/anthropic-messages/load-anthropic-messages-model.ts"
 import type { TokenUsage } from "../../llm/conversation/schema.ts"
@@ -9,16 +7,14 @@ import { loadCompany } from "../../organization/company/storage.ts"
 import type { LlmEmployee } from "../../organization/employee/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { readMonotonicTime } from "../../read-monotonic-time.ts"
-import { UserError } from "../../user-error.ts"
 import {
     type Task,
     taskDoneEventType,
     taskFailedEventType,
     taskStartedEventType,
 } from "../task/schema.ts"
-import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
-import type { TaskType } from "../task-type/define-task-type.ts"
 import type { TaskEnding } from "../tool/define-tool.ts"
+import { beginTask } from "./begin-task.ts"
 import { buildSystemPrompt } from "./build-system-prompt.ts"
 import { getRunTools } from "./get-run-tools.ts"
 import { runToolLoop } from "./run-tool-loop.ts"
@@ -27,26 +23,6 @@ import type { RunProgress } from "./schema.ts"
 export type RunTaskResult = {
     taskEnding: TaskEnding
     run?: { runId: string; usage: TokenUsage }
-}
-
-function requireTaskType(task: Task): TaskType {
-    const taskType = builtInTaskTypes[task.type]
-    if (taskType === undefined) {
-        throw new UserError(
-            `Task "${task.id}" is of type "${task.type}", which this version of llmco doesn't know: a newer one created it. Update llmco.`,
-        )
-    }
-    return taskType
-}
-
-function parseTaskParams(task: Task, taskType: TaskType): unknown {
-    const validation = taskType.paramsSchema.safeParse(task.params)
-    if (!validation.success) {
-        throw new UserError(
-            `Invalid .llmco/tasks/${task.id}.json:\n${z.prettifyError(validation.error)}`,
-        )
-    }
-    return validation.data
 }
 
 export async function runTask(
@@ -65,22 +41,11 @@ export async function runTask(
     },
 ): Promise<RunTaskResult> {
     const { projectRoot } = journal
-    const taskType = requireTaskType(task)
-    const params = parseTaskParams(task, taskType)
-    const causeEvent = requireJournalEvent(journal, task.causeEventId)
-    const taskDepth = causeEvent.depth + 1
-    const ctx = { projectRoot, journal, task, position, causeEvent }
-    const session = await taskType.createSession(params, ctx)
-    if (session.kind === "done") {
-        const { summary } = session
-        await recordEvent(journal, taskDoneEventType, {
-            depth: taskDepth,
-            taskId: task.id,
-            summary,
-            result: taskType.resultSchema.parse(session.result),
-        })
-        return { taskEnding: { state: "done", summary } }
+    const beginning = await beginTask(journal, { task, position })
+    if (beginning.kind === "done") {
+        return { taskEnding: { state: "done", summary: beginning.summary } }
     }
+    const { taskType, params, ctx, taskDepth, session } = beginning
     const [{ provider, model, connection, apiKey }, company] =
         await Promise.all([
             loadAnthropicMessagesModel(projectRoot, environment, employee),
