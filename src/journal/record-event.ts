@@ -14,7 +14,7 @@ export async function recordEvent<Content extends Omit<JournalEvent, "id">>(
     unrecordedEvent: UnrecordedEvent<Content>,
 ): Promise<Content & { id: string }> {
     const occurredAt = readMonotonicTime()
-    const content = eventType.schema.parse({
+    const content = eventType.recordingSchema.parse({
         type: eventType.type,
         occurredAt,
         ...unrecordedEvent,

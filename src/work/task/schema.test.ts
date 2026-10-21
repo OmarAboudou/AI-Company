@@ -44,7 +44,7 @@ describe("TaskSchema", () => {
 })
 
 function isAcceptedBy(eventType: EventType, event: unknown): boolean {
-    return eventType.schema.safeParse(event).success
+    return eventType.recordingSchema.safeParse(event).success
 }
 
 describe("the task event types", () => {

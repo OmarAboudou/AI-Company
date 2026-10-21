@@ -29,12 +29,12 @@ const publicationUrl =
 
 const BuiltInEventSchema = z
     .discriminatedUnion("type", [
-        messageSentEventType.schema,
-        taskCreatedEventType.schema,
-        taskStartedEventType.schema,
-        taskDoneEventType.schema,
-        taskFailedEventType.schema,
-        chainStoppedEventType.schema,
+        messageSentEventType.recordingSchema,
+        taskCreatedEventType.recordingSchema,
+        taskStartedEventType.recordingSchema,
+        taskDoneEventType.recordingSchema,
+        taskFailedEventType.recordingSchema,
+        chainStoppedEventType.recordingSchema,
     ])
     .meta(JournalEventSchema.meta() ?? {})
 
