@@ -124,6 +124,8 @@ export const AssistantTurnSchema = z
 
 export type AssistantTurn = z.infer<typeof AssistantTurnSchema>
 
+export type ModelTurn = AssistantTurn & { modelResponse: ModelResponse }
+
 export const ConversationTurnSchema = z.discriminatedUnion("role", [
     UserTurnSchema,
     AssistantTurnSchema,
