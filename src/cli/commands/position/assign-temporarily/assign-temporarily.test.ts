@@ -1,4 +1,8 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createCompany } from "../../../../organization/company/create-company.ts"
+import { createEmployee } from "../../../../organization/employee/create-employee.ts"
+import { assignPosition } from "../../../../organization/position/assign-position.ts"
+import { createPosition } from "../../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
@@ -15,14 +19,29 @@ async function loadPositionStateFile(id: string): Promise<unknown> {
 }
 
 describe("llmco position assign-temporarily and unassign-temporarily", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("position", "create", "developer", "-t", "Developer")
-        runCli("position", "create", "designer", "-t", "Designer")
-        runCli("employee", "create", "human", "omar", "-n", "Omar")
-        runCli("employee", "create", "human", "julie", "-n", "Julie")
-        runCli("employee", "create", "human", "bob", "-n", "Bob")
-        runCli("position", "assign", "developer", "omar")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await Promise.all([
+            createPosition(projectRoot, "developer", {
+                title: "Developer",
+                description: "",
+            }),
+            createPosition(projectRoot, "designer", {
+                title: "Designer",
+                description: "",
+            }),
+            createEmployee(projectRoot, "omar", {
+                name: "Omar",
+                kind: "human",
+            }),
+            createEmployee(projectRoot, "julie", {
+                name: "Julie",
+                kind: "human",
+            }),
+            createEmployee(projectRoot, "bob", { name: "Bob", kind: "human" }),
+        ])
+        await assignPosition(projectRoot, "developer", "omar")
     })
 
     const julieWorker = { kind: "employee", employeeId: "julie" }

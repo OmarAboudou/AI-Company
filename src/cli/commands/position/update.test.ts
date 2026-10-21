@@ -1,12 +1,18 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createCompany } from "../../../organization/company/create-company.ts"
+import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
-const { runCli, runCliWithStdin } = useTemporaryProject()
+const { runCli, runCliWithStdin, getProjectPath } = useTemporaryProject()
 
 describe("llmco position update", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("position", "create", "developer", "-t", "Dev", "-d", "Code.")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createPosition(projectRoot, "developer", {
+            title: "Dev",
+            description: "Code.",
+        })
     })
 
     test("update -t changes the title and keeps the description", () => {
