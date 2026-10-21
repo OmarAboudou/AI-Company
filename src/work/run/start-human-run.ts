@@ -1,0 +1,57 @@
+import { readGitCommitter } from "../../git/read-git-committer.ts"
+import { createTimeOrderedId } from "../../ids/create-time-ordered-id.ts"
+import { recordEvent } from "../../journal/record-event.ts"
+import type { Journal } from "../../journal/schema.ts"
+import { loadCompany } from "../../organization/company/storage.ts"
+import type { CurrentHuman } from "../../organization/human/read-current-human.ts"
+import type { Position } from "../../organization/position/schema.ts"
+import { readMonotonicTime } from "../../read-monotonic-time.ts"
+import { type Task, taskStartedEventType } from "../task/schema.ts"
+import type { TaskSession } from "../task-type/define-task-type.ts"
+import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
+import { buildSystemPrompt } from "./build-system-prompt.ts"
+import { getRunTools } from "./get-run-tools.ts"
+import type { Run } from "./schema.ts"
+import { startRun } from "./start-run.ts"
+
+export type HumanRunStart = {
+    task: Task
+    position: Position
+    human: CurrentHuman
+    taskDepth: number
+    session: Extract<TaskSession, { kind: "run" }>
+}
+
+function readWorkerName(projectRoot: string, human: CurrentHuman): string {
+    return human.kind === "employee"
+        ? human.employee.name
+        : readGitCommitter(projectRoot).name
+}
+
+export async function startHumanRun(
+    journal: Journal,
+    { task, position, human, taskDepth, session }: HumanRunStart,
+): Promise<Run> {
+    const { projectRoot } = journal
+    const company = await loadCompany(projectRoot)
+    const runId = createTimeOrderedId(readMonotonicTime())
+    await recordEvent(journal, taskStartedEventType, {
+        depth: taskDepth,
+        taskId: task.id,
+        runId,
+        ...(human.kind === "employee" && { employeeId: human.employee.id }),
+    })
+    const { toolNames, boundToolInputs, result } = session
+    const tools = getRunTools(toolNames, boundToolInputs)
+    return startRun(projectRoot, {
+        id: runId,
+        systemPrompt: buildSystemPrompt({
+            company,
+            position,
+            workerName: readWorkerName(projectRoot, human),
+        }),
+        tools: getToolDefinitions(tools),
+        userMessage: session.userMessage,
+        session: { toolNames, boundToolInputs, result },
+    })
+}

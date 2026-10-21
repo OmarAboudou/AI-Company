@@ -36,6 +36,13 @@ export async function appendRunTranscriptLine(
     )
 }
 
+export async function hasRun(
+    projectRoot: string,
+    id: string,
+): Promise<boolean> {
+    return Bun.file(getRunTranscriptPath(projectRoot, id)).exists()
+}
+
 export async function loadRun(projectRoot: string, id: string): Promise<Run> {
     const path = getRunTranscriptPath(projectRoot, id)
     const displayPath = relative(projectRoot, path)
