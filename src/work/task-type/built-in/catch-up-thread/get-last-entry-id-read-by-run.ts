@@ -1,9 +1,9 @@
-import { getEventOfType } from "../../journal/get-event-of-type.ts"
-import type { JournalEvent } from "../../journal/schema.ts"
+import { getEventOfType } from "../../../../journal/get-event-of-type.ts"
+import type { JournalEvent } from "../../../../journal/schema.ts"
 import {
     type Message,
     messageSentEventType,
-} from "../../messaging/message/schema.ts"
+} from "../../../../messaging/message/schema.ts"
 
 export function getLastEntryIdReadByRun(
     threadMessages: Message[],
