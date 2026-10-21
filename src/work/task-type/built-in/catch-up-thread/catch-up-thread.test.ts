@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
-import { createGitRepository } from "../../../../git/create-git-repository.ts"
+import { createGitRepository } from "../../../../git/create-git-repository.testing.ts"
 import { recordEvent } from "../../../../journal/record-event.ts"
 import {
     defineEventType,
@@ -10,7 +10,7 @@ import { loadEvent } from "../../../../journal/storage.ts"
 import { messageSentEventType } from "../../../../messaging/message/schema.ts"
 import { sendMessage } from "../../../../messaging/message/send-message.ts"
 import { createThread } from "../../../../messaging/thread/create-thread.ts"
-import { createTemporaryCompany } from "../../../../organization/company/create-temporary-company.ts"
+import { createTemporaryCompany } from "../../../../organization/company/create-temporary-company.testing.ts"
 import type { Position } from "../../../../organization/position/schema.ts"
 import { savePosition } from "../../../../organization/position/storage.ts"
 import { createTask } from "../../../task/create-task.ts"

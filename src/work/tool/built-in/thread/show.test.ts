@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
-import { createGitRepository } from "../../../../git/create-git-repository.ts"
+import { createGitRepository } from "../../../../git/create-git-repository.testing.ts"
 import { sendMessage } from "../../../../messaging/message/send-message.ts"
 import { createThread } from "../../../../messaging/thread/create-thread.ts"
-import { createTemporaryCompany } from "../../../../organization/company/create-temporary-company.ts"
-import { exampleToolContext } from "../../example-tool-context.ts"
+import { createTemporaryCompany } from "../../../../organization/company/create-temporary-company.testing.ts"
+import { exampleToolContext } from "../../example-tool-context.testing.ts"
 import { runToolCall } from "../../run-tool-call.ts"
 import { maxEntriesPerCall, threadShowTool } from "./show.ts"
 

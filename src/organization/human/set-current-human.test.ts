@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { UserError } from "../../user-error.ts"
-import { createTemporaryCompany } from "../company/create-temporary-company.ts"
+import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
 import { saveEmployee } from "../employee/storage.ts"
 import { setCurrentHuman } from "./set-current-human.ts"
 

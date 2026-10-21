@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
-import { createTemporaryCompany } from "../../organization/company/create-temporary-company.ts"
+import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { savePosition } from "../../organization/position/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { createUnsentMessage } from "./create-unsent-message.ts"

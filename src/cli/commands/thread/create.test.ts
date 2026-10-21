@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { spawnGit } from "../../../git/spawn-git.ts"
-import { useTemporaryProject } from "../../use-temporary-project.ts"
+import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, runCliWithEnv, getProjectPath } = useTemporaryProject()
 

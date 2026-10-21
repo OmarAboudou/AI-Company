@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { exampleToolContext } from "../../example-tool-context.ts"
+import { exampleToolContext } from "../../example-tool-context.testing.ts"
 import { runToolCall } from "../../run-tool-call.ts"
 import { taskMarkAsDoneTool } from "./mark-as-done.ts"
 

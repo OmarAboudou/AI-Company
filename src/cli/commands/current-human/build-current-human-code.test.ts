@@ -1,7 +1,7 @@
 // biome-ignore-all lint/suspicious/noTemplateCurlyInString: these strings are shell code, whose ${…} the shell expands.
 import { describe, expect, test } from "bun:test"
 import type { CurrentHuman } from "../../../organization/human/read-current-human.ts"
-import { isShellInstalled, runShell } from "../shell/run-shell.ts"
+import { isShellInstalled, runShell } from "../shell/run-shell.testing.ts"
 import { shells } from "../shell/shells.ts"
 import { buildCurrentHumanCode } from "./build-current-human-code.ts"
 

@@ -7,7 +7,7 @@ import {
     type Message,
     messageSentEventType,
 } from "../../../../messaging/message/schema.ts"
-import { createTemporaryCompany } from "../../../../organization/company/create-temporary-company.ts"
+import { createTemporaryCompany } from "../../../../organization/company/create-temporary-company.testing.ts"
 import { createTask } from "../../../task/create-task.ts"
 import { getTaskStates } from "../../../task/get-task-states.ts"
 import { type Task, taskDoneEventType } from "../../../task/schema.ts"

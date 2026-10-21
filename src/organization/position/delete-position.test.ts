@@ -5,7 +5,7 @@ import { recordEvent } from "../../journal/record-event.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { UserError } from "../../user-error.ts"
 import { createTask } from "../../work/task/create-task.ts"
-import { createTemporaryCompany } from "../company/create-temporary-company.ts"
+import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
 import { hasEmployee, saveEmployee } from "../employee/storage.ts"
 import { deletePosition } from "./delete-position.ts"
 import {

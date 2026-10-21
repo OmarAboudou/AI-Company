@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { saveLlmModel } from "../../llm/model/storage.ts"
 import { saveLlmProvider } from "../../llm/provider/storage.ts"
-import { createTemporaryCompany } from "../company/create-temporary-company.ts"
+import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
 import { requireEmployeeModel } from "./require-employee-model.ts"
 
 let projectRoot: string

@@ -6,7 +6,7 @@ import { saveLlmProvider } from "../../llm/provider/storage.ts"
 import { saveMessage } from "../../messaging/message/storage.ts"
 import { saveThread } from "../../messaging/thread/storage.ts"
 import { UserError } from "../../user-error.ts"
-import { createTemporaryCompany } from "../company/create-temporary-company.ts"
+import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
 import { createEmployee } from "./create-employee.ts"
 import { loadEmployee } from "./storage.ts"
 
