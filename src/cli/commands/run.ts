@@ -1,4 +1,5 @@
 import type { Command } from "@commander-js/extra-typings"
+import { formatPositionLabel } from "../../messaging/message/format-position-label.ts"
 import {
     type RunReadyTasksProgress,
     runReadyTasks,
@@ -61,7 +62,7 @@ function formatProgress(
         case "task-started": {
             const { task, position, employee } = progress
             return [
-                `${employee.name} runs task "${task.id}", ${task.type}, as ${position.title} (@${position.id}).`,
+                `${employee.name} runs task "${task.id}", ${task.type}, as ${formatPositionLabel(position)}.`,
             ]
         }
         case "tool-call":

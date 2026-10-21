@@ -1,3 +1,4 @@
+import { formatPositionLabel } from "../../messaging/message/format-position-label.ts"
 import type { Company } from "../../organization/company/schema.ts"
 import type { Employee } from "../../organization/employee/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
@@ -21,7 +22,7 @@ export function buildSystemPrompt({
     employee,
 }: SystemPromptContext): string {
     return [
-        `You are ${employee.name}, ${position.title} (@${position.id}) at ${company.name}.`,
+        `You are ${employee.name}, ${formatPositionLabel(position)} at ${company.name}.`,
         "",
         ...buildSection(
             company.name,
