@@ -1,0 +1,15 @@
+import { UserError } from "../../user-error.ts"
+import type { Position } from "../position/schema.ts"
+
+export function requireSelectedPosition(
+    workedPositions: Position[],
+    currentPositionId: string,
+): Position {
+    const position = workedPositions.find(({ id }) => id === currentPositionId)
+    if (position === undefined) {
+        throw new UserError(
+            `The position selected in this shell, "${currentPositionId}", isn't one you work now. Select another with \`llmco current-position set <position-id>\`, or run \`llmco current-position clear\`.`,
+        )
+    }
+    return position
+}

@@ -7,6 +7,7 @@ import {
     readCurrentHuman,
 } from "../../organization/human/read-current-human.ts"
 import { readCurrentPositionId } from "../../organization/human/read-current-position-id.ts"
+import { requireSelectedPosition } from "../../organization/human/require-selected-position.ts"
 import { requireWorkedPosition } from "../../organization/human/require-worked-position.ts"
 import { listPositionAssignments } from "../../organization/position/list-position-assignments.ts"
 import type { Position } from "../../organization/position/schema.ts"
@@ -45,19 +46,6 @@ type PositionChoice = {
     currentPositionId: string | undefined
     threadMemberIds: string[]
     directorPositionId: string
-}
-
-function requireSelectedPosition(
-    workedPositions: Position[],
-    currentPositionId: string,
-): Position {
-    const position = workedPositions.find(({ id }) => id === currentPositionId)
-    if (position === undefined) {
-        throw new UserError(
-            `The position selected in this shell, "${currentPositionId}", isn't one you work now. Select another with \`llmco current-position set <position-id>\`, or run \`llmco current-position clear\`.`,
-        )
-    }
-    return position
 }
 
 async function loadPositionToWriteFrom(
