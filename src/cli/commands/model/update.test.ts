@@ -1,15 +1,20 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createLlmConnection } from "../../../llm/connection/create-llm-connection.ts"
+import { createLlmModel } from "../../../llm/model/create-llm-model.ts"
+import { createLlmProvider } from "../../../llm/provider/create-llm-provider.ts"
+import { createCompany } from "../../../organization/company/create-company.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
-const { runCli } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("llmco model protocol", () => {
     const opus = ["anthropic", "claude-opus-5-5", "-n", "Opus", "-a", "opus"]
     const openRouterUrl = "https://openrouter.ai/api"
 
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("provider", "create", "anthropic", "-n", "Anthropic")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" })
     })
 
     function connect(protocol: string, url = openRouterUrl) {
@@ -42,19 +47,20 @@ describe("llmco model protocol", () => {
 describe("llmco model update", () => {
     const opus = ["anthropic", "claude-opus-5-5"]
 
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("provider", "create", "anthropic", "-n", "Anthropic")
-        runCli(
-            "provider",
-            "connection",
-            "create",
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" })
+        await createLlmConnection(
+            projectRoot,
             "anthropic",
             "anthropic-messages",
-            "-u",
-            "https://api.anthropic.com",
+            { baseUrl: "https://api.anthropic.com" },
         )
-        runCli("model", "create", ...opus, "-n", "Opus", "-a", "claude-opus")
+        await createLlmModel(projectRoot, "anthropic", "claude-opus-5-5", {
+            name: "Opus",
+            apiId: "claude-opus",
+        })
     })
 
     test("update -a changes the api id and keeps the name", () => {

@@ -1,20 +1,21 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createLlmConnection } from "../../../llm/connection/create-llm-connection.ts"
+import { createLlmProvider } from "../../../llm/provider/create-llm-provider.ts"
+import { createCompany } from "../../../organization/company/create-company.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
-const { runCli } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("llmco model", () => {
-    beforeEach(() => {
-        runCli("init", "--name", "Acme")
-        runCli("provider", "create", "anthropic", "-n", "Anthropic")
-        runCli(
-            "provider",
-            "connection",
-            "create",
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" })
+        await createLlmConnection(
+            projectRoot,
             "anthropic",
             "anthropic-messages",
-            "-u",
-            "https://api.anthropic.com",
+            { baseUrl: "https://api.anthropic.com" },
         )
     })
 
@@ -64,9 +65,10 @@ describe("llmco model protocol", () => {
     const opus = ["anthropic", "claude-opus-5-5", "-n", "Opus", "-a", "opus"]
     const openRouterUrl = "https://openrouter.ai/api"
 
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("provider", "create", "anthropic", "-n", "Anthropic")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" })
     })
 
     function connect(protocol: string, url = openRouterUrl) {
