@@ -1,6 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk"
 import { UserError } from "../../user-error.ts"
 import type { Connections } from "../connection/schema.ts"
+import type { Conversation, ModelTurn } from "../conversation/schema.ts"
+import { getAnthropicTools } from "./get-anthropic-tools.ts"
+import { getAnthropicTurns } from "./get-anthropic-turns.ts"
+import { getAssistantTurn } from "./get-assistant-turn.ts"
 
 // Every current Claude model accepts it; settings (#35) will give each
 // model its own maximum.
@@ -21,9 +25,7 @@ export type AnthropicMessagesCall = {
     connection: NonNullable<Connections["anthropic-messages"]>
     apiKey: string | undefined
     apiId: string
-    systemPrompt: string
-    tools: Anthropic.Tool[]
-    turns: Anthropic.MessageParam[]
+    conversation: Conversation
     onText: (text: string) => void
 }
 
@@ -53,11 +55,9 @@ export async function callAnthropicMessages({
     connection,
     apiKey,
     apiId,
-    systemPrompt,
-    tools,
-    turns,
+    conversation,
     onText,
-}: AnthropicMessagesCall): Promise<Anthropic.Message> {
+}: AnthropicMessagesCall): Promise<ModelTurn> {
     const isBearerAuth = connection.auth === "bearer"
     const client = new AnthropicWithoutLocalCredentials({
         baseURL: connection.baseUrl,
@@ -65,8 +65,9 @@ export async function callAnthropicMessages({
         authToken: isBearerAuth ? (apiKey ?? null) : null,
         ...(apiKey === undefined && { defaultHeaders: { "x-api-key": null } }),
     })
+    const tools = getAnthropicTools(conversation.tools)
     try {
-        return await client.messages
+        const message = await client.messages
             .stream({
                 model: apiId,
                 max_tokens: maxTokens,
@@ -77,15 +78,18 @@ export async function callAnthropicMessages({
                 system: [
                     {
                         type: "text",
-                        text: systemPrompt,
+                        text: conversation.systemPrompt,
                         cache_control: cacheControl,
                     },
                 ],
                 ...(tools.length > 0 && { tools }),
-                messages: getTurnsCachedToTheEnd(turns),
+                messages: getTurnsCachedToTheEnd(
+                    getAnthropicTurns(conversation.turns),
+                ),
             })
             .on("text", onText)
             .finalMessage()
+        return getAssistantTurn(message)
     } catch (error) {
         if (error instanceof Anthropic.APIError) {
             throw new UserError(
