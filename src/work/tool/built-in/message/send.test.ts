@@ -31,7 +31,7 @@ beforeEach(async () => {
         journal,
         depth: 3,
         position,
-        employee,
+        worker: { kind: "employee", employee },
     }
 })
 
@@ -61,13 +61,15 @@ describe("message_send", () => {
     })
 
     test("sends the message as a director, without an employee, when the directors work the task", async () => {
-        const { employee, ...directorsCtx } = ctx
+        const directorsCtx: ToolContext = {
+            ...ctx,
+            worker: { kind: "directors" },
+        }
         const call = { name: "message_send", input: { threadId, body: "Hi." } }
 
         await runToolCall(tools, call, directorsCtx)
 
         const [message] = await listMessages(projectRoot, threadId)
-        expect(employee).toBeDefined()
         expect(message).not.toHaveProperty("employee")
         expect(message?.committer).toEqual({
             name: "Test User",

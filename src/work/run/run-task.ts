@@ -79,7 +79,7 @@ export async function runTask(
             task,
             depth: taskDepth,
             position,
-            employee,
+            worker: { kind: "employee", employee },
             runId,
         },
         connection,
