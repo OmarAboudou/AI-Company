@@ -130,7 +130,7 @@ describe("answerAsLlmEmployee", () => {
         const body = fakeServer.requests[0]?.body
         const lastTurn = body?.messages.at(-1)?.content.at(-1)?.text
         expect(body).toMatchObject({ model: "claude-opus-5-5", stream: true })
-        expect(body?.system).toStartWith("You are Claude Senior,")
+        expect(body?.system[0]?.text).toStartWith("You are Claude Senior,")
         expect(lastTurn).toEndWith(`">\n${question}\n</message>`)
     })
 
