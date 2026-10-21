@@ -1,16 +1,9 @@
-import { readdir } from "node:fs/promises"
+import { listFolderEntries } from "./list-folder-entries.ts"
 
 const extension = ".json"
 
 export async function listJsonFileIds(folderPath: string): Promise<string[]> {
-    const entries = await readdir(folderPath, { withFileTypes: true }).catch(
-        (error: NodeJS.ErrnoException) => {
-            if (error.code === "ENOENT") {
-                return []
-            }
-            throw error
-        },
-    )
+    const entries = await listFolderEntries(folderPath)
     return entries
         .filter((entry) => entry.isFile() && entry.name.endsWith(extension))
         .map((entry) => entry.name.slice(0, -extension.length))
