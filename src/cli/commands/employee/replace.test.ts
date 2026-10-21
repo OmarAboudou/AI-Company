@@ -1,4 +1,8 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createCompany } from "../../../organization/company/create-company.ts"
+import { createEmployee } from "../../../organization/employee/create-employee.ts"
+import { assignPosition } from "../../../organization/position/assign-position.ts"
+import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
@@ -18,16 +22,27 @@ function createEmployeeWorker(employeeId: string) {
 }
 
 describe("llmco employee replace", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("employee", "create", "human", "omar", "-n", "Omar")
-        runCli("employee", "create", "human", "alice", "-n", "Alice")
-        for (const id of ["developer", "qa-tester", "designer"]) {
-            runCli("position", "create", id, "-t", id)
-        }
-        runCli("position", "assign", "developer", "omar")
-        runCli("position", "assign", "qa-tester", "omar")
-        runCli("position", "assign", "designer", "alice")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await Promise.all([
+            createEmployee(projectRoot, "omar", {
+                name: "Omar",
+                kind: "human",
+            }),
+            createEmployee(projectRoot, "alice", {
+                name: "Alice",
+                kind: "human",
+            }),
+            ...["developer", "qa-tester", "designer"].map((id) =>
+                createPosition(projectRoot, id, { title: id, description: "" }),
+            ),
+        ])
+        await Promise.all([
+            assignPosition(projectRoot, "developer", "omar"),
+            assignPosition(projectRoot, "qa-tester", "omar"),
+            assignPosition(projectRoot, "designer", "alice"),
+        ])
     })
 
     test("replace gives every position of an employee to another", () => {

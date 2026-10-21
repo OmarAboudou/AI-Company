@@ -1,42 +1,52 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createLlmConnection } from "../../../llm/connection/create-llm-connection.ts"
+import { createLlmModel } from "../../../llm/model/create-llm-model.ts"
+import { createLlmProvider } from "../../../llm/provider/create-llm-provider.ts"
+import { createCompany } from "../../../organization/company/create-company.ts"
+import { createEmployee } from "../../../organization/employee/create-employee.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
-const { runCli } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("llmco employee update", () => {
-    function createModel(providerId: string, modelId: string) {
-        const options = ["-n", modelId, "-a", modelId]
-        runCli("model", "create", providerId, modelId, ...options)
+    async function createProvider(providerId: string, baseUrl: string) {
+        const projectRoot = getProjectPath()
+        await createLlmProvider(projectRoot, providerId, { name: providerId })
+        await createLlmConnection(
+            projectRoot,
+            providerId,
+            "anthropic-messages",
+            { baseUrl },
+        )
     }
 
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("provider", "create", "anthropic", "-n", "Anthropic")
-        runCli(
-            "provider",
-            "connection",
-            "create",
-            "anthropic",
-            "anthropic-messages",
-            "-u",
-            "https://api.anthropic.com",
-        )
-        runCli("provider", "create", "ollama", "-n", "Ollama")
-        runCli(
-            "provider",
-            "connection",
-            "create",
-            "ollama",
-            "anthropic-messages",
-            "-u",
-            "http://localhost:11434",
-        )
-        createModel("anthropic", "claude-opus-5-5")
-        createModel("anthropic", "claude-haiku-4-5")
-        createModel("ollama", "llama-3-1-8b")
-        const hire = ["employee", "create", "llm", "claude", "-n", "Claude"]
-        runCli(...hire, "-p", "anthropic", "-m", "claude-opus-5-5")
-        runCli("employee", "create", "human", "omar", "-n", "Omar")
+    function createModel(providerId: string, modelId: string) {
+        const model = { name: modelId, apiId: modelId }
+        return createLlmModel(getProjectPath(), providerId, modelId, model)
+    }
+
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await Promise.all([
+            createProvider("anthropic", "https://api.anthropic.com"),
+            createProvider("ollama", "http://localhost:11434"),
+            createEmployee(projectRoot, "omar", {
+                name: "Omar",
+                kind: "human",
+            }),
+        ])
+        await Promise.all([
+            createModel("anthropic", "claude-opus-5-5"),
+            createModel("anthropic", "claude-haiku-4-5"),
+            createModel("ollama", "llama-3-1-8b"),
+        ])
+        await createEmployee(projectRoot, "claude", {
+            name: "Claude",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "claude-opus-5-5",
+        })
     })
 
     test("update -n renames an LLM employee and keeps its model", () => {
