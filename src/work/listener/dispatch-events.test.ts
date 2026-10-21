@@ -2,8 +2,10 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { createEvent } from "../../journal/create-event.ts"
+import { saveEvent } from "../../journal/storage.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.ts"
-import { listTasks } from "../task/storage.ts"
+import { savePosition } from "../../organization/position/storage.ts"
+import { listTasks, saveTask } from "../task/storage.ts"
 import { defineListener } from "./define-listener.ts"
 import { dispatchEvents } from "./dispatch-events.ts"
 import { mentionListener } from "./mention-listener.ts"
@@ -106,5 +108,56 @@ describe("dispatchEvents", () => {
 
         expect(createdTasks).toEqual([])
         expect(await listTasks(projectRoot)).toHaveLength(1)
+    })
+})
+
+describe("dispatchEvents through the positions' id history", () => {
+    const questionSentId = "20261018-140322-123-5d1e"
+
+    beforeEach(async () => {
+        await Promise.all([
+            savePosition(projectRoot, {
+                id: "api-developer",
+                title: "API Developer",
+                description: "",
+                formerIds: [
+                    {
+                        id: "backend-developer",
+                        until: "2026-10-19T09:00:00.000Z",
+                    },
+                ],
+            }),
+            saveEvent(projectRoot, {
+                id: questionSentId,
+                type: "message-sent",
+                occurredAt: "2026-10-18T14:03:22.123Z",
+                depth: 0,
+                threadId,
+                messageId: "20261018-140322-123-3f9a",
+                mentions: ["backend-developer"],
+            }),
+        ])
+    })
+
+    test("creates the task of a position renamed since, under its new id", async () => {
+        const { createdTasks } = await dispatchToMentionListener()
+
+        expect(createdTasks).toMatchObject([{ positionId: "api-developer" }])
+    })
+
+    test("recognizes the task it created before the position was renamed", async () => {
+        await saveTask(projectRoot, {
+            id: "20261018-140323-000-77aa",
+            createdAt: "2026-10-18T14:03:23.000Z",
+            type: "catch-up-thread",
+            params: { threadId },
+            positionId: "backend-developer",
+            depth: 1,
+            causeEventId: questionSentId,
+        })
+
+        const { createdTasks } = await dispatchToMentionListener()
+
+        expect(createdTasks).toEqual([])
     })
 })
