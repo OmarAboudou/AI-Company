@@ -1,7 +1,8 @@
 import { z } from "zod"
 import { IdSchema } from "../../ids/id-schema.ts"
 import { defineEventType, type EventOfType } from "../../journal/schema.ts"
-import { RunIdSchema, TokenUsageSchema } from "../run/schema.ts"
+import { TokenUsageSchema } from "../../llm/conversation/schema.ts"
+import { RunIdSchema } from "../run/schema.ts"
 
 export const TaskSchema = z
     .strictObject({

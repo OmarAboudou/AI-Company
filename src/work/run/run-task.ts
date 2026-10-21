@@ -3,6 +3,7 @@ import { createTimeOrderedId } from "../../ids/create-time-ordered-id.ts"
 import { recordEvent } from "../../journal/record-event.ts"
 import { listEvents, loadEvent } from "../../journal/storage.ts"
 import { loadAnthropicMessagesModel } from "../../llm/anthropic-messages/load-anthropic-messages-model.ts"
+import type { TokenUsage } from "../../llm/conversation/schema.ts"
 import { listMessages } from "../../messaging/message/storage.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
 import type { LlmEmployee } from "../../organization/employee/schema.ts"
@@ -25,7 +26,6 @@ import type { TaskEnding, Tool } from "../tool/define-tool.ts"
 import { buildSystemPrompt } from "./build-system-prompt.ts"
 import { getLastEntryIdReadByRun } from "./get-last-entry-id-read-by-run.ts"
 import { type RunProgress, runToolLoop } from "./run-tool-loop.ts"
-import type { TokenUsage } from "./schema.ts"
 
 export type RunTaskResult = {
     taskEnding: TaskEnding

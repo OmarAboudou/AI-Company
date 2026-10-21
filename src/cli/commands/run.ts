@@ -1,4 +1,5 @@
 import type { Command } from "@commander-js/extra-typings"
+import type { TokenUsage } from "../../llm/conversation/schema.ts"
 import { formatPositionLabel } from "../../messaging/message/format-position-label.ts"
 import {
     type RunReadyTasksProgress,
@@ -6,7 +7,6 @@ import {
     type WaitingTask,
 } from "../../work/run/run-ready-tasks.ts"
 import type { RunTaskResult } from "../../work/run/run-task.ts"
-import type { TokenUsage } from "../../work/run/schema.ts"
 import { printColumns } from "../print-columns.ts"
 import { projectRoot } from "../project-root.ts"
 
