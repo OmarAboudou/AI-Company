@@ -64,7 +64,7 @@ llmco current-human clear               # (director)
 
 ## Running the company
 
-`llmco run` runs the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then it lists the tasks left waiting, for a vacant position, a human or the directors. An error of a provider's API stops it, and the next `llmco run` takes the task up again. Only `llmco run` calls LLMs: sending a message never does.
+`llmco run` runs the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then it lists the tasks left waiting, for a vacant position, a human or the directors, who work theirs themselves (see [Working your tasks](#working-your-tasks)). An error of a provider's API stops it, and the next `llmco run` takes the task up again. Only `llmco run` calls LLMs: sending a message never does.
 
 Each run is a fresh conversation with the employee's model: who it is, the task's situation, such as the thread's unread messages, and tools to read earlier messages, to answer and to mark the task as done or failed. Its messages give tasks in turn, which the same `llmco run` runs. A chain of tasks, such as LLM employees mentioning each other, stops at the company's `maxTaskDepth`, 200 by default, set in `.llmco/company/config.json`.
 
@@ -73,6 +73,31 @@ Everything that happens is recorded in the journal, `.llmco/journal/`, one file 
 ```bash
 llmco run                                              # runs what is ready, then lists what waits
 ```
+
+## Working your tasks
+
+People work their tasks as LLM employees do: the same message, the same tools, turn by turn. llmco thus works without any LLM: two people, each in a terminal as a human employee, talk through their tasks. You work the tasks of the positions you work (see `llmco current-human`), only the selected position's when one is set; as a director, those of the director's position and of the positions assigned temporarily to the directors.
+
+`llmco task work` works them one after the other. It shows each task as a model gets it, its system prompt, its message and its tools, then asks what to do: call a tool, write a text, show, clear or send your turn. For a tool, it asks which one, then each of its inputs, a message's body in your editor (`$VISUAL` or `$EDITOR`). Sending the turn runs its calls and shows their results: `task_mark-as-done` or `task_mark-as-failed` ends the task, and a turn without any call gets the reminder a model gets. Once no task waits, the session waits for the next one, until Ctrl+D.
+
+```bash
+llmco current-human set julie
+llmco task work
+```
+
+The same steps are commands of their own, for a script or a turn prepared over time. Your next turn waits in `.llmco/.state/`, as git's index holds a commit before it is made:
+
+```bash
+llmco task next                                        # opens your next task, or the one in progress
+llmco turn add tool message_send -i '{"body": "@director Friday works."}'
+llmco turn add tool task_mark-as-done -i '{"summary": "Answered."}'
+llmco turn add text -t "Checked the notes first."      # reaches no one, as a model's text
+llmco turn show
+llmco turn clear                                       # to prepare the turn again
+llmco turn send                                        # runs its calls, then shows their results
+```
+
+A person's turns add no link to a chain of tasks: two people talking through their tasks never reach `maxTaskDepth`, while a loop of LLMs passing through a person still stops.
 
 ## Connecting to LLM providers
 
