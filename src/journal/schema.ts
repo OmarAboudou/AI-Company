@@ -56,6 +56,8 @@ type EventContent = { type: string; occurredAt: string; depth: number }
 
 export type JournalEvent = EventContent & { id: string }
 
+export type Journal = { projectRoot: string; events: JournalEvent[] }
+
 export type EventType<Content extends EventContent = EventContent> = {
     type: string
     recordingSchema: z.ZodType<Content>

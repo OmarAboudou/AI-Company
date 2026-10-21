@@ -3,7 +3,11 @@ import { getLlmcoFolderPath } from "../files/get-llmco-folder-path.ts"
 import { listJsonFileIds } from "../files/list-json-file-ids.ts"
 import { readJsonFile } from "../files/read-json-file.ts"
 import { saveNewJsonFile } from "../files/save-new-json-file.ts"
-import { type JournalEvent, JournalEventSchema } from "./schema.ts"
+import {
+    type Journal,
+    type JournalEvent,
+    JournalEventSchema,
+} from "./schema.ts"
 
 function getJournalFolderPath(projectRoot: string): string {
     return join(getLlmcoFolderPath(projectRoot), "journal")
@@ -36,4 +40,24 @@ export async function saveEvent(
 ): Promise<void> {
     const { id, ...content } = event
     await saveNewJsonFile(getEventFilePath(projectRoot, id), content)
+}
+
+export async function loadJournal(projectRoot: string): Promise<Journal> {
+    return { projectRoot, events: await listEvents(projectRoot) }
+}
+
+export async function refreshJournal(
+    journal: Journal,
+): Promise<JournalEvent[]> {
+    const { projectRoot, events } = journal
+    const knownEventIds = new Set(events.map(({ id }) => id))
+    const eventIds = await listJsonFileIds(getJournalFolderPath(projectRoot))
+    const newEvents = await Promise.all(
+        eventIds
+            .filter((id) => !knownEventIds.has(id))
+            .map((id) => loadEvent(projectRoot, id)),
+    )
+    events.push(...newEvents)
+    events.sort(({ id }, { id: otherId }) => (id < otherId ? -1 : 1))
+    return newEvents
 }
