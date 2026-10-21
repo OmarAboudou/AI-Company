@@ -5,6 +5,9 @@ import { createCompany } from "../../../organization/company/create-company.ts"
 import { createEmployee } from "../../../organization/employee/create-employee.ts"
 import { assignPosition } from "../../../organization/position/assign-position.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
+import { addTurnText } from "../../../work/turn/add-turn-text.ts"
+import { addTurnTool } from "../../../work/turn/add-turn-tool.ts"
+import { sendTurn } from "../../../work/turn/send-turn.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCliWithEnv, getProjectPath } = useTemporaryProject()
@@ -58,6 +61,16 @@ describe("llmco task next", () => {
         )
     })
 
+    test("ends with how to answer", async () => {
+        await askTester()
+
+        const next = runCliWithEnv(julieEnv, "task", "next")
+
+        expect(next.stdout).toEndWith(
+            "\n\nPrepare your turn with `llmco turn add text` or `llmco turn add tool`, then send it with `llmco turn send`.\n",
+        )
+    })
+
     test("resumes the same task the next time", async () => {
         await askTester()
         runCliWithEnv(julieEnv, "task", "next")
@@ -65,6 +78,27 @@ describe("llmco task next", () => {
         const next = runCliWithEnv(julieEnv, "task", "next")
 
         expect(next.stdout).toStartWith('Resumed task "')
+    })
+
+    test("shows a resumed task's turns, then the one being prepared", async () => {
+        const projectRoot = getProjectPath()
+        await askTester()
+        runCliWithEnv(julieEnv, "task", "next")
+        await addTurnTool(projectRoot, julieEnv, {
+            toolName: "message_send",
+            rawInput: '{"body": "@director Friday."}',
+        })
+        await sendTurn(projectRoot, julieEnv)
+        await addTurnText(projectRoot, julieEnv, "Checking the notes.")
+
+        const next = runCliWithEnv(julieEnv, "task", "next")
+
+        expect(next.stdout).toContain(
+            `\n\n── Your turns so far ──\n→ message_send\n  body: "@director Friday."\n← Sent as entry #2 of thread ${threadId}.\n\n`,
+        )
+        expect(next.stdout).toContain(
+            "\n\n── Your next turn, not sent yet ──\nChecking the notes.\n\n",
+        )
     })
 
     test("says when no task waits", () => {

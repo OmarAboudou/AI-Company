@@ -9,6 +9,7 @@ import {
     createCompanyWithHumanEmployee,
     julieEnvironment,
 } from "../create-company-with-human-employee.testing.ts"
+import { addTurnText } from "../turn/add-turn-text.ts"
 import { openNextTask } from "./open-next-task.ts"
 import { taskDoneEventType, taskStartedEventType } from "./schema.ts"
 
@@ -128,6 +129,18 @@ describe("openNextTask", () => {
         expect(second.openedTask?.run.id).toBe(first.openedTask?.run.id)
         expect(second.openedTask?.isResumed).toBe(true)
         expect(await listTaskStartedEvents()).toHaveLength(1)
+    })
+
+    test("gives a resumed task the turn its person prepares", async () => {
+        await ask("@qa-tester Can we ship on Friday?")
+        const first = await openNextTask(projectRoot, julieEnvironment)
+        await addTurnText(projectRoot, julieEnvironment, "Checking.")
+
+        const second = await openNextTask(projectRoot, julieEnvironment)
+
+        const textBlock = { type: "text" as const, text: "Checking." }
+        expect(first.openedTask?.stagedTurn).toEqual({ blocks: [] })
+        expect(second.openedTask?.stagedTurn).toEqual({ blocks: [textBlock] })
     })
 
     test("starts afresh a task whose run someone else started", async () => {

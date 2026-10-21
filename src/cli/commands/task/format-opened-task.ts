@@ -1,6 +1,10 @@
-import type { ToolDefinition } from "../../../llm/conversation/schema.ts"
+import type {
+    ConversationTurn,
+    ToolDefinition,
+} from "../../../llm/conversation/schema.ts"
 import { formatPositionLabel } from "../../../messaging/message/format-position-label.ts"
 import type { OpenedTask } from "../../../work/task/open-next-task.ts"
+import { formatTurn } from "../../format-turn.ts"
 
 type InputProperty = { type?: string; description?: string }
 
@@ -31,16 +35,31 @@ function formatSection(title: string, text: string): string {
     return `── ${title} ──\n${text.trimEnd()}`
 }
 
+function formatSentTurns(turns: ConversationTurn[]): string {
+    return turns
+        .flatMap((turn, index) => {
+            if (turn.role !== "assistant") {
+                return []
+            }
+            const nextTurn = turns[index + 1]
+            const answeringTurn =
+                nextTurn?.role === "user" ? nextTurn : undefined
+            return [formatTurn(turn.blocks, answeringTurn)]
+        })
+        .join("\n\n")
+}
+
 export function formatOpenedTask({
     task,
     position,
     run,
+    stagedTurn,
     taskDepth,
     maxTaskDepth,
     isResumed,
 }: OpenedTask): string {
     const { systemPrompt, tools, turns } = run.conversation
-    const [taskTurn] = turns
+    const [taskTurn, ...sentTurns] = turns
     const message = (taskTurn?.blocks ?? [])
         .map((block) => (block.type === "text" ? block.text : ""))
         .join("\n")
@@ -50,5 +69,17 @@ export function formatOpenedTask({
         formatSection("System prompt", systemPrompt),
         formatSection("Message", message),
         formatSection("Tools", tools.map(formatTool).join("\n\n")),
+        ...(sentTurns.length === 0
+            ? []
+            : [formatSection("Your turns so far", formatSentTurns(sentTurns))]),
+        ...(stagedTurn.blocks.length === 0
+            ? []
+            : [
+                  formatSection(
+                      "Your next turn, not sent yet",
+                      formatTurn(stagedTurn.blocks),
+                  ),
+              ]),
+        "Prepare your turn with `llmco turn add text` or `llmco turn add tool`, then send it with `llmco turn send`.",
     ].join("\n\n")
 }

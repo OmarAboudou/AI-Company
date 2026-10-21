@@ -16,6 +16,8 @@ import { loadResumableRun } from "../run/load-resumable-run.ts"
 import type { Run } from "../run/schema.ts"
 import { startHumanRun } from "../run/start-human-run.ts"
 import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
+import type { StagedTurn } from "../turn/schema.ts"
+import { loadStagedTurn } from "../turn/storage.ts"
 import { getTaskPositionId } from "./get-task-position-id.ts"
 import { getTaskStates } from "./get-task-states.ts"
 import { isPendingTask } from "./is-pending-task.ts"
@@ -26,6 +28,7 @@ export type OpenedTask = {
     task: Task
     position: Position
     run: Run
+    stagedTurn: StagedTurn
     taskDepth: number
     maxTaskDepth: number
     isResumed: boolean
@@ -88,6 +91,7 @@ export async function openNextTask(
                 task,
                 position,
                 run: resumableRun,
+                stagedTurn: await loadStagedTurn(projectRoot, resumableRun.id),
                 taskDepth: causeEvent.depth + 1,
                 maxTaskDepth,
                 isResumed: true,
@@ -110,6 +114,7 @@ export async function openNextTask(
             task,
             position,
             run,
+            stagedTurn: { blocks: [] },
             taskDepth,
             maxTaskDepth,
             isResumed: false,
