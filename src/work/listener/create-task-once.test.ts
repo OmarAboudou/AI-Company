@@ -77,6 +77,17 @@ describe("createTaskOnce", () => {
         expect(await listTaskCreatedDepths()).toEqual([1])
     })
 
+    test("leaves a task that another process wrote meanwhile", async () => {
+        const questionSent = await recordQuestionSent()
+        const dispatching = await loadDispatching(projectRoot)
+        await createTask(projectRoot, createCatchUp(), questionSent)
+
+        await createTaskOnce(createCatchUp(), questionSent, dispatching)
+
+        expect(dispatching.createdTasks).toEqual([])
+        expect(await listTaskCreatedDepths()).toEqual([1])
+    })
+
     test("never creates a task twice, even asked again for it", async () => {
         const questionSent = await recordQuestionSent()
         await createInNewDispatching(createCatchUp(), questionSent)
