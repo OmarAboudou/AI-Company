@@ -1,18 +1,16 @@
 import { readGitCommitter } from "../../git/read-git-committer.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
 import type { Employee } from "../../organization/employee/schema.ts"
-import { listPositionsWorkedBy } from "../../organization/human/list-positions-worked-by.ts"
+import { getPositionsWorkedBy } from "../../organization/human/get-positions-worked-by.ts"
 import {
     type CurrentHuman,
     readCurrentHuman,
 } from "../../organization/human/read-current-human.ts"
 import { readCurrentPositionId } from "../../organization/human/read-current-position-id.ts"
 import { requireWorkedPosition } from "../../organization/human/require-worked-position.ts"
+import { listPositionAssignments } from "../../organization/position/list-position-assignments.ts"
 import type { Position } from "../../organization/position/schema.ts"
-import {
-    listPositions,
-    loadPosition,
-} from "../../organization/position/storage.ts"
+import { loadPosition } from "../../organization/position/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { getMemberIds } from "../thread/get-member-ids.ts"
 import type { Archive } from "../thread/list-archives.ts"
@@ -79,7 +77,6 @@ async function loadPositionToWriteFrom(
             human,
             workedPositions,
             asPositionId,
-            directorPositionId,
         )
     }
     if (currentPositionId !== undefined) {
@@ -106,20 +103,16 @@ export async function readCurrentAuthor(
         asPositionId?: string
     } = {},
 ): Promise<Author> {
-    const [human, positions, { directorPositionId }] = await Promise.all([
+    const [human, assignments, { directorPositionId }] = await Promise.all([
         readCurrentHuman(projectRoot),
-        listPositions(projectRoot),
+        listPositionAssignments(projectRoot),
         loadCompany(projectRoot),
     ])
-    const workedPositions = await listPositionsWorkedBy(
-        projectRoot,
-        human,
-        positions,
-        directorPositionId,
-    )
+    const positions = assignments.map(({ position }) => position)
+    const workedAssignments = getPositionsWorkedBy(assignments, human)
     const positionChoice = {
         human,
-        workedPositions: workedPositions.map(({ position }) => position),
+        workedPositions: workedAssignments.map(({ position }) => position),
         currentPositionId: readCurrentPositionId(),
         threadMemberIds:
             archive === undefined

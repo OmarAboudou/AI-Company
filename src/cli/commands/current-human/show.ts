@@ -1,11 +1,10 @@
 import type { Command } from "@commander-js/extra-typings"
 import { readGitCommitter } from "../../../git/read-git-committer.ts"
 import { requireCompany } from "../../../organization/company/require-company.ts"
-import { loadCompany } from "../../../organization/company/storage.ts"
-import { listPositionsWorkedBy } from "../../../organization/human/list-positions-worked-by.ts"
+import { getPositionsWorkedBy } from "../../../organization/human/get-positions-worked-by.ts"
 import { readCurrentHuman } from "../../../organization/human/read-current-human.ts"
 import { readCurrentPositionId } from "../../../organization/human/read-current-position-id.ts"
-import { listPositions } from "../../../organization/position/storage.ts"
+import { listPositionAssignments } from "../../../organization/position/list-position-assignments.ts"
 import { projectRoot } from "../../project-root.ts"
 
 export function registerCurrentHumanShowCommand(
@@ -18,27 +17,23 @@ export function registerCurrentHumanShowCommand(
         )
         .action(async () => {
             await requireCompany(projectRoot)
-            const [human, positions, company] = await Promise.all([
+            const [human, assignments] = await Promise.all([
                 readCurrentHuman(projectRoot),
-                listPositions(projectRoot),
-                loadCompany(projectRoot),
+                listPositionAssignments(projectRoot),
             ])
-            const workedPositions = await listPositionsWorkedBy(
-                projectRoot,
-                human,
-                positions,
-                company.directorPositionId,
-            )
+            const workedAssignments = getPositionsWorkedBy(assignments, human)
             const committer = readGitCommitter(projectRoot)
             const identityMessage =
                 human.kind === "director"
                     ? `${committer.name}, a director`
                     : `${human.employee.name} (${human.employee.id}), a human employee`
             const currentPositionId = readCurrentPositionId()
-            const workedPositionLabels = workedPositions.map(
-                ({ position, isTemporary }) => {
+            const workedPositionLabels = workedAssignments.map(
+                ({ position, state }) => {
                     const notes = [
-                        ...(isTemporary ? ["temporarily"] : []),
+                        ...(state.temporaryAssignment === undefined
+                            ? []
+                            : ["temporarily"]),
                         ...(position.id === currentPositionId
                             ? ["selected"]
                             : []),

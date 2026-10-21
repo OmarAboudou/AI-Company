@@ -1,9 +1,7 @@
 import { UserError } from "../../user-error.ts"
 import { loadEmployee } from "../employee/storage.ts"
-import { getPositionAssignment } from "../position/get-position-assignment.ts"
-import { loadExistingPosition } from "../position/load-existing-position.ts"
+import { loadExistingPositionAssignment } from "../position/load-existing-position-assignment.ts"
 import type { Position, Worker } from "../position/schema.ts"
-import { loadPositionState } from "../position/storage.ts"
 import type { CurrentHuman } from "./read-current-human.ts"
 
 async function loadWorkerDescription(
@@ -37,23 +35,17 @@ export async function requireWorkedPosition(
     human: CurrentHuman,
     workedPositions: Position[],
     rawId: string,
-    directorPositionId: string,
 ): Promise<Position> {
-    const position = await loadExistingPosition(projectRoot, rawId)
+    const { position, isDirectorPosition, currentWorker } =
+        await loadExistingPositionAssignment(projectRoot, rawId)
     if (workedPositions.some(({ id }) => id === position.id)) {
         return position
     }
-    if (position.id === directorPositionId) {
+    if (isDirectorPosition) {
         throw new UserError(
             `Only directors write from the director's position "${position.id}": run \`llmco current-human clear\` to act as one.`,
         )
     }
-    const positionState = await loadPositionState(projectRoot, position.id)
-    const { currentWorker } = getPositionAssignment(
-        position,
-        positionState,
-        directorPositionId,
-    )
     throw new UserError(
         `You don't work position "${position.id}": ${await loadWorkerDescription(projectRoot, currentWorker)}. ${formatHowToWorkIt(human, position)}`,
     )
