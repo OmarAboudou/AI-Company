@@ -1,0 +1,56 @@
+import { recordEvent } from "../../journal/record-event.ts"
+import { requireJournalEvent } from "../../journal/require-journal-event.ts"
+import type { Journal } from "../../journal/schema.ts"
+import type { TokenUsage } from "../../llm/conversation/schema.ts"
+import type { Position } from "../../organization/position/schema.ts"
+import {
+    type Task,
+    type TaskResult,
+    taskDoneEventType,
+    taskFailedEventType,
+} from "../task/schema.ts"
+import { parseTaskParams } from "../task-type/parse-task-params.ts"
+import { requireTaskType } from "../task-type/require-task-type.ts"
+import type { TaskEnding } from "../tool/define-tool.ts"
+
+export type TaskRunEnd = {
+    task: Task
+    position: Position
+    runId: string
+    sessionResult: TaskResult
+    usage?: TokenUsage
+}
+
+export async function endTask(
+    journal: Journal,
+    { task, position, runId, sessionResult, usage }: TaskRunEnd,
+    taskEnding: TaskEnding,
+): Promise<void> {
+    const causeEvent = requireJournalEvent(journal, task.causeEventId)
+    const runEnd = {
+        depth: causeEvent.depth + 1,
+        taskId: task.id,
+        runId,
+        ...(usage !== undefined && { usage }),
+    }
+    if (taskEnding.state === "failed") {
+        await recordEvent(journal, taskFailedEventType, {
+            ...runEnd,
+            reason: taskEnding.reason,
+        })
+        return
+    }
+    const taskType = requireTaskType(task)
+    const params = parseTaskParams(task, taskType)
+    const { projectRoot } = journal
+    const ctx = { projectRoot, journal, task, position, causeEvent }
+    const result =
+        taskType.getRunResult === undefined
+            ? sessionResult
+            : await taskType.getRunResult(params, { runId, sessionResult }, ctx)
+    await recordEvent(journal, taskDoneEventType, {
+        ...runEnd,
+        summary: taskEnding.summary,
+        result: taskType.resultSchema.parse(result),
+    })
+}

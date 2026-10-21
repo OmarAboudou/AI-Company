@@ -3,11 +3,7 @@ import { requireJournalEvent } from "../../journal/require-journal-event.ts"
 import type { Journal } from "../../journal/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { type Task, taskDoneEventType } from "../task/schema.ts"
-import type {
-    TaskSession,
-    TaskType,
-    TaskTypeContext,
-} from "../task-type/define-task-type.ts"
+import type { TaskSession } from "../task-type/define-task-type.ts"
 import { parseTaskParams } from "../task-type/parse-task-params.ts"
 import { requireTaskType } from "../task-type/require-task-type.ts"
 
@@ -15,9 +11,6 @@ export type BeginTaskResult =
     | { kind: "done"; summary: string }
     | {
           kind: "run"
-          taskType: TaskType
-          params: unknown
-          ctx: TaskTypeContext
           taskDepth: number
           session: Extract<TaskSession, { kind: "run" }>
       }
@@ -43,5 +36,5 @@ export async function beginTask(
         })
         return { kind: "done", summary }
     }
-    return { kind: "run", taskType, params, ctx, taskDepth, session }
+    return { kind: "run", taskDepth, session }
 }
