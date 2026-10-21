@@ -1,0 +1,49 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/staged-turn.json",
+    "type": "object",
+    "properties": {
+        "blocks": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": { "type": "string", "const": "text" },
+                            "text": { "type": "string" }
+                        },
+                        "required": ["type", "text"],
+                        "additionalProperties": false
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": { "type": "string", "const": "tool-call" },
+                            "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Id of the call, which its result names: the model's own, or the one llmco gives a person's call."
+                            },
+                            "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Name of the tool called, e.g. message_send."
+                            },
+                            "input": {
+                                "description": "The call's input, as it was written: the tool checks it against its schema when the call runs."
+                            }
+                        },
+                        "required": ["type", "id", "name", "input"],
+                        "additionalProperties": false
+                    }
+                ]
+            },
+            "description": "The blocks added to the person's next turn, in order: texts and tool calls."
+        }
+    },
+    "required": ["blocks"],
+    "additionalProperties": false,
+    "title": "llmco staged turn",
+    "description": "The turn a person prepares in a run, in .llmco/.state/runs/<run-id>.turn.json, until llmco turn send sends it. Written by llmco and ignored by git."
+}
