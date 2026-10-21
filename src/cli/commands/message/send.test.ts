@@ -1,4 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { createThread } from "../../../messaging/thread/create-thread.ts"
+import { createCompany } from "../../../organization/company/create-company.ts"
+import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, runCliWithStdin, getProjectPath, runCliWithEnv } =
@@ -7,9 +10,17 @@ const { runCli, runCliWithStdin, getProjectPath, runCliWithEnv } =
 describe("llmco message send", () => {
     let threadId = ""
 
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        threadId = runCli("thread", "create", "-s", "Budget").stdout.trim()
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        const { thread } = await createThread(
+            projectRoot,
+            {},
+            {
+                subject: "Budget",
+            },
+        )
+        threadId = thread.id
     })
 
     function listBodies(): string[] {
@@ -86,14 +97,31 @@ describe("llmco message send", () => {
 describe("mentions", () => {
     let threadId = ""
 
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        threadId = runCli("thread", "create", "-s", "Budget").stdout.trim()
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        const { thread } = await createThread(
+            projectRoot,
+            {},
+            {
+                subject: "Budget",
+            },
+        )
+        threadId = thread.id
     })
 
-    beforeEach(() => {
-        runCli("position", "create", "backend-developer", "-t", "Backend")
-        runCli("position", "create", "qa-tester", "-t", "QA Tester")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await Promise.all([
+            createPosition(projectRoot, "backend-developer", {
+                title: "Backend",
+                description: "",
+            }),
+            createPosition(projectRoot, "qa-tester", {
+                title: "QA Tester",
+                description: "",
+            }),
+        ])
     })
 
     function listMentions(): string[][] {
@@ -118,9 +146,13 @@ describe("mentions", () => {
 describe("--as-position", () => {
     const interimDirectors = ["position", "interim", "directors"]
 
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("position", "create", "support", "-t", "support")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createPosition(projectRoot, "support", {
+            title: "support",
+            description: "",
+        })
     })
 
     function loadLastPositionId(threadId: string): string {
@@ -147,10 +179,21 @@ describe("--as-position", () => {
 describe("the positions it mentions", () => {
     let threadId = ""
 
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("position", "create", "backend-developer", "-t", "Backend")
-        threadId = runCli("thread", "create", "-s", "Stack").stdout.trim()
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createPosition(projectRoot, "backend-developer", {
+            title: "Backend",
+            description: "",
+        })
+        const { thread } = await createThread(
+            projectRoot,
+            {},
+            {
+                subject: "Stack",
+            },
+        )
+        threadId = thread.id
     })
 
     test("message send gives each a task, which llmco run runs", () => {

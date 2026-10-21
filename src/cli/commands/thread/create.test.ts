@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { spawnGit } from "../../../git/spawn-git.ts"
+import { createCompany } from "../../../organization/company/create-company.ts"
+import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, runCliWithEnv, getProjectPath } = useTemporaryProject()
@@ -7,8 +9,9 @@ const { runCli, runCliWithEnv, getProjectPath } = useTemporaryProject()
 describe("llmco thread create", () => {
     const today = new Date().toISOString().slice(0, 10)
 
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
     })
 
     function createThread(...args: string[]) {
@@ -60,9 +63,13 @@ describe("llmco thread create", () => {
 describe("--as-position", () => {
     const interimDirectors = ["position", "interim", "directors"]
 
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("position", "create", "support", "-t", "support")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createPosition(projectRoot, "support", {
+            title: "support",
+            description: "",
+        })
     })
 
     function loadLastPositionId(threadId: string): string {
@@ -88,9 +95,13 @@ describe("--as-position", () => {
 })
 
 describe("the positions its first message mentions", () => {
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        runCli("position", "create", "backend-developer", "-t", "Backend")
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createPosition(projectRoot, "backend-developer", {
+            title: "Backend",
+            description: "",
+        })
     })
 
     test("thread create -b gives each a task, which llmco run runs", () => {
