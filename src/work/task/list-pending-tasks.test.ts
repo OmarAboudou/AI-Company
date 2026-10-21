@@ -139,6 +139,7 @@ describe("listPendingTasks", () => {
             depth: 1,
             taskId: doneTask.id,
             summary: "Answered.",
+            result: {},
         })
 
         const pendingTasks = await listPendingTasks(projectRoot)

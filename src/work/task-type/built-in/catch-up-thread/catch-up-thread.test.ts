@@ -7,8 +7,10 @@ import {
     type JournalEvent,
 } from "../../../../journal/schema.ts"
 import { loadEvent } from "../../../../journal/storage.ts"
+import { createUnsentMessage } from "../../../../messaging/message/create-unsent-message.ts"
 import { messageSentEventType } from "../../../../messaging/message/schema.ts"
 import { sendMessage } from "../../../../messaging/message/send-message.ts"
+import { sendUnsentMessage } from "../../../../messaging/message/send-unsent-message.ts"
 import { createThread } from "../../../../messaging/thread/create-thread.ts"
 import { createTemporaryCompany } from "../../../../organization/company/create-temporary-company.testing.ts"
 import type { Position } from "../../../../organization/position/schema.ts"
@@ -70,13 +72,17 @@ async function markCatchUpAsDone(task: Task, lastReadEntryId: string) {
         depth: 1,
         taskId: task.id,
         summary: "Answered.",
-        lastReadEntryId,
+        result: { lastReadEntryId },
     })
 }
 
-async function createSession(task: Task) {
+async function loadContext(task: Task) {
     const causeEvent = await loadEvent(projectRoot, task.causeEventId)
-    const ctx = { projectRoot, task, position, causeEvent }
+    return { projectRoot, task, position, causeEvent }
+}
+
+async function createSession(task: Task) {
+    const ctx = await loadContext(task)
     return catchUpThreadTaskType.createSession({ threadId }, ctx)
 }
 
@@ -97,7 +103,7 @@ describe("catch-up-thread", () => {
             kind: "run",
             userMessage: expect.stringContaining('<message number="1"'),
             toolNames: ["message_send", "thread_show"],
-            lastShownEntry: { threadId, entryId: question.messageId },
+            result: { lastReadEntryId: question.messageId },
         })
     })
 
@@ -132,6 +138,7 @@ describe("catch-up-thread", () => {
             kind: "done",
             summary:
                 "Already read: an earlier task read the thread up to entry #2.",
+            result: {},
         })
     })
 
@@ -175,6 +182,36 @@ describe("catch-up-thread", () => {
             kind: "done",
             summary:
                 "Nothing new: the thread was read up to its last entry, #1.",
+            result: {},
         })
+    })
+
+    test("is done, after a run, up to the entry shown and the run's own messages", async () => {
+        const question = await askDeveloper("Hono or Express?")
+        const runId = "20261018-140324-000-1b2c"
+        const author = {
+            position: { id: position.id, title: position.title },
+            committer: { name: "Omar Aboudou", email: "omar@example.com" },
+        }
+        const unsentAnswer = await createUnsentMessage(
+            projectRoot,
+            author,
+            "Hono, for Bun.",
+        )
+        const answer = await sendUnsentMessage(
+            projectRoot,
+            threadId,
+            unsentAnswer,
+            { depth: 1, runId },
+        )
+        const ctx = await loadContext(question.catchUp)
+
+        const result = await catchUpThreadTaskType.getRunResult?.(
+            { threadId },
+            { runId, sessionResult: { lastReadEntryId: question.messageId } },
+            ctx,
+        )
+
+        expect(result).toEqual({ lastReadEntryId: answer.id })
     })
 })

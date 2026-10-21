@@ -6,7 +6,12 @@ import { defineTaskType } from "./define-task-type.ts"
 const reviewTaskType = defineTaskType({
     type: "review-thread",
     paramsSchema: z.strictObject({ threadId: z.string().min(1) }),
-    createSession: async () => ({ kind: "done", summary: "Reviewed." }),
+    resultSchema: z.strictObject({}),
+    createSession: async () => ({
+        kind: "done",
+        summary: "Reviewed.",
+        result: {},
+    }),
 })
 
 describe("createUncreatedTask", () => {
