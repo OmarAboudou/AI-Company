@@ -9,12 +9,11 @@ import { createLlmProvider } from "../provider/create-llm-provider.ts"
 import { loadAnthropicMessagesModel } from "./load-anthropic-messages-model.ts"
 
 const variableName = "TEST_ANTHROPIC_KEY"
-const shellValue = process.env[variableName]
+const environment = { [variableName]: "sk-test" }
 const baseUrl = "http://localhost:4000"
 let projectRoot: string
 
 beforeEach(async () => {
-    process.env[variableName] = "sk-test"
     projectRoot = await createTemporaryCompany()
     await createLlmProvider(projectRoot, "anthropic", {
         name: "Anthropic",
@@ -30,11 +29,6 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-    if (shellValue === undefined) {
-        delete process.env[variableName]
-    } else {
-        process.env[variableName] = shellValue
-    }
     await rm(projectRoot, { recursive: true, force: true })
 })
 
@@ -44,6 +38,7 @@ describe("loadAnthropicMessagesModel", () => {
     test("gives the model, its provider, its connection and API key", async () => {
         const anthropicMessagesModel = await loadAnthropicMessagesModel(
             projectRoot,
+            environment,
             opusIds,
         )
 
@@ -62,16 +57,18 @@ describe("loadAnthropicMessagesModel", () => {
         })
         await updateLlmModel(projectRoot, "anthropic", "opus", { protocol })
 
-        const loading = loadAnthropicMessagesModel(projectRoot, opusIds)
+        const loading = loadAnthropicMessagesModel(
+            projectRoot,
+            environment,
+            opusIds,
+        )
 
         await expect(loading).rejects.toThrow(UserError)
         await expect(loading).rejects.toThrow("which llmco can't call yet")
     })
 
     test("refuses without the provider's key", async () => {
-        delete process.env[variableName]
-
-        const loading = loadAnthropicMessagesModel(projectRoot, opusIds)
+        const loading = loadAnthropicMessagesModel(projectRoot, {}, opusIds)
 
         await expect(loading).rejects.toThrow("which isn't set")
     })

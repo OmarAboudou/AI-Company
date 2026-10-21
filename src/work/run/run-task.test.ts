@@ -24,8 +24,9 @@ import {
 import { runTask } from "./run-task.ts"
 
 const fakeServer = useFakeAnthropicServer()
-const variableNames = ["LLMCO_CURRENT_HUMAN_ID", "TEST_ANTHROPIC_KEY"] as const
+const variableNames = ["LLMCO_CURRENT_HUMAN_ID"] as const
 const shellValues = variableNames.map((name) => process.env[name])
+const environment = { TEST_ANTHROPIC_KEY: "sk-test" }
 let projectRoot: string
 let threadId: string
 let questionId: string
@@ -48,7 +49,6 @@ async function createCatchUp(): Promise<Task> {
 
 beforeEach(async () => {
     delete process.env.LLMCO_CURRENT_HUMAN_ID
-    process.env.TEST_ANTHROPIC_KEY = "sk-test"
     const companyWithLlmEmployee = await createCompanyWithLlmEmployee(
         fakeServer.getUrl(),
     )
@@ -78,9 +78,12 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-function runFakeTask(taskToRun: Task = task) {
+function runFakeTask(
+    taskToRun: Task = task,
+    runEnvironment: NodeJS.ProcessEnv = environment,
+) {
     const onProgress = () => {}
-    return runTask(projectRoot, {
+    return runTask(projectRoot, runEnvironment, {
         task: taskToRun,
         position,
         employee,
@@ -237,10 +240,9 @@ describe("runTask", () => {
     })
 
     test("starts nothing without the provider's key", async () => {
-        delete process.env.TEST_ANTHROPIC_KEY
         const eventsBefore = await listEvents(projectRoot)
 
-        const running = runFakeTask()
+        const running = runFakeTask(task, {})
 
         await expect(running).rejects.toThrow("which isn't set")
         expect(await listEvents(projectRoot)).toEqual(eventsBefore)

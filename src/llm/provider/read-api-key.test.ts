@@ -20,7 +20,6 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-    delete process.env[variableName]
     await Promise.all(
         [projectRoot, outsideFolderPath].map((folderPath) =>
             rm(folderPath, { recursive: true, force: true }),
@@ -38,6 +37,7 @@ describe("readApiKey", () => {
     test("is none for a provider without API key", async () => {
         const apiKey = await readApiKey(
             projectRoot,
+            {},
             createProviderReadingFrom(undefined),
         )
 
@@ -45,13 +45,15 @@ describe("readApiKey", () => {
     })
 
     test("reads the environment variable the provider names", async () => {
-        process.env[variableName] = " sk-from-env\n"
+        const environment = { [variableName]: " sk-from-env\n" }
         const provider = createProviderReadingFrom({
             kind: "env",
             variable: variableName,
         })
 
-        expect(await readApiKey(projectRoot, provider)).toBe("sk-from-env")
+        const apiKey = await readApiKey(projectRoot, environment, provider)
+
+        expect(apiKey).toBe("sk-from-env")
     })
 
     test("refuses an environment variable that isn't set", async () => {
@@ -60,7 +62,7 @@ describe("readApiKey", () => {
             variable: variableName,
         })
 
-        const reading = readApiKey(projectRoot, provider)
+        const reading = readApiKey(projectRoot, {}, provider)
 
         const refusalMessage = `${variableName}, which isn't set.`
 
@@ -76,7 +78,7 @@ describe("readApiKey", () => {
             path: keyPath,
         })
 
-        expect(await readApiKey(projectRoot, provider)).toBe("sk-from-file")
+        expect(await readApiKey(projectRoot, {}, provider)).toBe("sk-from-file")
     })
 
     test("refuses a file of the repository that git doesn't ignore", async () => {
@@ -87,7 +89,7 @@ describe("readApiKey", () => {
             path: keyPath,
         })
 
-        const reading = readApiKey(projectRoot, provider)
+        const reading = readApiKey(projectRoot, {}, provider)
 
         await expect(reading).rejects.toThrow(UserError)
         await expect(reading).rejects.toThrow("not ignored by git")
@@ -102,7 +104,7 @@ describe("readApiKey", () => {
             path: keyPath,
         })
 
-        expect(await readApiKey(projectRoot, provider)).toBe("sk-in")
+        expect(await readApiKey(projectRoot, {}, provider)).toBe("sk-in")
     })
 
     test("refuses an empty file", async () => {
@@ -113,7 +115,7 @@ describe("readApiKey", () => {
             path: keyPath,
         })
 
-        const reading = readApiKey(projectRoot, provider)
+        const reading = readApiKey(projectRoot, {}, provider)
 
         await expect(reading).rejects.toThrow("which is empty.")
     })

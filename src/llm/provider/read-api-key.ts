@@ -14,6 +14,7 @@ function getKeyFilePath(projectRoot: string, configuredPath: string): string {
 
 export async function readApiKey(
     projectRoot: string,
+    environment: NodeJS.ProcessEnv,
     provider: LlmProvider,
 ): Promise<string | undefined> {
     const { apiKeySource } = provider
@@ -21,7 +22,7 @@ export async function readApiKey(
         return undefined
     }
     if (apiKeySource.kind === "env") {
-        const apiKey = process.env[apiKeySource.variable]?.trim()
+        const apiKey = environment[apiKeySource.variable]?.trim()
         if (apiKey === undefined || apiKey === "") {
             throw new UserError(
                 `Provider "${provider.id}" reads its API key from the environment variable ${apiKeySource.variable}, which isn't set.`,

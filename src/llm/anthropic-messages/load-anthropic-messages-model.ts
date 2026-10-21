@@ -16,6 +16,7 @@ export type AnthropicMessagesModel = {
 
 export async function loadAnthropicMessagesModel(
     projectRoot: string,
+    environment: NodeJS.ProcessEnv,
     { providerId, modelId }: { providerId: string; modelId: string },
 ): Promise<AnthropicMessagesModel> {
     const [provider, model] = await Promise.all([
@@ -28,6 +29,6 @@ export async function loadAnthropicMessagesModel(
         )
     }
     const connection = requireLlmConnection(provider, "anthropic-messages")
-    const apiKey = await readApiKey(projectRoot, provider)
+    const apiKey = await readApiKey(projectRoot, environment, provider)
     return { provider, model, connection, apiKey }
 }

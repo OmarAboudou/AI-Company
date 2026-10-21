@@ -121,6 +121,7 @@ export function registerRunCommand(program: Command): void {
         .action(async () => {
             const { waitingTasks } = await runReadyTasks(
                 projectRoot,
+                process.env,
                 createProgressPrinter(),
             )
             printWaitingTasks(waitingTasks)
