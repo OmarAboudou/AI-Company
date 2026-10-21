@@ -3,7 +3,7 @@ import { catchUpThreadTaskType } from "../task-type/built-in/catch-up-thread/cat
 import { createUncreatedTask } from "../task-type/create-uncreated-task.ts"
 import { defineListener } from "./define-listener.ts"
 
-export const mentionListener = defineListener({
+export const catchUpListener = defineListener({
     eventType: messageSentEventType,
     getTasksToCreate: ({ threadId, mentions }) =>
         mentions.map((positionId) =>

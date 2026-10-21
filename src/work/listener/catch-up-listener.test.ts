@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import type { EventOfType } from "../../journal/schema.ts"
 import type { messageSentEventType } from "../../messaging/message/schema.ts"
-import { mentionListener } from "./mention-listener.ts"
+import { catchUpListener } from "./catch-up-listener.ts"
 
 const threadId = "2026-10-18-choice-of-framework"
 
@@ -21,10 +21,10 @@ function createMessageSentEvent(
 }
 
 function getTasksToCreate(mentions: string[]) {
-    return mentionListener.getTasksToCreate(createMessageSentEvent(mentions))
+    return catchUpListener.getTasksToCreate(createMessageSentEvent(mentions))
 }
 
-describe("mentionListener", () => {
+describe("catchUpListener", () => {
     test("asks each position a message mentions to catch up on its thread", () => {
         const uncreatedTasks = getTasksToCreate([
             "backend-developer",
