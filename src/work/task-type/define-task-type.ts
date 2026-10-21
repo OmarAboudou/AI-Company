@@ -12,7 +12,12 @@ export type TaskTypeContext = {
 }
 
 export type TaskSession =
-    | { kind: "run"; userMessage: string; toolNames: BuiltInToolName[] }
+    | {
+          kind: "run"
+          userMessage: string
+          toolNames: BuiltInToolName[]
+          lastShownEntry?: { threadId: string; entryId: string }
+      }
     | { kind: "done"; summary: string }
 
 export type TaskType<ParamsSchema extends z.ZodType = z.ZodType> = {

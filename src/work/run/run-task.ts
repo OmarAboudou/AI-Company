@@ -1,8 +1,9 @@
 import { z } from "zod"
 import { createTimeOrderedId } from "../../ids/create-time-ordered-id.ts"
 import { recordEvent } from "../../journal/record-event.ts"
-import { loadEvent } from "../../journal/storage.ts"
+import { listEvents, loadEvent } from "../../journal/storage.ts"
 import { loadAnthropicMessagesModel } from "../../llm/anthropic-messages/load-anthropic-messages-model.ts"
+import { listMessages } from "../../messaging/message/storage.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
 import type { LlmEmployee } from "../../organization/employee/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
@@ -22,6 +23,7 @@ import {
 } from "../tool/built-in/built-in.ts"
 import type { TaskEnding, Tool } from "../tool/define-tool.ts"
 import { buildSystemPrompt } from "./build-system-prompt.ts"
+import { getLastEntryIdReadByRun } from "./get-last-entry-id-read-by-run.ts"
 import { type RunProgress, runToolLoop } from "./run-tool-loop.ts"
 import type { TokenUsage } from "./schema.ts"
 
@@ -60,6 +62,21 @@ function parseTaskParams(task: Task, taskType: TaskType): unknown {
         )
     }
     return validation.data
+}
+
+async function loadLastReadEntryId(
+    projectRoot: string,
+    runId: string,
+    { threadId, entryId }: { threadId: string; entryId: string },
+): Promise<string> {
+    const [threadMessages, events] = await Promise.all([
+        listMessages(projectRoot, threadId),
+        listEvents(projectRoot),
+    ])
+    return getLastEntryIdReadByRun(threadMessages, events, {
+        runId,
+        lastShownEntryId: entryId,
+    })
 }
 
 export async function runTask(
@@ -120,9 +137,14 @@ export async function runTask(
     })
     const runEnd = { depth: taskDepth, taskId: task.id, runId, usage }
     if (taskEnding.state === "succeeded") {
+        const { lastShownEntry } = session
+        const lastReadEntryId =
+            lastShownEntry &&
+            (await loadLastReadEntryId(projectRoot, runId, lastShownEntry))
         await recordEvent(projectRoot, taskCompletedEventType, {
             ...runEnd,
             summary: taskEnding.summary,
+            ...(lastReadEntryId !== undefined && { lastReadEntryId }),
         })
     } else {
         await recordEvent(projectRoot, taskFailedEventType, {
