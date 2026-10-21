@@ -1,5 +1,6 @@
 import type { Command } from "@commander-js/extra-typings"
 import { formatDateTime } from "../../../format-date-time.ts"
+import { loadJournal } from "../../../journal/storage.ts"
 import { formatAuthorSignature } from "../../../messaging/message/format-author-signature.ts"
 import { listMessages } from "../../../messaging/message/storage.ts"
 import { getMemberIds } from "../../../messaging/thread/get-member-ids.ts"
@@ -32,7 +33,9 @@ export function registerThreadShowCommand(threadCommand: Command): void {
                 await Promise.all([
                     listMessages(projectRoot, thread.id),
                     listPositions(projectRoot),
-                    loadPendingPositionIdsByThread(projectRoot),
+                    loadJournal(projectRoot).then(
+                        loadPendingPositionIdsByThread,
+                    ),
                 ])
             if (shouldPrintJson) {
                 for (const { threadId, ...message } of messages) {

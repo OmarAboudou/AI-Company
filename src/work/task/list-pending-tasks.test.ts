@@ -80,7 +80,9 @@ describe("listPendingTasks", () => {
     test("lists as ready a task of a position an LLM employee works", async () => {
         const task = await askPosition("backend-developer")
 
-        const pendingTasks = await listPendingTasks(projectRoot)
+        const pendingTasks = await listPendingTasks(
+            await loadJournal(projectRoot),
+        )
 
         expect(pendingTasks).toMatchObject([
             {
@@ -97,7 +99,9 @@ describe("listPendingTasks", () => {
             await askPosition(positionId)
         }
 
-        const pendingTasks = await listPendingTasks(projectRoot)
+        const pendingTasks = await listPendingTasks(
+            await loadJournal(projectRoot),
+        )
 
         const reasons = pendingTasks.map((pendingTask) =>
             pendingTask.kind === "waiting" ? pendingTask.reason : undefined,
@@ -121,7 +125,7 @@ describe("listPendingTasks", () => {
         const refusalMessage =
             'Position "designer" names employee "bob", who doesn\'t exist.'
 
-        const listing = listPendingTasks(projectRoot)
+        const listing = listPendingTasks(await loadJournal(projectRoot))
 
         await expect(listing).rejects.toThrow(UserError)
         await expect(listing).rejects.toThrow(refusalMessage)
@@ -130,7 +134,9 @@ describe("listPendingTasks", () => {
     test("lists as waiting a task of a type it doesn't know", async () => {
         await askPosition("backend-developer", "review-code")
 
-        const pendingTasks = await listPendingTasks(projectRoot)
+        const pendingTasks = await listPendingTasks(
+            await loadJournal(projectRoot),
+        )
 
         expect(pendingTasks).toMatchObject([
             { kind: "waiting", reason: "unknown-type" },
@@ -148,7 +154,9 @@ describe("listPendingTasks", () => {
             result: {},
         })
 
-        const pendingTasks = await listPendingTasks(projectRoot)
+        const pendingTasks = await listPendingTasks(
+            await loadJournal(projectRoot),
+        )
 
         expect(pendingTasks).toMatchObject([{ task: runningTask }])
     })

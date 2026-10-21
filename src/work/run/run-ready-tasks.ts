@@ -46,7 +46,7 @@ export async function runReadyTasks(
         for (const chainStoppedEvent of chainStoppedEvents) {
             onProgress({ kind: "chain-stopped", chainStoppedEvent })
         }
-        const pendingTasks = await listPendingTasks(projectRoot)
+        const pendingTasks = await listPendingTasks(journal)
         const readyTask = pendingTasks.find(
             (pendingTask) => pendingTask.kind === "ready",
         )

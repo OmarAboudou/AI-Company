@@ -2,11 +2,12 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { createGitRepository } from "../../../../git/create-git-repository.testing.ts"
 import { recordEvent } from "../../../../journal/record-event.ts"
+import { requireJournalEvent } from "../../../../journal/require-journal-event.ts"
 import {
     defineEventType,
     type JournalEvent,
 } from "../../../../journal/schema.ts"
-import { loadEvent, loadJournal } from "../../../../journal/storage.ts"
+import { loadJournal } from "../../../../journal/storage.ts"
 import { createUnsentMessage } from "../../../../messaging/message/create-unsent-message.ts"
 import { messageSentEventType } from "../../../../messaging/message/schema.ts"
 import { sendMessage } from "../../../../messaging/message/send-message.ts"
@@ -77,8 +78,9 @@ async function markCatchUpAsDone(task: Task, lastReadEntryId: string) {
 }
 
 async function loadContext(task: Task) {
-    const causeEvent = await loadEvent(projectRoot, task.causeEventId)
-    return { projectRoot, task, position, causeEvent }
+    const journal = await loadJournal(projectRoot)
+    const causeEvent = requireJournalEvent(journal, task.causeEventId)
+    return { projectRoot, journal, task, position, causeEvent }
 }
 
 async function createSession(task: Task) {

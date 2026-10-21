@@ -1,5 +1,4 @@
 import { getEventOfType } from "../../../../journal/get-event-of-type.ts"
-import { listEvents } from "../../../../journal/storage.ts"
 import { messageSentEventType } from "../../../../messaging/message/schema.ts"
 import { listMessages } from "../../../../messaging/message/storage.ts"
 import { getMemberIds } from "../../../../messaging/thread/get-member-ids.ts"
@@ -20,14 +19,15 @@ export const catchUpThreadTaskType = defineTaskType({
     type: catchUpThreadTypeName,
     paramsSchema: CatchUpThreadParamsSchema,
     resultSchema: CatchUpThreadResultSchema,
-    async createSession({ threadId }, { projectRoot, position, causeEvent }) {
-        const [thread, messages, tasks, events, positions] = await Promise.all([
+    async createSession({ threadId }, ctx) {
+        const { projectRoot, journal, position, causeEvent } = ctx
+        const [thread, messages, tasks, positions] = await Promise.all([
             loadThread(projectRoot, threadId),
             listMessages(projectRoot, threadId),
             listTasks(projectRoot),
-            listEvents(projectRoot),
             listPositions(projectRoot),
         ])
+        const { events } = journal
         const lastReadEntryId = getLastReadEntryId(tasks, events, positions, {
             positionId: position.id,
             threadId,
@@ -79,16 +79,14 @@ export const catchUpThreadTaskType = defineTaskType({
     async getRunResult(
         { threadId },
         { runId, sessionResult },
-        { projectRoot },
+        { projectRoot, journal },
     ) {
         const { lastReadEntryId } = sessionResult
         if (lastReadEntryId === undefined) {
             return sessionResult
         }
-        const [threadMessages, events] = await Promise.all([
-            listMessages(projectRoot, threadId),
-            listEvents(projectRoot),
-        ])
+        const threadMessages = await listMessages(projectRoot, threadId)
+        const { events } = journal
         return {
             lastReadEntryId: getLastEntryIdReadByRun(threadMessages, events, {
                 runId,

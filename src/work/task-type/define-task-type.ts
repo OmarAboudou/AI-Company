@@ -1,5 +1,5 @@
 import type { z } from "zod"
-import type { JournalEvent } from "../../journal/schema.ts"
+import type { Journal, JournalEvent } from "../../journal/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import type { Task, TaskResult } from "../task/schema.ts"
 import type {
@@ -9,6 +9,7 @@ import type {
 
 export type TaskTypeContext = {
     projectRoot: string
+    journal: Journal
     task: Task
     position: Position
     causeEvent: JournalEvent

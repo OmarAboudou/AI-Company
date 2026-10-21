@@ -1,5 +1,5 @@
 import { recordEvent } from "../../journal/record-event.ts"
-import { loadEvent } from "../../journal/storage.ts"
+import { requireJournalEvent } from "../../journal/require-journal-event.ts"
 import { isPendingTask } from "../task/is-pending-task.ts"
 import { taskDoneEventType } from "../task/schema.ts"
 import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
@@ -21,7 +21,7 @@ export async function markTaskAsDoneOnce(
             `A listener marked task "${task.id}" as done, of type "${task.type}", which llmco doesn't know.`,
         )
     }
-    const causeEvent = await loadEvent(journal.projectRoot, task.causeEventId)
+    const causeEvent = requireJournalEvent(journal, task.causeEventId)
     await recordEvent(journal, taskDoneEventType, {
         depth: causeEvent.depth + 1,
         taskId,
