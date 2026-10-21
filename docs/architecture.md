@@ -46,5 +46,6 @@ The rules that decide where code and documentation go, and how big they grow. Th
 
 ## Documentation
 
-- Documents live in `docs/`, except `README.md` and `AGENTS.md`, which GitHub and coding agents look for at the root.
+- Documents live in `docs/`, except `README.md` and `AGENTS.md`, which GitHub and coding agents look for at the root, and the `README.md` of each folder under `src/`, which GitHub shows below the folder's files.
+- A folder's `README.md` says what the folder holds, in the domain's words: the concept or the command group, its invariants, and the decision issues that shaped it. Its first sentence says on its own what the folder is. It names neither files nor paths, which the tree shows.
 - A document holds what is read together, such as these rules, which apply to every change. Beyond 300 lines, it splits by topic. A document whose parts are read separately, such as one page per command group, is split from the start.
