@@ -60,6 +60,21 @@ describe("message_send", () => {
         })
     })
 
+    test("sends the message as a director, without an employee, when the directors work the task", async () => {
+        const { employee, ...directorsCtx } = ctx
+        const call = { name: "message_send", input: { threadId, body: "Hi." } }
+
+        await runToolCall(tools, call, directorsCtx)
+
+        const [message] = await listMessages(projectRoot, threadId)
+        expect(employee).toBeDefined()
+        expect(message).not.toHaveProperty("employee")
+        expect(message?.committer).toEqual({
+            name: "Test User",
+            email: "test@example.com",
+        })
+    })
+
     test("records it at the task's depth, with the run that sent it", async () => {
         await callMessageSend({ threadId, body: "@qa-tester Ready." })
 
