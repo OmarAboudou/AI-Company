@@ -2,6 +2,7 @@ import { afterEach, beforeEach } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { createGitRepository } from "../git/create-git-repository.ts"
 
 const cliPath = join(import.meta.dir, "main.ts")
 
@@ -16,13 +17,10 @@ export function useTemporaryProject() {
             mkdtemp(join(tmpdir(), "llmco-")),
             mkdtemp(join(tmpdir(), "llmco-home-")),
         ])
-        for (const gitArgs of [
-            ["init", "-q"],
-            ["config", "user.name", "Test User"],
-            ["config", "user.email", "test@example.com"],
-        ]) {
-            Bun.spawnSync(["git", ...gitArgs], { cwd: projectRoot })
-        }
+        createGitRepository(projectRoot, {
+            name: "Test User",
+            email: "test@example.com",
+        })
     })
 
     afterEach(async () => {
