@@ -21,6 +21,7 @@ export type TaskSession =
     | { kind: "done"; summary: string }
 
 export type TaskType<ParamsSchema extends z.ZodType = z.ZodType> = {
+    type: string
     paramsSchema: ParamsSchema
     createSession(
         params: z.infer<ParamsSchema>,

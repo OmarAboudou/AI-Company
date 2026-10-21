@@ -9,9 +9,10 @@ import { listTasks } from "../../../task/storage.ts"
 import { defineTaskType } from "../../define-task-type.ts"
 import { buildCatchUpMessage } from "./build-catch-up-message.ts"
 import { getLastReadEntryId } from "./get-last-read-entry-id.ts"
-import { CatchUpThreadParamsSchema } from "./schema.ts"
+import { CatchUpThreadParamsSchema, catchUpThreadTypeName } from "./schema.ts"
 
 export const catchUpThreadTaskType = defineTaskType({
+    type: catchUpThreadTypeName,
     paramsSchema: CatchUpThreadParamsSchema,
     async createSession({ threadId }, { projectRoot, position, causeEvent }) {
         const [thread, messages, tasks, events, positions] = await Promise.all([

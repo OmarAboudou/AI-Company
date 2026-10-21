@@ -1,6 +1,8 @@
 import { z } from "zod"
 import { IdSchema } from "../../../../ids/id-schema.ts"
 
+export const catchUpThreadTypeName = "catch-up-thread"
+
 export const CatchUpThreadParamsSchema = z.strictObject({
     threadId: IdSchema.meta({
         description:
