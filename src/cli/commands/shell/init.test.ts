@@ -1,7 +1,12 @@
 // biome-ignore-all lint/suspicious/noTemplateCurlyInString: these strings are shell code, whose ${…} the shell expands.
+
 import { beforeEach, describe, expect, test } from "bun:test"
 import { chmod, mkdir } from "node:fs/promises"
 import { join } from "node:path"
+import { createCompany } from "../../../organization/company/create-company.ts"
+import { createEmployee } from "../../../organization/employee/create-employee.ts"
+import { assignPosition } from "../../../organization/position/assign-position.ts"
+import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 import {
     isShellInstalled,
@@ -21,10 +26,16 @@ const printRegistrations: Record<(typeof shells)[number], string> = {
 }
 
 beforeEach(async () => {
-    runCli("init", "-n", "Acme")
-    runCli("employee", "create", "human", "julie", "-n", "Julie")
-    runCli("position", "create", "graphics", "-t", "Graphics")
-    runCli("position", "assign", "graphics", "julie")
+    const projectRoot = getProjectPath()
+    await createCompany(projectRoot, { name: "Acme", description: "" })
+    await Promise.all([
+        createEmployee(projectRoot, "julie", { name: "Julie", kind: "human" }),
+        createPosition(projectRoot, "graphics", {
+            title: "Graphics",
+            description: "",
+        }),
+    ])
+    await assignPosition(projectRoot, "graphics", "julie")
     const llmcoPath = getHomePath("bin", "llmco")
     await Bun.write(
         llmcoPath,
