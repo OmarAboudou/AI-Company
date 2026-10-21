@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
-import { saveMessage } from "../../messaging/message/storage.ts"
-import { saveThread } from "../../messaging/thread/storage.ts"
+import { recordEvent } from "../../journal/record-event.ts"
+import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { UserError } from "../../user-error.ts"
+import { createTask } from "../../work/task/create-task.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.ts"
 import { hasEmployee, saveEmployee } from "../employee/storage.ts"
 import { deletePosition } from "./delete-position.ts"
@@ -26,27 +27,25 @@ afterEach(async () => {
 
 const developer = { id: "developer", title: "Developer", description: "" }
 
-async function saveThreadAwaiting(positionId: string): Promise<string> {
-    const director = { id: "director", title: "Director" }
-    const committer = { name: "Omar", email: "omar@example.com" }
-    const sentAt = "2026-10-19T10:00:00.000Z"
-    const thread = {
-        id: "2026-10-19-release",
-        subject: "Release",
-        createdAt: sentAt,
-        createdBy: { position: director, committer },
+async function askPosition(positionId: string): Promise<string> {
+    const threadId = "2026-10-19-release"
+    const messageSentEvent = await recordEvent(
+        projectRoot,
+        messageSentEventType,
+        {
+            depth: 0,
+            threadId,
+            messageId: "20261019-100000-000-a1b2",
+            mentions: [positionId],
+        },
+    )
+    const newTask = {
+        type: "catch-up-thread",
+        positionId,
+        params: { threadId },
     }
-    await saveThread(projectRoot, thread)
-    await saveMessage(projectRoot, {
-        threadId: thread.id,
-        id: "20261019-100000-000-a1b2",
-        position: director,
-        committer,
-        mentions: [positionId],
-        sentAt,
-        body: `@${positionId} Can you check?`,
-    })
-    return thread.id
+    await createTask(projectRoot, newTask, messageSentEvent)
+    return threadId
 }
 
 describe("deletePosition", () => {
@@ -85,9 +84,9 @@ describe("deletePosition", () => {
         expect(await hasPosition(projectRoot, "director")).toBe(true)
     })
 
-    test("refuses a position threads await, naming them", async () => {
+    test("refuses a position with pending tasks, naming their threads", async () => {
         await savePosition(projectRoot, developer)
-        const threadId = await saveThreadAwaiting("developer")
+        const threadId = await askPosition("developer")
 
         const deletion = deletePosition(projectRoot, "developer")
 
@@ -97,9 +96,9 @@ describe("deletePosition", () => {
         expect(await hasPosition(projectRoot, "developer")).toBe(true)
     })
 
-    test("deletes a position threads await if forced, and returns them", async () => {
+    test("deletes a position with pending tasks if forced, and returns their threads", async () => {
         await savePosition(projectRoot, developer)
-        const threadId = await saveThreadAwaiting("developer")
+        const threadId = await askPosition("developer")
 
         const forceOptions = { shouldForce: true }
 
@@ -109,7 +108,7 @@ describe("deletePosition", () => {
             forceOptions,
         )
 
-        expect(deletion.awaitingThreadIds).toEqual([threadId])
+        expect(deletion.pendingThreadIds).toEqual([threadId])
         expect(await hasPosition(projectRoot, "developer")).toBe(false)
     })
 

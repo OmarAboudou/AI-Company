@@ -34,7 +34,7 @@ describe("llmco position delete", () => {
         expect(show.stdout).toContain("positions: (none)")
     })
 
-    test("delete refuses a position threads await, listing them", () => {
+    test("delete refuses a position with pending tasks, listing their threads", () => {
         const ask = ["-b", "@developer Can you check?"]
         const creation = runCli("thread", "create", "-s", "Release", ...ask)
         const threadId = creation.stdout.trim()
@@ -48,7 +48,7 @@ describe("llmco position delete", () => {
     })
 
     test.each(["--force", "-f"])(
-        "delete %s deletes a position threads await",
+        "delete %s deletes a position with pending tasks",
         (flag) => {
             const ask = ["-b", "@developer Can you check?"]
             const creation = runCli("thread", "create", "-s", "Release", ...ask)
@@ -57,9 +57,9 @@ describe("llmco position delete", () => {
             const deletion = runCli("position", "delete", "developer", flag)
             const list = runCli("thread", "list").stdout
 
-            expect(deletion.stdout).toContain(`Still awaited in: ${threadId}.`)
+            expect(deletion.stdout).toContain(`stay pending in: ${threadId}.`)
             expect(runCli("position", "show", "developer").exitCode).toBe(1)
-            expect(list).toContain("awaiting @developer")
+            expect(list).toContain("tasks pending for @developer")
         },
     )
 })
