@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# git hands its hooks GIT_DIR and related variables, which would otherwise
+# point the tests' git commands at this repository.
+unset $(git rev-parse --local-env-vars)
+
 bun run lint
 bun run typecheck
 bun test
