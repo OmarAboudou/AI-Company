@@ -45,13 +45,13 @@ describe("mentions", () => {
         runCli("position", "create", "qa-tester", "-t", "QA Tester")
     })
 
-    test("thread list shows the awaited positions", () => {
+    test("thread list shows the positions with a pending task there", () => {
         const before = runCli("thread", "list").stdout
 
         runCli("message", "send", threadId, "-b", "@qa-tester, a test plan?")
         const after = runCli("thread", "list").stdout
 
-        expect(before).not.toContain("awaiting")
-        expect(after).toContain("Budget  awaiting @qa-tester\n")
+        expect(before).not.toContain("pending")
+        expect(after).toContain("Budget  tasks pending for @qa-tester\n")
     })
 })
