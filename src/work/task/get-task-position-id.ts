@@ -6,5 +6,5 @@ export function getTaskPositionId(
     task: Task,
     positions: readonly IdHistory[],
 ): string {
-    return getCurrentId(positions, task.positionId, task.createdAt)
+    return getCurrentId(positions, task.positionId, task.askedAt)
 }

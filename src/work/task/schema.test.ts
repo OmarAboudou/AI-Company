@@ -10,7 +10,7 @@ import {
 } from "./schema.ts"
 
 const catchUpTask = {
-    createdAt: "2026-10-18T14:03:23.000Z",
+    askedAt: "2026-10-18T14:03:23.000Z",
     type: "catch-up-thread",
     params: { threadId: "2026-10-18-choice-of-framework" },
     positionId: "backend-developer",

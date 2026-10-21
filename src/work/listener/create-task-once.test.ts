@@ -7,8 +7,10 @@ import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { loadCompany, saveCompany } from "../../organization/company/storage.ts"
 import { savePosition } from "../../organization/position/storage.ts"
+import { createTask } from "../task/create-task.ts"
+import { getTaskPositionId } from "../task/get-task-position-id.ts"
 import type { UncreatedTask } from "../task/schema.ts"
-import { listTasks, saveTask } from "../task/storage.ts"
+import { listTasks } from "../task/storage.ts"
 import { createTaskOnce } from "./create-task-once.ts"
 import { loadDispatching } from "./load-dispatching.ts"
 
@@ -160,9 +162,8 @@ describe("createTaskOnce at the end of a chain", () => {
 })
 
 describe("createTaskOnce through the positions' id history", () => {
-    const questionSentId = "20261018-140322-123-5d1e"
     const questionSent = {
-        id: questionSentId,
+        id: "20261018-140322-123-5d1e",
         type: "message-sent",
         occurredAt: "2026-10-18T14:03:22.123Z",
         depth: 0,
@@ -189,27 +190,23 @@ describe("createTaskOnce through the positions' id history", () => {
         ])
     })
 
-    test("creates the task of a position renamed since, under its new id", async () => {
-        const { createdTasks } = await createInNewDispatching(
+    test("creates the task of a position renamed since, read under its new id", async () => {
+        const { createdTasks, positions } = await createInNewDispatching(
             createCatchUp("backend-developer"),
             questionSent,
         )
 
-        expect(createdTasks).toMatchObject([{ positionId: "api-developer" }])
+        const [task] = createdTasks
+        expect(task?.positionId).toBe("backend-developer")
+        expect(task && getTaskPositionId(task, positions)).toBe("api-developer")
     })
 
-    test("recognizes the task it created before the position was renamed", async () => {
-        await saveTask(projectRoot, {
-            id: "20261018-140323-000-77aa",
-            createdAt: "2026-10-18T14:03:23.000Z",
-            type: "catch-up-thread",
-            params: { threadId },
-            positionId: "backend-developer",
-            causeEventId: questionSentId,
-        })
+    test("recognizes the task asked before the position was renamed", async () => {
+        const askedTask = createCatchUp("backend-developer")
+        await createTask(projectRoot, askedTask, questionSent)
 
         const { createdTasks } = await createInNewDispatching(
-            createCatchUp("backend-developer"),
+            askedTask,
             questionSent,
         )
 
