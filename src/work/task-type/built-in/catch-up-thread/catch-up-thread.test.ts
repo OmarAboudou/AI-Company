@@ -93,7 +93,7 @@ const remindedEventType = defineEventType({
 })
 
 describe("catch-up-thread", () => {
-    test("runs on the thread's unread entries, with tools to answer", async () => {
+    test("runs on the thread's unread entries, with tools to answer in it", async () => {
         const question = await askDeveloper("Hono or Express?")
         const task = question.catchUp
 
@@ -103,6 +103,10 @@ describe("catch-up-thread", () => {
             kind: "run",
             userMessage: expect.stringContaining('<message number="1"'),
             toolNames: ["message_send", "thread_show"],
+            boundToolInputs: {
+                message_send: { threadId },
+                thread_show: { threadId },
+            },
             result: { lastReadEntryId: question.messageId },
         })
     })

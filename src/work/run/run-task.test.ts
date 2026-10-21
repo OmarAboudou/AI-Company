@@ -140,6 +140,21 @@ describe("runTask", () => {
         ])
     })
 
+    test("fixes the thread of the tools its type fixes", async () => {
+        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
+
+        await runFakeTask()
+
+        const tools = fakeServer.requests[0]?.body.tools ?? []
+        const sendingTool = tools.find(({ name }) => name === "message_send")
+        expect(sendingTool?.description).toStartWith(
+            "Send a message in this thread,",
+        )
+        expect(sendingTool?.input_schema.properties).toEqual({
+            body: { type: "string", description: "The message, in Markdown." },
+        })
+    })
+
     test("records the task done, with the tokens the run used", async () => {
         fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
 
@@ -172,7 +187,7 @@ describe("runTask", () => {
     })
 
     test("records the messages the run sent as read too", async () => {
-        const answer = { threadId, body: "Hono, for Bun." }
+        const answer = { body: "Hono, for Bun." }
         fakeServer.respondWith({
             toolCalls: [
                 { name: "message_send", input: answer },

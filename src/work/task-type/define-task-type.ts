@@ -2,7 +2,10 @@ import type { z } from "zod"
 import type { JournalEvent } from "../../journal/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import type { Task, TaskResult } from "../task/schema.ts"
-import type { BuiltInToolName } from "../tool/built-in/built-in.ts"
+import type {
+    BuiltInToolName,
+    builtInTools,
+} from "../tool/built-in/built-in.ts"
 
 export type TaskTypeContext = {
     projectRoot: string
@@ -11,11 +14,18 @@ export type TaskTypeContext = {
     causeEvent: JournalEvent
 }
 
+export type BoundToolInputs = {
+    [Name in BuiltInToolName]?: Partial<
+        z.input<(typeof builtInTools)[Name]["inputSchema"]>
+    >
+}
+
 export type TaskSession<Result extends TaskResult = TaskResult> =
     | {
           kind: "run"
           userMessage: string
           toolNames: BuiltInToolName[]
+          boundToolInputs?: BoundToolInputs
           result: Result
       }
     | { kind: "done"; summary: string; result: Result }
