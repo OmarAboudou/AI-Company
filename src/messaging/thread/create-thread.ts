@@ -1,6 +1,9 @@
 import { z } from "zod"
 import { requireCompany } from "../../organization/company/require-company.ts"
 import { UserError } from "../../user-error.ts"
+import { builtInListeners } from "../../work/listener/built-in-listeners.ts"
+import { dispatchEvents } from "../../work/listener/dispatch-events.ts"
+import type { Task } from "../../work/task/schema.ts"
 import { createUnsentMessage } from "../message/create-unsent-message.ts"
 import { readCurrentAuthor } from "../message/read-current-author.ts"
 import type { Message } from "../message/schema.ts"
@@ -13,6 +16,7 @@ export type CreateThreadResult = {
     thread: Thread
     firstMessage: Message | undefined
     unknownMentionIds: string[]
+    createdTasks: Task[]
 }
 
 export async function createThread(
@@ -48,16 +52,24 @@ export async function createThread(
     }
     await saveThread(projectRoot, thread)
     if (unsentFirstMessage === undefined) {
-        return { thread, firstMessage: undefined, unknownMentionIds: [] }
+        return {
+            thread,
+            firstMessage: undefined,
+            unknownMentionIds: [],
+            createdTasks: [],
+        }
     }
+    const firstMessage = await sendUnsentMessage(
+        projectRoot,
+        thread.id,
+        unsentFirstMessage,
+        { depth: 0 },
+    )
+    const { createdTasks } = await dispatchEvents(projectRoot, builtInListeners)
     return {
         thread,
-        firstMessage: await sendUnsentMessage(
-            projectRoot,
-            thread.id,
-            unsentFirstMessage,
-            { depth: 0 },
-        ),
+        firstMessage,
         unknownMentionIds: unsentFirstMessage.unknownMentionIds,
+        createdTasks,
     }
 }

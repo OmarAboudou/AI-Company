@@ -94,7 +94,24 @@ describe("createThread", () => {
             messageId: creation.firstMessage?.id,
             mentions: ["qa-tester"],
         }
-        expect(await listEvents(projectRoot)).toMatchObject([messageSentEvent])
+        expect((await listEvents(projectRoot)).at(0)).toMatchObject(
+            messageSentEvent,
+        )
+    })
+
+    test("asks each position its first message mentions, with a task", async () => {
+        const { thread, createdTasks } = await createThread(projectRoot, {
+            subject: "Tests",
+            body: "@qa-tester, a test plan?",
+        })
+
+        expect(createdTasks).toMatchObject([
+            {
+                type: "catch-up-thread",
+                positionId: "qa-tester",
+                params: { threadId: thread.id },
+            },
+        ])
     })
 
     test("returns the mentions that name no position", async () => {

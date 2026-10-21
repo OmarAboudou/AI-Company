@@ -1,4 +1,8 @@
 import { requireCompany } from "../../organization/company/require-company.ts"
+import { builtInListeners } from "../../work/listener/built-in-listeners.ts"
+import { dispatchEvents } from "../../work/listener/dispatch-events.ts"
+import type { Task } from "../../work/task/schema.ts"
+import { completeCatchUps } from "../../work/task-type/built-in/catch-up-thread/complete-catch-ups.ts"
 import { loadExistingThread } from "../thread/load-existing-thread.ts"
 import { createUnsentMessage } from "./create-unsent-message.ts"
 import { readCurrentAuthor } from "./read-current-author.ts"
@@ -9,6 +13,7 @@ import { listMessages } from "./storage.ts"
 export type SendMessageResult = {
     message: Message
     unknownMentionIds: string[]
+    createdTasks: Task[]
 }
 
 export async function sendMessage(
@@ -24,13 +29,23 @@ export async function sendMessage(
         asPositionId,
     })
     const unsentMessage = await createUnsentMessage(projectRoot, author, body)
+    // The catch-ups that earlier messages ask of the author must exist for
+    // this message to complete them.
+    await dispatchEvents(projectRoot, builtInListeners)
+    const message = await sendUnsentMessage(
+        projectRoot,
+        thread.id,
+        unsentMessage,
+        { depth: 0 },
+    )
+    await completeCatchUps(projectRoot, {
+        positionId: author.position.id,
+        message,
+    })
+    const { createdTasks } = await dispatchEvents(projectRoot, builtInListeners)
     return {
-        message: await sendUnsentMessage(
-            projectRoot,
-            thread.id,
-            unsentMessage,
-            { depth: 0 },
-        ),
+        message,
         unknownMentionIds: unsentMessage.unknownMentionIds,
+        createdTasks,
     }
 }
