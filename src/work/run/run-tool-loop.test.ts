@@ -10,11 +10,8 @@ import { taskMarkAsFailedTool } from "../tool/built-in/task/mark-as-failed.ts"
 import { defineTool } from "../tool/define-tool.ts"
 import { exampleToolContext } from "../tool/example-tool-context.testing.ts"
 import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
-import {
-    maxToolCallsPerRun,
-    reminderText,
-    runToolLoop,
-} from "./run-tool-loop.ts"
+import { reminderText } from "./apply-assistant-turn.ts"
+import { runToolLoop } from "./run-tool-loop.ts"
 import type { RunProgress } from "./schema.ts"
 import { loadRun } from "./storage.ts"
 
@@ -88,12 +85,12 @@ describe("runToolLoop", () => {
         ])
     })
 
-    test("runs a turn's tool calls in their order, then gives their results", async () => {
+    test("gives the model its calls' results, errors marked, in the next request", async () => {
         fakeServer.respondWith(
             {
                 toolCalls: [
                     { name: "note_write", input: { text: "first" } },
-                    { name: "note_write", input: { text: "second" } },
+                    { name: "note_write", input: {} },
                 ],
             },
             { toolCalls: [markAsDoneCall] },
@@ -102,11 +99,26 @@ describe("runToolLoop", () => {
         await runFakeLoop()
 
         const toolResults = getRequestTurns(1).at(-1)?.content
-        expect(writtenNotes).toEqual(["first", "second"])
+        expect(writtenNotes).toEqual(["first"])
         expect(toolResults).toMatchObject([
             { type: "tool_result", content: 'Wrote "first".' },
-            { type: "tool_result", content: 'Wrote "second".' },
+            { type: "tool_result", is_error: true },
         ])
+    })
+
+    test("gives the model the reminder after a turn without any tool call", async () => {
+        fakeServer.respondWith(
+            { text: "I wrote the notes." },
+            { toolCalls: [markAsDoneCall] },
+        )
+
+        const { taskEnding } = await runFakeLoop()
+
+        expect(getRequestTurns(1).at(-1)).toMatchObject({
+            role: "user",
+            content: [{ type: "text", text: reminderText }],
+        })
+        expect(taskEnding.state).toBe("done")
     })
 
     test("ends after the turn that marks the task as done, calling no model", async () => {
@@ -127,30 +139,6 @@ describe("runToolLoop", () => {
         expect(writtenNotes).toEqual(["first"])
     })
 
-    test("ends after the turn that gives the task up", async () => {
-        const reason = "There is nothing to note."
-        fakeServer.respondWith({
-            toolCalls: [{ name: "task_mark-as-failed", input: { reason } }],
-        })
-
-        const { taskEnding } = await runFakeLoop()
-
-        expect(taskEnding).toEqual({ state: "failed", reason })
-    })
-
-    test("gives a refused call back as an error, and goes on", async () => {
-        fakeServer.respondWith(
-            { toolCalls: [{ name: "note_write", input: {} }] },
-            { toolCalls: [markAsDoneCall] },
-        )
-
-        const { taskEnding } = await runFakeLoop()
-
-        const [toolResult] = getRequestTurns(1).at(-1)?.content ?? []
-        expect(toolResult?.is_error).toBe(true)
-        expect(taskEnding.state).toBe("done")
-    })
-
     test("sums the tokens of the run's requests", async () => {
         fakeServer.respondWith(
             { toolCalls: [{ name: "note_write", input: { text: "first" } }] },
@@ -167,7 +155,7 @@ describe("runToolLoop", () => {
         })
     })
 
-    test("keeps the transcript in llmco's blocks, a line per turn", async () => {
+    test("keeps each of the model's turns in the transcript, with its response", async () => {
         fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
 
         await runFakeLoop()
@@ -185,65 +173,6 @@ describe("runToolLoop", () => {
             { role: "user", blocks: [{ type: "tool-result" }] },
         ])
     })
-})
-
-describe("runToolLoop after a turn without any tool call", () => {
-    test("reminds the model to mark its task as done or failed", async () => {
-        fakeServer.respondWith(
-            { text: "I wrote the notes." },
-            { toolCalls: [markAsDoneCall] },
-        )
-        const progresses: RunProgress[] = []
-
-        const { taskEnding } = await runFakeLoop(progresses)
-
-        const reminder = getRequestTurns(1).at(-1)
-        const reminderProgress: RunProgress = {
-            kind: "reminder",
-            text: reminderText,
-        }
-        expect(reminder).toMatchObject({
-            role: "user",
-            content: [{ type: "text", text: reminderText }],
-        })
-        expect(progresses).toContainEqual(reminderProgress)
-        expect(taskEnding.state).toBe("done")
-    })
-
-    test("fails the task after a second one", async () => {
-        fakeServer.respondWith({ text: "Done." }, { text: "Done, really." })
-
-        const { taskEnding } = await runFakeLoop()
-
-        expect(taskEnding).toEqual({
-            state: "failed",
-            reason: "The model ended two turns without calling a tool, the second after a reminder.",
-        })
-        expect(fakeServer.requests).toHaveLength(2)
-    })
-})
-
-describe("runToolLoop at its limits", () => {
-    function createNoteWritings(count: number) {
-        return Array.from({ length: count }, (_, index) => ({
-            name: "note_write",
-            input: { text: `note ${index}` },
-        }))
-    }
-
-    test("fails the task rather than go beyond its tool calls", async () => {
-        const firstToolCalls = createNoteWritings(maxToolCallsPerRun - 1)
-        fakeServer.respondWith(
-            { toolCalls: firstToolCalls },
-            { toolCalls: createNoteWritings(2) },
-        )
-
-        const { taskEnding } = await runFakeLoop()
-
-        const reason = `The run went beyond ${maxToolCallsPerRun} tool calls without ending its task.`
-        expect(taskEnding).toEqual({ state: "failed", reason })
-        expect(writtenNotes).toHaveLength(maxToolCallsPerRun - 1)
-    })
 
     test.each([
         ["refusal", "The model's provider declined to go on (refusal)."],
@@ -252,7 +181,7 @@ describe("runToolLoop at its limits", () => {
         "fails the task, running no tool, on a %s",
         async (stopReason, reason) => {
             fakeServer.respondWith({
-                toolCalls: createNoteWritings(1),
+                toolCalls: [{ name: "note_write", input: { text: "first" } }],
                 stopReason,
             })
 
