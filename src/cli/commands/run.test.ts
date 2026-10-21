@@ -63,7 +63,7 @@ describe("llmco run", () => {
 
     test("runs the task of a position an LLM works, printing its run", async () => {
         ask("@backend-developer Hono or Express?")
-        const answer = { threadId, body: "@director Hono." }
+        const answer = { body: "@director Hono." }
         fakeServer.respondWith({
             text: "The director asks for a framework.",
             toolCalls: [

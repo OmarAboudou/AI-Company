@@ -55,7 +55,7 @@ const markAsDoneCall = {
 }
 
 function createAnswer(body: string) {
-    return { name: "message_send", input: { threadId, body } }
+    return { name: "message_send", input: { body } }
 }
 
 describe("runReadyTasks", () => {

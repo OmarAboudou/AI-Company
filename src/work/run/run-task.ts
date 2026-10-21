@@ -16,7 +16,11 @@ import {
     taskStartedEventType,
 } from "../task/schema.ts"
 import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
-import type { TaskType } from "../task-type/define-task-type.ts"
+import type {
+    BoundToolInputs,
+    TaskType,
+} from "../task-type/define-task-type.ts"
+import { bindTool } from "../tool/bind-tool.ts"
 import {
     type BuiltInToolName,
     builtInTools,
@@ -37,12 +41,15 @@ const taskEndingToolNames: BuiltInToolName[] = [
     "task_mark-as-failed",
 ]
 
-function getRunTools(toolNames: BuiltInToolName[]): Record<string, Tool> {
+function getRunTools(
+    toolNames: BuiltInToolName[],
+    boundToolInputs: BoundToolInputs = {},
+): Record<string, Tool> {
     return Object.fromEntries(
-        [...toolNames, ...taskEndingToolNames].map((name) => [
-            name,
-            builtInTools[name],
-        ]),
+        [...toolNames, ...taskEndingToolNames].map((name) => {
+            const tool: Tool = builtInTools[name]
+            return [name, bindTool(tool, boundToolInputs[name] ?? {})]
+        }),
     )
 }
 
@@ -117,7 +124,7 @@ export async function runTask(
         apiId: model.apiId,
         systemPrompt: buildSystemPrompt({ company, position, employee }),
         userMessage: session.userMessage,
-        tools: getRunTools(session.toolNames),
+        tools: getRunTools(session.toolNames, session.boundToolInputs),
         onProgress,
     })
     const runEnd = { depth: taskDepth, taskId: task.id, runId, usage }

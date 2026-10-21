@@ -69,6 +69,10 @@ export const catchUpThreadTaskType = defineTaskType({
                 readCount,
             }),
             toolNames: ["message_send", "thread_show"],
+            boundToolInputs: {
+                message_send: { threadId },
+                thread_show: { threadId },
+            },
             result: { lastReadEntryId: lastMessage.id },
         }
     },
