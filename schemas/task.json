@@ -1,0 +1,60 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/task.json",
+    "type": "object",
+    "properties": {
+        "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "When the task was created, in UTC."
+        },
+        "type": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+            "description": "Id of the task's type, which builds, each time the task runs, what its run is given from the parameters, e.g. catch-up-thread to catch up on a thread."
+        },
+        "params": {
+            "type": "object",
+            "propertyNames": { "type": "string" },
+            "additionalProperties": {},
+            "description": "The task's parameters, as its type expects them, e.g. the threadId of the thread to catch up on."
+        },
+        "positionId": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+            "description": "Id of the position the task is for: whoever works the position does it."
+        },
+        "parentTaskId": {
+            "description": "Id of the task it is a part of, in a tree of tasks. Absent for a task of its own.",
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+        },
+        "depth": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "description": "How many tasks led to it, itself included, each caused by the one before: d + 1 for a task created from an event of depth d, so 1 for one created from a person's action."
+        },
+        "causeEventId": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+            "description": "Id of the event the task was created for, i.e. the name of its file in .llmco/journal."
+        }
+    },
+    "required": [
+        "createdAt",
+        "type",
+        "params",
+        "positionId",
+        "depth",
+        "causeEventId"
+    ],
+    "additionalProperties": false,
+    "title": "llmco task",
+    "description": "A task for a position, in .llmco/tasks/<task-id>.json, the id being the time it was created followed by a random suffix. Never modified: the task's state comes from the journal's events."
+}

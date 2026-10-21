@@ -14,6 +14,7 @@ import {
     PositionConfigSchema,
     PositionStateSchema,
 } from "../src/organization/position/schema.ts"
+import { TaskSchema } from "../src/work/task/schema.ts"
 
 const publicationUrl =
     "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas"
@@ -28,6 +29,7 @@ const zodSchemas = {
     message: MessageConfigSchema,
     "provider-response": ProviderResponseSchema,
     event: JournalEventSchema,
+    task: TaskSchema,
     "id-history": IdHistorySchema,
     "position-state": PositionStateSchema,
 }
