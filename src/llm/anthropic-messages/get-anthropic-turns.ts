@@ -15,14 +15,14 @@ export function getAnthropicTurns(
         role: "user" | "assistant"
         content: Anthropic.ContentBlockParam[]
     }[] = []
-    for (const message of messages) {
+    for (const [index, message] of messages.entries()) {
         const isOwnMessage = isAuthorOf(employee, message)
         const role = isOwnMessage ? "assistant" : "user"
         const content: Anthropic.ContentBlockParam[] = isOwnMessage
             ? (replays.get(message.id) ?? [
                   { type: "text", text: message.body },
               ])
-            : [{ type: "text", text: formatTaggedMessage(message) }]
+            : [{ type: "text", text: formatTaggedMessage(message, index + 1) }]
         const lastTurn = turns.at(-1)
         if (lastTurn?.role === role) {
             lastTurn.content.push(...content)

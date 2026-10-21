@@ -9,7 +9,7 @@ function escapeAttribute(value: string): string {
         .replaceAll("<", "&lt;")
 }
 
-export function formatTaggedMessage(message: Message): string {
+export function formatTaggedMessage(message: Message, number: number): string {
     const { position } = message
     const escapedAuthorName = escapeAttribute(getAuthorName(message))
     const escapedPositionName = escapeAttribute(
@@ -17,7 +17,7 @@ export function formatTaggedMessage(message: Message): string {
     )
     const sentDateTime = formatDateTime(message.sentAt)
     return [
-        `<message from="${escapedAuthorName}" position="${escapedPositionName}" sent="${sentDateTime}">`,
+        `<message number="${number}" from="${escapedAuthorName}" position="${escapedPositionName}" sent="${sentDateTime}">`,
         message.body.trimEnd(),
         "</message>",
     ].join("\n")

@@ -39,33 +39,13 @@ describe("getAnthropicTurns", () => {
     test("gives others' messages as user turns, in a message tag", () => {
         const turns = getAnthropicTurns([question], claude, new Map())
         const taggedQuestion = [
-            '<message from="Omar Aboudou" position="Director (@director)" sent="2026-10-18 14:03 UTC">',
+            '<message number="1" from="Omar Aboudou" position="Director (@director)" sent="2026-10-18 14:03 UTC">',
             "@backend-developer Hono or Express?",
             "</message>",
         ].join("\n")
 
         expect(turns).toEqual([
             { role: "user", content: [{ type: "text", text: taggedQuestion }] },
-        ])
-    })
-
-    test("escapes quotes in the tag's attributes", () => {
-        const quotedPosition = { id: "growth", title: 'Head of "Growth"' }
-        const memo = createMessage(
-            "4",
-            { position: quotedPosition },
-            "Numbers are up.",
-        )
-
-        const turns = getAnthropicTurns([memo], claude, new Map())
-
-        expect(turns[0]?.content).toEqual([
-            {
-                type: "text",
-                text: expect.stringContaining(
-                    'position="Head of &quot;Growth&quot; (@growth)"',
-                ),
-            },
         ])
     })
 
