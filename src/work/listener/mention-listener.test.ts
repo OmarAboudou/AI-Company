@@ -1,10 +1,12 @@
 import { describe, expect, test } from "bun:test"
-import type { JournalEvent } from "../../journal/schema.ts"
+import type { EventOfType, messageSentEventType } from "../../journal/schema.ts"
 import { mentionListener } from "./mention-listener.ts"
 
 const threadId = "2026-10-18-choice-of-framework"
 
-function createMessageSentEvent(mentions: string[]) {
+function createMessageSentEvent(
+    mentions: string[],
+): EventOfType<typeof messageSentEventType> {
     return {
         id: "20261018-140322-123-5d1e",
         type: "message-sent",
@@ -13,7 +15,7 @@ function createMessageSentEvent(mentions: string[]) {
         threadId,
         messageId: "20261018-140322-123-3f9a",
         mentions,
-    } satisfies JournalEvent
+    }
 }
 
 function getNewTasks(mentions: string[]) {

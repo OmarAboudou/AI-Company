@@ -114,28 +114,30 @@ export const chainStoppedEventType = defineEventType({
 })
 
 export const JournalEventSchema = z
-    .discriminatedUnion("type", [
-        messageSentEventType.schema,
-        taskCreatedEventType.schema,
-        taskStartedEventType.schema,
-        taskCompletedEventType.schema,
-        taskFailedEventType.schema,
-        chainStoppedEventType.schema,
-    ])
+    .looseObject({
+        type: IdSchema.meta({
+            description:
+                "The event's type, which defines its other fields, e.g. message-sent.",
+        }),
+        occurredAt: OccurredAtSchema,
+        depth: DepthSchema,
+    })
     .meta({
         title: "llmco event",
         description:
-            "An event of the company's journal, in .llmco/journal/<event-id>.json, the id being the time it happened followed by a random suffix. Written by llmco and never modified: the journal keeps, in git, what happened in the company.",
+            "An event of the company's journal, in .llmco/journal/<event-id>.json, the id being the time it happened followed by a random suffix. Written by llmco and never modified: the journal keeps, in git, what happened in the company. Every event has a type, the time it happened and a depth; its other fields are its type's.",
     })
 
-export type JournalEvent = z.infer<typeof JournalEventSchema> & { id: string }
+type EventContent = { type: string; occurredAt: string; depth: number }
 
-export type EventType<Schema extends z.ZodType = z.ZodType> = {
+export type JournalEvent = EventContent & { id: string }
+
+export type EventType<Content extends EventContent = EventContent> = {
     type: string
-    schema: Schema
+    schema: z.ZodType<Content>
 }
 
-export type EventOfType<Type extends EventType> = z.infer<Type["schema"]> & {
+export type EventOfType<Type extends EventType> = z.output<Type["schema"]> & {
     id: string
 }
 

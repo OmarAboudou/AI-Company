@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { recordEvent } from "../../journal/record-event.ts"
-import { messageSentEventType } from "../../journal/schema.ts"
+import { type EventOfType, messageSentEventType } from "../../journal/schema.ts"
 import { listEvents, saveEvent } from "../../journal/storage.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.ts"
 import { loadCompany, saveCompany } from "../../organization/company/storage.ts"
@@ -25,9 +25,10 @@ afterEach(async () => {
 
 const threadId = "2026-10-18-choice-of-framework"
 
+type MessageSentEvent = EventOfType<typeof messageSentEventType>
+
 async function createMessageSentEvent(mentions: string[], depth = 0) {
-    return recordEvent(projectRoot, {
-        type: "message-sent",
+    return recordEvent(projectRoot, messageSentEventType, {
         depth,
         threadId,
         messageId: "20261018-140322-123-3f9a",
@@ -110,6 +111,23 @@ describe("dispatchEvents", () => {
         expect(createdTasks).toEqual([])
         expect(await listTasks(projectRoot)).toHaveLength(1)
     })
+
+    test("passes over an event of a type no listener handles", async () => {
+        const threadClosed = {
+            id: "20261018-150000-000-9e3f",
+            type: "thread-closed",
+            occurredAt: "2026-10-18T15:00:00.000Z",
+            depth: 0,
+            threadId,
+        }
+        await saveEvent(projectRoot, threadClosed)
+
+        const { createdTasks } = await dispatchToMentionListener()
+
+        const dispatchedEventIds = await loadDispatchedEventIds(projectRoot)
+        expect(createdTasks).toEqual([])
+        expect(dispatchedEventIds).toEqual(new Set([threadClosed.id]))
+    })
 })
 
 describe("dispatchEvents at the end of a chain", () => {
@@ -172,6 +190,15 @@ describe("dispatchEvents at the end of a chain", () => {
 
 describe("dispatchEvents through the positions' id history", () => {
     const questionSentId = "20261018-140322-123-5d1e"
+    const questionSent: MessageSentEvent = {
+        id: questionSentId,
+        type: "message-sent",
+        occurredAt: "2026-10-18T14:03:22.123Z",
+        depth: 0,
+        threadId,
+        messageId: "20261018-140322-123-3f9a",
+        mentions: ["backend-developer"],
+    }
 
     beforeEach(async () => {
         await Promise.all([
@@ -186,15 +213,7 @@ describe("dispatchEvents through the positions' id history", () => {
                     },
                 ],
             }),
-            saveEvent(projectRoot, {
-                id: questionSentId,
-                type: "message-sent",
-                occurredAt: "2026-10-18T14:03:22.123Z",
-                depth: 0,
-                threadId,
-                messageId: "20261018-140322-123-3f9a",
-                mentions: ["backend-developer"],
-            }),
+            saveEvent(projectRoot, questionSent),
         ])
     })
 

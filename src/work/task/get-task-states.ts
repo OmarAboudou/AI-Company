@@ -1,4 +1,3 @@
-import type { z } from "zod"
 import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import {
     type EventType,
@@ -12,10 +11,9 @@ import type { Task } from "./schema.ts"
 
 export type TaskState = "waiting" | "running" | "succeeded" | "failed"
 
-const statesAfterEventTypes: [
-    EventType<z.ZodType<{ taskId: string }>>,
-    TaskState,
-][] = [
+type TaskEventContent = Omit<JournalEvent, "id"> & { taskId: string }
+
+const statesAfterEventTypes: [EventType<TaskEventContent>, TaskState][] = [
     [taskCreatedEventType, "waiting"],
     [taskStartedEventType, "running"],
     [taskCompletedEventType, "succeeded"],

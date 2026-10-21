@@ -103,12 +103,15 @@ export async function dispatchEvents(
             const knownTasks = [...tasks, ...createdTasks]
             if (depth > maxTaskDepth) {
                 if (!isStopped(newTask, event.id, knownEvents, positions)) {
-                    const chainStoppedEvent = await recordEvent(projectRoot, {
-                        type: "chain-stopped",
-                        depth: event.depth,
-                        causeEventId: event.id,
-                        stoppedTask: newTask,
-                    })
+                    const chainStoppedEvent = await recordEvent(
+                        projectRoot,
+                        chainStoppedEventType,
+                        {
+                            depth: event.depth,
+                            causeEventId: event.id,
+                            stoppedTask: newTask,
+                        },
+                    )
                     chainStoppedEvents.push(chainStoppedEvent)
                 }
             } else if (!isCreated(newTask, event.id, knownTasks, positions)) {

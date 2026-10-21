@@ -75,7 +75,7 @@ describe("getTaskStates", () => {
     })
 
     test("follows each task's own events", () => {
-        const testerTaskStarted: JournalEvent = {
+        const testerTaskStarted = {
             ...eventFields,
             ...developerTaskEvents.started,
             taskId: testerTask.id,
