@@ -18,7 +18,7 @@ export function registerCurrentHumanShowCommand(
         .action(async () => {
             await requireCompany(projectRoot)
             const [human, assignments] = await Promise.all([
-                readCurrentHuman(projectRoot),
+                readCurrentHuman(projectRoot, process.env),
                 listPositionAssignments(projectRoot),
             ])
             const workedAssignments = getPositionsWorkedBy(assignments, human)
@@ -27,7 +27,7 @@ export function registerCurrentHumanShowCommand(
                 human.kind === "director"
                     ? `${committer.name}, a director`
                     : `${human.employee.name} (${human.employee.id}), a human employee`
-            const currentPositionId = readCurrentPositionId()
+            const currentPositionId = readCurrentPositionId(process.env)
             const workedPositionLabels = workedAssignments.map(
                 ({ position, state }) => {
                     const notes = [

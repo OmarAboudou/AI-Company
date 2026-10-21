@@ -11,13 +11,12 @@ import { listMessages } from "../message/storage.ts"
 import { createThread } from "./create-thread.ts"
 import { listThreads, loadThread } from "./storage.ts"
 
-const variableName = "LLMCO_CURRENT_HUMAN_ID"
-const shellValue = process.env[variableName]
 const committer = { name: "Test User", email: "test@example.com" }
+let environment: NodeJS.ProcessEnv
 let projectRoot: string
 
 beforeEach(async () => {
-    delete process.env[variableName]
+    environment = {}
     projectRoot = await createTemporaryCompany()
     createGitRepository(projectRoot, committer)
     await savePosition(projectRoot, {
@@ -28,17 +27,12 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-    if (shellValue === undefined) {
-        delete process.env[variableName]
-    } else {
-        process.env[variableName] = shellValue
-    }
     await rm(projectRoot, { recursive: true, force: true })
 })
 
 describe("createThread", () => {
     test("saves the thread, created by the person at the keyboard", async () => {
-        const { thread } = await createThread(projectRoot, {
+        const { thread } = await createThread(projectRoot, environment, {
             subject: "Budget",
         })
 
@@ -52,14 +46,18 @@ describe("createThread", () => {
     test("names the thread after its creation date and subject", async () => {
         const subject = "Choice of framework"
 
-        const { thread } = await createThread(projectRoot, { subject })
+        const { thread } = await createThread(projectRoot, environment, {
+            subject,
+        })
 
         const creationDate = thread.createdAt.slice(0, 10)
         expect(thread.id).toBe(`${creationDate}-choice-of-framework`)
     })
 
     test("writes nothing in the thread without a body", async () => {
-        const creation = await createThread(projectRoot, { subject: "Budget" })
+        const creation = await createThread(projectRoot, environment, {
+            subject: "Budget",
+        })
 
         const messages = await listMessages(projectRoot, creation.thread.id)
         expect(creation.firstMessage).toBeUndefined()
@@ -70,7 +68,7 @@ describe("createThread", () => {
     test("sends the body as the thread's first message", async () => {
         const body = "@qa-tester, a test plan?"
 
-        const creation = await createThread(projectRoot, {
+        const creation = await createThread(projectRoot, environment, {
             subject: "Tests",
             body,
         })
@@ -82,7 +80,7 @@ describe("createThread", () => {
     })
 
     test("records in the journal that a person sent the first message", async () => {
-        const creation = await createThread(projectRoot, {
+        const creation = await createThread(projectRoot, environment, {
             subject: "Tests",
             body: "@qa-tester, a test plan?",
         })
@@ -100,10 +98,14 @@ describe("createThread", () => {
     })
 
     test("asks each position its first message mentions, with a task", async () => {
-        const { thread, createdTasks } = await createThread(projectRoot, {
-            subject: "Tests",
-            body: "@qa-tester, a test plan?",
-        })
+        const { thread, createdTasks } = await createThread(
+            projectRoot,
+            environment,
+            {
+                subject: "Tests",
+                body: "@qa-tester, a test plan?",
+            },
+        )
 
         expect(createdTasks).toMatchObject([
             {
@@ -117,7 +119,7 @@ describe("createThread", () => {
     test("returns the mentions that name no position", async () => {
         const body = "@qa-testers, a test plan?"
 
-        const creation = await createThread(projectRoot, {
+        const creation = await createThread(projectRoot, environment, {
             subject: "Tests",
             body,
         })
@@ -130,7 +132,7 @@ describe("createThread", () => {
             kind: "directors",
         })
 
-        const { thread } = await createThread(projectRoot, {
+        const { thread } = await createThread(projectRoot, environment, {
             subject: "Tests",
             asPositionId: "qa-tester",
         })
@@ -139,7 +141,9 @@ describe("createThread", () => {
     })
 
     test("refuses an empty subject", async () => {
-        const creation = createThread(projectRoot, { subject: "  " })
+        const creation = createThread(projectRoot, environment, {
+            subject: "  ",
+        })
 
         await expect(creation).rejects.toThrow(UserError)
         await expect(creation).rejects.toThrow("subject")
@@ -149,7 +153,10 @@ describe("createThread", () => {
     test("refuses a first message it can't send before creating the thread", async () => {
         const body = "@qa-tester:claude-senior, a review?"
 
-        const creation = createThread(projectRoot, { subject: "Tests", body })
+        const creation = createThread(projectRoot, environment, {
+            subject: "Tests",
+            body,
+        })
 
         await expect(creation).rejects.toThrow("Mentioning a specific employee")
         expect(await listThreads(projectRoot)).toEqual([])
@@ -158,7 +165,7 @@ describe("createThread", () => {
     test("refuses to run outside a company", async () => {
         const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const creation = createThread(folderWithoutCompany, {
+        const creation = createThread(folderWithoutCompany, environment, {
             subject: "Budget",
         })
 

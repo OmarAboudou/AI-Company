@@ -36,7 +36,7 @@ export function registerMessageSendCommand(messageCommand: Command): void {
                 )
             }
             const { message, unknownMentionIds, createdTasks } =
-                await sendMessage(projectRoot, rawThreadId, {
+                await sendMessage(projectRoot, process.env, rawThreadId, {
                     body,
                     asPositionId: options.asPosition,
                 })

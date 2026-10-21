@@ -24,8 +24,6 @@ import {
 import { runTask } from "./run-task.ts"
 
 const fakeServer = useFakeAnthropicServer()
-const variableNames = ["LLMCO_CURRENT_HUMAN_ID"] as const
-const shellValues = variableNames.map((name) => process.env[name])
 const environment = { TEST_ANTHROPIC_KEY: "sk-test" }
 let projectRoot: string
 let threadId: string
@@ -48,14 +46,15 @@ async function createCatchUp(): Promise<Task> {
 }
 
 beforeEach(async () => {
-    delete process.env.LLMCO_CURRENT_HUMAN_ID
     const companyWithLlmEmployee = await createCompanyWithLlmEmployee(
         fakeServer.getUrl(),
     )
     projectRoot = companyWithLlmEmployee.projectRoot
     threadId = companyWithLlmEmployee.threadId
     const body = "@backend-developer Hono or Express?"
-    const { message } = await sendMessage(projectRoot, threadId, { body })
+    const { message } = await sendMessage(projectRoot, environment, threadId, {
+        body,
+    })
     questionId = message.id
     task = await createCatchUp()
     position = await loadPosition(projectRoot, "backend-developer")
@@ -67,14 +66,6 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-    for (const [index, name] of variableNames.entries()) {
-        const shellValue = shellValues[index]
-        if (shellValue === undefined) {
-            delete process.env[name]
-        } else {
-            process.env[name] = shellValue
-        }
-    }
     await rm(projectRoot, { recursive: true, force: true })
 })
 

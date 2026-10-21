@@ -18,7 +18,7 @@ export function requireDirector(
     _: unknown,
     actionCommand: CommandUnknownOpts,
 ): void {
-    const currentHumanId = readCurrentHumanId()
+    const currentHumanId = readCurrentHumanId(process.env)
     if (currentHumanId !== undefined) {
         throw new UserError(
             `Only directors run \`${formatCommandPath(actionCommand)}\`: LLMCO_CURRENT_HUMAN_ID has you act as "${currentHumanId}". Run \`llmco current-human clear\` to act as a director.`,

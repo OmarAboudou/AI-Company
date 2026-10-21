@@ -46,6 +46,6 @@ export async function createCompanyWithLlmEmployee(
         ),
     ])
     await assignPosition(projectRoot, "backend-developer", "claude")
-    const { thread } = await createThread(projectRoot, { subject: "Stack" })
+    const { thread } = await createThread(projectRoot, {}, { subject: "Stack" })
     return { projectRoot, threadId: thread.id }
 }

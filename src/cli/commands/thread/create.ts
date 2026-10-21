@@ -23,7 +23,7 @@ export function registerThreadCreateCommand(threadCommand: Command): void {
         .action(async (options) => {
             const body = await readBody(options)
             const { thread, unknownMentionIds, createdTasks } =
-                await createThread(projectRoot, {
+                await createThread(projectRoot, process.env, {
                     subject: options.subject,
                     body,
                     asPositionId: options.asPosition,

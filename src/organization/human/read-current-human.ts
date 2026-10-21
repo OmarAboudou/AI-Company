@@ -9,8 +9,9 @@ export type CurrentHuman =
 
 export async function readCurrentHuman(
     projectRoot: string,
+    environment: NodeJS.ProcessEnv,
 ): Promise<CurrentHuman> {
-    const id = readCurrentHumanId()
+    const id = readCurrentHumanId(environment)
     if (id === undefined) {
         return { kind: "director" }
     }

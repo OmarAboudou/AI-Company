@@ -10,6 +10,6 @@ export function registerCurrentPositionShowCommand(
             "Show the position selected in this shell, or (none) when llmco picks the one to write from for each message.",
         )
         .action(() => {
-            console.log(readCurrentPositionId() ?? "(none)")
+            console.log(readCurrentPositionId(process.env) ?? "(none)")
         })
 }

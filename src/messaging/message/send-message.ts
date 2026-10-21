@@ -18,13 +18,14 @@ export type SendMessageResult = {
 
 export async function sendMessage(
     projectRoot: string,
+    environment: NodeJS.ProcessEnv,
     rawThreadId: string,
     { body, asPositionId }: { body: string; asPositionId?: string },
 ): Promise<SendMessageResult> {
     await requireCompany(projectRoot)
     const thread = await loadExistingThread(projectRoot, rawThreadId)
     const threadMessages = await listMessages(projectRoot, thread.id)
-    const author = await readCurrentAuthor(projectRoot, {
+    const author = await readCurrentAuthor(projectRoot, environment, {
         archive: { thread, messages: threadMessages },
         asPositionId,
     })

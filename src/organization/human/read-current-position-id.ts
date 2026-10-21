@@ -1,8 +1,10 @@
 import { IdSchema } from "../../ids/id-schema.ts"
 import { UserError } from "../../user-error.ts"
 
-export function readCurrentPositionId(): string | undefined {
-    const rawId = process.env.LLMCO_CURRENT_POSITION_ID
+export function readCurrentPositionId(
+    environment: NodeJS.ProcessEnv,
+): string | undefined {
+    const rawId = environment.LLMCO_CURRENT_POSITION_ID
     if (rawId === undefined || rawId === "") {
         return undefined
     }

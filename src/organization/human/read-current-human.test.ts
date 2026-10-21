@@ -5,13 +5,12 @@ import { createTemporaryCompany } from "../company/create-temporary-company.ts"
 import { saveEmployee } from "../employee/storage.ts"
 import { readCurrentHuman } from "./read-current-human.ts"
 
-const variableName = "LLMCO_CURRENT_HUMAN_ID"
-const shellValue = process.env[variableName]
 const julie = { id: "julie", name: "Julie", kind: "human" } as const
+let environment: NodeJS.ProcessEnv
 let projectRoot: string
 
 beforeEach(async () => {
-    delete process.env[variableName]
+    environment = {}
     projectRoot = await createTemporaryCompany()
     await Promise.all([
         saveEmployee(projectRoot, {
@@ -30,42 +29,37 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-    if (shellValue === undefined) {
-        delete process.env[variableName]
-    } else {
-        process.env[variableName] = shellValue
-    }
     await rm(projectRoot, { recursive: true, force: true })
 })
 
 describe("readCurrentHuman", () => {
     test("is a director without LLMCO_CURRENT_HUMAN_ID", async () => {
-        const currentHuman = await readCurrentHuman(projectRoot)
+        const currentHuman = await readCurrentHuman(projectRoot, environment)
 
         expect(currentHuman).toEqual({ kind: "director" })
     })
 
     test("is the human employee LLMCO_CURRENT_HUMAN_ID names", async () => {
-        process.env[variableName] = "julie"
+        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
 
-        const currentHuman = await readCurrentHuman(projectRoot)
+        const currentHuman = await readCurrentHuman(projectRoot, environment)
 
         expect(currentHuman).toEqual({ kind: "employee", employee: julie })
     })
 
     test("refuses an id that names no employee", async () => {
-        process.env[variableName] = "bob"
+        environment.LLMCO_CURRENT_HUMAN_ID = "bob"
 
-        const reading = readCurrentHuman(projectRoot)
+        const reading = readCurrentHuman(projectRoot, environment)
 
         await expect(reading).rejects.toThrow(UserError)
         await expect(reading).rejects.toThrow('names no employee: "bob"')
     })
 
     test("refuses an LLM employee", async () => {
-        process.env[variableName] = "claude"
+        environment.LLMCO_CURRENT_HUMAN_ID = "claude"
 
-        const reading = readCurrentHuman(projectRoot)
+        const reading = readCurrentHuman(projectRoot, environment)
 
         await expect(reading).rejects.toThrow(UserError)
         await expect(reading).rejects.toThrow("an LLM employee")

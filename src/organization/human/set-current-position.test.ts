@@ -8,12 +8,11 @@ import { assignPosition } from "../position/assign-position.ts"
 import { savePosition } from "../position/storage.ts"
 import { setCurrentPosition } from "./set-current-position.ts"
 
-const variableName = "LLMCO_CURRENT_HUMAN_ID"
-const shellValue = process.env[variableName]
+let environment: NodeJS.ProcessEnv
 let projectRoot: string
 
 beforeEach(async () => {
-    delete process.env[variableName]
+    environment = {}
     projectRoot = await createTemporaryCompany()
     await Promise.all([
         saveEmployee(projectRoot, {
@@ -30,41 +29,52 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-    if (shellValue === undefined) {
-        delete process.env[variableName]
-    } else {
-        process.env[variableName] = shellValue
-    }
     await rm(projectRoot, { recursive: true, force: true })
 })
 
 describe("setCurrentPosition", () => {
     test("selects a position the director works", async () => {
-        const position = await setCurrentPosition(projectRoot, "director")
+        const position = await setCurrentPosition(
+            projectRoot,
+            environment,
+            "director",
+        )
 
         expect(position.id).toBe("director")
     })
 
     test("selects a position the human employee works", async () => {
         await assignPosition(projectRoot, "graphics", "julie")
-        process.env[variableName] = "julie"
+        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
 
-        const position = await setCurrentPosition(projectRoot, "graphics")
+        const position = await setCurrentPosition(
+            projectRoot,
+            environment,
+            "graphics",
+        )
 
         expect(position.id).toBe("graphics")
     })
 
     test("refuses a position the human doesn't work, saying how to", async () => {
-        process.env[variableName] = "julie"
+        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
 
-        const selection = setCurrentPosition(projectRoot, "graphics")
+        const selection = setCurrentPosition(
+            projectRoot,
+            environment,
+            "graphics",
+        )
 
         await expect(selection).rejects.toThrow(UserError)
         await expect(selection).rejects.toThrow("assign-temporarily employee")
     })
 
     test("refuses an unknown position", async () => {
-        const selection = setCurrentPosition(projectRoot, "support")
+        const selection = setCurrentPosition(
+            projectRoot,
+            environment,
+            "support",
+        )
 
         await expect(selection).rejects.toThrow('No position "support".')
     })
@@ -72,7 +82,11 @@ describe("setCurrentPosition", () => {
     test("refuses to run outside a company", async () => {
         const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const selection = setCurrentPosition(folderWithoutCompany, "director")
+        const selection = setCurrentPosition(
+            folderWithoutCompany,
+            environment,
+            "director",
+        )
 
         await expect(selection).rejects.toThrow("Run `llmco init` first.")
     })

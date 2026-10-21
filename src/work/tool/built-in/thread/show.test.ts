@@ -8,34 +8,32 @@ import { exampleToolContext } from "../../example-tool-context.ts"
 import { runToolCall } from "../../run-tool-call.ts"
 import { maxEntriesPerCall, threadShowTool } from "./show.ts"
 
-const variableName = "LLMCO_CURRENT_HUMAN_ID"
-const shellValue = process.env[variableName]
+let environment: NodeJS.ProcessEnv
 let projectRoot: string
 let threadId: string
 
 beforeEach(async () => {
-    delete process.env[variableName]
+    environment = {}
     projectRoot = await createTemporaryCompany()
     createGitRepository(projectRoot, {
         name: "Omar Aboudou",
         email: "omar@example.com",
     })
-    const { thread } = await createThread(projectRoot, { subject: "Stack" })
+    const { thread } = await createThread(projectRoot, environment, {
+        subject: "Stack",
+    })
     threadId = thread.id
 })
 
 afterEach(async () => {
-    if (shellValue === undefined) {
-        delete process.env[variableName]
-    } else {
-        process.env[variableName] = shellValue
-    }
     await rm(projectRoot, { recursive: true, force: true })
 })
 
 async function sendMessages(count: number): Promise<void> {
     for (let number = 1; number <= count; number++) {
-        await sendMessage(projectRoot, threadId, { body: `Point ${number}.` })
+        await sendMessage(projectRoot, environment, threadId, {
+            body: `Point ${number}.`,
+        })
     }
 }
 

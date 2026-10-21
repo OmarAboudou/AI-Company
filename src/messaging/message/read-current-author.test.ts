@@ -10,18 +10,12 @@ import { UserError } from "../../user-error.ts"
 import type { Archive } from "../thread/list-archives.ts"
 import { readCurrentAuthor } from "./read-current-author.ts"
 
-const variableNames = [
-    "LLMCO_CURRENT_HUMAN_ID",
-    "LLMCO_CURRENT_POSITION_ID",
-] as const
-const shellValues = variableNames.map((name) => process.env[name])
 const committer = { name: "Test User", email: "test@example.com" }
+let environment: NodeJS.ProcessEnv
 let projectRoot: string
 
 beforeEach(async () => {
-    for (const name of variableNames) {
-        delete process.env[name]
-    }
+    environment = {}
     projectRoot = await createTemporaryCompany()
     createGitRepository(projectRoot, committer)
     await Promise.all([
@@ -38,14 +32,6 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-    for (const [index, name] of variableNames.entries()) {
-        const shellValue = shellValues[index]
-        if (shellValue === undefined) {
-            delete process.env[name]
-        } else {
-            process.env[name] = shellValue
-        }
-    }
     await rm(projectRoot, { recursive: true, force: true })
 })
 
@@ -71,15 +57,15 @@ function createArchive(creatorPositionId: string, mentions: string[]): Archive {
 }
 
 async function readPositionId(
-    options: Parameters<typeof readCurrentAuthor>[1] = {},
+    options: Parameters<typeof readCurrentAuthor>[2] = {},
 ) {
-    const author = await readCurrentAuthor(projectRoot, options)
+    const author = await readCurrentAuthor(projectRoot, environment, options)
     return author.position.id
 }
 
 describe("readCurrentAuthor", () => {
     test("is a director at the director's position, by default", async () => {
-        const author = await readCurrentAuthor(projectRoot)
+        const author = await readCurrentAuthor(projectRoot, environment)
 
         expect(author).toEqual({
             position: { id: "director", title: "Director" },
@@ -89,9 +75,9 @@ describe("readCurrentAuthor", () => {
 
     test("is a human employee at their only position", async () => {
         await assignPosition(projectRoot, "graphics", "julie")
-        process.env.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
 
-        const author = await readCurrentAuthor(projectRoot)
+        const author = await readCurrentAuthor(projectRoot, environment)
 
         expect(author).toEqual({
             position: { id: "graphics", title: "graphics" },
@@ -124,7 +110,7 @@ describe("readCurrentAuthor", () => {
             kind: "employee",
             rawEmployeeId: "julie",
         })
-        process.env.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
         const archive = createArchive("director", ["support"])
 
         expect(await readPositionId({ archive })).toBe("support")
@@ -136,11 +122,11 @@ describe("readCurrentAuthor", () => {
             kind: "employee",
             rawEmployeeId: "julie",
         })
-        process.env.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
         const refusalMessage =
             "Julie (julie) works several positions, graphics, support:"
 
-        const reading = readCurrentAuthor(projectRoot, {
+        const reading = readCurrentAuthor(projectRoot, environment, {
             archive: createArchive("director", []),
         })
 
@@ -149,11 +135,11 @@ describe("readCurrentAuthor", () => {
     })
 
     test("refuses a human employee working no position", async () => {
-        process.env.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
         const assignmentCommand =
             "`llmco position assign-temporarily employee <position-id> julie`"
 
-        const reading = readCurrentAuthor(projectRoot)
+        const reading = readCurrentAuthor(projectRoot, environment)
 
         await expect(reading).rejects.toThrow(assignmentCommand)
     })
@@ -176,7 +162,7 @@ describe("readCurrentAuthor with a position chosen", () => {
             kind: "employee",
             rawEmployeeId: "julie",
         })
-        process.env.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
 
         const positionId = await readPositionId({ asPositionId: "support" })
 
@@ -201,7 +187,7 @@ describe("readCurrentAuthor with a position chosen", () => {
     })
 
     test("refuses a vacant position, giving the command to work it", async () => {
-        process.env.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
         const refusalMessage =
             "it is vacant. A director can assign it to julie temporarily: `llmco position assign-temporarily employee support julie`."
 
@@ -216,7 +202,7 @@ describe("readCurrentAuthor with a position chosen", () => {
             kind: "employee",
             rawEmployeeId: "bob",
         })
-        process.env.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
         const refusalMessage =
             "Bob, a human employee, works it. A director can give it back to julie: `llmco position unassign-temporarily graphics`."
 
@@ -227,7 +213,7 @@ describe("readCurrentAuthor with a position chosen", () => {
 
     test("refuses the director's position to a human employee", async () => {
         await assignPosition(projectRoot, "graphics", "julie")
-        process.env.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
 
         const reading = readPositionId({ asPositionId: "director" })
 
@@ -248,11 +234,11 @@ describe("readCurrentAuthor with a position selected in the shell", () => {
             kind: "employee",
             rawEmployeeId: "julie",
         })
-        process.env.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
     })
 
     test("writes from the selected position", async () => {
-        process.env.LLMCO_CURRENT_POSITION_ID = "support"
+        environment.LLMCO_CURRENT_POSITION_ID = "support"
 
         const positionId = await readPositionId()
 
@@ -260,7 +246,7 @@ describe("readCurrentAuthor with a position selected in the shell", () => {
     })
 
     test("lets --as-position choose another one for a message", async () => {
-        process.env.LLMCO_CURRENT_POSITION_ID = "support"
+        environment.LLMCO_CURRENT_POSITION_ID = "support"
 
         const positionId = await readPositionId({ asPositionId: "graphics" })
 
@@ -268,7 +254,7 @@ describe("readCurrentAuthor with a position selected in the shell", () => {
     })
 
     test("refuses a selected position the person doesn't work now", async () => {
-        process.env.LLMCO_CURRENT_POSITION_ID = "director"
+        environment.LLMCO_CURRENT_POSITION_ID = "director"
 
         const reading = readPositionId()
 
