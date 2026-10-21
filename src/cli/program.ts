@@ -12,6 +12,7 @@ import { registerRunCommand } from "./commands/run.ts"
 import { registerShellCommands } from "./commands/shell/shell.ts"
 import { registerTaskCommands } from "./commands/task/task.ts"
 import { registerThreadCommands } from "./commands/thread/thread.ts"
+import { registerTurnCommands } from "./commands/turn/turn.ts"
 
 export function createProgram(): Command {
     const program = new Command()
@@ -28,6 +29,7 @@ export function createProgram(): Command {
     registerMessageCommands(program)
     registerRunCommand(program)
     registerTaskCommands(program)
+    registerTurnCommands(program)
     registerCurrentHumanCommands(program)
     registerCurrentPositionCommands(program)
     registerShellCommands(program)

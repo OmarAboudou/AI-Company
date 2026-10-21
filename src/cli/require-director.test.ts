@@ -77,6 +77,8 @@ const freeCommandNames = [
     "message send",
     "run",
     "task next",
+    "turn add text",
+    "turn add tool",
     "current-human show",
     "current-human set",
     "current-human clear",
