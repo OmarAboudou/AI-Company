@@ -1,9 +1,29 @@
 import { afterEach, beforeEach } from "bun:test"
+import type Anthropic from "@anthropic-ai/sdk"
 import type { Server } from "bun"
 
+export type FakeToolCall = { name: string; input: object }
+
 export type FakeReply =
-    | { text: string; signature?: string }
+    | {
+          text?: string
+          signature?: string
+          toolCalls?: FakeToolCall[]
+          stopReason?: Anthropic.StopReason
+      }
     | { status: number; error: string }
+
+export type ReceivedBlock = {
+    type: string
+    text?: string
+    id?: string
+    name?: string
+    input?: unknown
+    tool_use_id?: string
+    content?: unknown
+    is_error?: boolean
+    cache_control?: { type: string }
+}
 
 export type ReceivedRequest = {
     path: string
@@ -13,7 +33,8 @@ export type ReceivedRequest = {
         max_tokens: number
         stream: boolean
         system: string
-        messages: { role: string; content: { type: string; text?: string }[] }[]
+        tools?: Anthropic.Tool[]
+        messages: { role: string; content: ReceivedBlock[] }[]
     }
 }
 
@@ -21,43 +42,50 @@ function formatEvent(type: string, fields: object): string {
     return `event: ${type}\ndata: ${JSON.stringify({ type, ...fields })}\n\n`
 }
 
-function formatEventStream(
-    text: string,
-    signature: string | undefined,
-): string {
-    const blockEvents: string[] = []
-    let blockIndex = 0
-    if (signature !== undefined) {
-        blockEvents.push(
-            formatEvent("content_block_start", {
-                index: blockIndex,
-                content_block: {
-                    type: "thinking",
-                    thinking: "",
-                    signature: "",
-                },
-            }),
-            formatEvent("content_block_delta", {
-                index: blockIndex,
-                delta: { type: "signature_delta", signature },
-            }),
-            formatEvent("content_block_stop", { index: blockIndex }),
-        )
-        blockIndex++
-    }
-    blockEvents.push(
+function formatBlockEvents(
+    index: number,
+    contentBlock: object,
+    deltas: object[],
+): string[] {
+    return [
         formatEvent("content_block_start", {
-            index: blockIndex,
-            content_block: { type: "text", text: "" },
+            index,
+            content_block: contentBlock,
         }),
-        ...text.split(/(?<= )/).map((piece) =>
-            formatEvent("content_block_delta", {
-                index: blockIndex,
-                delta: { type: "text_delta", text: piece },
-            }),
+        ...deltas.map((delta) =>
+            formatEvent("content_block_delta", { index, delta }),
         ),
-        formatEvent("content_block_stop", { index: blockIndex }),
-    )
+        formatEvent("content_block_stop", { index }),
+    ]
+}
+
+function formatEventStream({
+    text,
+    signature,
+    toolCalls = [],
+    stopReason,
+}: Exclude<FakeReply, { error: string }>): string {
+    const blocks: [object, object[]][] = []
+    if (signature !== undefined) {
+        blocks.push([
+            { type: "thinking", thinking: "", signature: "" },
+            [{ type: "signature_delta", signature }],
+        ])
+    }
+    if (text !== undefined) {
+        blocks.push([
+            { type: "text", text: "" },
+            text
+                .split(/(?<= )/)
+                .map((piece) => ({ type: "text_delta", text: piece })),
+        ])
+    }
+    for (const [index, { name, input }] of toolCalls.entries()) {
+        blocks.push([
+            { type: "tool_use", id: `toolu_fake_${index}`, name, input: {} },
+            [{ type: "input_json_delta", partial_json: JSON.stringify(input) }],
+        ])
+    }
     return [
         formatEvent("message_start", {
             message: {
@@ -71,9 +99,16 @@ function formatEventStream(
                 usage: { input_tokens: 10, output_tokens: 1 },
             },
         }),
-        ...blockEvents,
+        ...blocks.flatMap(([contentBlock, deltas], index) =>
+            formatBlockEvents(index, contentBlock, deltas),
+        ),
         formatEvent("message_delta", {
-            delta: { stop_reason: "end_turn", stop_sequence: null },
+            delta: {
+                stop_reason:
+                    stopReason ??
+                    (toolCalls.length > 0 ? "tool_use" : "end_turn"),
+                stop_sequence: null,
+            },
             usage: { output_tokens: 5 },
         }),
         formatEvent("message_stop", {}),
@@ -104,12 +139,9 @@ export function useFakeAnthropicServer() {
                         { status: reply.status },
                     )
                 }
-                return new Response(
-                    formatEventStream(reply.text, reply.signature),
-                    {
-                        headers: { "content-type": "text/event-stream" },
-                    },
-                )
+                return new Response(formatEventStream(reply), {
+                    headers: { "content-type": "text/event-stream" },
+                })
             },
         })
     })

@@ -106,6 +106,7 @@ export async function answerAsLlmEmployee(
             employee,
             thread,
         }),
+        tools: [],
         turns: getAnthropicTurns(messages, employee, ownReplays),
         onText: (text) => onEvent({ kind: "text", text }),
     })

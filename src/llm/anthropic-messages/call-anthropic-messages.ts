@@ -20,6 +20,7 @@ export type AnthropicMessagesCall = {
     apiKey: string | undefined
     apiId: string
     systemPrompt: string
+    tools: Anthropic.Tool[]
     turns: Anthropic.MessageParam[]
     onText: (text: string) => void
 }
@@ -29,6 +30,7 @@ export async function callAnthropicMessages({
     apiKey,
     apiId,
     systemPrompt,
+    tools,
     turns,
     onText,
 }: AnthropicMessagesCall): Promise<Anthropic.Message> {
@@ -45,6 +47,7 @@ export async function callAnthropicMessages({
                 model: apiId,
                 max_tokens: maxTokens,
                 system: systemPrompt,
+                ...(tools.length > 0 && { tools }),
                 messages: turns,
             })
             .on("text", onText)
