@@ -3,6 +3,7 @@ import { join } from "node:path"
 import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
 import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
+import { saveJsonFile } from "../../files/save-json-file.ts"
 import { type LlmProvider, LlmProviderConfigSchema } from "./schema.ts"
 
 function getLlmProvidersFolderPath(projectRoot: string): string {
@@ -55,10 +56,7 @@ export async function saveLlmProvider(
     provider: LlmProvider,
 ): Promise<void> {
     const { id, ...config } = provider
-    await Bun.write(
-        getLlmProviderConfigFilePath(projectRoot, id),
-        `${JSON.stringify(config, null, 4)}\n`,
-    )
+    await saveJsonFile(getLlmProviderConfigFilePath(projectRoot, id), config)
 }
 
 export async function deleteLlmProviderFolder(
