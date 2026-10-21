@@ -1,0 +1,19 @@
+# Task
+
+A task is a piece of work for a position: its type, its parameters, the position it is for, and the event that caused it, such as a message mentioning the position. Whoever works the position does it: an LLM employee in `llmco run`, a person through the task commands; a vacant position's tasks wait until someone works it.
+
+A task's state is derived from the journal: waiting once created, running once a run of it starts, then done or failed. Tasks form a flat list, in which a task of a tree names its parent, as GitHub's sub-issues are ordinary issues linked to a parent.
+
+## Invariants
+
+- A task is written once and never modified: what happens to it is recorded in the journal.
+- A task's id comes from what it is, its cause, type, position and parameters: two processes or two machines asking for the same task write the same file, and the second write is skipped.
+- A task stores its type and parameters, never a ready-made message: its type builds what its run is given when it runs, from the company as it is then.
+- A task names its position as it was called when the task was asked for, and follows it through renamings, by the position's id history.
+- A task's depth is its cause's plus one.
+- A task concerns a thread when its parameters name it as `threadId`: listing threads and deleting a position rely on it.
+- A person's next task is the one in progress in their positions, if any, else the oldest pending one, only in the selected position when one is set.
+
+## Decisions
+
+- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): tasks, their states derived from the journal, and their ids derived from what they are.
