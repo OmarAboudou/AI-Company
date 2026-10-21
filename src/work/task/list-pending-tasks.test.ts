@@ -73,6 +73,7 @@ async function startTask(task: Task) {
         depth: 1,
         taskId: task.id,
         runId: "20261018-140324-000-1b2c",
+        worker: { kind: "employee", employeeId: "claude" },
     })
 }
 

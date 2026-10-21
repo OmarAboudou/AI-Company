@@ -119,11 +119,40 @@
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
                     "description": "Id of the run, i.e. the name of its transcript in .llmco/.state/runs, kept on the machine that ran it."
                 },
-                "employeeId": {
-                    "description": "Id of the employee doing the run, i.e. the name of its folder in .llmco/employees. Absent when the directors do it.",
-                    "type": "string",
-                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                "worker": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                    "type": "string",
+                                    "const": "employee",
+                                    "description": "employee: an employee works the position."
+                                },
+                                "employeeId": {
+                                    "type": "string",
+                                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                                    "description": "Id of the employee working the position, i.e. the name of its folder in .llmco/employees."
+                                }
+                            },
+                            "required": ["kind", "employeeId"],
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                    "type": "string",
+                                    "const": "directors",
+                                    "description": "directors: the people working on the repository, identified by git, work the position themselves, without an employee."
+                                }
+                            },
+                            "required": ["kind"],
+                            "additionalProperties": false
+                        }
+                    ],
+                    "description": "Who does the run, working the task's position: an employee, or the directors themselves."
                 },
                 "model": {
                     "description": "The model an LLM employee does the run with: its provider's id and its own, in .llmco/llm-providers.",
@@ -144,7 +173,14 @@
                     "additionalProperties": false
                 }
             },
-            "required": ["type", "occurredAt", "depth", "taskId", "runId"],
+            "required": [
+                "type",
+                "occurredAt",
+                "depth",
+                "taskId",
+                "runId",
+                "worker"
+            ],
             "additionalProperties": false,
             "description": "Whoever works the task's position started a run of it."
         },

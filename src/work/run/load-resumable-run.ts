@@ -1,5 +1,6 @@
 import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import type { Journal } from "../../journal/schema.ts"
+import { isWorkedBy } from "../../organization/human/is-worked-by.ts"
 import type { CurrentHuman } from "../../organization/human/read-current-human.ts"
 import { type Task, taskStartedEventType } from "../task/schema.ts"
 import type { Run } from "./schema.ts"
@@ -15,11 +16,10 @@ export async function loadResumableRun(
     const taskStartedEvent = journal.events
         .map((event) => getEventOfType(event, taskStartedEventType))
         .findLast((startedEvent) => startedEvent?.taskId === task.id)
-    if (taskStartedEvent === undefined || taskStartedEvent.model) {
-        return undefined
-    }
-    const employeeId = human.kind === "employee" ? human.employee.id : undefined
-    if (taskStartedEvent.employeeId !== employeeId) {
+    if (
+        taskStartedEvent === undefined ||
+        !isWorkedBy(human, taskStartedEvent.worker)
+    ) {
         return undefined
     }
     const { projectRoot } = journal

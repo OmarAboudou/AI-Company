@@ -39,7 +39,10 @@ export async function startHumanRun(
         depth: taskDepth,
         taskId: task.id,
         runId,
-        ...(human.kind === "employee" && { employeeId: human.employee.id }),
+        worker:
+            human.kind === "employee"
+                ? { kind: "employee", employeeId: human.employee.id }
+                : { kind: "directors" },
     })
     const { toolNames, boundToolInputs, result } = session
     const tools = getRunTools(toolNames, boundToolInputs)
