@@ -2,13 +2,10 @@ import { getRenamedEntity } from "../../ids/get-renamed-entity.ts"
 import { parseId } from "../../ids/parse-id.ts"
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
-import {
-    listPositions,
-    savePosition,
-    savePositionState,
-} from "../position/storage.ts"
+import { listPositionAssignments } from "../position/list-position-assignments.ts"
+import { savePosition, savePositionState } from "../position/storage.ts"
 import { getPositionsFilledBy } from "./get-positions-filled-by.ts"
-import { listPositionsWorkedTemporarilyBy } from "./list-positions-worked-temporarily-by.ts"
+import { getPositionsWorkedTemporarilyBy } from "./get-positions-worked-temporarily-by.ts"
 import { loadExistingEmployee } from "./load-existing-employee.ts"
 import { requireUnreservedEmployeeId } from "./require-unreserved-employee-id.ts"
 import { requireUnusedEmployeeId } from "./require-unused-employee-id.ts"
@@ -36,22 +33,26 @@ export async function updateEmployeeId(
     await requireCompany(projectRoot)
     const newId = parseId("employee", rawNewId)
     requireUnreservedEmployeeId(newId)
-    const [employee, isTaken, positions] = await Promise.all([
+    const [employee, isTaken, assignments] = await Promise.all([
         loadExistingEmployee(projectRoot, rawId),
         hasEmployee(projectRoot, newId),
-        listPositions(projectRoot),
+        listPositionAssignments(projectRoot),
     ])
     if (isTaken) {
         throw new UserError(`Employee "${newId}" already exists.`)
     }
-    const [, temporaryPositions] = await Promise.all([
-        requireUnusedEmployeeId(projectRoot, newId, {
-            shouldReuseId,
-            renamedEmployee: employee,
-        }),
-        listPositionsWorkedTemporarilyBy(projectRoot, positions, employee.id),
-    ])
-    const filledPositions = getPositionsFilledBy(positions, employee.id)
+    await requireUnusedEmployeeId(projectRoot, newId, {
+        shouldReuseId,
+        renamedEmployee: employee,
+    })
+    const temporaryPositions = getPositionsWorkedTemporarilyBy(
+        assignments,
+        employee.id,
+    )
+    const filledPositions = getPositionsFilledBy(
+        assignments.map(({ position }) => position),
+        employee.id,
+    )
     const renamedEmployee = getRenamedEntity(
         employee,
         newId,
