@@ -1,5 +1,6 @@
-import { cp, rm } from "node:fs/promises"
+import { rm } from "node:fs/promises"
 import { join } from "node:path"
+import { copyFolder } from "../../files/copy-folder.ts"
 import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
 import { getStateFolderPath } from "../../files/get-state-folder-path.ts"
 import { listSubdirectories } from "../../files/list-subdirectories.ts"
@@ -88,14 +89,9 @@ export async function copyPositionFolder(
     id: string,
     newId: string,
 ): Promise<void> {
-    await cp(
+    await copyFolder(
         getPositionFolderPath(projectRoot, id),
         getPositionFolderPath(projectRoot, newId),
-        {
-            recursive: true,
-            errorOnExist: true,
-            force: false,
-        },
     )
 }
 

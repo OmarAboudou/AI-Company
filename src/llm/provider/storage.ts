@@ -1,5 +1,6 @@
-import { cp, rm } from "node:fs/promises"
+import { rm } from "node:fs/promises"
 import { join } from "node:path"
+import { copyFolder } from "../../files/copy-folder.ts"
 import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
 import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
@@ -71,9 +72,8 @@ export async function copyLlmProviderFolder(
     id: string,
     newId: string,
 ): Promise<void> {
-    await cp(
+    await copyFolder(
         getLlmProviderFolderPath(projectRoot, id),
         getLlmProviderFolderPath(projectRoot, newId),
-        { recursive: true, errorOnExist: true, force: false },
     )
 }
