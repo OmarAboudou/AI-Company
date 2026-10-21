@@ -83,6 +83,10 @@ export const taskCompletedEventType = defineEventType({
                 "Id of the run that completed the task. Absent when it was completed outside a run.",
         }),
         usage: TokenUsageSchema.optional(),
+        lastReadEntryId: IdSchema.optional().meta({
+            description:
+                "For a task catching up on a thread: the last of the thread's entries read, i.e. the name of its folder in the thread's messages. The latest of these events among a position's catch-up tasks for a thread is the position's read marker there: it moves only when such a task completes.",
+        }),
     },
 })
 
