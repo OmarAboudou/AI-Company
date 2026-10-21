@@ -1,8 +1,8 @@
 import { z } from "zod"
 import { createTimeOrderedId } from "../../ids/create-time-ordered-id.ts"
 import { recordEvent } from "../../journal/record-event.ts"
+import { requireJournalEvent } from "../../journal/require-journal-event.ts"
 import type { Journal } from "../../journal/schema.ts"
-import { loadEvent } from "../../journal/storage.ts"
 import { loadAnthropicMessagesModel } from "../../llm/anthropic-messages/load-anthropic-messages-model.ts"
 import type { TokenUsage } from "../../llm/conversation/schema.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
@@ -92,9 +92,9 @@ export async function runTask(
     const { projectRoot } = journal
     const taskType = requireTaskType(task)
     const params = parseTaskParams(task, taskType)
-    const causeEvent = await loadEvent(projectRoot, task.causeEventId)
+    const causeEvent = requireJournalEvent(journal, task.causeEventId)
     const taskDepth = causeEvent.depth + 1
-    const ctx = { projectRoot, task, position, causeEvent }
+    const ctx = { projectRoot, journal, task, position, causeEvent }
     const session = await taskType.createSession(params, ctx)
     if (session.kind === "done") {
         const { summary } = session

@@ -1,4 +1,5 @@
 import type { Command } from "@commander-js/extra-typings"
+import { loadJournal } from "../../../journal/storage.ts"
 import { listThreads } from "../../../messaging/thread/storage.ts"
 import { requireCompany } from "../../../organization/company/require-company.ts"
 import { loadPendingPositionIdsByThread } from "../../../work/task/load-pending-position-ids-by-thread.ts"
@@ -16,7 +17,7 @@ export function registerThreadListCommand(threadCommand: Command): void {
             await requireCompany(projectRoot)
             const [threads, pendingPositionIdsByThread] = await Promise.all([
                 listThreads(projectRoot),
-                loadPendingPositionIdsByThread(projectRoot),
+                loadJournal(projectRoot).then(loadPendingPositionIdsByThread),
             ])
             if (threads.length === 0) {
                 console.log("No threads yet. Run `llmco thread create`.")

@@ -51,8 +51,9 @@ describe("loadPendingPositionIdsByThread", () => {
         await askPosition("backend-developer", frameworkThreadId)
         await askPosition("director", budgetThreadId)
 
-        const pendingPositionIds =
-            await loadPendingPositionIdsByThread(projectRoot)
+        const pendingPositionIds = await loadPendingPositionIdsByThread(
+            await loadJournal(projectRoot),
+        )
 
         expect(pendingPositionIds).toEqual(
             new Map([
@@ -70,8 +71,9 @@ describe("loadPendingPositionIdsByThread", () => {
             reason: "The thread asks nothing.",
         })
 
-        const pendingPositionIds =
-            await loadPendingPositionIdsByThread(projectRoot)
+        const pendingPositionIds = await loadPendingPositionIdsByThread(
+            await loadJournal(projectRoot),
+        )
 
         expect(pendingPositionIds).toEqual(new Map())
     })

@@ -1,4 +1,4 @@
-import { listEvents } from "../../journal/storage.ts"
+import type { Journal } from "../../journal/schema.ts"
 import type {
     Employee,
     LlmEmployee,
@@ -65,15 +65,15 @@ function getPendingTask(
 }
 
 export async function listPendingTasks(
-    projectRoot: string,
+    journal: Journal,
 ): Promise<PendingTask[]> {
-    const [tasks, events, assignments, employees] = await Promise.all([
+    const { projectRoot } = journal
+    const [tasks, assignments, employees] = await Promise.all([
         listTasks(projectRoot),
-        listEvents(projectRoot),
         listPositionAssignments(projectRoot),
         listEmployees(projectRoot),
     ])
-    const taskStates = getTaskStates(tasks, events)
+    const taskStates = getTaskStates(tasks, journal.events)
     return tasks
         .filter((task) => isPendingTask(task, taskStates))
         .map((task) => getPendingTask(task, assignments, employees))

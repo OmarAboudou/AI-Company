@@ -1,3 +1,4 @@
+import { loadJournal } from "../../journal/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { loadPendingPositionIdsByThread } from "../../work/task/load-pending-position-ids-by-thread.ts"
 import { requireCompany } from "../company/require-company.ts"
@@ -17,11 +18,13 @@ export async function deletePosition(
     { shouldForce = false }: { shouldForce?: boolean } = {},
 ): Promise<DeletePositionResult> {
     await requireCompany(projectRoot)
-    const [position, company, pendingPositionIdsByThread] = await Promise.all([
+    const [position, company, journal] = await Promise.all([
         loadExistingPosition(projectRoot, rawId),
         loadCompany(projectRoot),
-        loadPendingPositionIdsByThread(projectRoot),
+        loadJournal(projectRoot),
     ])
+    const pendingPositionIdsByThread =
+        await loadPendingPositionIdsByThread(journal)
     if (company.directorPositionId === position.id) {
         throw new UserError(
             `Position "${position.id}" is the director's position: it can't be deleted.`,
