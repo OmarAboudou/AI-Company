@@ -1,8 +1,16 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
+import { createLlmConnection } from "../../llm/connection/create-llm-connection.ts"
+import { createLlmModel } from "../../llm/model/create-llm-model.ts"
+import { createLlmProvider } from "../../llm/provider/create-llm-provider.ts"
+import { createThread } from "../../messaging/thread/create-thread.ts"
+import { createCompany } from "../../organization/company/create-company.ts"
+import { createEmployee } from "../../organization/employee/create-employee.ts"
+import { assignPosition } from "../../organization/position/assign-position.ts"
+import { createPosition } from "../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../use-temporary-project.testing.ts"
 
-const { runCli, runCliAsync } = useTemporaryProject()
+const { runCli, runCliAsync, getProjectPath } = useTemporaryProject()
 
 describe("llmco run", () => {
     const fakeServer = useFakeAnthropicServer()
@@ -11,19 +19,38 @@ describe("llmco run", () => {
 
     let threadId = ""
 
-    beforeEach(() => {
-        runCli("init", "-n", "Acme")
-        const provider = ["provider", "create", "anthropic", "-n", "A"]
-        runCli(...provider, "-e", "TEST_ANTHROPIC_KEY")
-        const connection = ["provider", "connection", "create", "anthropic"]
-        runCli(...connection, "anthropic-messages", "-u", fakeServer.getUrl())
-        const model = ["model", "create", "anthropic", "opus", "-n", "Opus"]
-        runCli(...model, "-a", "claude-opus-5-5")
-        runCli("position", "create", "backend-developer", "-t", "Backend")
-        const hire = ["employee", "create", "llm", "claude", "-n", "Claude"]
-        runCli(...hire, "-p", "anthropic", "-m", "opus")
-        runCli("position", "assign", "backend-developer", "claude")
-        threadId = runCli("thread", "create", "-s", "Stack").stdout.trim()
+    beforeEach(async () => {
+        const projectRoot = getProjectPath()
+        await createCompany(projectRoot, { name: "Acme", description: "" })
+        const [{ thread }] = await Promise.all([
+            createThread(projectRoot, {}, { subject: "Stack" }),
+            createLlmProvider(projectRoot, "anthropic", {
+                name: "A",
+                apiKeySource: { kind: "env", variable: "TEST_ANTHROPIC_KEY" },
+            }),
+            createPosition(projectRoot, "backend-developer", {
+                title: "Backend",
+                description: "",
+            }),
+        ])
+        threadId = thread.id
+        await createLlmConnection(
+            projectRoot,
+            "anthropic",
+            "anthropic-messages",
+            { baseUrl: fakeServer.getUrl() },
+        )
+        await createLlmModel(projectRoot, "anthropic", "opus", {
+            name: "Opus",
+            apiId: "claude-opus-5-5",
+        })
+        await createEmployee(projectRoot, "claude", {
+            name: "Claude",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        })
+        await assignPosition(projectRoot, "backend-developer", "claude")
     })
 
     function ask(body: string) {
