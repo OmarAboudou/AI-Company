@@ -239,3 +239,42 @@ d2590269f0e5a02d42f8e86f1d4907c3854752aa
 
 # End the names of the files only tests use with .testing.ts
 a6170e9669675b40eb5aece16f31229904a66dd8
+
+# Move TokenUsage to the conversations with models
+053fefeae31d616e53ec6319081cafac3d8048cf
+
+# Move RunProgress to the runs' schema
+6363996bb625e2d0bfe5047ae0ce335196e96b31
+
+# Move the catch-up's parameters to a schema of their own
+4d65932127f1cd005de548779e8d32cacdc18969
+
+# Move getLastEntryIdReadByRun to the catch-up, which alone reads it
+5f0bc4a635e3817c42b351013d8dac207a256f27
+
+# Move createTolerantSchema to the root of src/
+db51acded8799991fe1a5fa928780b7cb7a523ff
+
+# Rename the mention listener to the catch-up's listener
+1d67b1c8221a076ee97bce5f06310473155c773c
+
+# Rename the tools' taskDepth to depth
+6176f24655da8cceef9ed0bd9150f4974f2575f9
+
+# Move getRunTools to a file of its own
+fa23477211c08935d896c1b79befa79de34d5d4e
+
+# Move requireSelectedPosition to the humans, out of the messages' author
+a6dc26f52b790a36606947d4572341603ba1c60f
+
+# Move requireTaskType and parseTaskParams to the task types
+492bd3d3e923745c71ee6a07c296134a15308f79
+
+# Move the positions a person works now and their runs out of task next
+b1630c5469791259c4f91d1e1b11fe63733f2697
+
+# Move isWorkedBy to a file of its own
+f163c4bc78722547cb8ff1ef6376102cd34a0e50
+
+# Move formatToolInput to a file of its own
+cd98946e7a264853cd084e897a1b27269f5c1c6f
