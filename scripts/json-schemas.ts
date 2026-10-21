@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { IdHistorySchema } from "../src/ids/id-history-schema.ts"
+import { JournalEventSchema } from "../src/journal/schema.ts"
 import { LlmModelConfigSchema } from "../src/llm/model/schema.ts"
 import { LlmProviderConfigSchema } from "../src/llm/provider/schema.ts"
 import {
@@ -26,6 +27,7 @@ const zodSchemas = {
     thread: ThreadConfigSchema,
     message: MessageConfigSchema,
     "provider-response": ProviderResponseSchema,
+    event: JournalEventSchema,
     "id-history": IdHistorySchema,
     "position-state": PositionStateSchema,
 }
