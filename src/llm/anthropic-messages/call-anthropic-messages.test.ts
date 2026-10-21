@@ -1,14 +1,28 @@
 import { describe, expect, test } from "bun:test"
+import type Anthropic from "@anthropic-ai/sdk"
 import { UserError } from "../../user-error.ts"
 import { callAnthropicMessages } from "./call-anthropic-messages.ts"
 import { useFakeAnthropicServer } from "./use-fake-anthropic-server.ts"
+
+const sendingTool: Anthropic.Tool = {
+    name: "message_send",
+    description: "Send a message in a thread.",
+    input_schema: {
+        type: "object",
+        properties: { body: { type: "string" } },
+        required: ["body"],
+    },
+}
 
 describe("callAnthropicMessages", () => {
     const fakeServer = useFakeAnthropicServer()
 
     function callFakeServer(
         apiKey: string | undefined,
-        auth?: "x-api-key" | "bearer",
+        {
+            auth,
+            tools = [],
+        }: { auth?: "x-api-key" | "bearer"; tools?: Anthropic.Tool[] } = {},
     ) {
         const streamedTexts: string[] = []
         const response = callAnthropicMessages({
@@ -16,6 +30,7 @@ describe("callAnthropicMessages", () => {
             apiKey,
             apiId: "claude-opus-5-5",
             systemPrompt: "You are Claude Senior.",
+            tools,
             turns: [{ role: "user", content: "Hono or Express?" }],
             onText: (text) => streamedTexts.push(text),
         })
@@ -34,9 +49,35 @@ describe("callAnthropicMessages", () => {
         ])
     })
 
+    test("sends the tools, and returns the turn's tool calls in order", async () => {
+        const toolCalls = [
+            { name: "thread_show", input: { threadId: "2026-10-18-budget" } },
+            { name: "message_send", input: { body: "Hono." } },
+        ]
+        fakeServer.respondWith({ toolCalls })
+
+        const tools = [sendingTool]
+        const message = await callFakeServer("sk-test", { tools }).response
+
+        const madeToolCalls = message.content.flatMap((block) =>
+            block.type === "tool_use"
+                ? [{ name: block.name, input: block.input }]
+                : [],
+        )
+        expect(fakeServer.requests[0]?.body.tools).toEqual(tools)
+        expect(madeToolCalls).toEqual(toolCalls)
+        expect(message.stop_reason).toBe("tool_use")
+    })
+
+    test("sends no tools to a model given none", async () => {
+        await callFakeServer("sk-test").response
+
+        expect(fakeServer.requests[0]?.body).not.toHaveProperty("tools")
+    })
+
     test("sends the key as x-api-key, or as a bearer token", async () => {
         await callFakeServer("sk-test").response
-        await callFakeServer("sk-test", "bearer").response
+        await callFakeServer("sk-test", { auth: "bearer" }).response
         const [apiKeyHeaders, bearerHeaders] = fakeServer.requests.map(
             ({ headers }) => headers,
         )
