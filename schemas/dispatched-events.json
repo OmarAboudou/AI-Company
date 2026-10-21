@@ -1,0 +1,20 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/dispatched-events.json",
+    "type": "object",
+    "properties": {
+        "eventIds": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+            },
+            "description": "Ids of the journal's events that this machine has given to llmco's listeners, oldest first."
+        }
+    },
+    "required": ["eventIds"],
+    "additionalProperties": false,
+    "title": "llmco dispatched events",
+    "description": "The journal's events that this machine has dispatched to the listeners, in .llmco/.state/dispatched-events.json. Written by llmco and ignored by git: another machine dispatches them again, and finds the tasks they created."
+}
