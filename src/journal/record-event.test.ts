@@ -53,6 +53,19 @@ describe("recordEvent", () => {
         expect(await listEvents(projectRoot)).toEqual([])
     })
 
+    test("refuses a field that its type doesn't define", async () => {
+        const noteWrittenWithPriority = { ...noteWritten, priority: "high" }
+
+        const recording = recordEvent(
+            projectRoot,
+            noteWrittenEventType,
+            noteWrittenWithPriority,
+        )
+
+        await expect(recording).rejects.toThrow("Unrecognized key")
+        expect(await listEvents(projectRoot)).toEqual([])
+    })
+
     test("keeps the order of recording, even within a millisecond", async () => {
         const recordedEvents = await Promise.all(
             Array.from({ length: 20 }, recordNoteWritten),
