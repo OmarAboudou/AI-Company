@@ -28,7 +28,7 @@ export type ToolLoop = Pick<
 export type RunToolLoopResult = { taskEnding: TaskEnding; usage: TokenUsage }
 
 export const reminderText =
-    "You ended your turn without calling a tool, and only tools act: what you write outside them reaches no one. Call task_complete with a summary if your task is done, or task_fail with the reason if you can't do it."
+    "You ended your turn without calling a tool, and only tools act: what you write outside them reaches no one. Call task_mark-as-done with a summary if your task is done, or task_mark-as-failed with the reason if you can't do it."
 
 // Settings (#35) will let management choose it.
 export const maxToolCallsPerRun = 50

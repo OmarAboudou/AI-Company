@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test"
 import { exampleToolContext } from "../../example-tool-context.ts"
 import { runToolCall } from "../../run-tool-call.ts"
-import { taskFailTool } from "./fail.ts"
+import { taskMarkAsFailedTool } from "./mark-as-failed.ts"
 
-const tools = { task_fail: taskFailTool }
+const tools = { "task_mark-as-failed": taskMarkAsFailedTool }
 
-describe("task_fail", () => {
+describe("task_mark-as-failed", () => {
     test("ends the task as failed, with its reason", async () => {
         const reason = "The thread asks for figures I don't have."
-        const call = { name: "task_fail", input: { reason } }
+        const call = { name: "task_mark-as-failed", input: { reason } }
 
         const result = await runToolCall(tools, call, exampleToolContext)
 
@@ -16,7 +16,7 @@ describe("task_fail", () => {
     })
 
     test("requires a reason", async () => {
-        const call = { name: "task_fail", input: {} }
+        const call = { name: "task_mark-as-failed", input: {} }
 
         const result = await runToolCall(tools, call, exampleToolContext)
 

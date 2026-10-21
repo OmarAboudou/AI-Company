@@ -57,7 +57,7 @@ async function listTaskStates() {
 }
 
 const completion = {
-    name: "task_complete",
+    name: "task_mark-as-done",
     input: { summary: "Answered: Hono." },
 }
 

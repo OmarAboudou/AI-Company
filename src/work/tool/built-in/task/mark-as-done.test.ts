@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test"
 import { exampleToolContext } from "../../example-tool-context.ts"
 import { runToolCall } from "../../run-tool-call.ts"
-import { taskCompleteTool } from "./complete.ts"
+import { taskMarkAsDoneTool } from "./mark-as-done.ts"
 
-const tools = { task_complete: taskCompleteTool }
+const tools = { "task_mark-as-done": taskMarkAsDoneTool }
 
-describe("task_complete", () => {
+describe("task_mark-as-done", () => {
     test("ends the task as succeeded, with its summary", async () => {
         const summary = "Answered @director: Hono."
-        const call = { name: "task_complete", input: { summary } }
+        const call = { name: "task_mark-as-done", input: { summary } }
 
         const result = await runToolCall(tools, call, exampleToolContext)
 
@@ -16,7 +16,7 @@ describe("task_complete", () => {
     })
 
     test("requires a summary", async () => {
-        const call = { name: "task_complete", input: { summary: " " } }
+        const call = { name: "task_mark-as-done", input: { summary: " " } }
 
         const result = await runToolCall(tools, call, exampleToolContext)
 
