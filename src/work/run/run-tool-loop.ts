@@ -13,13 +13,8 @@ import type {
 import type { TaskEnding, Tool, ToolContext } from "../tool/define-tool.ts"
 import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
 import { runToolCall } from "../tool/run-tool-call.ts"
+import type { RunProgress } from "./schema.ts"
 import { appendRunTranscriptLine } from "./storage.ts"
-
-export type RunProgress =
-    | { kind: "text"; text: string }
-    | { kind: "tool-call"; name: string; input: unknown }
-    | { kind: "tool-result"; name: string; text: string; isError: boolean }
-    | { kind: "reminder"; text: string }
 
 export type ToolLoop = Pick<
     AnthropicMessagesCall,

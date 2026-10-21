@@ -10,7 +10,7 @@ import {
 } from "../task/list-pending-tasks.ts"
 import type { ChainStoppedEvent, Task } from "../task/schema.ts"
 import { type RunTaskResult, runTask } from "./run-task.ts"
-import type { RunProgress } from "./run-tool-loop.ts"
+import type { RunProgress } from "./schema.ts"
 
 export type WaitingTask = Extract<PendingTask, { kind: "waiting" }>
 
