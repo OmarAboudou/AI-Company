@@ -1,35 +1,31 @@
 import { beforeEach, describe, expect, test } from "bun:test"
-import { julieEnvironment } from "../../../../work/create-company-with-human-employee.testing.ts"
 import { loadCurrentStagedTurn } from "../../../../work/turn/load-current-staged-turn.ts"
 import { useTemporaryProject } from "../../../use-temporary-project.testing.ts"
-import { openJulieTask } from "../open-julie-task.testing.ts"
+import { openDirectorsTask } from "../open-directors-task.testing.ts"
 
-const { runCliWithEnv, getProjectPath } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 beforeEach(async () => {
-    await openJulieTask(getProjectPath())
+    await openDirectorsTask(getProjectPath())
 })
 
-async function loadJulieTurnBlocks() {
-    const { blocks } = await loadCurrentStagedTurn(
-        getProjectPath(),
-        julieEnvironment,
-    )
+async function loadTurnBlocks() {
+    const { blocks } = await loadCurrentStagedTurn(getProjectPath(), {})
     return blocks
 }
 
-function addJulieToolCall(toolName: string, ...options: string[]) {
+function addToolCall(toolName: string, ...options: string[]) {
     const args = ["turn", "add", "tool", toolName, ...options]
-    return runCliWithEnv(julieEnvironment, ...args)
+    return runCli(...args)
 }
 
 describe("aico turn add tool", () => {
     test("adds a call to one of the task's tools", async () => {
         const input = '{"body": "Friday."}'
 
-        const adding = addJulieToolCall("message_send", "-i", input)
+        const adding = addToolCall("message_send", "-i", input)
 
-        const blocks = await loadJulieTurnBlocks()
+        const blocks = await loadTurnBlocks()
         expect(adding.exitCode).toBe(0)
         expect(adding.stderr).toBe(
             "Added a call to message_send to your turn. Send it with `aico turn send`.\n",
@@ -47,18 +43,18 @@ describe("aico turn add tool", () => {
         const inputPath = getProjectPath("input.json")
         await Bun.write(inputPath, '{"summary": "Answered."}')
 
-        addJulieToolCall("task_mark-as-done", "-F", "input.json")
+        addToolCall("task_mark-as-done", "-F", "input.json")
 
-        const blocks = await loadJulieTurnBlocks()
+        const blocks = await loadTurnBlocks()
         expect(blocks).toMatchObject([
             { name: "task_mark-as-done", input: { summary: "Answered." } },
         ])
     })
 
     test("refuses an input its tool rejects, adding nothing", async () => {
-        const adding = addJulieToolCall("message_send")
+        const adding = addToolCall("message_send")
 
-        const blocks = await loadJulieTurnBlocks()
+        const blocks = await loadTurnBlocks()
         expect(adding.exitCode).toBe(1)
         expect(adding.stderr).toStartWith("Invalid input for message_send:\n")
         expect(blocks).toEqual([])

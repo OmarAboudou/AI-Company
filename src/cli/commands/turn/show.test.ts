@@ -1,26 +1,29 @@
 import { beforeEach, describe, expect, test } from "bun:test"
-import { julieEnvironment } from "../../../work/create-company-with-human-employee.testing.ts"
 import { addTurnText } from "../../../work/turn/add-turn-text.ts"
 import { addTurnTool } from "../../../work/turn/add-turn-tool.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
-import { openJulieTask } from "./open-julie-task.testing.ts"
+import { openDirectorsTask } from "./open-directors-task.testing.ts"
 
-const { runCliWithEnv, getProjectPath } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 beforeEach(async () => {
-    await openJulieTask(getProjectPath())
+    await openDirectorsTask(getProjectPath())
 })
 
 describe("aico turn show", () => {
     test("shows the turn's texts and tool calls, in order", async () => {
         const projectRoot = getProjectPath()
-        await addTurnText(projectRoot, julieEnvironment, "Checking.\n")
-        await addTurnTool(projectRoot, julieEnvironment, {
-            toolName: "message_send",
-            rawInput: '{"body": "Friday."}',
-        })
+        await addTurnText(projectRoot, {}, "Checking.\n")
+        await addTurnTool(
+            projectRoot,
+            {},
+            {
+                toolName: "message_send",
+                rawInput: '{"body": "Friday."}',
+            },
+        )
 
-        const show = runCliWithEnv(julieEnvironment, "turn", "show")
+        const show = runCli("turn", "show")
 
         expect(show.exitCode).toBe(0)
         expect(show.stdout).toBe(
@@ -29,7 +32,7 @@ describe("aico turn show", () => {
     })
 
     test("says when the turn is empty", () => {
-        const show = runCliWithEnv(julieEnvironment, "turn", "show")
+        const show = runCli("turn", "show")
 
         expect(show.stdout).toBe(
             "Your turn is empty: add to it with `aico turn add text` or `aico turn add tool`.\n",

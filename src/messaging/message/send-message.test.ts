@@ -4,7 +4,6 @@ import { join } from "node:path"
 import { createGitRepository } from "../../git/create-git-repository.testing.ts"
 import { listEvents } from "../../journal/storage.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
-import { saveEmployee } from "../../organization/employee/storage.ts"
 import { assignPositionTemporarily } from "../../organization/position/assign-position-temporarily.ts"
 import { savePosition } from "../../organization/position/storage.ts"
 import { UserError } from "../../user-error.ts"
@@ -104,28 +103,12 @@ describe("sendMessage", () => {
     })
 
     test("writes from the author's only position in the thread", async () => {
-        await saveEmployee(projectRoot, {
-            id: "julie",
-            name: "Julie",
-            kind: "human",
-        })
-        await savePosition(projectRoot, {
-            id: "graphics",
-            title: "Graphics",
-            description: "",
-            defaultEmployeeId: "julie",
-        })
         await assignPositionTemporarily(projectRoot, "qa-tester", {
             kind: "directors",
         })
-        environment.AICO_CURRENT_HUMAN_ID = "julie"
         const { thread } = await createThread(projectRoot, environment, {
             subject: "Logo",
             body: "Is the logo broken?",
-        })
-        delete environment.AICO_CURRENT_HUMAN_ID
-        await sendMessage(projectRoot, environment, thread.id, {
-            body: "Checking.",
             asPositionId: "qa-tester",
         })
 
@@ -133,12 +116,10 @@ describe("sendMessage", () => {
             projectRoot,
             environment,
             thread.id,
-            {
-                body: "It is.",
-            },
+            { body: "It is." },
         )
 
-        expect(thread.createdBy.position.id).toBe("graphics")
+        expect(thread.createdBy.position.id).toBe("qa-tester")
         expect(message.position.id).toBe("qa-tester")
     })
 

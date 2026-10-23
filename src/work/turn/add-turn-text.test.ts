@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
-import { julieEnvironment } from "../create-company-with-human-employee.testing.ts"
 import type { OpenedTask } from "../task/open-next-task.ts"
 import { addTurnText } from "./add-turn-text.ts"
 import { createCompanyWithTaskInProgress } from "./create-company-with-task-in-progress.testing.ts"
@@ -21,13 +20,9 @@ afterEach(async () => {
 
 describe("addTurnText", () => {
     test("adds a text at the end of the person's next turn", async () => {
-        await addTurnText(projectRoot, julieEnvironment, "Checking.")
+        await addTurnText(projectRoot, {}, "Checking.")
 
-        const stagedTurn = await addTurnText(
-            projectRoot,
-            julieEnvironment,
-            "Still checking.",
-        )
+        const stagedTurn = await addTurnText(projectRoot, {}, "Still checking.")
 
         expect(stagedTurn).toEqual({
             blocks: [
@@ -40,7 +35,7 @@ describe("addTurnText", () => {
     })
 
     test("refuses an empty text", async () => {
-        const adding = addTurnText(projectRoot, julieEnvironment, " \n")
+        const adding = addTurnText(projectRoot, {}, " \n")
 
         await expect(adding).rejects.toThrow("The text is empty.")
     })

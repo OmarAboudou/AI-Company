@@ -5,11 +5,9 @@ import { recordEvent } from "../../journal/record-event.ts"
 import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { sendMessage } from "../../messaging/message/send-message.ts"
-import { unassignPosition } from "../../organization/position/unassign-position.ts"
-import {
-    createCompanyWithHumanEmployee,
-    julieEnvironment,
-} from "../create-company-with-human-employee.testing.ts"
+import { createEmployee } from "../../organization/employee/create-employee.ts"
+import { createPosition } from "../../organization/position/create-position.ts"
+import { createCompanyWorkedByDirectors } from "../create-company-worked-by-directors.testing.ts"
 import {
     createExampleWorkCatalog,
     exampleTaskType,
@@ -25,7 +23,7 @@ let projectRoot: string
 let threadId: string
 
 beforeEach(async () => {
-    const company = await createCompanyWithHumanEmployee()
+    const company = await createCompanyWorkedByDirectors()
     projectRoot = company.projectRoot
     threadId = company.threadId
 })
@@ -37,19 +35,13 @@ afterEach(async () => {
 async function ask(
     askedPositionId: string,
     body: string,
-    julieAsPositionId?: string,
+    asPositionId?: string,
 ) {
-    const environment = julieAsPositionId === undefined ? {} : julieEnvironment
     const sending = await sendMessage(
         projectRoot,
-        environment,
+        {},
         threadId,
-        {
-            body,
-            ...(julieAsPositionId !== undefined && {
-                asPositionId: julieAsPositionId,
-            }),
-        },
+        { body, ...(asPositionId !== undefined && { asPositionId }) },
         createExampleWorkCatalog([askedPositionId]),
     )
     const [task] = sending.createdTasks
@@ -59,9 +51,7 @@ async function ask(
     return { task }
 }
 
-async function openNextExampleTask(
-    environment: NodeJS.ProcessEnv = julieEnvironment,
-) {
+async function openNextExampleTask(environment: NodeJS.ProcessEnv = {}) {
     return openNextTask(projectRoot, environment, exampleCatalog)
 }
 
@@ -85,7 +75,7 @@ describe("openNextTask", () => {
         expect(openedTask?.position.id).toBe("qa-tester")
         expect(openedTask?.isResumed).toBe(false)
         expect(openedTask?.run.conversation.systemPrompt).toStartWith(
-            "You are Julie, QA (@qa-tester) at Acme.",
+            "You are Omar Aboudou, QA (@qa-tester) at Acme.",
         )
         expect(taskTurn?.blocks).toEqual([
             {
@@ -95,7 +85,7 @@ describe("openNextTask", () => {
         ])
     })
 
-    test("starts the person's run, by its employee, without a model", async () => {
+    test("starts the person's run, by the directors, without a model", async () => {
         const shipping = await ask("qa-tester", "Can we ship on Friday?")
 
         const { openedTask } = await openNextExampleTask()
@@ -104,7 +94,7 @@ describe("openNextTask", () => {
         expect(startedEvent).toMatchObject({
             taskId: shipping.task.id,
             runId: openedTask?.run.id,
-            worker: { kind: "employee", employeeId: "julie" },
+            worker: { kind: "directors" },
         })
         expect(startedEvent).not.toHaveProperty("model")
     })
@@ -152,7 +142,7 @@ describe("openNextTask", () => {
     test("gives a resumed task the turn its person prepares", async () => {
         await ask("qa-tester", "Can we ship on Friday?")
         const first = await openNextExampleTask()
-        await addTurnText(projectRoot, julieEnvironment, "Checking.")
+        await addTurnText(projectRoot, {}, "Checking.")
 
         const second = await openNextExampleTask()
 
@@ -191,10 +181,7 @@ describe("openNextTask among the person's positions", () => {
     test("opens only the selected position's tasks when one is selected", async () => {
         await ask("qa-tester", "Can we ship on Friday?")
         const logo = await ask("designer", "Is the logo ready?")
-        const environment = {
-            ...julieEnvironment,
-            AICO_CURRENT_POSITION_ID: "designer",
-        }
+        const environment = { AICO_CURRENT_POSITION_ID: "designer" }
 
         const { openedTask } = await openNextExampleTask(environment)
 
@@ -202,10 +189,11 @@ describe("openNextTask among the person's positions", () => {
     })
 
     test("refuses a selected position the person doesn't work", async () => {
-        const environment = {
-            ...julieEnvironment,
-            AICO_CURRENT_POSITION_ID: "director",
-        }
+        await createPosition(projectRoot, "support", {
+            title: "Support",
+            description: "",
+        })
+        const environment = { AICO_CURRENT_POSITION_ID: "support" }
 
         const opening = openNextExampleTask(environment)
 
@@ -213,10 +201,12 @@ describe("openNextTask among the person's positions", () => {
     })
 
     test("refuses an employee who works no position", async () => {
-        await unassignPosition(projectRoot, "qa-tester")
-        await unassignPosition(projectRoot, "designer")
+        await createEmployee(projectRoot, "julie", {
+            name: "Julie",
+            kind: "human",
+        })
 
-        const opening = openNextExampleTask()
+        const opening = openNextExampleTask({ AICO_CURRENT_HUMAN_ID: "julie" })
 
         await expect(opening).rejects.toThrow(
             "Julie (julie) works no position, so no task waits for them.",

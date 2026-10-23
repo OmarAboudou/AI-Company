@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
-import { julieEnvironment } from "../create-company-with-human-employee.testing.ts"
 import type { OpenedTask } from "../task/open-next-task.ts"
 import { addTurnText } from "./add-turn-text.ts"
 import { clearTurn } from "./clear-turn.ts"
@@ -22,9 +21,9 @@ afterEach(async () => {
 
 describe("clearTurn", () => {
     test("empties the person's next turn", async () => {
-        await addTurnText(projectRoot, julieEnvironment, "Checking.")
+        await addTurnText(projectRoot, {}, "Checking.")
 
-        await clearTurn(projectRoot, julieEnvironment)
+        await clearTurn(projectRoot, {})
 
         const runId = openedTask.run.id
         const stagedTurn = await loadStagedTurn(projectRoot, runId)

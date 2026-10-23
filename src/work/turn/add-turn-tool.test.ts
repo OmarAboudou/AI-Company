@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
-import { julieEnvironment } from "../create-company-with-human-employee.testing.ts"
 import type { OpenedTask } from "../task/open-next-task.ts"
 import { addTurnTool } from "./add-turn-tool.ts"
 import { createCompanyWithTaskInProgress } from "./create-company-with-task-in-progress.testing.ts"
@@ -19,16 +18,13 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-async function addJulieToolCall(toolName: string, rawInput: string) {
-    return addTurnTool(projectRoot, julieEnvironment, { toolName, rawInput })
+async function addToolCall(toolName: string, rawInput: string) {
+    return addTurnTool(projectRoot, {}, { toolName, rawInput })
 }
 
 describe("addTurnTool", () => {
     test("adds a call with an id of its own, its input as given", async () => {
-        const stagedTurn = await addJulieToolCall(
-            "message_send",
-            '{"body": "Yes."}',
-        )
+        const stagedTurn = await addToolCall("message_send", '{"body": "Yes."}')
 
         expect(stagedTurn).toEqual({
             blocks: [
@@ -45,13 +41,13 @@ describe("addTurnTool", () => {
     })
 
     test("refuses an input that isn't JSON", async () => {
-        const adding = addJulieToolCall("message_send", "{body: Yes}")
+        const adding = addToolCall("message_send", "{body: Yes}")
 
         await expect(adding).rejects.toThrow("The input isn't JSON (")
     })
 
     test("refuses an input that isn't an object", async () => {
-        const adding = addJulieToolCall("message_send", '"Yes."')
+        const adding = addToolCall("message_send", '"Yes."')
 
         await expect(adding).rejects.toThrow(
             `The input is "Yes.": give an object, e.g. '{"body": "Hello."}'.`,
@@ -59,7 +55,7 @@ describe("addTurnTool", () => {
     })
 
     test("refuses a tool the run doesn't give", async () => {
-        const adding = addJulieToolCall("thread_create", "{}")
+        const adding = addToolCall("thread_create", "{}")
 
         await expect(adding).rejects.toThrow(
             "There is no tool named thread_create. The tools you can call are: message_send, thread_show, task_mark-as-done, task_mark-as-failed.",
@@ -67,7 +63,7 @@ describe("addTurnTool", () => {
     })
 
     test("refuses an input its tool rejects", async () => {
-        const adding = addJulieToolCall("message_send", '{"text": "Yes."}')
+        const adding = addToolCall("message_send", '{"text": "Yes."}')
 
         await expect(adding).rejects.toThrow("Invalid input for message_send:")
     })
@@ -75,7 +71,7 @@ describe("addTurnTool", () => {
     test("refuses an input the task's type fixes", async () => {
         const rawInput = '{"threadId": "2026-10-21-other", "body": "Yes."}'
 
-        const adding = addJulieToolCall("message_send", rawInput)
+        const adding = addToolCall("message_send", rawInput)
 
         await expect(adding).rejects.toThrow('Unrecognized key: "threadId"')
     })
