@@ -1,143 +1,17 @@
-import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import { rm } from "node:fs/promises"
-import { recordEvent } from "../../../journal/record-event.ts"
+import { describe, expect, test } from "bun:test"
 import { loadJournal } from "../../../journal/storage.ts"
-import type { Author } from "../../../messaging/message/schema.ts"
-import { actOnTicket } from "../../../messaging/ticket/act/act-on-ticket.ts"
 import { handOverTicket } from "../../../messaging/ticket/act/hand-over-ticket.ts"
-import type { MessageActName } from "../../../messaging/ticket/act/ticket-acts.ts"
 import { createExampleTicket } from "../../../messaging/ticket/create-example-ticket.testing.ts"
-import { createTemporaryCompany } from "../../../organization/company/create-temporary-company.testing.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
-import { pauseCompany } from "../../pause/pause-company.ts"
-import { relaunchCompany } from "../../pause/relaunch-company.ts"
-import { getTaskStates } from "../../task/get-task-states.ts"
 import {
-    type Task,
-    taskDoneEventType,
-    taskFailedEventType,
-    taskStartedEventType,
-} from "../../task/schema.ts"
-import { listTasks } from "../../task/storage.ts"
-import { builtInWorkCatalog } from "../../work-catalog.ts"
-import { dispatchEvents } from "../dispatch-events.ts"
+    developer,
+    director,
+    getTaskSummaries,
+    useListeningCompany,
+} from "./use-listening-company.testing.ts"
 
-const committer = { name: "Test User", email: "test@example.com" }
-const director: Author = {
-    position: { id: "director", title: "Director" },
-    committer,
-}
-const developer: Author = {
-    position: { id: "developer", title: "Developer" },
-    committer,
-}
-
-let projectRoot: string
-
-beforeEach(async () => {
-    projectRoot = await createTemporaryCompany()
-    await createPosition(projectRoot, "developer", {
-        title: "Developer",
-        description: "",
-    })
-})
-
-afterEach(async () => {
-    await rm(projectRoot, { recursive: true, force: true })
-})
-
-async function dispatch() {
-    return dispatchEvents(await loadJournal(projectRoot), builtInWorkCatalog)
-}
-
-async function findTaskOf(positionId: string, state: string) {
-    const [tasks, journal] = await Promise.all([
-        listTasks(projectRoot),
-        loadJournal(projectRoot),
-    ])
-    const taskStates = getTaskStates(tasks, journal.events)
-    return tasks.find(
-        (task) =>
-            task.positionId === positionId && taskStates.get(task.id) === state,
-    )
-}
-
-// The position's session ends in its running task, as the run would end it.
-async function endSessionOf(positionId: string, hasPassedHand = false) {
-    await startQueuedTaskOf(positionId)
-    const runningTask = await findTaskOf(positionId, "running")
-    await recordEvent(await loadJournal(projectRoot), taskDoneEventType, {
-        depth: 1,
-        taskId: runningTask?.id ?? "",
-        runId: "20261023-150000-000-9e8d",
-        hasPassedHand,
-        result: {},
-    })
-    return dispatch()
-}
-
-async function startQueuedTaskOf(positionId: string) {
-    const [tasks, journal] = await Promise.all([
-        listTasks(projectRoot),
-        loadJournal(projectRoot),
-    ])
-    const taskStates = getTaskStates(tasks, journal.events)
-    const queuedTask = tasks.find(
-        (task) =>
-            task.positionId === positionId &&
-            taskStates.get(task.id) === "queued",
-    )
-    if (queuedTask !== undefined) {
-        await recordEvent(journal, taskStartedEventType, {
-            depth: 1,
-            taskId: queuedTask.id,
-            runId: "20261023-150000-000-9e8d",
-            worker: { kind: "directors" },
-        })
-    }
-}
-
-async function failTaskOf(positionId: string) {
-    await startQueuedTaskOf(positionId)
-    const runningTask = await findTaskOf(positionId, "running")
-    await recordEvent(await loadJournal(projectRoot), taskFailedEventType, {
-        depth: 1,
-        taskId: runningTask?.id ?? "",
-        runId: "20261023-150000-000-9e8d",
-        reason: "The model's turn was cut at its maximum length.",
-    })
-    return dispatch()
-}
-
-async function relaunch() {
-    await relaunchCompany(await loadJournal(projectRoot))
-    return dispatch()
-}
-
-// Each act happens in a session of its position, the task it was given.
-async function act(actName: MessageActName, author: Author) {
-    await startQueuedTaskOf(author.position.id)
-    const journal = await loadJournal(projectRoot)
-    await actOnTicket(
-        journal,
-        actName,
-        author,
-        { ticketNumber: 1, body: "Noted." },
-        { depth: 0 },
-    )
-    return dispatch()
-}
-
-async function createDeveloperTicket() {
-    await createExampleTicket(projectRoot, {
-        rawAssigneePositionId: "developer",
-    })
-    return dispatch()
-}
-
-function getTaskSummaries(tasks: Task[]): string[] {
-    return tasks.map(({ type, positionId }) => `${type} @${positionId}`)
-}
+const { getProjectRoot, dispatch, endSessionOf, act, createDeveloperTicket } =
+    useListeningCompany()
 
 describe("AICo's listeners", () => {
     test("give a ticket's assignee Handle once it is created", async () => {
@@ -209,7 +83,7 @@ describe("AICo's listeners", () => {
     )
 
     test("give no task on a ticket already closed", async () => {
-        await createExampleTicket(projectRoot, {
+        await createExampleTicket(getProjectRoot(), {
             rawAssigneePositionId: "developer",
         })
 
@@ -218,55 +92,15 @@ describe("AICo's listeners", () => {
         expect(createdTasks).toEqual([])
     })
 
-    test("give the director Analyse the failure once a task failed", async () => {
-        await createDeveloperTicket()
-        const failedTask = await findTaskOf("developer", "queued")
-
-        const { createdTasks } = await failTaskOf("developer")
-
-        expect(getTaskSummaries(createdTasks)).toEqual([
-            "analyse-failure @director",
-        ])
-        expect(createdTasks[0]?.params).toEqual({ taskId: failedTask?.id })
-    })
-
-    test("give the position with the hand its task again at the relaunch", async () => {
-        await createDeveloperTicket()
-        await failTaskOf("developer")
-
-        const { createdTasks } = await relaunch()
-
-        expect(getTaskSummaries(createdTasks)).toEqual(["resume @developer"])
-    })
-
-    test("give no task at the relaunch on a ticket closed during the pause", async () => {
-        await createDeveloperTicket()
-        await failTaskOf("developer")
-        await act("cancel", director)
-
-        const { createdTasks } = await relaunch()
-
-        expect(createdTasks).toEqual([])
-    })
-
-    test("give no task at a relaunch that follows no failure", async () => {
-        await createDeveloperTicket()
-        await pauseCompany(await loadJournal(projectRoot))
-
-        const { createdTasks } = await relaunch()
-
-        expect(createdTasks).toEqual([])
-    })
-
     test("give the new assignee Handle once the ticket is handed over", async () => {
         await createDeveloperTicket()
-        await createPosition(projectRoot, "designer", {
+        await createPosition(getProjectRoot(), "designer", {
             title: "Designer",
             description: "",
         })
 
         await handOverTicket(
-            await loadJournal(projectRoot),
+            await loadJournal(getProjectRoot()),
             director,
             {
                 ticketNumber: 1,
