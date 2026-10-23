@@ -1,12 +1,12 @@
 import { input, select } from "@inquirer/prompts"
 import { UserError } from "../../../user-error.ts"
 import type { OpenedTask } from "../../../work/task/open-next-task.ts"
-import type { TaskEnding } from "../../../work/tool/define-tool.ts"
 import { addTurnText } from "../../../work/turn/add-turn-text.ts"
 import { addTurnTool } from "../../../work/turn/add-turn-tool.ts"
 import { clearTurn } from "../../../work/turn/clear-turn.ts"
 import { loadCurrentStagedTurn } from "../../../work/turn/load-current-staged-turn.ts"
 import { sendTurn } from "../../../work/turn/send-turn.ts"
+import { formatTaskEnding } from "../../format-task-ending.ts"
 import { formatTurn } from "../../format-turn.ts"
 import { askToolInput } from "./ask-tool-input.ts"
 import {
@@ -75,12 +75,6 @@ async function addText({
 }: TaskSession): Promise<void> {
     const text = await input({ message: "Text:", required: true }, context)
     await addTurnText(projectRoot, environment, text)
-}
-
-function formatTaskEnding(taskEnding: TaskEnding): string {
-    return taskEnding.state === "done"
-        ? `Task done: ${taskEnding.summary}`
-        : `Task failed: ${taskEnding.reason}`
 }
 
 export async function workTask(

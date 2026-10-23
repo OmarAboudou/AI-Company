@@ -8,6 +8,7 @@ import {
 } from "../../work/run/run-ready-tasks.ts"
 import type { RunTaskResult } from "../../work/run/run-task.ts"
 import { formatOperationName } from "../format-operation-name.ts"
+import { formatTaskEnding } from "../format-task-ending.ts"
 import { formatToolInput } from "../format-tool-input.ts"
 import { printColumns } from "../print-columns.ts"
 import { projectRoot } from "../project-root.ts"
@@ -25,10 +26,7 @@ function formatUsage(usage: TokenUsage): string {
 }
 
 function formatTaskEnd({ taskEnding, run }: RunTaskResult): string[] {
-    const endLine =
-        taskEnding.state === "done"
-            ? `Task done: ${taskEnding.summary}`
-            : `Task failed: ${taskEnding.reason}`
+    const endLine = formatTaskEnding(taskEnding)
     return run === undefined
         ? [`${endLine} No model was called.`]
         : [endLine, formatUsage(run.usage)]

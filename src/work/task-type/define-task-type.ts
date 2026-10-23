@@ -52,6 +52,10 @@ export type TaskType<
         run: TaskRun<z.infer<ResultSchema>>,
         ctx: TaskTypeContext,
     ): Promise<z.infer<ResultSchema>>
+    getCancellationReason?(
+        params: z.infer<ParamsSchema>,
+        ctx: TaskTypeContext,
+    ): Promise<string | undefined>
 }
 
 export function defineTaskType<

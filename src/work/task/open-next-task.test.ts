@@ -4,6 +4,7 @@ import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import { recordEvent } from "../../journal/record-event.ts"
 import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
+import { createExampleTicket } from "../../messaging/ticket/create-example-ticket.testing.ts"
 import { createPosition } from "../../organization/position/create-position.ts"
 import { createCompanyWorkedByDirectors } from "../create-company-worked-by-directors.testing.ts"
 import {
@@ -172,7 +173,7 @@ describe("openNextTask", () => {
     test("opens nothing when no task waits for the person", async () => {
         const result = await openNextExampleTask()
 
-        expect(result).toEqual({ openedTask: undefined, doneTasks: [] })
+        expect(result).toEqual({ openedTask: undefined, endedTasks: [] })
     })
 })
 
@@ -234,11 +235,34 @@ describe("openNextTask with a task that needs no run", () => {
         const answeredTask = await createAnsweredTask(doneSummary)
         const logo = await ask("designer", "Is the logo ready?")
 
-        const { openedTask, doneTasks } = await openNextExampleTask()
+        const { openedTask, endedTasks } = await openNextExampleTask()
 
-        expect(doneTasks).toEqual([
-            { task: answeredTask, summary: doneSummary },
-        ])
+        const taskEnding = { state: "done", summary: doneSummary } as const
+        expect(endedTasks).toEqual([{ task: answeredTask, taskEnding }])
         expect(openedTask?.task).toEqual(logo.task)
+    })
+
+    test("cancels at once a task that became pointless, then opens the next", async () => {
+        const shipping = await ask("qa-tester", "Can we ship on Friday?")
+        await sendExampleMessage(
+            projectRoot,
+            ticketNumber,
+            "Stop.",
+            createExampleWorkCatalog(),
+        )
+        const logoTicket = await createExampleTicket(projectRoot)
+        const logo = await sendExampleMessage(
+            projectRoot,
+            logoTicket.number,
+            "Is the logo ready?",
+            createExampleWorkCatalog(["designer"]),
+        )
+
+        const { openedTask, endedTasks } = await openNextExampleTask()
+
+        const reason = `Ticket #${ticketNumber}'s discussion says Stop.`
+        const taskEnding = { state: "cancelled", reason } as const
+        expect(endedTasks).toEqual([{ task: shipping.task, taskEnding }])
+        expect(openedTask?.task).toEqual(logo.createdTasks[0])
     })
 })

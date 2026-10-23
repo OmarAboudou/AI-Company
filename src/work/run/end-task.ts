@@ -6,6 +6,7 @@ import type { Position } from "../../organization/position/schema.ts"
 import {
     type Task,
     type TaskResult,
+    taskCancelledEventType,
     taskDoneEventType,
     taskFailedEventType,
 } from "../task/schema.ts"
@@ -46,6 +47,13 @@ export async function endTask(
     }
     if (taskEnding.state === "failed") {
         await recordEvent(journal, taskFailedEventType, {
+            ...runEnd,
+            reason: taskEnding.reason,
+        })
+        return
+    }
+    if (taskEnding.state === "cancelled") {
+        await recordEvent(journal, taskCancelledEventType, {
             ...runEnd,
             reason: taskEnding.reason,
         })

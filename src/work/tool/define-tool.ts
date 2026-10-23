@@ -21,6 +21,7 @@ export type ToolContext = {
 export type TaskEnding =
     | { state: "done"; summary: string }
     | { state: "failed"; reason: string }
+    | { state: "cancelled"; reason: string }
 
 export type ToolResult = { text: string; taskEnding?: TaskEnding }
 

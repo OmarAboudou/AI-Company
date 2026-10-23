@@ -10,6 +10,7 @@ import { beginTask } from "../run/begin-task.ts"
 import { loadResumableRun } from "../run/load-resumable-run.ts"
 import type { Run } from "../run/schema.ts"
 import { startHumanRun } from "../run/start-human-run.ts"
+import type { TaskEnding } from "../tool/define-tool.ts"
 import type { StagedTurn } from "../turn/schema.ts"
 import { loadStagedTurn } from "../turn/storage.ts"
 import { builtInWorkCatalog, type WorkCatalog } from "../work-catalog.ts"
@@ -27,9 +28,11 @@ export type OpenedTask = {
     isResumed: boolean
 }
 
+export type EndedTask = { task: Task; taskEnding: TaskEnding }
+
 export type OpenNextTaskResult = {
     openedTask: OpenedTask | undefined
-    doneTasks: { task: Task; summary: string }[]
+    endedTasks: EndedTask[]
 }
 
 export async function openNextTask(
@@ -69,7 +72,7 @@ export async function openNextTask(
                 Number(taskStates.get(second.task.id) === "running") -
                 Number(taskStates.get(first.task.id) === "running"),
         )
-    const doneTasks: OpenNextTaskResult["doneTasks"] = []
+    const endedTasks: EndedTask[] = []
     for (const { task, position } of tasksToWork) {
         if (position === undefined) {
             continue
@@ -83,15 +86,15 @@ export async function openNextTask(
                 stagedTurn: await loadStagedTurn(projectRoot, resumableRun.id),
                 isResumed: true,
             }
-            return { openedTask, doneTasks }
+            return { openedTask, endedTasks }
         }
         const beginning = await beginTask(journal, {
             task,
             position,
             taskTypes: catalog.taskTypes,
         })
-        if (beginning.kind === "done") {
-            doneTasks.push({ task, summary: beginning.summary })
+        if (beginning.kind === "ended") {
+            endedTasks.push({ task, taskEnding: beginning.taskEnding })
             continue
         }
         const { session } = beginning
@@ -103,7 +106,7 @@ export async function openNextTask(
             stagedTurn: { blocks: [] },
             isResumed: false,
         }
-        return { openedTask, doneTasks }
+        return { openedTask, endedTasks }
     }
-    return { openedTask: undefined, doneTasks }
+    return { openedTask: undefined, endedTasks }
 }

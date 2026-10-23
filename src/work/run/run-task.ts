@@ -49,8 +49,8 @@ export async function runTask(
     const beginning = await runOperation(projectRoot, operationName, () =>
         beginTask(journal, { task, position, taskTypes }),
     )
-    if (beginning.kind === "done") {
-        return { taskEnding: { state: "done", summary: beginning.summary } }
+    if (beginning.kind === "ended") {
+        return { taskEnding: beginning.taskEnding }
     }
     const { taskDepth, session } = beginning
     const [{ provider, model, connection, apiKey }, company, project] =

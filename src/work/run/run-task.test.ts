@@ -21,6 +21,7 @@ import { createTask } from "../task/create-task.ts"
 import { getTaskStates } from "../task/get-task-states.ts"
 import {
     type Task,
+    taskCancelledEventType,
     taskDoneEventType,
     taskFailedEventType,
     taskStartedEventType,
@@ -227,6 +228,26 @@ describe("runTask", () => {
             answeredTask.id,
         )
         expect(answeredTaskState).toBe("done")
+    })
+
+    test("cancels, without a run, a task that became pointless before it started", async () => {
+        await sendExampleMessage(
+            projectRoot,
+            ticketNumber,
+            "Stop.",
+            createExampleWorkCatalog(),
+        )
+
+        const result = await runFakeTask()
+
+        const reason = `Ticket #${ticketNumber}'s discussion says Stop.`
+        expect(result).toEqual({ taskEnding: { state: "cancelled", reason } })
+        expect(fakeServer.requests).toHaveLength(0)
+        expect(await findEvent(taskCancelledEventType)).toMatchObject({
+            depth: 1,
+            taskId: task.id,
+            reason,
+        })
     })
 
     test("leaves the task running when the provider's API fails", async () => {
