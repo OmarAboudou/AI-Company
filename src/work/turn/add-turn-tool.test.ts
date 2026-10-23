@@ -55,10 +55,10 @@ describe("addTurnTool", () => {
     })
 
     test("refuses a tool the run doesn't give", async () => {
-        const adding = addToolCall("thread_create", "{}")
+        const adding = addToolCall("ticket_create", "{}")
 
         await expect(adding).rejects.toThrow(
-            "There is no tool named thread_create. The tools you can call are: message_send, thread_show, task_mark-as-done, task_mark-as-failed.",
+            "There is no tool named ticket_create. The tools you can call are: message_send, ticket_show, task_mark-as-done, task_mark-as-failed.",
         )
     })
 
@@ -69,10 +69,10 @@ describe("addTurnTool", () => {
     })
 
     test("refuses an input the task's type fixes", async () => {
-        const rawInput = '{"threadId": "2026-10-21-other", "body": "Yes."}'
+        const rawInput = '{"ticketNumber": 2, "body": "Yes."}'
 
         const adding = addToolCall("message_send", rawInput)
 
-        await expect(adding).rejects.toThrow('Unrecognized key: "threadId"')
+        await expect(adding).rejects.toThrow('Unrecognized key: "ticketNumber"')
     })
 })

@@ -24,13 +24,13 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const threadId = "2026-10-18-choice-of-framework"
+const ticketNumber = 1
 const exampleCatalog = createExampleWorkCatalog(["backend-developer"])
 
 async function createMessageSentEvent(positionId = "director", depth = 0) {
     return recordEvent(await loadJournal(projectRoot), messageSentEventType, {
         depth,
-        threadId,
+        ticketNumber,
         messageId: "20261018-140322-123-3f9a",
         positionId,
     })
@@ -38,13 +38,13 @@ async function createMessageSentEvent(positionId = "director", depth = 0) {
 
 const reviewListener = defineListener({
     eventType: messageSentEventType,
-    getEffects: ({ threadId }) => [
+    getEffects: ({ ticketNumber }) => [
         {
             kind: "create-task",
             task: {
-                type: "review-thread",
+                type: "review-ticket",
                 positionId: "qa-tester",
-                params: { threadId },
+                params: { ticketNumber },
             },
         },
     ],
@@ -115,7 +115,7 @@ describe("dispatchEvents", () => {
         const { createdTasks } = await dispatchToListeners(listeners)
 
         const taskTypes = createdTasks.map(({ type }) => type)
-        expect(taskTypes).toEqual(["example", "review-thread"])
+        expect(taskTypes).toEqual(["example", "review-ticket"])
     })
 
     test("records in the journal the events it gave, even those that ask nothing", async () => {
@@ -182,20 +182,20 @@ describe("dispatchEvents", () => {
     })
 
     test("passes over an event of a type no listener handles", async () => {
-        const threadClosed = {
+        const ticketClosed = {
             id: "20261018-150000-000-9e3f",
-            type: "thread-closed",
+            type: "ticket-closed",
             occurredAt: "2026-10-18T15:00:00.000Z",
             depth: 0,
-            threadId,
+            ticketNumber,
         }
-        await saveEvent(projectRoot, threadClosed)
+        await saveEvent(projectRoot, ticketClosed)
 
         const { createdTasks } = await dispatchToExampleListener()
 
         expect(createdTasks).toEqual([])
         expect(await listDispatchings()).toMatchObject([
-            { eventIds: [threadClosed.id] },
+            { eventIds: [ticketClosed.id] },
         ])
     })
 })

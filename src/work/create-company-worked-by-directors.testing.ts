@@ -1,10 +1,13 @@
 import { createGitRepository } from "../git/create-git-repository.testing.ts"
-import { createThread } from "../messaging/thread/create-thread.ts"
+import { createExampleTicket } from "../messaging/ticket/create-example-ticket.testing.ts"
 import { createTemporaryCompany } from "../organization/company/create-temporary-company.testing.ts"
 import { assignPositionTemporarily } from "../organization/position/assign-position-temporarily.ts"
 import { createPosition } from "../organization/position/create-position.ts"
 
-export type CompanyWorkedByDirectors = { projectRoot: string; threadId: string }
+export type CompanyWorkedByDirectors = {
+    projectRoot: string
+    ticketNumber: number
+}
 
 export async function createCompanyWorkedByDirectors(): Promise<CompanyWorkedByDirectors> {
     const projectRoot = await createTemporaryCompany()
@@ -19,10 +22,9 @@ export async function createCompanyWorkedByDirectors(): Promise<CompanyWorkedByD
         await createPosition(projectRoot, id, { title, description: "" })
         await assignPositionTemporarily(projectRoot, id, { kind: "directors" })
     }
-    const { thread } = await createThread(
-        projectRoot,
-        {},
-        { subject: "Release" },
-    )
-    return { projectRoot, threadId: thread.id }
+    const ticket = await createExampleTicket(projectRoot, {
+        title: "Release",
+        rawAssigneePositionId: "qa-tester",
+    })
+    return { projectRoot, ticketNumber: ticket.number }
 }

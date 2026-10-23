@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { saveMessage } from "../../messaging/message/storage.ts"
-import { saveThread } from "../../messaging/thread/storage.ts"
+import { saveNewTicket } from "../../messaging/ticket/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
 import {
@@ -46,14 +46,18 @@ const omar = {
 async function archiveMessageBy(employeeId: string, sentAt: string) {
     const committer = { name: "Omar Aboudou", email: "omar@example.com" }
     const director = { id: "director", title: "Director" }
-    const thread = { id: "2026-10-18-budget", subject: "Budget" }
-    await saveThread(projectRoot, {
-        ...thread,
+    const ticket = {
+        number: 1,
+        title: "Budget",
+        requester: director,
+        assignee: director,
+        committer,
         createdAt: "2026-10-18T14:00:00.000Z",
-        createdBy: { position: director, committer },
-    })
+        request: "How much?",
+    }
+    await saveNewTicket(projectRoot, ticket)
     await saveMessage(projectRoot, {
-        threadId: thread.id,
+        ticketNumber: ticket.number,
         id: "20261018-140100-000-0000",
         position: director,
         employee: { id: employeeId, name: "Earlier" },

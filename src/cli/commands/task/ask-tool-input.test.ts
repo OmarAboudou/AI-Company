@@ -8,12 +8,12 @@ import {
     type ToolInputQuestion,
 } from "./ask-tool-input.ts"
 
-const threadId = "2026-10-21-release"
+const ticketNumber = 1
 
 const toolDefinitions = getToolDefinitions(
-    getRunTools(["message_send", "thread_show"], {
-        message_send: { threadId },
-        thread_show: { threadId },
+    getRunTools(["message_send", "ticket_show"], {
+        message_send: { ticketNumber },
+        ticket_show: { ticketNumber },
     }),
 )
 
@@ -95,7 +95,7 @@ describe("askToolInput", () => {
         })
 
         const input = await askToolInput(
-            getToolDefinition("thread_show"),
+            getToolDefinition("ticket_show"),
             prompts,
         )
 
@@ -113,15 +113,15 @@ describe("askToolInput", () => {
     test("refuses an input it can't ask for", async () => {
         const { prompts } = createPrompts({})
         const tool = {
-            name: "thread_tag",
-            description: "Tag the thread.",
+            name: "ticket_tag",
+            description: "Tag the ticket.",
             inputSchema: { properties: { tags: { type: "array" } } },
         }
 
         const asking = askToolInput(tool, prompts)
 
         await expect(asking).rejects.toThrow(
-            "thread_tag takes a tags that is neither a text, a number nor a yes or no",
+            "ticket_tag takes a tags that is neither a text, a number nor a yes or no",
         )
     })
 })

@@ -6,10 +6,10 @@ import { openDirectorsTask } from "./open-directors-task.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-let threadId = ""
+let ticketNumber = 0
 
 beforeEach(async () => {
-    ;({ threadId } = await openDirectorsTask(getProjectPath()))
+    ;({ ticketNumber } = await openDirectorsTask(getProjectPath()))
 })
 
 async function addToolCall(toolName: string, rawInput: string) {
@@ -35,7 +35,7 @@ describe("aico turn send", () => {
 
         expect(sending.exitCode).toBe(0)
         expect(sending.stdout).toBe(
-            `→ message_send\n  body: "Friday."\n← Sent as entry #2 of thread ${threadId}.\n\nPrepare your next turn with \`aico turn add\`, then send it.\n`,
+            `→ message_send\n  body: "Friday."\n← Sent as message #2 of ticket #${ticketNumber}.\n\nPrepare your next turn with \`aico turn add\`, then send it.\n`,
         )
     })
 

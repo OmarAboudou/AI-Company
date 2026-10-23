@@ -3,7 +3,7 @@ import { getNextSentAt } from "./get-next-sent-at.ts"
 import type { Message } from "./schema.ts"
 
 const question: Message = {
-    threadId: "2026-10-18-choice-of-framework",
+    ticketNumber: 1,
     id: "20261018-140322-123-3f9a",
     position: { id: "director", title: "Director" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
@@ -12,7 +12,7 @@ const question: Message = {
 }
 
 describe("getNextSentAt", () => {
-    test("is now in a thread without messages", () => {
+    test("is now in a discussion without messages", () => {
         const now = new Date("2026-10-18T14:03:22.123Z")
 
         expect(getNextSentAt([], now)).toBe("2026-10-18T14:03:22.123Z")

@@ -50,18 +50,18 @@ async function askPosition(
     positionId: string,
     type = exampleTaskType.type,
 ): Promise<Task> {
-    const threadId = "2026-10-18-choice-of-framework"
+    const ticketNumber = 1
     const messageSentEvent = await recordEvent(
         await loadJournal(projectRoot),
         messageSentEventType,
         {
             depth: 0,
-            threadId,
+            ticketNumber,
             messageId: "20261018-140322-123-3f9a",
             positionId: "director",
         },
     )
-    const uncreatedTask = { type, positionId, params: { threadId } }
+    const uncreatedTask = { type, positionId, params: { ticketNumber } }
     return createTask(
         await loadJournal(projectRoot),
         uncreatedTask,

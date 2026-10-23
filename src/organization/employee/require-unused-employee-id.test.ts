@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { saveMessage } from "../../messaging/message/storage.ts"
-import { saveThread } from "../../messaging/thread/storage.ts"
+import { saveNewTicket } from "../../messaging/ticket/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
 import { requireUnusedEmployeeId } from "./require-unused-employee-id.ts"
@@ -17,21 +17,22 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const threadId = "2026-10-18-budget"
+const committer = { name: "Omar Aboudou", email: "omar@example.com" }
+
+const budgetTicket = {
+    number: 1,
+    title: "Budget",
+    requester: { id: "director", title: "Director" },
+    assignee: { id: "developer", title: "Developer" },
+    committer,
+    createdAt: "2026-10-18T14:00:00.000Z",
+    request: "How much?",
+}
 
 async function archiveMessageBy(employeeId: string, sentAt: string) {
-    const committer = { name: "Omar Aboudou", email: "omar@example.com" }
-    await saveThread(projectRoot, {
-        id: threadId,
-        subject: "Budget",
-        createdAt: "2026-10-18T14:00:00.000Z",
-        createdBy: {
-            position: { id: "director", title: "Director" },
-            committer,
-        },
-    })
+    await saveNewTicket(projectRoot, budgetTicket)
     await saveMessage(projectRoot, {
-        threadId,
+        ticketNumber: budgetTicket.number,
         id: "20261018-140100-000-0000",
         position: { id: "developer", title: "Developer" },
         employee: { id: employeeId, name: "Earlier" },
@@ -54,8 +55,17 @@ describe("requireUnusedEmployeeId", () => {
         const checking = requireUnusedEmployeeId(projectRoot, "claude")
 
         await expect(checking).rejects.toThrow(UserError)
-        await expect(checking).rejects.toThrow(`in thread "${threadId}".`)
+        await expect(checking).rejects.toThrow("in ticket #1.")
         await expect(checking).rejects.toThrow("add --reuse-id")
+    })
+
+    test("refuses an id an earlier employee created a ticket under", async () => {
+        const employee = { id: "claude", name: "Earlier" }
+        await saveNewTicket(projectRoot, { ...budgetTicket, employee })
+
+        const checking = requireUnusedEmployeeId(projectRoot, "claude")
+
+        await expect(checking).rejects.toThrow("in ticket #1.")
     })
 
     test("refuses another employee's former id", async () => {

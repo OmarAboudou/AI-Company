@@ -4,11 +4,11 @@ import { join } from "node:path"
 import { runGit } from "../../git/run-git.ts"
 import { listEvents } from "../../journal/storage.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
-import { sendMessage } from "../../messaging/message/send-message.ts"
 import { listMessages } from "../../messaging/message/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { createCompanyWithLlmEmployee } from "../create-company-with-llm-employee.testing.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
+import { sendExampleMessage } from "../send-example-message.testing.ts"
 import { getTaskStates } from "../task/get-task-states.ts"
 import { listTasks } from "../task/storage.ts"
 import type { WorkCatalog } from "../work-catalog.ts"
@@ -18,7 +18,7 @@ const fakeServer = useFakeAnthropicServer()
 const environment = { TEST_ANTHROPIC_KEY: "sk-test" }
 const developerCatalog = createExampleWorkCatalog(["backend-developer"])
 let projectRoot: string
-let threadId: string
+let ticketNumber: number
 let progresses: RunReadyTasksProgress[]
 
 beforeEach(async () => {
@@ -26,7 +26,7 @@ beforeEach(async () => {
         fakeServer.getUrl(),
     )
     projectRoot = companyWithLlmEmployee.projectRoot
-    threadId = companyWithLlmEmployee.threadId
+    ticketNumber = companyWithLlmEmployee.ticketNumber
     progresses = []
 })
 
@@ -48,7 +48,7 @@ async function sendQuestion(
     body: string,
     catalog: WorkCatalog = developerCatalog,
 ) {
-    await sendMessage(projectRoot, environment, threadId, { body }, catalog)
+    await sendExampleMessage(projectRoot, ticketNumber, body, catalog)
 }
 
 async function listTaskStates() {
@@ -78,7 +78,7 @@ describe("runReadyTasks", () => {
 
         const { waitingTasks } = await runFakeTasks()
 
-        const messages = await listMessages(projectRoot, threadId)
+        const messages = await listMessages(projectRoot, ticketNumber)
         expect(messages.map(({ body }) => body)).toEqual([
             "Hono or Express?",
             "Hono.",

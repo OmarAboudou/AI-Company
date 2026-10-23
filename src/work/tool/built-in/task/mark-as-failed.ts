@@ -7,7 +7,7 @@ export const taskMarkAsFailedTool = defineTool({
     inputSchema: z.strictObject({
         reason: z.string().trim().min(1).meta({
             description:
-                "Why you can't do the task, e.g. The thread asks for a budget I have no figures for.",
+                "Why you can't do the task, e.g. The ticket asks for a budget I have no figures for.",
         }),
     }),
     execute: async ({ reason }) => ({

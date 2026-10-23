@@ -4,13 +4,13 @@ import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import { recordEvent } from "../../journal/record-event.ts"
 import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
-import { sendMessage } from "../../messaging/message/send-message.ts"
 import { createPosition } from "../../organization/position/create-position.ts"
 import { createCompanyWorkedByDirectors } from "../create-company-worked-by-directors.testing.ts"
 import {
     createExampleWorkCatalog,
     exampleTaskType,
 } from "../create-example-work-catalog.testing.ts"
+import { sendExampleMessage } from "../send-example-message.testing.ts"
 import { createUncreatedTask } from "../task-type/create-uncreated-task.ts"
 import { addTurnText } from "../turn/add-turn-text.ts"
 import { createTask } from "./create-task.ts"
@@ -19,12 +19,12 @@ import { taskStartedEventType } from "./schema.ts"
 
 const exampleCatalog = createExampleWorkCatalog()
 let projectRoot: string
-let threadId: string
+let ticketNumber: number
 
 beforeEach(async () => {
     const company = await createCompanyWorkedByDirectors()
     projectRoot = company.projectRoot
-    threadId = company.threadId
+    ticketNumber = company.ticketNumber
 })
 
 afterEach(async () => {
@@ -34,14 +34,14 @@ afterEach(async () => {
 async function ask(
     askedPositionId: string,
     body: string,
-    asPositionId?: string,
+    authorPositionId = "director",
 ) {
-    const sending = await sendMessage(
+    const sending = await sendExampleMessage(
         projectRoot,
-        {},
-        threadId,
-        { body, ...(asPositionId !== undefined && { asPositionId }) },
+        ticketNumber,
+        body,
         createExampleWorkCatalog([askedPositionId]),
+        { positionId: authorPositionId },
     )
     const [task] = sending.createdTasks
     if (task === undefined) {
@@ -79,7 +79,7 @@ describe("openNextTask", () => {
         expect(taskTurn?.blocks).toEqual([
             {
                 type: "text",
-                text: `Answer the last message of thread ${threadId}.`,
+                text: `Answer the last message of ticket #${ticketNumber}.`,
             },
         ])
     })
@@ -98,7 +98,7 @@ describe("openNextTask", () => {
         expect(startedEvent).not.toHaveProperty("model")
     })
 
-    test("gives the run the tools of the task's type, its thread fixed", async () => {
+    test("gives the run the tools of the task's type, its ticket fixed", async () => {
         await ask("qa-tester", "Can we ship on Friday?")
 
         const { openedTask } = await openNextExampleTask()
@@ -109,10 +109,10 @@ describe("openNextTask", () => {
             "message_send",
             "task_mark-as-done",
             "task_mark-as-failed",
-            "thread_show",
+            "ticket_show",
         ])
         expect(sendingTool?.description).toStartWith(
-            "Send a message in this thread,",
+            "Send a message in this ticket's discussion,",
         )
     })
 
@@ -218,13 +218,13 @@ describe("openNextTask with a task that needs no run", () => {
         const journal = await loadJournal(projectRoot)
         const questionSent = await recordEvent(journal, messageSentEventType, {
             depth: 0,
-            threadId,
+            ticketNumber,
             messageId: "20261018-140322-123-3f9a",
             positionId: "director",
         })
         const answeredTask = createUncreatedTask(exampleTaskType, {
             positionId: "qa-tester",
-            params: { threadId, doneSummary },
+            params: { ticketNumber, doneSummary },
         })
         return createTask(journal, answeredTask, questionSent)
     }

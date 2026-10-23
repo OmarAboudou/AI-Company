@@ -1,15 +1,15 @@
 import { beforeEach, describe, expect, test } from "bun:test"
-import { sendMessage } from "../../messaging/message/send-message.ts"
-import { createThread } from "../../messaging/thread/create-thread.ts"
+import { createExampleTicket } from "../../messaging/ticket/create-example-ticket.testing.ts"
 import { createCompany } from "../../organization/company/create-company.ts"
 import { createPosition } from "../../organization/position/create-position.ts"
 import { createExampleWorkCatalog } from "../../work/create-example-work-catalog.testing.ts"
+import { sendExampleMessage } from "../../work/send-example-message.testing.ts"
 import { useTemporaryProject } from "../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("aico run", () => {
-    let threadId = ""
+    let ticketNumber = 0
 
     beforeEach(async () => {
         const projectRoot = getProjectPath()
@@ -18,12 +18,10 @@ describe("aico run", () => {
             title: "QA Tester",
             description: "",
         })
-        const { thread } = await createThread(
-            projectRoot,
-            {},
-            { subject: "Release" },
-        )
-        threadId = thread.id
+        const ticket = await createExampleTicket(projectRoot, {
+            title: "Release",
+        })
+        ticketNumber = ticket.number
     })
 
     test("says when no task is ready, nor waiting", () => {
@@ -34,11 +32,10 @@ describe("aico run", () => {
     })
 
     test("lists the tasks left waiting, and why", async () => {
-        await sendMessage(
+        await sendExampleMessage(
             getProjectPath(),
-            {},
-            threadId,
-            { body: "A test plan?" },
+            ticketNumber,
+            "A test plan?",
             createExampleWorkCatalog(["qa-tester"]),
         )
 

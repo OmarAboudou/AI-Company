@@ -1,31 +1,26 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { loadJournal } from "../../../journal/storage.ts"
 import { saveExampleLlmModel } from "../../../llm/model/save-example-llm-model.testing.ts"
-import { sendMessage } from "../../../messaging/message/send-message.ts"
-import { createThread } from "../../../messaging/thread/create-thread.ts"
+import { createExampleTicket } from "../../../messaging/ticket/create-example-ticket.testing.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
 import { createExampleWorkCatalog } from "../../../work/create-example-work-catalog.testing.ts"
-import { loadPendingPositionIdsByThread } from "../../../work/task/load-pending-position-ids-by-thread.ts"
+import { sendExampleMessage } from "../../../work/send-example-message.testing.ts"
+import { loadPendingPositionIdsByTicket } from "../../../work/task/load-pending-position-ids-by-ticket.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-async function askDeveloper(): Promise<string> {
+async function askDeveloper(): Promise<number> {
     const projectRoot = getProjectPath()
-    const { thread } = await createThread(
+    const ticket = await createExampleTicket(projectRoot, { title: "Release" })
+    await sendExampleMessage(
         projectRoot,
-        {},
-        { subject: "Release" },
-    )
-    await sendMessage(
-        projectRoot,
-        {},
-        thread.id,
-        { body: "Can you check?" },
+        ticket.number,
+        "Can you check?",
         createExampleWorkCatalog(["developer"]),
     )
-    return thread.id
+    return ticket.number
 }
 
 describe("aico position delete", () => {
@@ -75,13 +70,13 @@ describe("aico position delete", () => {
         expect(show.stdout).toContain("positions: (none)")
     })
 
-    test("delete refuses a position with pending tasks, listing their threads", async () => {
-        const threadId = await askDeveloper()
+    test("delete refuses a position with pending tasks, listing their tickets", async () => {
+        const ticketNumber = await askDeveloper()
 
         const deletion = runCli("position", "delete", "developer")
 
         expect(deletion.exitCode).toBe(1)
-        expect(deletion.stderr).toContain(`in these threads: ${threadId}.`)
+        expect(deletion.stderr).toContain(`on these tickets: #${ticketNumber}.`)
         expect(deletion.stderr).toContain("Add --force")
         expect(runCli("position", "show", "developer").exitCode).toBe(0)
     })
@@ -89,16 +84,16 @@ describe("aico position delete", () => {
     test.each(["--force", "-f"])(
         "delete %s deletes a position with pending tasks",
         async (flag) => {
-            const threadId = await askDeveloper()
+            const ticketNumber = await askDeveloper()
 
             const deletion = runCli("position", "delete", "developer", flag)
             const journal = await loadJournal(getProjectPath())
-            const pendingPositionIdsByThread =
-                await loadPendingPositionIdsByThread(journal)
+            const pendingPositionIdsByTicket =
+                await loadPendingPositionIdsByTicket(journal)
 
-            expect(deletion.stdout).toContain(`stay pending in: ${threadId}.`)
+            expect(deletion.stdout).toContain(`pending on: #${ticketNumber}.`)
             expect(runCli("position", "show", "developer").exitCode).toBe(1)
-            expect(pendingPositionIdsByThread.get(threadId)).toEqual([
+            expect(pendingPositionIdsByTicket.get(ticketNumber)).toEqual([
                 "developer",
             ])
         },

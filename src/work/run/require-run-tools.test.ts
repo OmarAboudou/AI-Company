@@ -6,7 +6,7 @@ describe("requireRunTools", () => {
         const tools = requireRunTools({
             toolNames: ["message_send"],
             boundToolInputs: {
-                message_send: { threadId: "2026-10-21-release" },
+                message_send: { ticketNumber: 1 },
             },
             result: {},
         })

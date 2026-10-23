@@ -19,13 +19,13 @@ import { sendTurn } from "./send-turn.ts"
 import { loadStagedTurn } from "./storage.ts"
 
 let projectRoot: string
-let threadId: string
+let ticketNumber: number
 let openedTask: OpenedTask
 
 beforeEach(async () => {
     const company = await createCompanyWithTaskInProgress()
     projectRoot = company.projectRoot
-    threadId = company.threadId
+    ticketNumber = company.ticketNumber
     openedTask = company.openedTask
 })
 
@@ -78,7 +78,7 @@ describe("sendTurn", () => {
 
         await sendPersonTurn()
 
-        const [, answer] = await listMessages(projectRoot, threadId)
+        const [, answer] = await listMessages(projectRoot, ticketNumber)
         expect(answer).toMatchObject({
             position: { id: "qa-tester", title: "QA" },
             committer: { name: "Omar Aboudou", email: "omar@example.com" },
@@ -112,7 +112,7 @@ describe("sendTurn", () => {
             blocks: [
                 {
                     type: "tool-result",
-                    text: `Sent as entry #2 of thread ${threadId}.`,
+                    text: `Sent as message #2 of ticket #${ticketNumber}.`,
                     isError: false,
                 },
             ],

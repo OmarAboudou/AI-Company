@@ -11,7 +11,7 @@ A task's state is derived from the journal: waiting once created, running once a
 - A task stores its type and parameters, never a ready-made message: its type builds what its run is given when it runs, from the company as it is then.
 - A task names its position as it was called when the task was asked for, and follows it through renamings, by the position's id history.
 - A task's depth is its cause's plus one.
-- A task concerns a thread when its parameters name it as `threadId`: listing threads and deleting a position rely on it.
+- A task concerns a ticket when its parameters name it as `ticketNumber`: deleting a position relies on it.
 - A person's next task is the one in progress in their positions, if any, else the oldest pending one, only in the selected position when one is set.
 
 ## Decisions

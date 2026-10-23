@@ -6,7 +6,6 @@ import type { EventType, JournalEvent } from "../../journal/schema.ts"
 import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
-import { sendMessage } from "../../messaging/message/send-message.ts"
 import type { Employee } from "../../organization/employee/schema.ts"
 import { loadEmployee } from "../../organization/employee/storage.ts"
 import type { Position } from "../../organization/position/schema.ts"
@@ -17,6 +16,7 @@ import {
     createExampleWorkCatalog,
     exampleTaskType,
 } from "../create-example-work-catalog.testing.ts"
+import { sendExampleMessage } from "../send-example-message.testing.ts"
 import { createTask } from "../task/create-task.ts"
 import { getTaskStates } from "../task/get-task-states.ts"
 import {
@@ -32,17 +32,16 @@ const fakeServer = useFakeAnthropicServer()
 const environment = { TEST_ANTHROPIC_KEY: "sk-test" }
 const exampleCatalog = createExampleWorkCatalog(["backend-developer"])
 let projectRoot: string
-let threadId: string
+let ticketNumber: number
 let task: Task
 let position: Position
 let employee: Employee
 
 async function askDeveloper(body: string) {
-    const sending = await sendMessage(
+    const sending = await sendExampleMessage(
         projectRoot,
-        environment,
-        threadId,
-        { body },
+        ticketNumber,
+        body,
         exampleCatalog,
     )
     const [exampleTask] = sending.createdTasks
@@ -57,7 +56,7 @@ beforeEach(async () => {
         fakeServer.getUrl(),
     )
     projectRoot = companyWithLlmEmployee.projectRoot
-    threadId = companyWithLlmEmployee.threadId
+    ticketNumber = companyWithLlmEmployee.ticketNumber
     task = await askDeveloper("Hono or Express?")
     position = await loadPosition(projectRoot, "backend-developer")
     employee = await loadEmployee(projectRoot, "claude")
@@ -121,7 +120,7 @@ describe("runTask", () => {
         expect(body?.messages[0]?.content).toMatchObject([
             {
                 type: "text",
-                text: `Answer the last message of thread ${threadId}.`,
+                text: `Answer the last message of ticket #${ticketNumber}.`,
             },
         ])
     })
@@ -136,11 +135,11 @@ describe("runTask", () => {
             "message_send",
             "task_mark-as-done",
             "task_mark-as-failed",
-            "thread_show",
+            "ticket_show",
         ])
     })
 
-    test("fixes the thread of the tools its type fixes", async () => {
+    test("fixes the ticket of the tools its type fixes", async () => {
         fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
 
         await runFakeTask()
@@ -148,7 +147,7 @@ describe("runTask", () => {
         const tools = fakeServer.requests[0]?.body.tools ?? []
         const sendingTool = tools.find(({ name }) => name === "message_send")
         expect(sendingTool?.description).toStartWith(
-            "Send a message in this thread,",
+            "Send a message in this ticket's discussion,",
         )
         expect(sendingTool?.input_schema.properties).toEqual({
             body: {
@@ -191,7 +190,7 @@ describe("runTask", () => {
     })
 
     test("records the task given up, with its reason", async () => {
-        const reason = "The thread asks for figures I don't have."
+        const reason = "The ticket asks for figures I don't have."
         fakeServer.respondWith({
             toolCalls: [{ name: "task_mark-as-failed", input: { reason } }],
         })
@@ -205,7 +204,7 @@ describe("runTask", () => {
         const journal = await loadJournal(projectRoot)
         const questionSent = await recordEvent(journal, messageSentEventType, {
             depth: 0,
-            threadId,
+            ticketNumber,
             messageId: "20261018-140322-123-3f9a",
             positionId: "director",
         })
@@ -214,7 +213,7 @@ describe("runTask", () => {
             journal,
             createUncreatedTask(exampleTaskType, {
                 positionId: "backend-developer",
-                params: { threadId, doneSummary: summary },
+                params: { ticketNumber, doneSummary: summary },
             }),
             questionSent,
         )
@@ -262,7 +261,7 @@ describe("runTask", () => {
     })
 
     test("refuses a task whose type rejects its parameters", async () => {
-        const invalidTask = { ...task, params: { threadId: 42 } }
+        const invalidTask = { ...task, params: { ticketNumber: "1" } }
 
         const running = runFakeTask(invalidTask)
 

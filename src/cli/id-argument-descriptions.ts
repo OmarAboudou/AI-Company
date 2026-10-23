@@ -1,5 +1,4 @@
 const entityFolderPaths = {
-    thread: ".aico/threads",
     position: ".aico/positions",
     employee: ".aico/employees",
     provider: ".aico/llm-providers",

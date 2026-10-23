@@ -12,14 +12,14 @@ import { runToolCall } from "../../run-tool-call.ts"
 import { messageSendTool } from "./send.ts"
 
 let projectRoot: string
-let threadId: string
+let ticketNumber: number
 let ctx: ToolContext
 
 beforeEach(async () => {
     const companyWithLlmEmployee =
         await createCompanyWithLlmEmployee("http://127.0.0.1")
     projectRoot = companyWithLlmEmployee.projectRoot
-    threadId = companyWithLlmEmployee.threadId
+    ticketNumber = companyWithLlmEmployee.ticketNumber
     const [position, employee, journal] = await Promise.all([
         loadPosition(projectRoot, "backend-developer"),
         loadEmployee(projectRoot, "claude"),
@@ -49,9 +49,9 @@ describe("message_send", () => {
     test("sends the message as the run's position and employee", async () => {
         const body = "Hono is in, can you test it?"
 
-        await callMessageSend({ threadId, body })
+        await callMessageSend({ ticketNumber, body })
 
-        const [message] = await listMessages(projectRoot, threadId)
+        const [message] = await listMessages(projectRoot, ticketNumber)
         expect(message).toMatchObject({
             position: { id: "backend-developer", title: "backend-developer" },
             employee: { id: "claude", name: "Claude Senior" },
@@ -64,11 +64,14 @@ describe("message_send", () => {
             ...ctx,
             worker: { kind: "directors" },
         }
-        const call = { name: "message_send", input: { threadId, body: "Hi." } }
+        const call = {
+            name: "message_send",
+            input: { ticketNumber, body: "Hi." },
+        }
 
         await runToolCall(tools, call, directorsCtx)
 
-        const [message] = await listMessages(projectRoot, threadId)
+        const [message] = await listMessages(projectRoot, ticketNumber)
         expect(message).not.toHaveProperty("employee")
         expect(message?.committer).toEqual({
             name: "Test User",
@@ -77,45 +80,43 @@ describe("message_send", () => {
     })
 
     test("records it at the task's depth, with the run that sent it", async () => {
-        await callMessageSend({ threadId, body: "Ready." })
+        await callMessageSend({ ticketNumber, body: "Ready." })
 
-        const [message] = await listMessages(projectRoot, threadId)
-        expect(await listEvents(projectRoot)).toMatchObject([
-            {
-                type: "message-sent",
-                depth: 3,
-                messageId: message?.id,
-                runId: ctx.runId,
-            },
-        ])
+        const [message] = await listMessages(projectRoot, ticketNumber)
+        expect((await listEvents(projectRoot)).at(-1)).toMatchObject({
+            type: "message-sent",
+            depth: 3,
+            ticketNumber,
+            messageId: message?.id,
+            runId: ctx.runId,
+        })
     })
 
-    test("says which entry of the thread the message became", async () => {
-        await callMessageSend({ threadId, body: "Hono." })
+    test("says which message of the discussion it became", async () => {
+        await callMessageSend({ ticketNumber, body: "Hono." })
 
-        const result = await callMessageSend({ threadId, body: "For Bun." })
+        const result = await callMessageSend({ ticketNumber, body: "For Bun." })
 
         expect(result).toEqual({
-            text: `Sent as entry #2 of thread ${threadId}.`,
+            text: `Sent as message #2 of ticket #${ticketNumber}.`,
             isError: false,
         })
     })
 
-    test("refuses an unknown thread, and sends nothing", async () => {
-        const result = await callMessageSend({
-            threadId: "2026-10-18-other",
-            body: "Hono.",
-        })
+    test("refuses an unknown ticket, and sends nothing", async () => {
+        const eventsBefore = await listEvents(projectRoot)
+
+        const result = await callMessageSend({ ticketNumber: 9, body: "Hono." })
 
         expect(result).toEqual({
-            text: 'No thread "2026-10-18-other". Run `aico thread list`.',
+            text: "No ticket #9. Run `aico ticket list`.",
             isError: true,
         })
-        expect(await listEvents(projectRoot)).toEqual([])
+        expect(await listEvents(projectRoot)).toEqual(eventsBefore)
     })
 
     test("refuses an empty message", async () => {
-        const result = await callMessageSend({ threadId, body: " " })
+        const result = await callMessageSend({ ticketNumber, body: " " })
 
         expect(result).toEqual({
             text: "The message's body is empty.",
@@ -123,9 +124,9 @@ describe("message_send", () => {
         })
     })
 
-    test("speaks of this thread once the task fixes its thread", () => {
-        const { description } = bindTool(messageSendTool, { threadId })
+    test("speaks of this ticket once the task fixes its ticket", () => {
+        const { description } = bindTool(messageSendTool, { ticketNumber })
 
-        expect(description).toStartWith("Send a message in this thread,")
+        expect(description).toStartWith("Send a message in this ticket's")
     })
 })

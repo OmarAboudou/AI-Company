@@ -16,7 +16,7 @@ import type { MarkTaskAsDoneEffect } from "./define-listener.ts"
 import { loadDispatching } from "./load-dispatching.ts"
 import { markTaskAsDoneOnce } from "./mark-task-as-done-once.ts"
 
-const threadId = "2026-10-18-choice-of-framework"
+const ticketNumber = 1
 const runId = "20261018-150000-000-9e8d"
 let projectRoot: string
 let exampleTask: Task
@@ -28,14 +28,14 @@ beforeEach(async () => {
         messageSentEventType,
         {
             depth: 0,
-            threadId,
+            ticketNumber,
             messageId: "20261018-140322-123-3f9a",
             positionId: "director",
         },
     )
     const uncreatedTask = createUncreatedTask(exampleTaskType, {
         positionId: "qa-tester",
-        params: { threadId },
+        params: { ticketNumber },
     })
     exampleTask = await createTask(
         await loadJournal(projectRoot),
@@ -54,7 +54,7 @@ function createMarking(
     return {
         kind: "mark-task-as-done",
         taskId: exampleTask.id,
-        summary: "Sent a message in the thread.",
+        summary: "Sent a message in the ticket's discussion.",
         result,
     }
 }
@@ -82,7 +82,7 @@ describe("markTaskAsDoneOnce", () => {
             {
                 depth: 1,
                 taskId: exampleTask.id,
-                summary: "Sent a message in the thread.",
+                summary: "Sent a message in the ticket's discussion.",
                 result: { runId },
             },
         ])
@@ -101,7 +101,7 @@ describe("markTaskAsDoneOnce", () => {
         await recordEvent(await loadJournal(projectRoot), taskFailedEventType, {
             depth: 1,
             taskId: exampleTask.id,
-            reason: "The thread asks nothing.",
+            reason: "The ticket asks nothing.",
         })
 
         const { doneTasks } = await markInNewDispatching()

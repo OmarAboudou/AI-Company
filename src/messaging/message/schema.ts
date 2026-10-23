@@ -5,6 +5,7 @@ import {
     CommitterSchema,
     EmployeeSnapshotSchema,
     PositionSnapshotSchema,
+    TicketNumberSchema,
 } from "../ticket/schema.ts"
 
 export const MessageConfigSchema = z
@@ -24,7 +25,7 @@ export const MessageConfigSchema = z
     .meta({
         title: "AICo message",
         description:
-            "A message of a thread, in .aico/threads/<thread-id>/messages/<message-id>/message.json. Its body lives next to it, in body.md. Never modified once written.",
+            "A message of a ticket's discussion, in .aico/tickets/<ticket-number>/messages/<message-id>/message.json. Its body lives next to it, in body.md. Never modified once written.",
     })
 
 export type MessageConfig = z.infer<typeof MessageConfigSchema>
@@ -34,22 +35,19 @@ export type Author = Pick<MessageConfig, "position" | "employee" | "committer">
 export type UnsentMessage = Author & { body: string }
 
 export type Message = MessageConfig & {
-    threadId: string
+    ticketNumber: number
     id: string
     body: string
 }
 
 export const messageSentEventType = defineEventType({
     type: "message-sent",
-    description: "A message was added to a thread.",
+    description: "A message was added to a ticket's discussion.",
     fields: {
-        threadId: IdSchema.meta({
-            description:
-                "Id of the thread, i.e. the name of its folder in .aico/threads.",
-        }),
+        ticketNumber: TicketNumberSchema,
         messageId: IdSchema.meta({
             description:
-                "Id of the message, i.e. the name of its folder in the thread's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message.",
+                "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message.",
         }),
         positionId: IdSchema.meta({
             description:

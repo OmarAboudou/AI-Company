@@ -11,15 +11,15 @@ import { listMessages, saveMessage } from "./storage.ts"
 
 export async function sendUnsentMessage(
     journal: Journal,
-    threadId: string,
+    ticketNumber: number,
     unsentMessage: UnsentMessage,
     { depth, runId }: { depth: number; runId?: string },
 ): Promise<Message> {
     const { projectRoot } = journal
-    const threadMessages = await listMessages(projectRoot, threadId)
-    const sentAt = getNextSentAt(threadMessages, new Date())
+    const ticketMessages = await listMessages(projectRoot, ticketNumber)
+    const sentAt = getNextSentAt(ticketMessages, new Date())
     const message = {
-        threadId,
+        ticketNumber,
         id: createTimeOrderedId(sentAt),
         ...unsentMessage,
         sentAt,
@@ -29,7 +29,7 @@ export async function sendUnsentMessage(
     // without its event would never reach the listeners.
     await recordEvent(journal, messageSentEventType, {
         depth,
-        threadId,
+        ticketNumber,
         messageId: message.id,
         positionId: message.position.id,
         ...(runId !== undefined && { runId }),

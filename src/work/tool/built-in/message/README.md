@@ -1,6 +1,6 @@
 # Message tools
 
-The tools that write in threads, as `aico message send` does: `message_send` sends a message from the run's position, signed by the run's worker and the committer, with the command's refusals. Its result is the message's number in the thread.
+The tools that write in tickets' discussions: `message_send` sends a message from the run's position, signed by the run's worker and the committer. Its result is the message's number in the discussion.
 
 ## Invariants
 

@@ -1,6 +1,6 @@
 # Position
 
-A position is a job in the company: a title, and a job description that whoever works it is given with each of its tasks. It outlives the employees who hold it, as a job does when someone leaves, and it is what threads and tasks address, never a person.
+A position is a job in the company: a title, and a job description that whoever works it is given with each of its tasks. It outlives the employees who hold it, as a job does when someone leaves, and it is what tickets and tasks address, never a person.
 
 Whoever works a position is its default employee, unless it is assigned temporarily, to another employee or to the directors, the people working on the repository; with neither, the position is vacant, and its tasks wait. The director's position, management's, is always worked by the directors.
 
@@ -11,7 +11,7 @@ Whoever works a position is its default employee, unless it is assigned temporar
 - The director's position is never assigned, by default or temporarily, nor deleted.
 - Renaming a position records its former id and when it changed, so that what was written under the former id, messages, tasks and events, still designates it. An interrupted renaming leaves the position twice at worst, never a reference to a missing one.
 - A position's id can be reused: a reopened position is the same role, though it starts vacant.
-- Deleting a position leaves its employee hired, and needs `--force` while the position has tasks pending in threads, which then wait for a position that no longer exists.
+- Deleting a position leaves its employee hired, and needs `--force` while the position has tasks pending on tickets, which then wait for a position that no longer exists.
 
 ## Decisions
 

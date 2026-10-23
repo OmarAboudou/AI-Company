@@ -1,21 +1,20 @@
-import { sendMessage } from "../../messaging/message/send-message.ts"
 import { createCompanyWorkedByDirectors } from "../create-company-worked-by-directors.testing.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
+import { sendExampleMessage } from "../send-example-message.testing.ts"
 import { type OpenedTask, openNextTask } from "../task/open-next-task.ts"
 
 export type CompanyWithTaskInProgress = {
     projectRoot: string
-    threadId: string
+    ticketNumber: number
     openedTask: OpenedTask
 }
 
 export async function createCompanyWithTaskInProgress(): Promise<CompanyWithTaskInProgress> {
-    const { projectRoot, threadId } = await createCompanyWorkedByDirectors()
-    await sendMessage(
+    const { projectRoot, ticketNumber } = await createCompanyWorkedByDirectors()
+    await sendExampleMessage(
         projectRoot,
-        {},
-        threadId,
-        { body: "Can we ship on Friday?" },
+        ticketNumber,
+        "Can we ship on Friday?",
         createExampleWorkCatalog(["qa-tester"]),
     )
     const { openedTask } = await openNextTask(
@@ -26,5 +25,5 @@ export async function createCompanyWithTaskInProgress(): Promise<CompanyWithTask
     if (openedTask === undefined) {
         throw new Error("The directors have no task to open")
     }
-    return { projectRoot, threadId, openedTask }
+    return { projectRoot, ticketNumber, openedTask }
 }

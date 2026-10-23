@@ -70,17 +70,17 @@
                     "maximum": 9007199254740991,
                     "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
                 },
-                "threadId": {
-                    "type": "string",
-                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the thread, i.e. the name of its folder in .aico/threads."
+                "ticketNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "description": "Number of the ticket, i.e. the name of its folder in .aico/tickets: tickets are numbered in sequence, from 1."
                 },
                 "messageId": {
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the message, i.e. the name of its folder in the thread's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
+                    "description": "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
                 },
                 "positionId": {
                     "type": "string",
@@ -99,12 +99,12 @@
                 "type",
                 "occurredAt",
                 "depth",
-                "threadId",
+                "ticketNumber",
                 "messageId",
                 "positionId"
             ],
             "additionalProperties": false,
-            "description": "A message was added to a thread."
+            "description": "A message was added to a ticket's discussion."
         },
         {
             "type": "object",

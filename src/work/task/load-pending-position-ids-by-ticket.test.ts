@@ -5,11 +5,11 @@ import { loadJournal } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { createTask } from "./create-task.ts"
-import { loadPendingPositionIdsByThread } from "./load-pending-position-ids-by-thread.ts"
+import { loadPendingPositionIdsByTicket } from "./load-pending-position-ids-by-ticket.ts"
 import { taskFailedEventType } from "./schema.ts"
 
-const frameworkThreadId = "2026-10-18-choice-of-framework"
-const budgetThreadId = "2026-10-18-budget"
+const frameworkTicketNumber = 1
+const budgetTicketNumber = 2
 let projectRoot: string
 
 beforeEach(async () => {
@@ -20,13 +20,13 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-async function askPosition(positionId: string, threadId: string) {
+async function askPosition(positionId: string, ticketNumber: number) {
     const messageSentEvent = await recordEvent(
         await loadJournal(projectRoot),
         messageSentEventType,
         {
             depth: 0,
-            threadId,
+            ticketNumber,
             messageId: "20261018-140322-123-3f9a",
             positionId: "director",
         },
@@ -34,7 +34,7 @@ async function askPosition(positionId: string, threadId: string) {
     const uncreatedTask = {
         type: "example",
         positionId,
-        params: { threadId },
+        params: { ticketNumber },
     }
     return createTask(
         await loadJournal(projectRoot),
@@ -43,34 +43,34 @@ async function askPosition(positionId: string, threadId: string) {
     )
 }
 
-describe("loadPendingPositionIdsByThread", () => {
-    test("gives each thread the positions with a pending task there", async () => {
-        await askPosition("backend-developer", frameworkThreadId)
-        await askPosition("qa-tester", frameworkThreadId)
-        await askPosition("backend-developer", frameworkThreadId)
-        await askPosition("director", budgetThreadId)
+describe("loadPendingPositionIdsByTicket", () => {
+    test("gives each ticket the positions with a pending task on it", async () => {
+        await askPosition("backend-developer", frameworkTicketNumber)
+        await askPosition("qa-tester", frameworkTicketNumber)
+        await askPosition("backend-developer", frameworkTicketNumber)
+        await askPosition("director", budgetTicketNumber)
 
-        const pendingPositionIds = await loadPendingPositionIdsByThread(
+        const pendingPositionIds = await loadPendingPositionIdsByTicket(
             await loadJournal(projectRoot),
         )
 
         expect(pendingPositionIds).toEqual(
             new Map([
-                [frameworkThreadId, ["backend-developer", "qa-tester"]],
-                [budgetThreadId, ["director"]],
+                [frameworkTicketNumber, ["backend-developer", "qa-tester"]],
+                [budgetTicketNumber, ["director"]],
             ]),
         )
     })
 
     test("leaves out the tasks that ended", async () => {
-        const task = await askPosition("qa-tester", frameworkThreadId)
+        const task = await askPosition("qa-tester", frameworkTicketNumber)
         await recordEvent(await loadJournal(projectRoot), taskFailedEventType, {
             depth: 1,
             taskId: task.id,
-            reason: "The thread asks nothing.",
+            reason: "The ticket asks nothing.",
         })
 
-        const pendingPositionIds = await loadPendingPositionIdsByThread(
+        const pendingPositionIds = await loadPendingPositionIdsByTicket(
             await loadJournal(projectRoot),
         )
 

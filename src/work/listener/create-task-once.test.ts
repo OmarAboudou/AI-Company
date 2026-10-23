@@ -28,12 +28,12 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const threadId = "2026-10-18-choice-of-framework"
+const ticketNumber = 1
 
 async function recordQuestionSent(depth = 0) {
     return recordEvent(await loadJournal(projectRoot), messageSentEventType, {
         depth,
-        threadId,
+        ticketNumber,
         messageId: "20261018-140322-123-3f9a",
         positionId: "director",
     })
@@ -42,7 +42,7 @@ async function recordQuestionSent(depth = 0) {
 function createExampleRequest(positionId = "qa-tester"): UncreatedTask {
     return createUncreatedTask(exampleTaskType, {
         positionId,
-        params: { threadId },
+        params: { ticketNumber },
     })
 }
 
@@ -77,7 +77,7 @@ describe("createTaskOnce", () => {
         expect(createdTasks).toMatchObject([
             {
                 type: "example",
-                params: { threadId },
+                params: { ticketNumber },
                 positionId: "qa-tester",
                 causeEventId: questionSent.id,
             },
@@ -124,7 +124,7 @@ describe("createTaskOnce through the positions' id history", () => {
         type: "message-sent",
         occurredAt: "2026-10-18T14:03:22.123Z",
         depth: 0,
-        threadId,
+        ticketNumber,
         messageId: "20261018-140322-123-3f9a",
         positionId: "director",
     }

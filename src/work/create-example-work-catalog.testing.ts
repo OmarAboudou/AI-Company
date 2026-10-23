@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { IdSchema } from "../ids/id-schema.ts"
 import { messageSentEventType } from "../messaging/message/schema.ts"
+import { TicketNumberSchema } from "../messaging/ticket/schema.ts"
 import {
     defineListener,
     type ListenerEffect,
@@ -14,21 +15,21 @@ import type { WorkCatalog } from "./work-catalog.ts"
 export const exampleTaskType = defineTaskType({
     type: "example",
     paramsSchema: z.strictObject({
-        threadId: IdSchema,
+        ticketNumber: TicketNumberSchema,
         doneSummary: z.string().optional(),
     }),
     resultSchema: z.strictObject({ runId: IdSchema.optional() }),
-    async createSession({ threadId, doneSummary }) {
+    async createSession({ ticketNumber, doneSummary }) {
         if (doneSummary !== undefined) {
             return { kind: "done", summary: doneSummary, result: {} }
         }
         return {
             kind: "run",
-            userMessage: `Answer the last message of thread ${threadId}.`,
-            toolNames: ["message_send", "thread_show"],
+            userMessage: `Answer the last message of ticket #${ticketNumber}.`,
+            toolNames: ["message_send", "ticket_show"],
             boundToolInputs: {
-                message_send: { threadId },
-                thread_show: { threadId },
+                message_send: { ticketNumber },
+                ticket_show: { ticketNumber },
             },
             result: {},
         }
@@ -43,7 +44,7 @@ export function createExampleWorkCatalog(
 ): WorkCatalog {
     const exampleListener = defineListener({
         eventType: messageSentEventType,
-        getEffects: ({ threadId, positionId }) =>
+        getEffects: ({ ticketNumber, positionId }) =>
             askedPositionIds
                 .filter((askedPositionId) => askedPositionId !== positionId)
                 .map(
@@ -51,7 +52,7 @@ export function createExampleWorkCatalog(
                         kind: "create-task",
                         task: createUncreatedTask(exampleTaskType, {
                             positionId: askedPositionId,
-                            params: { threadId },
+                            params: { ticketNumber },
                         }),
                     }),
                 ),

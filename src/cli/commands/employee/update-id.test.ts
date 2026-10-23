@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { saveExampleLlmModel } from "../../../llm/model/save-example-llm-model.testing.ts"
 import { saveMessage } from "../../../messaging/message/storage.ts"
-import { saveThread } from "../../../messaging/thread/storage.ts"
+import { saveNewTicket } from "../../../messaging/ticket/storage.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
 import { createEmployee } from "../../../organization/employee/create-employee.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
@@ -101,7 +101,7 @@ describe("aico employee update-id", () => {
 
 describe("--reuse-id", () => {
     const committer = { name: "Omar Aboudou", email: "omar@example.com" }
-    const threadId = "2026-10-18-budget"
+    const ticketNumber = 1
 
     beforeEach(async () => {
         const projectRoot = getProjectPath()
@@ -110,17 +110,17 @@ describe("--reuse-id", () => {
     })
 
     async function archiveMessageBy(employeeId: string, sentAt: string) {
-        await saveThread(getProjectPath(), {
-            id: threadId,
-            subject: "Budget",
+        await saveNewTicket(getProjectPath(), {
+            number: ticketNumber,
+            title: "Budget",
+            requester: { id: "director", title: "Director" },
+            assignee: { id: "developer", title: "Developer" },
+            committer,
             createdAt: "2026-10-18T14:00:00.000Z",
-            createdBy: {
-                position: { id: "director", title: "Director" },
-                committer,
-            },
+            request: "How much?",
         })
         await saveMessage(getProjectPath(), {
-            threadId,
+            ticketNumber,
             id: "20261018-140100-000-0000",
             position: { id: "developer", title: "Developer" },
             employee: { id: employeeId, name: "Earlier" },

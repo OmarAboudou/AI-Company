@@ -3,7 +3,7 @@ import { formatTaggedMessage } from "./format-tagged-message.ts"
 import type { Message } from "./schema.ts"
 
 const question: Message = {
-    threadId: "2026-10-18-choice-of-framework",
+    ticketNumber: 1,
     id: "20261018-140322-123-3f9a",
     position: { id: "director", title: "Director" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },

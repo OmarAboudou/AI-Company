@@ -16,7 +16,7 @@ afterEach(async () => {
 })
 
 const question: Message = {
-    threadId: "2026-10-18-choice-of-framework",
+    ticketNumber: 1,
     id: "20261018-140322-123-3f9a",
     position: { id: "director", title: "Director" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
@@ -40,13 +40,13 @@ describe("saveMessage and listMessages", () => {
         const messageFolderPath = join(
             projectRoot,
             ".aico",
-            "threads",
-            question.threadId,
+            "tickets",
+            String(question.ticketNumber),
             "messages",
             question.id,
         )
         const body = await Bun.file(join(messageFolderPath, "body.md")).text()
-        const messages = await listMessages(projectRoot, question.threadId)
+        const messages = await listMessages(projectRoot, question.ticketNumber)
 
         expect(body).toBe(question.body)
         expect(messages).toEqual([question])
@@ -56,7 +56,7 @@ describe("saveMessage and listMessages", () => {
         await saveMessage(projectRoot, answer)
         await saveMessage(projectRoot, question)
 
-        const messages = await listMessages(projectRoot, question.threadId)
+        const messages = await listMessages(projectRoot, question.ticketNumber)
 
         expect(messages).toEqual([question, answer])
     })

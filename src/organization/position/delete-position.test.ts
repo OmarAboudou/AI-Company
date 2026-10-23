@@ -28,25 +28,29 @@ afterEach(async () => {
 
 const developer = { id: "developer", title: "Developer", description: "" }
 
-async function askPosition(positionId: string): Promise<string> {
-    const threadId = "2026-10-19-release"
+async function askPosition(positionId: string): Promise<number> {
+    const ticketNumber = 3
     const messageSentEvent = await recordEvent(
         await loadJournal(projectRoot),
         messageSentEventType,
         {
             depth: 0,
-            threadId,
+            ticketNumber,
             messageId: "20261019-100000-000-a1b2",
             positionId: "director",
         },
     )
-    const uncreatedTask = { type: "example", positionId, params: { threadId } }
+    const uncreatedTask = {
+        type: "example",
+        positionId,
+        params: { ticketNumber },
+    }
     await createTask(
         await loadJournal(projectRoot),
         uncreatedTask,
         messageSentEvent,
     )
-    return threadId
+    return ticketNumber
 }
 
 describe("deletePosition", () => {
@@ -91,21 +95,23 @@ describe("deletePosition", () => {
         expect(await hasPosition(projectRoot, "director")).toBe(true)
     })
 
-    test("refuses a position with pending tasks, naming their threads", async () => {
+    test("refuses a position with pending tasks, naming their tickets", async () => {
         await savePosition(projectRoot, developer)
-        const threadId = await askPosition("developer")
+        const ticketNumber = await askPosition("developer")
 
         const deletion = deletePosition(projectRoot, "developer")
 
         await expect(deletion).rejects.toThrow(UserError)
-        await expect(deletion).rejects.toThrow(`in these threads: ${threadId}.`)
+        await expect(deletion).rejects.toThrow(
+            `on these tickets: #${ticketNumber}.`,
+        )
         await expect(deletion).rejects.toThrow("Add --force")
         expect(await hasPosition(projectRoot, "developer")).toBe(true)
     })
 
-    test("deletes a position with pending tasks if forced, and returns their threads", async () => {
+    test("deletes a position with pending tasks if forced, and returns their tickets", async () => {
         await savePosition(projectRoot, developer)
-        const threadId = await askPosition("developer")
+        const ticketNumber = await askPosition("developer")
 
         const forceOptions = { shouldForce: true }
 
@@ -115,7 +121,7 @@ describe("deletePosition", () => {
             forceOptions,
         )
 
-        expect(deletion.pendingThreadIds).toEqual([threadId])
+        expect(deletion.pendingTicketNumbers).toEqual([ticketNumber])
         expect(await hasPosition(projectRoot, "developer")).toBe(false)
     })
 

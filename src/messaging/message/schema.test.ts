@@ -44,7 +44,7 @@ describe("messageSentEventType", () => {
         type: "message-sent",
         occurredAt: "2026-10-18T14:03:22.123Z",
         depth: 0,
-        threadId: "2026-10-18-choice-of-framework",
+        ticketNumber: 1,
         messageId: "20261018-140322-123-3f9a",
         positionId: "director",
     }
@@ -53,7 +53,7 @@ describe("messageSentEventType", () => {
         return messageSentEventType.recordingSchema.safeParse(event).success
     }
 
-    test("accepts a message sent, with its thread, id and author", () => {
+    test("accepts a message sent, with its ticket, id and author", () => {
         expect(isAccepted(messageSentEvent)).toBe(true)
     })
 
