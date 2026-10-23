@@ -338,62 +338,6 @@
             "required": ["type", "occurredAt", "depth", "taskId", "reason"],
             "additionalProperties": false,
             "description": "The task was given up."
-        },
-        {
-            "type": "object",
-            "properties": {
-                "type": { "type": "string", "const": "chain-stopped" },
-                "occurredAt": {
-                    "type": "string",
-                    "format": "date-time",
-                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-                    "description": "When it happened, in UTC."
-                },
-                "depth": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 9007199254740991,
-                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
-                },
-                "causeEventId": {
-                    "type": "string",
-                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the event the task would have been created for, i.e. the name of its file in .aico/journal."
-                },
-                "stoppedTask": {
-                    "type": "object",
-                    "properties": {
-                        "type": {
-                            "type": "string",
-                            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-                            "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
-                        },
-                        "positionId": {
-                            "type": "string",
-                            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-                            "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
-                        },
-                        "params": {
-                            "type": "object",
-                            "propertyNames": { "type": "string" },
-                            "additionalProperties": {}
-                        }
-                    },
-                    "required": ["type", "positionId", "params"],
-                    "additionalProperties": false,
-                    "description": "The task the chain stopped before, as a listener asked for it: its type, the position it was for and its parameters."
-                }
-            },
-            "required": [
-                "type",
-                "occurredAt",
-                "depth",
-                "causeEventId",
-                "stoppedTask"
-            ],
-            "additionalProperties": false,
-            "description": "AICo created no task for an event, whose chain of tasks had reached the company's maxTaskDepth."
         }
     ],
     "title": "AICo event",

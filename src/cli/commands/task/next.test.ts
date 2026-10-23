@@ -49,7 +49,7 @@ describe("aico task next", () => {
 
         expect(next.exitCode).toBe(0)
         expect(next.stdout).toMatch(
-            /^Task "[^"]+", catch-up-thread, as QA \(@qa-tester\): link 1 of its chain, which stops beyond 200 links\.\n\n── System prompt ──\nYou are Julie, QA \(@qa-tester\) at Acme\./,
+            /^Task "[^"]+", catch-up-thread, as QA \(@qa-tester\)\.\n\n── System prompt ──\nYou are Julie, QA \(@qa-tester\) at Acme\./,
         )
         expect(next.stdout).toContain("── Message ──\n# Thread")
         expect(next.stdout).toContain("@qa-tester Can we ship on Friday?")

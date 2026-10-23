@@ -7,7 +7,7 @@ import { loadDispatchedEventIds, saveDispatchedEventIds } from "./storage.ts"
 
 export type DispatchEventsResult = Pick<
     Dispatching,
-    "createdTasks" | "doneTasks" | "chainStoppedEvents"
+    "createdTasks" | "doneTasks"
 >
 
 export async function dispatchEvents(
@@ -38,6 +38,6 @@ export async function dispatchEvents(
     if (newEvents.length > 0) {
         await saveDispatchedEventIds(projectRoot, dispatchedEventIds)
     }
-    const { createdTasks, doneTasks, chainStoppedEvents } = dispatching
-    return { createdTasks, doneTasks, chainStoppedEvents }
+    const { createdTasks, doneTasks } = dispatching
+    return { createdTasks, doneTasks }
 }

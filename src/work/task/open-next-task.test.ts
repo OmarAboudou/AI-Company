@@ -100,15 +100,6 @@ describe("openNextTask", () => {
         )
     })
 
-    test("says where the task stands in its chain", async () => {
-        await ask("@qa-tester Can we ship on Friday?")
-
-        const { openedTask } = await openNextTask(projectRoot, julieEnvironment)
-
-        expect(openedTask?.taskDepth).toBe(1)
-        expect(openedTask?.maxTaskDepth).toBe(200)
-    })
-
     test("starts the person's run at its cause's depth, adding no link", async () => {
         await ask("@qa-tester Can we ship on Friday?")
 

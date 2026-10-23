@@ -1,8 +1,5 @@
-import { requireJournalEvent } from "../../journal/require-journal-event.ts"
 import { loadJournal } from "../../journal/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
-import { defaultMaxTaskDepth } from "../../organization/company/schema.ts"
-import { loadCompany } from "../../organization/company/storage.ts"
 import { getPositionsWorkedBy } from "../../organization/human/get-positions-worked-by.ts"
 import { readCurrentHuman } from "../../organization/human/read-current-human.ts"
 import { readCurrentPositionId } from "../../organization/human/read-current-position-id.ts"
@@ -29,8 +26,6 @@ export type OpenedTask = {
     position: Position
     run: Run
     stagedTurn: StagedTurn
-    taskDepth: number
-    maxTaskDepth: number
     isResumed: boolean
 }
 
@@ -44,10 +39,9 @@ export async function openNextTask(
     environment: NodeJS.ProcessEnv,
 ): Promise<OpenNextTaskResult> {
     await requireCompany(projectRoot)
-    const [human, assignments, company, journal] = await Promise.all([
+    const [human, assignments, journal] = await Promise.all([
         readCurrentHuman(projectRoot, environment),
         listPositionAssignments(projectRoot),
-        loadCompany(projectRoot),
         loadJournal(projectRoot),
     ])
     const positionsToWork = requirePositionsToWork(
@@ -78,7 +72,6 @@ export async function openNextTask(
                 Number(taskStates.get(second.task.id) === "running") -
                 Number(taskStates.get(first.task.id) === "running"),
         )
-    const maxTaskDepth = company.maxTaskDepth ?? defaultMaxTaskDepth
     const doneTasks: OpenNextTaskResult["doneTasks"] = []
     for (const { task, position } of tasksToWork) {
         if (position === undefined) {
@@ -86,14 +79,11 @@ export async function openNextTask(
         }
         const resumableRun = await loadResumableRun(journal, task, human)
         if (resumableRun !== undefined) {
-            const causeEvent = requireJournalEvent(journal, task.causeEventId)
             const openedTask = {
                 task,
                 position,
                 run: resumableRun,
                 stagedTurn: await loadStagedTurn(projectRoot, resumableRun.id),
-                taskDepth: causeEvent.depth + 1,
-                maxTaskDepth,
                 isResumed: true,
             }
             return { openedTask, doneTasks }
@@ -103,7 +93,7 @@ export async function openNextTask(
             doneTasks.push({ task, summary: beginning.summary })
             continue
         }
-        const { taskDepth, session } = beginning
+        const { session } = beginning
         const run = await startHumanRun(journal, {
             task,
             position,
@@ -115,8 +105,6 @@ export async function openNextTask(
             position,
             run,
             stagedTurn: { blocks: [] },
-            taskDepth,
-            maxTaskDepth,
             isResumed: false,
         }
         return { openedTask, doneTasks }

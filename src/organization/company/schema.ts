@@ -1,8 +1,6 @@
 import { z } from "zod"
 import { IdSchema } from "../../ids/id-schema.ts"
 
-export const defaultMaxTaskDepth = 200
-
 export const CompanyConfigSchema = z
     .strictObject({
         name: z
@@ -14,13 +12,6 @@ export const CompanyConfigSchema = z
             description:
                 "Id of the director's position, i.e. the name of its folder in .aico/positions: the company's management, held by no employee: the people working on the repository, identified by git, write from it. It can't be deleted.",
         }),
-        maxTaskDepth: z
-            .int()
-            .min(1)
-            .optional()
-            .meta({
-                description: `How deep a chain of tasks may grow, each created from an event of the one before, such as LLM employees mentioning each other: beyond it, AICo creates no task and records chain-stopped in the journal. A person's message starts again from 0. ${defaultMaxTaskDepth} when absent.`,
-            }),
     })
     .meta({
         title: "AICo company",
