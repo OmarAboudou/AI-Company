@@ -7,6 +7,7 @@ A ticket's task gives the position its situation: the request, the messages of t
 ## Invariants
 
 - A ticket's task shows the ticket as it is when it runs, not when it was created.
+- A ticket's task becomes pointless once its ticket is closed: queued, it is cancelled; running, it stops at its next step.
 - A position's first session on a ticket gets the whole discussion; a later one gets the messages since its last session began, and reads the earlier ones with `ticket_show`.
 
 ## Decisions

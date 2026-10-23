@@ -93,6 +93,15 @@ async function createSession(taskType: TicketTaskType, task: Task) {
     return taskType.createSession(taskType.paramsSchema.parse(task.params), ctx)
 }
 
+async function loadCancellationReason(task: Task) {
+    const journal = await loadJournal(projectRoot)
+    const position = await loadPosition(projectRoot, task.positionId)
+    const causeEvent = requireJournalEvent(journal, task.causeEventId)
+    const ctx = { projectRoot, journal, task, position, causeEvent }
+    const params = handleTaskType.paramsSchema.parse(task.params)
+    return handleTaskType.getCancellationReason?.(params, ctx)
+}
+
 async function createUserMessage(taskType: TicketTaskType, positionId: string) {
     const task = await createTicketTask(taskType, positionId)
     const session = await createSession(taskType, task)
@@ -171,6 +180,17 @@ describe("a ticket's task", () => {
         expect(userMessage).not.toContain("Why Hono?")
         expect(userMessage).toContain("Bun 1.4?")
         expect(userMessage).toContain("Yes.")
+    })
+
+    test("becomes pointless once its ticket is closed", async () => {
+        const task = await createTicketTask(handleTaskType, "developer")
+        const before = await loadCancellationReason(task)
+        await act("cancel", "Never mind.")
+
+        const after = await loadCancellationReason(task)
+
+        expect(before).toBeUndefined()
+        expect(after).toBe(`Ticket #${ticketNumber} was closed, cancelled.`)
     })
 
     test("says when no message arrived since the position's last session", async () => {
