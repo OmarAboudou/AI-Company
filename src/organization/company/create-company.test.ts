@@ -6,6 +6,7 @@ import { createGitRepository } from "../../git/create-git-repository.testing.ts"
 import { createReservedBranch } from "../../git/reserved-branch/create-reserved-branch.ts"
 import { isReservedBranchWorktree } from "../../git/reserved-branch/is-reserved-branch-worktree.ts"
 import { runGit } from "../../git/run-git.ts"
+import { listEvents } from "../../journal/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { loadPosition } from "../position/storage.ts"
 import { loadProject } from "../project/storage.ts"
@@ -39,6 +40,13 @@ describe("createCompany", () => {
             directorPositionId: "director",
         })
         expect(createdCompany).toEqual(company)
+    })
+
+    test("records the company's creation, for the director's first task", async () => {
+        await createCompany(projectRoot, acme)
+
+        const events = await listEvents(projectRoot)
+        expect(events).toMatchObject([{ type: "company-created", depth: 0 }])
     })
 
     test("describes the project the company carries out", async () => {

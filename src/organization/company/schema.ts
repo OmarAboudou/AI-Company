@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { IdSchema } from "../../ids/id-schema.ts"
+import { defineEventType } from "../../journal/schema.ts"
 
 export const CompanyConfigSchema = z
     .strictObject({
@@ -20,3 +21,10 @@ export const CompanyConfigSchema = z
     })
 
 export type Company = z.infer<typeof CompanyConfigSchema>
+
+export const companyCreatedEventType = defineEventType({
+    type: "company-created",
+    description:
+        "aico init created the company, with its director's position, whose first task follows.",
+    fields: {},
+})

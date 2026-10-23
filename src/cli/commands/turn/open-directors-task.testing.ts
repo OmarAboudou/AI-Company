@@ -7,7 +7,8 @@ import { openNextTask } from "../../../work/task/open-next-task.ts"
 export type DirectorsTask = { ticketNumber: number; taskId: string }
 
 // The directors open the task that AICo's own listeners give: the
-// command line, which knows only AICo's task types, can then end it.
+// command line, which knows only AICo's task types, can then end it. The
+// QA position is selected, the director's What now? coming first.
 export async function openDirectorsTask(
     projectRoot: string,
 ): Promise<DirectorsTask> {
@@ -24,7 +25,9 @@ export async function openDirectorsTask(
         request: "Can we ship on Friday?",
         rawAssigneePositionId: "qa-tester",
     })
-    const { openedTask } = await openNextTask(projectRoot, {})
+    const { openedTask } = await openNextTask(projectRoot, {
+        AICO_CURRENT_POSITION_ID: "qa-tester",
+    })
     if (openedTask === undefined) {
         throw new Error("The directors have no task to open")
     }

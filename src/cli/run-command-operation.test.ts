@@ -163,10 +163,10 @@ describe("a command that changes the company", () => {
     test("commits nothing when it changes nothing", () => {
         runCli("init", "-n", "Acme")
 
-        const opening = runCommittedCli("task", "next")
+        const updating = runCommittedCli("company", "update", "-n", "Acme")
 
-        expect(opening).toEqual(
-            createExpectedCommit(opening.commandLine, "aico init"),
+        expect(updating).toEqual(
+            createExpectedCommit(updating.commandLine, "aico init"),
         )
     })
 })

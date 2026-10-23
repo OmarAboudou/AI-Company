@@ -31,11 +31,13 @@ describe("aico run", () => {
         })
     })
 
-    test("says when no task is ready, nor waiting", () => {
+    test("lists the director's What now? as waiting for the directors", () => {
         const running = runCli("run")
 
         expect(running.exitCode).toBe(0)
-        expect(running.stdout).toBe("No task is ready, nor waiting.\n")
+        expect(running.stdout).toMatch(
+            /^No task is ready\. These wait:\n\S+ +@director +what-now +for the directors\n$/,
+        )
     })
 
     test("lists the tasks left waiting, and why", async () => {

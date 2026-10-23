@@ -3,11 +3,17 @@ import { createReservedBranch } from "../../git/reserved-branch/create-reserved-
 import { isReservedBranchWorktree } from "../../git/reserved-branch/is-reserved-branch-worktree.ts"
 import { openReservedBranch } from "../../git/reserved-branch/open-reserved-branch.ts"
 import { runOperation } from "../../git/reserved-branch/run-operation.ts"
+import { recordEvent } from "../../journal/record-event.ts"
+import { loadJournal } from "../../journal/storage.ts"
 import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
 import { savePosition } from "../position/storage.ts"
 import { saveProject } from "../project/storage.ts"
-import { type Company, CompanyConfigSchema } from "./schema.ts"
+import {
+    type Company,
+    CompanyConfigSchema,
+    companyCreatedEventType,
+} from "./schema.ts"
 import { hasCompany, saveCompany } from "./storage.ts"
 
 const directorPositionId = "director"
@@ -43,6 +49,11 @@ export async function createCompany(
             }),
             saveProject(projectRoot, { description: projectDescription }),
         ])
+        await recordEvent(
+            await loadJournal(projectRoot),
+            companyCreatedEventType,
+            { depth: 0 },
+        )
         // The company comes last: until its config.json exists, AICo
         // sees no company, so an interrupted init can be run again.
         await saveCompany(projectRoot, company)

@@ -5,6 +5,7 @@ import { answerTaskType } from "./answer/answer.ts"
 import { handleTaskType } from "./handle/handle.ts"
 import { resumeTaskType } from "./resume/resume.ts"
 import { validateTaskType } from "./validate/validate.ts"
+import { whatNowTaskType } from "./what-now/what-now.ts"
 
 export const builtInTaskTypes: Record<string, TaskType> = Object.fromEntries(
     [
@@ -14,5 +15,6 @@ export const builtInTaskTypes: Record<string, TaskType> = Object.fromEntries(
         validateTaskType,
         analyseFailureTaskType,
         analyseRenouncementTaskType,
+        whatNowTaskType,
     ].map((taskType) => [taskType.type, taskType]),
 )

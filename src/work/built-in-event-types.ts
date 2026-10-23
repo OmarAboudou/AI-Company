@@ -12,6 +12,7 @@ import {
     ticketRenouncedEventType,
 } from "../messaging/ticket/act/schema.ts"
 import { ticketCreatedEventType } from "../messaging/ticket/schema.ts"
+import { companyCreatedEventType } from "../organization/company/schema.ts"
 import { eventsDispatchedEventType } from "./listener/schema.ts"
 import {
     companyPausedEventType,
@@ -26,6 +27,7 @@ import {
 } from "./task/schema.ts"
 
 export const builtInEventTypes = [
+    companyCreatedEventType,
     ticketCreatedEventType,
     questionAskedEventType,
     questionAnsweredEventType,

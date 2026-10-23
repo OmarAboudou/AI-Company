@@ -1,18 +1,34 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { createExampleTicket } from "../../../messaging/ticket/create-example-ticket.testing.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
+import { assignPositionTemporarily } from "../../../organization/position/assign-position-temporarily.ts"
+import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, startCliWithEnv, getProjectPath } = useTemporaryProject()
 
 const sessionTimeoutMs = 30_000
 
+// The QA position, held by the directors, is selected: the director's
+// What now?, which always waits, would never let a session wait.
 beforeEach(async () => {
-    await createCompany(getProjectPath(), { name: "Acme" })
+    const projectRoot = getProjectPath()
+    await createCompany(projectRoot, { name: "Acme" })
+    await createPosition(projectRoot, "qa-tester", {
+        title: "QA",
+        description: "",
+    })
+    await assignPositionTemporarily(projectRoot, "qa-tester", {
+        kind: "directors",
+    })
 })
 
 function startSession() {
-    return startCliWithEnv({}, "task", "work")
+    return startCliWithEnv(
+        { AICO_CURRENT_POSITION_ID: "qa-tester" },
+        "task",
+        "work",
+    )
 }
 
 describe("aico task work", () => {
@@ -34,7 +50,10 @@ describe("aico task work", () => {
     test(
         "lets the person end their session, which gives them Resume",
         async () => {
-            await createExampleTicket(getProjectPath(), { title: "Release" })
+            await createExampleTicket(getProjectPath(), {
+                title: "Release",
+                rawAssigneePositionId: "qa-tester",
+            })
             const session = startSession()
             await session.waitForOutput("Turn 1: what now?")
 
