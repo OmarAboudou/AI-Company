@@ -1,7 +1,7 @@
 import { watch } from "node:fs"
 import { mkdir } from "node:fs/promises"
 import { join } from "node:path"
-import { getLlmcoFolderPath } from "../files/get-llmco-folder-path.ts"
+import { getAicoFolderPath } from "../files/get-aico-folder-path.ts"
 import { listJsonFileIds } from "../files/list-json-file-ids.ts"
 import { readJsonFile } from "../files/read-json-file.ts"
 import { saveNewJsonFile } from "../files/save-new-json-file.ts"
@@ -12,7 +12,7 @@ import {
 } from "./schema.ts"
 
 function getJournalFolderPath(projectRoot: string): string {
-    return join(getLlmcoFolderPath(projectRoot), "journal")
+    return join(getAicoFolderPath(projectRoot), "journal")
 }
 
 function getEventFilePath(projectRoot: string, id: string): string {

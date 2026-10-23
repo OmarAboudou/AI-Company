@@ -10,7 +10,7 @@ const { runCli, getProjectPath } = useTemporaryProject()
 const interimEmployee = ["position", "interim", "employee"]
 
 function getPositionStatePath(id: string): string {
-    return getProjectPath(".llmco", ".state", "positions", `${id}.json`)
+    return getProjectPath(".aico", ".state", "positions", `${id}.json`)
 }
 
 async function loadPositionStateFile(id: string): Promise<unknown> {

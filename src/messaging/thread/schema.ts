@@ -53,7 +53,7 @@ export const ThreadConfigSchema = z
     .meta({
         title: "llmco thread",
         description:
-            "A thread of messages between positions, in .llmco/threads/<thread-id>/thread.json. Its messages live next to it, in messages/<message-id>/. Never modified once written.",
+            "A thread of messages between positions, in .aico/threads/<thread-id>/thread.json. Its messages live next to it, in messages/<message-id>/. Never modified once written.",
     })
 
 export type ThreadConfig = z.infer<typeof ThreadConfigSchema>

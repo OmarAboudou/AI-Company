@@ -105,5 +105,5 @@
     "required": ["name"],
     "additionalProperties": false,
     "title": "llmco LLM provider",
-    "description": "Configuration of an LLM provider, in .llmco/llm-providers/<provider-id>/config.json. Its models live next to it, in models/<model-id>/config.json."
+    "description": "Configuration of an LLM provider, in .aico/llm-providers/<provider-id>/config.json. Its models live next to it, in models/<model-id>/config.json."
 }

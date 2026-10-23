@@ -1,14 +1,14 @@
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { copyFolder } from "../../files/copy-folder.ts"
-import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
+import { getAicoFolderPath } from "../../files/get-aico-folder-path.ts"
 import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
 import { saveJsonFile } from "../../files/save-json-file.ts"
 import { type LlmProvider, LlmProviderConfigSchema } from "./schema.ts"
 
 function getLlmProvidersFolderPath(projectRoot: string): string {
-    return join(getLlmcoFolderPath(projectRoot), "llm-providers")
+    return join(getAicoFolderPath(projectRoot), "llm-providers")
 }
 
 export function getLlmProviderFolderPath(

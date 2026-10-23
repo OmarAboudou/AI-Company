@@ -125,7 +125,7 @@ describe("corrupted files", () => {
         runCli("init", "--name", "Acme")
         runCli("position", "create", "developer", "--title", "Developer")
         await Bun.write(
-            getProjectPath(".llmco", "positions", "developer", "config.json"),
+            getProjectPath(".aico", "positions", "developer", "config.json"),
             "{ not json",
         )
 
@@ -133,7 +133,7 @@ describe("corrupted files", () => {
 
         expect(list.exitCode).toBe(1)
         expect(list.stderr).toStartWith(
-            "Invalid JSON in .llmco/positions/developer/config.json",
+            "Invalid JSON in .aico/positions/developer/config.json",
         )
     })
 })

@@ -12,7 +12,7 @@ export const CompanyConfigSchema = z
             .meta({ description: "Name of the company, e.g. Acme." }),
         directorPositionId: IdSchema.meta({
             description:
-                "Id of the director's position, i.e. the name of its folder in .llmco/positions: the company's management, held by no employee: the people working on the repository, identified by git, write from it. It can't be deleted.",
+                "Id of the director's position, i.e. the name of its folder in .aico/positions: the company's management, held by no employee: the people working on the repository, identified by git, write from it. It can't be deleted.",
         }),
         maxTaskDepth: z
             .int()
@@ -25,7 +25,7 @@ export const CompanyConfigSchema = z
     .meta({
         title: "llmco company",
         description:
-            "Configuration of the company, in .llmco/company/config.json. Its description lives next to it, in description.md.",
+            "Configuration of the company, in .aico/company/config.json. Its description lives next to it, in description.md.",
     })
 
 export type CompanyConfig = z.infer<typeof CompanyConfigSchema>

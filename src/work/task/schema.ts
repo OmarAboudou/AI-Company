@@ -29,13 +29,13 @@ export const TaskSchema = z
         }),
         causeEventId: IdSchema.meta({
             description:
-                "Id of the event the task was created for, i.e. the name of its file in .llmco/journal. The task's depth is that event's, plus one.",
+                "Id of the event the task was created for, i.e. the name of its file in .aico/journal. The task's depth is that event's, plus one.",
         }),
     })
     .meta({
         title: "llmco task",
         description:
-            "A task for a position, in .llmco/tasks/<task-id>.json, the id being its cause event's followed by a hash of its type, position and parameters, so that two machines asking for the same task write the same file. Never modified: the task's state comes from the journal's events.",
+            "A task for a position, in .aico/tasks/<task-id>.json, the id being its cause event's followed by a hash of its type, position and parameters, so that two machines asking for the same task write the same file. Never modified: the task's state comes from the journal's events.",
     })
 
 export type Task = z.infer<typeof TaskSchema> & { id: string }
@@ -50,7 +50,7 @@ export const TaskResultSchema = z.record(z.string(), z.unknown()).meta({
 export type TaskResult = z.infer<typeof TaskResultSchema>
 
 const TaskIdSchema = IdSchema.meta({
-    description: "Id of the task, i.e. the name of its file in .llmco/tasks.",
+    description: "Id of the task, i.e. the name of its file in .aico/tasks.",
 })
 
 export const taskCreatedEventType = defineEventType({
@@ -75,7 +75,7 @@ export const taskStartedEventType = defineEventType({
             .optional()
             .meta({
                 description:
-                    "The model an LLM employee does the run with: its provider's id and its own, in .llmco/llm-providers.",
+                    "The model an LLM employee does the run with: its provider's id and its own, in .aico/llm-providers.",
             }),
     },
 })
@@ -123,7 +123,7 @@ export const chainStoppedEventType = defineEventType({
     fields: {
         causeEventId: IdSchema.meta({
             description:
-                "Id of the event the task would have been created for, i.e. the name of its file in .llmco/journal.",
+                "Id of the event the task would have been created for, i.e. the name of its file in .aico/journal.",
         }),
         stoppedTask: z
             .strictObject({

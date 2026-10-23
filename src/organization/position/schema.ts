@@ -9,13 +9,13 @@ export const PositionConfigSchema = z
         }),
         defaultEmployeeId: IdSchema.optional().meta({
             description:
-                "Id of the employee working this position by default, i.e. the name of its folder in .llmco/employees. Absent when the position is vacant.",
+                "Id of the employee working this position by default, i.e. the name of its folder in .aico/employees. Absent when the position is vacant.",
         }),
     })
     .meta({
         title: "llmco position",
         description:
-            "Configuration of a position, in .llmco/positions/<position-id>/config.json. Its job description lives next to it, in description.md.",
+            "Configuration of a position, in .aico/positions/<position-id>/config.json. Its job description lives next to it, in description.md.",
     })
 
 export type PositionConfig = z.infer<typeof PositionConfigSchema>
@@ -34,7 +34,7 @@ export const WorkerSchema = z
             }),
             employeeId: IdSchema.meta({
                 description:
-                    "Id of the employee working the position, i.e. the name of its folder in .llmco/employees.",
+                    "Id of the employee working the position, i.e. the name of its folder in .aico/employees.",
             }),
         }),
         z.strictObject({
@@ -61,7 +61,7 @@ export const PositionStateSchema = z
     .meta({
         title: "llmco position state",
         description:
-            "What happens to a position while the company runs, in .llmco/.state/positions/<position-id>.json. Written by llmco and ignored by git; absent while the position's default employee works it, or nobody if it is vacant.",
+            "What happens to a position while the company runs, in .aico/.state/positions/<position-id>.json. Written by llmco and ignored by git; absent while the position's default employee works it, or nobody if it is vacant.",
     })
 
 export type PositionState = z.infer<typeof PositionStateSchema>

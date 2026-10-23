@@ -11,5 +11,5 @@ export const DispatchedEventsSchema = z
     .meta({
         title: "llmco dispatched events",
         description:
-            "The journal's events that this machine has dispatched to the listeners, in .llmco/.state/dispatched-events.json. Written by llmco and ignored by git: another machine dispatches them again, and finds the tasks they created.",
+            "The journal's events that this machine has dispatched to the listeners, in .aico/.state/dispatched-events.json. Written by llmco and ignored by git: another machine dispatches them again, and finds the tasks they created.",
     })

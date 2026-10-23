@@ -1,12 +1,12 @@
 import { join } from "node:path"
-import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
+import { getAicoFolderPath } from "../../files/get-aico-folder-path.ts"
 import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
 import { saveJsonFile } from "../../files/save-json-file.ts"
 import { type Thread, ThreadConfigSchema } from "./schema.ts"
 
 function getThreadsFolderPath(projectRoot: string): string {
-    return join(getLlmcoFolderPath(projectRoot), "threads")
+    return join(getAicoFolderPath(projectRoot), "threads")
 }
 
 export function getThreadFolderPath(projectRoot: string, id: string): string {

@@ -32,12 +32,12 @@ const testerTask: Task = {
 }
 
 describe("saveTask and listTasks", () => {
-    test("write the task in .llmco/tasks/, then read it back", async () => {
+    test("write the task in .aico/tasks/, then read it back", async () => {
         await saveTask(projectRoot, developerTask)
 
         const taskPath = join(
             projectRoot,
-            ".llmco",
+            ".aico",
             "tasks",
             `${developerTask.id}.json`,
         )

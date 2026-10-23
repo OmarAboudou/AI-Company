@@ -22,7 +22,7 @@
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the thread, i.e. the name of its folder in .llmco/threads."
+                    "description": "Id of the thread, i.e. the name of its folder in .aico/threads."
                 },
                 "messageId": {
                     "type": "string",
@@ -46,7 +46,7 @@
                     "description": "Ids of the positions the message mentions, as its message.json records them."
                 },
                 "runId": {
-                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .llmco/.state/runs. Absent for a person's message.",
+                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a person's message.",
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
@@ -84,7 +84,7 @@
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the task, i.e. the name of its file in .llmco/tasks."
+                    "description": "Id of the task, i.e. the name of its file in .aico/tasks."
                 }
             },
             "required": ["type", "occurredAt", "depth", "taskId"],
@@ -111,13 +111,13 @@
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the task, i.e. the name of its file in .llmco/tasks."
+                    "description": "Id of the task, i.e. the name of its file in .aico/tasks."
                 },
                 "runId": {
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the run, i.e. the name of its transcript in .llmco/.state/runs, kept on the machine that ran it."
+                    "description": "Id of the run, i.e. the name of its transcript in .aico/.state/runs, kept on the machine that ran it."
                 },
                 "worker": {
                     "oneOf": [
@@ -133,7 +133,7 @@
                                     "type": "string",
                                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                                    "description": "Id of the employee working the position, i.e. the name of its folder in .llmco/employees."
+                                    "description": "Id of the employee working the position, i.e. the name of its folder in .aico/employees."
                                 }
                             },
                             "required": ["kind", "employeeId"],
@@ -155,7 +155,7 @@
                     "description": "Who does the run, working the task's position: an employee, or the directors themselves."
                 },
                 "model": {
-                    "description": "The model an LLM employee does the run with: its provider's id and its own, in .llmco/llm-providers.",
+                    "description": "The model an LLM employee does the run with: its provider's id and its own, in .aico/llm-providers.",
                     "type": "object",
                     "properties": {
                         "providerId": {
@@ -204,7 +204,7 @@
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the task, i.e. the name of its file in .llmco/tasks."
+                    "description": "Id of the task, i.e. the name of its file in .aico/tasks."
                 },
                 "summary": {
                     "type": "string",
@@ -288,7 +288,7 @@
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the task, i.e. the name of its file in .llmco/tasks."
+                    "description": "Id of the task, i.e. the name of its file in .aico/tasks."
                 },
                 "reason": {
                     "type": "string",
@@ -359,7 +359,7 @@
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the event the task would have been created for, i.e. the name of its file in .llmco/journal."
+                    "description": "Id of the event the task would have been created for, i.e. the name of its file in .aico/journal."
                 },
                 "stoppedTask": {
                     "type": "object",
@@ -397,5 +397,5 @@
         }
     ],
     "title": "llmco event",
-    "description": "An event of the company's journal, in .llmco/journal/<event-id>.json, the id being the time it happened followed by a random suffix. Written by llmco and never modified: the journal keeps, in git, what happened in the company. Every event has a type, the time it happened and a depth; its other fields are its type's."
+    "description": "An event of the company's journal, in .aico/journal/<event-id>.json, the id being the time it happened followed by a random suffix. Written by llmco and never modified: the journal keeps, in git, what happened in the company. Every event has a type, the time it happened and a depth; its other fields are its type's."
 }

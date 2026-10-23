@@ -28,7 +28,7 @@ export const MessageConfigSchema = z
     .meta({
         title: "llmco message",
         description:
-            "A message of a thread, in .llmco/threads/<thread-id>/messages/<message-id>/message.json. Its body lives next to it, in body.md. Never modified once written.",
+            "A message of a thread, in .aico/threads/<thread-id>/messages/<message-id>/message.json. Its body lives next to it, in body.md. Never modified once written.",
     })
 
 export type MessageConfig = z.infer<typeof MessageConfigSchema>
@@ -53,7 +53,7 @@ export const messageSentEventType = defineEventType({
     fields: {
         threadId: IdSchema.meta({
             description:
-                "Id of the thread, i.e. the name of its folder in .llmco/threads.",
+                "Id of the thread, i.e. the name of its folder in .aico/threads.",
         }),
         messageId: IdSchema.meta({
             description:
@@ -69,7 +69,7 @@ export const messageSentEventType = defineEventType({
         }),
         runId: IdSchema.optional().meta({
             description:
-                "Id of the run that posted the message, i.e. the name of its transcript in .llmco/.state/runs. Absent for a person's message.",
+                "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a person's message.",
         }),
     },
 })

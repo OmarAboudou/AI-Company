@@ -15,7 +15,7 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const getConfigPath = () => join(projectRoot, ".llmco", "config.json")
+const getConfigPath = () => join(projectRoot, ".aico", "config.json")
 
 describe("readTextFile", () => {
     test("returns the file content", async () => {
@@ -26,7 +26,7 @@ describe("readTextFile", () => {
 
     test("names the missing file relative to the project root", async () => {
         const reading = readTextFile(projectRoot, getConfigPath())
-        const refusalMessage = "Missing file: .llmco/config.json"
+        const refusalMessage = "Missing file: .aico/config.json"
 
         await expect(reading).rejects.toThrow(UserError)
         await expect(reading).rejects.toThrow(refusalMessage)

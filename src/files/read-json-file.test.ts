@@ -17,7 +17,7 @@ afterEach(async () => {
 })
 
 const schema = z.strictObject({ title: z.string().min(1) })
-const getConfigPath = () => join(projectRoot, ".llmco", "config.json")
+const getConfigPath = () => join(projectRoot, ".aico", "config.json")
 
 describe("readJsonFile", () => {
     test("returns the parsed and validated config", async () => {
@@ -31,7 +31,7 @@ describe("readJsonFile", () => {
     test("reports invalid JSON with the file name", async () => {
         await Bun.write(getConfigPath(), "{ title: ")
         const reading = readJsonFile(projectRoot, getConfigPath(), schema)
-        const refusalMessage = "Invalid JSON in .llmco/config.json"
+        const refusalMessage = "Invalid JSON in .aico/config.json"
 
         await expect(reading).rejects.toThrow(UserError)
         await expect(reading).rejects.toThrow(refusalMessage)
@@ -40,7 +40,7 @@ describe("readJsonFile", () => {
     test("reports schema errors with the file name and the field", async () => {
         await Bun.write(getConfigPath(), '{ "title": "" }')
         const reading = readJsonFile(projectRoot, getConfigPath(), schema)
-        const refusalPattern = /Invalid \.llmco\/config\.json:\n.*\n.*at title/
+        const refusalPattern = /Invalid \.aico\/config\.json:\n.*\n.*at title/
 
         await expect(reading).rejects.toThrow(UserError)
         await expect(reading).rejects.toThrow(refusalPattern)

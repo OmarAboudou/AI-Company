@@ -47,7 +47,7 @@ describe("aico position assign and unassign", () => {
     })
 
     async function loadPositionConfigFile(id: string): Promise<unknown> {
-        const path = getProjectPath(".llmco", "positions", id, "config.json")
+        const path = getProjectPath(".aico", "positions", id, "config.json")
         return Bun.file(path).json()
     }
 

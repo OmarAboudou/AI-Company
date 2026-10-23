@@ -35,17 +35,12 @@ describe("saveStagedTurn and loadStagedTurn", () => {
 
         const path = join(
             projectRoot,
-            ".llmco",
+            ".aico",
             ".state",
             "runs",
             `${runId}.turn.json`,
         )
-        const gitignorePath = join(
-            projectRoot,
-            ".llmco",
-            ".state",
-            ".gitignore",
-        )
+        const gitignorePath = join(projectRoot, ".aico", ".state", ".gitignore")
         expect(await Bun.file(path).json()).toEqual(stagedTurn)
         expect(await Bun.file(gitignorePath).exists()).toBe(true)
         expect(await loadStagedTurn(projectRoot, runId)).toEqual(stagedTurn)

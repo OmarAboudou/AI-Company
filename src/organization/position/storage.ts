@@ -1,7 +1,7 @@
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { copyFolder } from "../../files/copy-folder.ts"
-import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
+import { getAicoFolderPath } from "../../files/get-aico-folder-path.ts"
 import { getStateFolderPath } from "../../files/get-state-folder-path.ts"
 import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
@@ -17,7 +17,7 @@ import {
 } from "./schema.ts"
 
 function getPositionsFolderPath(projectRoot: string): string {
-    return join(getLlmcoFolderPath(projectRoot), "positions")
+    return join(getAicoFolderPath(projectRoot), "positions")
 }
 
 function getPositionFolderPath(projectRoot: string, id: string): string {

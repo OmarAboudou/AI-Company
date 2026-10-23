@@ -19,11 +19,11 @@ export const EmployeeConfigSchema = z
                 }),
                 providerId: IdSchema.meta({
                     description:
-                        "Id of the LLM provider, i.e. the name of its folder in .llmco/llm-providers, e.g. anthropic.",
+                        "Id of the LLM provider, i.e. the name of its folder in .aico/llm-providers, e.g. anthropic.",
                 }),
                 modelId: IdSchema.meta({
                     description:
-                        "Id of one of the provider's models in llmco, i.e. the name of its folder in .llmco/llm-providers/<provider-id>/models, e.g. claude-opus-5-5. Not its apiId, the id the provider's API expects.",
+                        "Id of one of the provider's models in llmco, i.e. the name of its folder in .aico/llm-providers/<provider-id>/models, e.g. claude-opus-5-5. Not its apiId, the id the provider's API expects.",
                 }),
             })
             .meta({ description: "An employee run by an LLM." }),
@@ -40,7 +40,7 @@ export const EmployeeConfigSchema = z
     .meta({
         title: "llmco employee",
         description:
-            "Configuration of an employee, in .llmco/employees/<employee-id>/config.json.",
+            "Configuration of an employee, in .aico/employees/<employee-id>/config.json.",
     })
 
 export type EmployeeConfig = z.infer<typeof EmployeeConfigSchema>

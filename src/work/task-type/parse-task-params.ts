@@ -7,7 +7,7 @@ export function parseTaskParams(task: Task, taskType: TaskType): unknown {
     const validation = taskType.paramsSchema.safeParse(task.params)
     if (!validation.success) {
         throw new UserError(
-            `Invalid .llmco/tasks/${task.id}.json:\n${z.prettifyError(validation.error)}`,
+            `Invalid .aico/tasks/${task.id}.json:\n${z.prettifyError(validation.error)}`,
         )
     }
     return validation.data

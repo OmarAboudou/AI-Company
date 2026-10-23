@@ -11,7 +11,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 const { runCli, getProjectPath } = useTemporaryProject()
 
 function getPositionStatePath(id: string): string {
-    return getProjectPath(".llmco", ".state", "positions", `${id}.json`)
+    return getProjectPath(".aico", ".state", "positions", `${id}.json`)
 }
 
 async function loadPositionStateFile(id: string): Promise<unknown> {
@@ -57,7 +57,7 @@ describe("aico position assign and unassign", () => {
     })
 
     async function loadPositionConfigFile(id: string): Promise<unknown> {
-        const path = getProjectPath(".llmco", "positions", id, "config.json")
+        const path = getProjectPath(".aico", "positions", id, "config.json")
         return Bun.file(path).json()
     }
 

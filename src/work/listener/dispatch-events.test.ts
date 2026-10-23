@@ -130,7 +130,7 @@ describe("dispatchEvents", () => {
     test("creates nothing twice, even on a machine giving events again", async () => {
         await createMessageSentEvent(["backend-developer"])
         await dispatchToCatchUpListener()
-        await rm(join(projectRoot, ".llmco", ".state"), { recursive: true })
+        await rm(join(projectRoot, ".aico", ".state"), { recursive: true })
 
         const { createdTasks } = await dispatchToCatchUpListener()
 

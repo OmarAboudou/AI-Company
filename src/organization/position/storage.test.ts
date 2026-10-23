@@ -37,7 +37,7 @@ describe("savePosition", () => {
 
         const positionFolderPath = join(
             projectRoot,
-            ".llmco",
+            ".aico",
             "positions",
             "backend-developer",
         )
@@ -58,7 +58,7 @@ describe("savePosition", () => {
 
         const positionFolderPath = join(
             projectRoot,
-            ".llmco",
+            ".aico",
             "positions",
             developer.id,
         )
@@ -95,7 +95,7 @@ describe("loadPosition", () => {
     test("rejects an invalid config.json", async () => {
         const positionFolderPath = join(
             projectRoot,
-            ".llmco",
+            ".aico",
             "positions",
             "developer",
         )
@@ -175,7 +175,7 @@ describe("copyPositionFolder", () => {
 })
 
 function getStatePath(...segments: string[]): string {
-    return join(projectRoot, ".llmco", ".state", ...segments)
+    return join(projectRoot, ".aico", ".state", ...segments)
 }
 
 describe("savePositionState", () => {
@@ -183,7 +183,7 @@ describe("savePositionState", () => {
         temporaryAssignment: { kind: "employee", employeeId: "julie" },
     } as const
 
-    test("writes the state in .llmco/.state/positions, named after the id", async () => {
+    test("writes the state in .aico/.state/positions, named after the id", async () => {
         await savePositionState(projectRoot, developer.id, interimState)
 
         const stateFile = Bun.file(

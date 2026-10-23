@@ -60,5 +60,5 @@
     "required": ["position", "committer", "mentions", "sentAt"],
     "additionalProperties": false,
     "title": "llmco message",
-    "description": "A message of a thread, in .llmco/threads/<thread-id>/messages/<message-id>/message.json. Its body lives next to it, in body.md. Never modified once written."
+    "description": "A message of a thread, in .aico/threads/<thread-id>/messages/<message-id>/message.json. Its body lives next to it, in body.md. Never modified once written."
 }
