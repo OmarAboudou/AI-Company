@@ -1,8 +1,11 @@
 import { loadJournal } from "../../journal/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
-import { builtInListeners } from "../../work/listener/built-in-listeners.ts"
 import { dispatchEvents } from "../../work/listener/dispatch-events.ts"
 import type { Task } from "../../work/task/schema.ts"
+import {
+    builtInWorkCatalog,
+    type WorkCatalog,
+} from "../../work/work-catalog.ts"
 import { loadExistingThread } from "../thread/load-existing-thread.ts"
 import { createUnsentMessage } from "./create-unsent-message.ts"
 import { readCurrentAuthor } from "./read-current-author.ts"
@@ -21,6 +24,7 @@ export async function sendMessage(
     environment: NodeJS.ProcessEnv,
     rawThreadId: string,
     { body, asPositionId }: { body: string; asPositionId?: string },
+    catalog: WorkCatalog = builtInWorkCatalog,
 ): Promise<SendMessageResult> {
     await requireCompany(projectRoot)
     const thread = await loadExistingThread(projectRoot, rawThreadId)
@@ -36,7 +40,7 @@ export async function sendMessage(
     const message = await sendUnsentMessage(journal, thread.id, unsentMessage, {
         depth: 0,
     })
-    const { createdTasks } = await dispatchEvents(journal, builtInListeners)
+    const { createdTasks } = await dispatchEvents(journal, catalog)
     return {
         message,
         unknownMentionIds: unsentMessage.unknownMentionIds,

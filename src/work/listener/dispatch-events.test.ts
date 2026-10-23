@@ -8,8 +8,9 @@ import { loadJournal, saveEvent } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { listTasks } from "../task/storage.ts"
+import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
 import { catchUpListener } from "./catch-up-listener.ts"
-import { defineListener } from "./define-listener.ts"
+import { defineListener, type Listener } from "./define-listener.ts"
 import { dispatchEvents } from "./dispatch-events.ts"
 import { loadDispatchedEventIds } from "./storage.ts"
 
@@ -72,8 +73,15 @@ const notingListener = defineListener({
             })),
 })
 
+async function dispatchToListeners(listeners: Listener[]) {
+    return dispatchEvents(await loadJournal(projectRoot), {
+        taskTypes: builtInTaskTypes,
+        listeners,
+    })
+}
+
 async function dispatchToCatchUpListener() {
-    return dispatchEvents(await loadJournal(projectRoot), [catchUpListener])
+    return dispatchToListeners([catchUpListener])
 }
 
 describe("dispatchEvents", () => {
@@ -96,10 +104,7 @@ describe("dispatchEvents", () => {
         await createMessageSentEvent(["backend-developer"])
         const listeners = [catchUpListener, reviewListener]
 
-        const { createdTasks } = await dispatchEvents(
-            await loadJournal(projectRoot),
-            listeners,
-        )
+        const { createdTasks } = await dispatchToListeners(listeners)
 
         const taskTypes = createdTasks.map(({ type }) => type)
         expect(taskTypes).toEqual(["catch-up-thread", "review-thread"])
@@ -150,10 +155,7 @@ describe("dispatchEvents", () => {
         )
         const listeners = [catchUpListener, notingListener]
 
-        const { createdTasks, doneTasks } = await dispatchEvents(
-            await loadJournal(projectRoot),
-            listeners,
-        )
+        const { createdTasks, doneTasks } = await dispatchToListeners(listeners)
 
         expect(createdTasks).toHaveLength(1)
         expect(doneTasks).toEqual(createdTasks)

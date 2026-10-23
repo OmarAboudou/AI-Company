@@ -10,7 +10,7 @@ import type {
     PositionAssignment,
 } from "../../organization/position/schema.ts"
 import { UserError } from "../../user-error.ts"
-import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
+import type { TaskType } from "../task-type/define-task-type.ts"
 import { getTaskPositionId } from "./get-task-position-id.ts"
 import { getTaskStates } from "./get-task-states.ts"
 import { isPendingTask } from "./is-pending-task.ts"
@@ -32,11 +32,12 @@ function getPendingTask(
     task: Task,
     assignments: PositionAssignment[],
     employees: Employee[],
+    taskTypes: Record<string, TaskType>,
 ): PendingTask {
     const positions = assignments.map(({ position }) => position)
     const positionId = getTaskPositionId(task, positions)
     const waitingTask = { kind: "waiting", task, positionId } as const
-    if (builtInTaskTypes[task.type] === undefined) {
+    if (taskTypes[task.type] === undefined) {
         return { ...waitingTask, reason: "unknown-type" }
     }
     const assignment = assignments.find(
@@ -66,6 +67,7 @@ function getPendingTask(
 
 export async function listPendingTasks(
     journal: Journal,
+    taskTypes: Record<string, TaskType>,
 ): Promise<PendingTask[]> {
     const { projectRoot } = journal
     const [tasks, assignments, employees] = await Promise.all([
@@ -76,5 +78,5 @@ export async function listPendingTasks(
     const taskStates = getTaskStates(tasks, journal.events)
     return tasks
         .filter((task) => isPendingTask(task, taskStates))
-        .map((task) => getPendingTask(task, assignments, employees))
+        .map((task) => getPendingTask(task, assignments, employees, taskTypes))
 }

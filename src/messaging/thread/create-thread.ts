@@ -1,9 +1,12 @@
 import { loadJournal } from "../../journal/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
 import { parseConfig } from "../../parse-config.ts"
-import { builtInListeners } from "../../work/listener/built-in-listeners.ts"
 import { dispatchEvents } from "../../work/listener/dispatch-events.ts"
 import type { Task } from "../../work/task/schema.ts"
+import {
+    builtInWorkCatalog,
+    type WorkCatalog,
+} from "../../work/work-catalog.ts"
 import { createUnsentMessage } from "../message/create-unsent-message.ts"
 import { readCurrentAuthor } from "../message/read-current-author.ts"
 import type { Message } from "../message/schema.ts"
@@ -27,6 +30,7 @@ export async function createThread(
         body,
         asPositionId,
     }: { subject: string; body?: string; asPositionId?: string },
+    catalog: WorkCatalog = builtInWorkCatalog,
 ): Promise<CreateThreadResult> {
     await requireCompany(projectRoot)
     const author = await readCurrentAuthor(projectRoot, environment, {
@@ -62,7 +66,7 @@ export async function createThread(
         unsentFirstMessage,
         { depth: 0 },
     )
-    const { createdTasks } = await dispatchEvents(journal, builtInListeners)
+    const { createdTasks } = await dispatchEvents(journal, catalog)
     return {
         thread,
         firstMessage,
