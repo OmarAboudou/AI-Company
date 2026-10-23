@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { createReservedBranch } from "../../git/reserved-branch/create-reserved-branch.ts"
+import { isReservedBranchWorktree } from "../../git/reserved-branch/is-reserved-branch-worktree.ts"
+import { runGit } from "../../git/run-git.ts"
 import { spawnGit } from "../../git/spawn-git.ts"
 import { UserError } from "../../user-error.ts"
 import { loadPosition } from "../position/storage.ts"
@@ -43,6 +46,22 @@ describe("createCompany", () => {
         expect(createdTime).toBeLessThanOrEqual(after)
     })
 
+    test("keeps the company in .aico/, the worktree of branch aico/data", async () => {
+        const createdCompany = await createCompany(projectRoot, acme)
+
+        expect(await isReservedBranchWorktree(projectRoot)).toBe(true)
+        expect(await loadCompany(projectRoot)).toEqual(createdCompany)
+        expect(runGit(projectRoot, ["status", "--porcelain"])).toBe("")
+    })
+
+    test("runs again once interrupted, the branch already created", async () => {
+        await createReservedBranch(projectRoot)
+
+        await createCompany(projectRoot, acme)
+
+        expect((await loadCompany(projectRoot)).name).toBe("Acme")
+    })
+
     test("refuses to overwrite an existing company", async () => {
         await createCompany(projectRoot, acme)
 
@@ -53,10 +72,11 @@ describe("createCompany", () => {
         expect((await loadCompany(projectRoot)).name).toBe("Acme")
     })
 
-    test("refuses a blank name", async () => {
+    test("refuses a blank name, before creating the branch", async () => {
         const creation = createCompany(projectRoot, { ...acme, name: " " })
 
         await expect(creation).rejects.toThrow(UserError)
+        expect(await isReservedBranchWorktree(projectRoot)).toBe(false)
     })
 
     test("refuses a directory outside any git repository", async () => {

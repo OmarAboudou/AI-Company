@@ -1,4 +1,6 @@
 import { requireGitRepository } from "../../git/require-git-repository.ts"
+import { createReservedBranch } from "../../git/reserved-branch/create-reserved-branch.ts"
+import { isReservedBranchWorktree } from "../../git/reserved-branch/is-reserved-branch-worktree.ts"
 import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
 import { savePosition } from "../position/storage.ts"
@@ -19,6 +21,9 @@ export async function createCompany(
         name,
         directorPositionId,
     })
+    if (!(await isReservedBranchWorktree(projectRoot))) {
+        await createReservedBranch(projectRoot)
+    }
     await savePosition(projectRoot, {
         id: directorPositionId,
         title: "Director",
