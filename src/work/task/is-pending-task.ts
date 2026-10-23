@@ -6,5 +6,5 @@ export function isPendingTask(
     taskStates: ReadonlyMap<string, TaskState>,
 ): boolean {
     const state = taskStates.get(task.id)
-    return state === "waiting" || state === "running"
+    return state === "queued" || state === "running"
 }

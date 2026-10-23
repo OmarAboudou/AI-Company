@@ -24,7 +24,7 @@ export async function createTaskOnce(
             causeEvent,
         )
         dispatching.tasks.push(task)
-        dispatching.taskStates.set(task.id, "waiting")
+        dispatching.taskStates.set(task.id, "queued")
         dispatching.createdTasks.push(task)
     } catch (error) {
         // Another process wrote the same task meanwhile, and records it.

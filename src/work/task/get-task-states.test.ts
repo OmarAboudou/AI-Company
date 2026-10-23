@@ -56,9 +56,9 @@ function getDeveloperTaskState(
 }
 
 describe("getTaskStates", () => {
-    test("is waiting for a task until it starts", () => {
-        expect(getDeveloperTaskState([])).toBe("waiting")
-        expect(getDeveloperTaskState(["created"])).toBe("waiting")
+    test("is queued for a task until it starts", () => {
+        expect(getDeveloperTaskState([])).toBe("queued")
+        expect(getDeveloperTaskState(["created"])).toBe("queued")
     })
 
     test("is running once the task starts", () => {
@@ -91,7 +91,7 @@ describe("getTaskStates", () => {
             [testerTaskStarted],
         )
 
-        expect(taskStates.get(developerTask.id)).toBe("waiting")
+        expect(taskStates.get(developerTask.id)).toBe("queued")
         expect(taskStates.get(testerTask.id)).toBe("running")
     })
 })

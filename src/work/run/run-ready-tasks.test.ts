@@ -133,7 +133,7 @@ describe("runReadyTasks", () => {
 
         const { waitingTasks } = await runFakeTasks(catalog)
 
-        expect(await listTaskStates()).toEqual(["done", "waiting"])
+        expect(await listTaskStates()).toEqual(["done", "queued"])
         expect(waitingTasks).toMatchObject([
             { positionId: "director", reason: "worked-by-directors" },
         ])

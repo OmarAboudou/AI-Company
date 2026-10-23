@@ -8,12 +8,12 @@ import {
     taskStartedEventType,
 } from "./schema.ts"
 
-export type TaskState = "waiting" | "running" | "done" | "failed"
+export type TaskState = "queued" | "running" | "done" | "failed"
 
 type TaskEventContent = Omit<JournalEvent, "id"> & { taskId: string }
 
 const statesAfterEventTypes: [EventType<TaskEventContent>, TaskState][] = [
-    [taskCreatedEventType, "waiting"],
+    [taskCreatedEventType, "queued"],
     [taskStartedEventType, "running"],
     [taskDoneEventType, "done"],
     [taskFailedEventType, "failed"],
@@ -24,7 +24,7 @@ export function getTaskStates(
     events: JournalEvent[],
 ): Map<string, TaskState> {
     const taskStates = new Map<string, TaskState>(
-        tasks.map(({ id }) => [id, "waiting"]),
+        tasks.map(({ id }) => [id, "queued"]),
     )
     for (const event of events) {
         for (const [eventType, stateAfterEvent] of statesAfterEventTypes) {

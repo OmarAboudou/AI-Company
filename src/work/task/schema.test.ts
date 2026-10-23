@@ -38,7 +38,7 @@ describe("TaskSchema", () => {
     })
 
     test("rejects an unknown key, such as a state", () => {
-        expect(accepts({ ...exampleTask, state: "waiting" })).toBe(false)
+        expect(accepts({ ...exampleTask, state: "queued" })).toBe(false)
     })
 })
 

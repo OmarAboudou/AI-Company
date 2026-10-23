@@ -63,7 +63,7 @@ const notingListener = defineListener({
             .filter(
                 (task) =>
                     task.positionId === positionId &&
-                    taskStates.get(task.id) === "waiting",
+                    taskStates.get(task.id) === "queued",
             )
             .map((task) => ({
                 kind: "mark-task-as-done",
