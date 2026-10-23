@@ -13,3 +13,4 @@ No listener is built in yet: no event gives a task.
 ## Decisions
 
 - [#123](https://github.com/OmarAboudou/AI-Company/issues/123): listeners returning effects, and the dispatched events remembered on each machine.
+- [#135](https://github.com/OmarAboudou/AI-Company/issues/135): no built-in listener until the tickets bring theirs.

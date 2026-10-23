@@ -15,3 +15,4 @@ The company is what AICo runs, one per project: its name and description, and it
 
 - [#41](https://github.com/OmarAboudou/AI-Company/issues/41): the company can be updated, not deleted.
 - [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the company names its director's position, and lives in a git repository.
+- [#135](https://github.com/OmarAboudou/AI-Company/issues/135): no limit on how deep a chain of tasks grows.

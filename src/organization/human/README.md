@@ -13,3 +13,4 @@ They act from the positions the directors work: the director's position and thos
 
 - [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the directors and the selected position.
 - [#123](https://github.com/OmarAboudou/AI-Company/issues/123): people work their positions' tasks as LLM employees do.
+- [#135](https://github.com/OmarAboudou/AI-Company/issues/135): the directors alone at the keyboard.
