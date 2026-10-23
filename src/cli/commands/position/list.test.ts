@@ -99,25 +99,25 @@ describe("aico position assign-temporarily and unassign-temporarily", () => {
                 title: "Designer",
                 description: "",
             }),
-            createEmployee(projectRoot, "omar", {
-                name: "Omar",
-                kind: "llm",
-                providerId: "anthropic",
-                modelId: "opus",
-            }),
-            createEmployee(projectRoot, "julie", {
-                name: "Julie",
-                kind: "llm",
-                providerId: "anthropic",
-                modelId: "opus",
-            }),
-            createEmployee(projectRoot, "bob", {
-                name: "Bob",
-                kind: "llm",
-                providerId: "anthropic",
-                modelId: "opus",
-            }),
         ])
+        await createEmployee(projectRoot, "omar", {
+            name: "Omar",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        })
+        await createEmployee(projectRoot, "julie", {
+            name: "Julie",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        })
+        await createEmployee(projectRoot, "bob", {
+            name: "Bob",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        })
         await assignPosition(projectRoot, "developer", "omar")
     })
 

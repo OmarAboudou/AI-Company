@@ -28,22 +28,22 @@ describe("aico employee replace", () => {
         await createCompany(projectRoot, { name: "Acme", description: "" })
         await saveExampleLlmModel(projectRoot)
         await Promise.all([
-            createEmployee(projectRoot, "omar", {
-                name: "Omar",
-                kind: "llm",
-                providerId: "anthropic",
-                modelId: "opus",
-            }),
-            createEmployee(projectRoot, "alice", {
-                name: "Alice",
-                kind: "llm",
-                providerId: "anthropic",
-                modelId: "opus",
-            }),
             ...["developer", "qa-tester", "designer"].map((id) =>
                 createPosition(projectRoot, id, { title: id, description: "" }),
             ),
         ])
+        await createEmployee(projectRoot, "omar", {
+            name: "Omar",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        })
+        await createEmployee(projectRoot, "alice", {
+            name: "Alice",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        })
         await Promise.all([
             assignPosition(projectRoot, "developer", "omar"),
             assignPosition(projectRoot, "qa-tester", "omar"),

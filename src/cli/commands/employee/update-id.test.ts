@@ -29,18 +29,6 @@ describe("aico employee update-id", () => {
         await createCompany(projectRoot, { name: "Acme", description: "" })
         await saveExampleLlmModel(projectRoot)
         await Promise.all([
-            createEmployee(projectRoot, "omar", {
-                name: "Omar",
-                kind: "llm",
-                providerId: "anthropic",
-                modelId: "opus",
-            }),
-            createEmployee(projectRoot, "alice", {
-                name: "Alice",
-                kind: "llm",
-                providerId: "anthropic",
-                modelId: "opus",
-            }),
             createPosition(projectRoot, "developer", {
                 title: "Developer",
                 description: "",
@@ -50,6 +38,18 @@ describe("aico employee update-id", () => {
                 description: "",
             }),
         ])
+        await createEmployee(projectRoot, "omar", {
+            name: "Omar",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        })
+        await createEmployee(projectRoot, "alice", {
+            name: "Alice",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        })
     })
 
     test("update-id moves an employee who fills no position", () => {
