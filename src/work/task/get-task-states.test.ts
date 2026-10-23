@@ -43,6 +43,11 @@ const developerTaskEvents = {
         type: "task-failed",
         reason: "The ticket asks nothing.",
     },
+    cancelled: {
+        id: "20261018-140351-000-0a05",
+        type: "task-cancelled",
+        reason: "Ticket #1 was closed.",
+    },
 } as const
 
 function getDeveloperTaskState(
@@ -77,6 +82,12 @@ describe("getTaskStates", () => {
         const state = getDeveloperTaskState(["created", "started", "failed"])
 
         expect(state).toBe("failed")
+    })
+
+    test("is cancelled once the task became pointless", () => {
+        const state = getDeveloperTaskState(["created", "cancelled"])
+
+        expect(state).toBe("cancelled")
     })
 
     test("follows each task's own events", () => {

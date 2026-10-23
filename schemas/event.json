@@ -384,6 +384,77 @@
         {
             "type": "object",
             "properties": {
+                "type": { "type": "string", "const": "task-cancelled" },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                },
+                "taskId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the task, i.e. the name of its file in .aico/tasks."
+                },
+                "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Why the task became pointless."
+                },
+                "runId": {
+                    "description": "Id of the run that stopped. Absent when the task was cancelled before it started.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                },
+                "usage": {
+                    "type": "object",
+                    "properties": {
+                        "inputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        },
+                        "outputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        },
+                        "cacheReadInputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        },
+                        "cacheCreationInputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        }
+                    },
+                    "required": [
+                        "inputTokens",
+                        "outputTokens",
+                        "cacheReadInputTokens",
+                        "cacheCreationInputTokens"
+                    ],
+                    "additionalProperties": false,
+                    "description": "The tokens that the run's requests used, as the provider counted them: the input tokens read from the prompt cache and those written to it count apart from the others, at their own prices."
+                }
+            },
+            "required": ["type", "occurredAt", "depth", "taskId", "reason"],
+            "additionalProperties": false,
+            "description": "The task became pointless: it waited in its position's queue, or its run stopped at its next step."
+        },
+        {
+            "type": "object",
+            "properties": {
                 "type": { "type": "string", "const": "events-dispatched" },
                 "occurredAt": {
                     "type": "string",

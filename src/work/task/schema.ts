@@ -98,6 +98,23 @@ export const taskDoneEventType = defineEventType({
 
 export type TaskDoneEvent = EventOfType<typeof taskDoneEventType>
 
+export const taskCancelledEventType = defineEventType({
+    type: "task-cancelled",
+    description:
+        "The task became pointless: it waited in its position's queue, or its run stopped at its next step.",
+    fields: {
+        taskId: TaskIdSchema,
+        reason: z.string().trim().min(1).meta({
+            description: "Why the task became pointless.",
+        }),
+        runId: RunIdSchema.optional().meta({
+            description:
+                "Id of the run that stopped. Absent when the task was cancelled before it started.",
+        }),
+        usage: TokenUsageSchema.optional(),
+    },
+})
+
 export const taskFailedEventType = defineEventType({
     type: "task-failed",
     description: "The task was given up.",

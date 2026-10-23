@@ -12,7 +12,16 @@ export type MarkTaskAsDoneEffect = {
     result: TaskResult
 }
 
-export type ListenerEffect = CreateTaskEffect | MarkTaskAsDoneEffect
+export type CancelTaskEffect = {
+    kind: "cancel-task"
+    taskId: string
+    reason: string
+}
+
+export type ListenerEffect =
+    | CreateTaskEffect
+    | MarkTaskAsDoneEffect
+    | CancelTaskEffect
 
 export type ListenerContext = {
     tasks: readonly Task[]

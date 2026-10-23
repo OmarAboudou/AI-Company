@@ -14,6 +14,7 @@ export type Dispatching = {
     positions: IdHistory[]
     createdTasks: Task[]
     doneTasks: Task[]
+    cancelledTasks: Task[]
 }
 
 export async function loadDispatching(
@@ -33,5 +34,6 @@ export async function loadDispatching(
         positions,
         createdTasks: [],
         doneTasks: [],
+        cancelledTasks: [],
     }
 }

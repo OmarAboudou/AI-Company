@@ -8,7 +8,7 @@ import { eventsDispatchedEventType } from "./schema.ts"
 
 export type DispatchEventsResult = Pick<
     Dispatching,
-    "createdTasks" | "doneTasks"
+    "createdTasks" | "doneTasks" | "cancelledTasks"
 >
 
 function getDispatchedEventIds({ events }: Journal): Set<string> {
@@ -50,6 +50,6 @@ export async function dispatchEvents(
             eventIds: newEvents.map(({ id }) => id),
         })
     }
-    const { createdTasks, doneTasks } = dispatching
-    return { createdTasks, doneTasks }
+    const { createdTasks, doneTasks, cancelledTasks } = dispatching
+    return { createdTasks, doneTasks, cancelledTasks }
 }
