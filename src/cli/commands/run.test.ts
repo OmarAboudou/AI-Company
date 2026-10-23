@@ -70,6 +70,25 @@ describe("aico run", () => {
         )
     })
 
+    test("lists the tasks waiting for the company's relaunch", async () => {
+        const projectRoot = getProjectPath()
+        await createLlmEmployee(projectRoot, fakeServer.getUrl())
+        await assignPosition(projectRoot, "qa-tester", "claude")
+        await createExampleTicket(projectRoot, {
+            title: "Release",
+            rawAssigneePositionId: "qa-tester",
+        })
+        runCli("company", "pause")
+
+        const running = runCli("run")
+
+        expect(running.exitCode).toBe(0)
+        expect(running.stdout).toMatch(
+            /@qa-tester +handle +until the company is relaunched\n\nThe company is paused: `aico company relaunch` relaunches it\.\n$/,
+        )
+        expect(fakeServer.requests).toHaveLength(0)
+    })
+
     test(
         "stops at Ctrl+C, failing the task in progress",
         async () => {

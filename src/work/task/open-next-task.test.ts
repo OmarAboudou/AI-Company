@@ -7,6 +7,7 @@ import { createExampleTicket } from "../../messaging/ticket/create-example-ticke
 import { createPosition } from "../../organization/position/create-position.ts"
 import { createCompanyWorkedByDirectors } from "../create-company-worked-by-directors.testing.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
+import { pauseCompany } from "../pause/pause-company.ts"
 import { sendExampleMessage } from "../send-example-message.testing.ts"
 import { addTurnText } from "../turn/add-turn-text.ts"
 import { openNextTask } from "./open-next-task.ts"
@@ -247,5 +248,30 @@ describe("openNextTask with a task that became pointless", () => {
         const taskEnding = { state: "cancelled", reason } as const
         expect(endedTasks).toEqual([{ task: shipping.task, taskEnding }])
         expect(openedTask?.task).toEqual(logo.createdTasks[0])
+    })
+
+    test("opens during a pause only the director's tasks", async () => {
+        await ask("qa-tester", "Can we ship on Friday?")
+        const planning = await ask("director", "A plan?", "qa-tester")
+        await pauseCompany(await loadJournal(projectRoot))
+
+        const { openedTask } = await openNextExampleTask()
+        const testerOpening = await openNextExampleTask({
+            AICO_CURRENT_POSITION_ID: "qa-tester",
+        })
+
+        expect(openedTask?.task).toEqual(planning.task)
+        expect(testerOpening.openedTask).toBe(undefined)
+    })
+
+    test("resumes during a pause a task already running", async () => {
+        const shipping = await ask("qa-tester", "Can we ship on Friday?")
+        await openNextExampleTask()
+        await pauseCompany(await loadJournal(projectRoot))
+
+        const { openedTask } = await openNextExampleTask()
+
+        expect(openedTask?.task).toEqual(shipping.task)
+        expect(openedTask?.isResumed).toBe(true)
     })
 })

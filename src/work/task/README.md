@@ -14,7 +14,9 @@ A task's state is derived from the journal: queued once created, running once a 
 - A task concerns a ticket when its parameters name it as `ticketNumber`: deleting a position relies on it.
 - A position has at most one queued task per ticket: a change of the ticket gives no second one of the same type to a position whose task on it still waits, since that task will show the ticket as it is when it runs, and replaces one of another type, asked for what the ticket no longer needs.
 - A person's next task is the one in progress in their positions, if any, else the oldest pending one, only in the selected position when one is set.
+- During a pause of the company, a task that hasn't started waits, unless it is the director's.
 
 ## Decisions
 
 - [#123](https://github.com/OmarAboudou/AI-Company/issues/123): tasks, their states derived from the journal, and their ids derived from what they are.
+- [#145](https://github.com/OmarAboudou/AI-Company/issues/145): one queued task per ticket and position, and no new task during a pause but the founder's.

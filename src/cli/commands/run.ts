@@ -19,6 +19,7 @@ const waitingReasonTexts: Record<WaitingTask["reason"], string> = {
     "vacant-position": "for a vacant position",
     "worked-by-directors": "for the directors",
     running: "already running, in another process",
+    paused: "until the company is relaunched",
 }
 
 function formatUsage(usage: TokenUsage): string {
@@ -95,6 +96,11 @@ function printWaitingTasks(waitingTasks: WaitingTask[]): void {
             waitingReasonTexts[reason],
         ]),
     )
+    if (waitingTasks.some(({ reason }) => reason === "paused")) {
+        console.log(
+            "\nThe company is paused: `aico company relaunch` relaunches it.",
+        )
+    }
 }
 
 type RunStop = { signal: AbortSignal; dispose(): void }

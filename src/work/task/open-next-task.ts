@@ -8,6 +8,7 @@ import { requirePositionsToWork } from "../../organization/human/require-positio
 import { listPositionAssignments } from "../../organization/position/list-position-assignments.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { dispatchEvents } from "../listener/dispatch-events.ts"
+import { getCompanyPause } from "../pause/get-company-pause.ts"
 import { endTask } from "../run/end-task.ts"
 import { loadCancellationReason } from "../run/load-cancellation-reason.ts"
 import { loadResumableRun } from "../run/load-resumable-run.ts"
@@ -93,11 +94,20 @@ export async function openNextTask(
     const tasks = await listTasks(projectRoot)
     const taskStates = getTaskStates(tasks, journal.events)
     const positions = assignments.map(({ position }) => position)
+    const directorPositionId = assignments.find(
+        ({ isDirectorPosition }) => isDirectorPosition,
+    )?.position.id
+    const isPaused = getCompanyPause(journal.events) !== undefined
+    const canStart = (task: Task) =>
+        !isPaused ||
+        taskStates.get(task.id) === "running" ||
+        getTaskPositionId(task, positions) === directorPositionId
     const tasksToWork = tasks
         .filter(
             (task) =>
                 isPendingTask(task, taskStates) &&
-                catalog.taskTypes[task.type] !== undefined,
+                catalog.taskTypes[task.type] !== undefined &&
+                canStart(task),
         )
         .map((task) => ({
             task,

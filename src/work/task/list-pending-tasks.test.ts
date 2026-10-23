@@ -11,6 +11,7 @@ import {
     createExampleWorkCatalog,
     exampleTaskType,
 } from "../create-example-work-catalog.testing.ts"
+import { pauseCompany } from "../pause/pause-company.ts"
 import { createTask } from "./create-task.ts"
 import { listPendingTasks } from "./list-pending-tasks.ts"
 import { type Task, taskDoneEventType, taskStartedEventType } from "./schema.ts"
@@ -169,6 +170,29 @@ describe("listPendingTasks", () => {
 
         expect(pendingTasks).toMatchObject([
             { kind: "waiting", task: runningTask, reason: "running" },
+        ])
+    })
+
+    test("lists a model's queued task as waiting for the relaunch during a pause", async () => {
+        const queuedTask = await askPosition("backend-developer")
+        const runningTask = await askPosition("backend-developer")
+        const directorTask = await askPosition("director")
+        await startTask(runningTask)
+        await pauseCompany(await loadJournal(projectRoot))
+
+        const pendingTasks = await listPendingTasks(
+            await loadJournal(projectRoot),
+            taskTypes,
+        )
+
+        expect(pendingTasks).toMatchObject([
+            { kind: "waiting", task: queuedTask, reason: "paused" },
+            { kind: "waiting", task: runningTask, reason: "running" },
+            {
+                kind: "waiting",
+                task: directorTask,
+                reason: "worked-by-directors",
+            },
         ])
     })
 })

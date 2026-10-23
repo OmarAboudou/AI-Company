@@ -7,6 +7,7 @@ import type {
     PositionAssignment,
 } from "../../organization/position/schema.ts"
 import { UserError } from "../../user-error.ts"
+import { getCompanyPause } from "../pause/get-company-pause.ts"
 import type { TaskType } from "../task-type/define-task-type.ts"
 import { getTaskPositionId } from "./get-task-position-id.ts"
 import { getTaskStates, type TaskState } from "./get-task-states.ts"
@@ -20,6 +21,7 @@ export type WaitingReason =
     | "vacant-position"
     | "worked-by-directors"
     | "running"
+    | "paused"
 
 export type PendingTask =
     | { kind: "ready"; task: Task; position: Position; employee: Employee }
@@ -28,6 +30,7 @@ export type PendingTask =
 function getPendingTask(
     task: Task,
     taskState: TaskState | undefined,
+    isPaused: boolean,
     assignments: PositionAssignment[],
     employees: Employee[],
     taskTypes: Record<string, TaskType>,
@@ -56,6 +59,9 @@ function getPendingTask(
     if (taskState === "running") {
         return { ...waitingTask, reason: "running" }
     }
+    if (isPaused) {
+        return { ...waitingTask, reason: "paused" }
+    }
     const employee = employees.find(({ id }) => id === currentWorker.employeeId)
     if (employee === undefined) {
         throw new UserError(
@@ -76,12 +82,14 @@ export async function listPendingTasks(
         listEmployees(projectRoot),
     ])
     const taskStates = getTaskStates(tasks, journal.events)
+    const isPaused = getCompanyPause(journal.events) !== undefined
     return tasks
         .filter((task) => isPendingTask(task, taskStates))
         .map((task) =>
             getPendingTask(
                 task,
                 taskStates.get(task.id),
+                isPaused,
                 assignments,
                 employees,
                 taskTypes,
