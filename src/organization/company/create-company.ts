@@ -1,6 +1,7 @@
 import { requireGitRepository } from "../../git/require-git-repository.ts"
 import { createReservedBranch } from "../../git/reserved-branch/create-reserved-branch.ts"
 import { isReservedBranchWorktree } from "../../git/reserved-branch/is-reserved-branch-worktree.ts"
+import { openReservedBranch } from "../../git/reserved-branch/open-reserved-branch.ts"
 import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
 import { savePosition } from "../position/storage.ts"
@@ -14,6 +15,7 @@ export async function createCompany(
     { name, description }: { name: string; description: string },
 ): Promise<Company> {
     requireGitRepository(projectRoot)
+    await openReservedBranch(projectRoot)
     if (await hasCompany(projectRoot)) {
         throw new UserError("A company already exists in this directory.")
     }

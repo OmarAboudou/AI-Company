@@ -8,6 +8,7 @@ import { runGit } from "../../git/run-git.ts"
 import { spawnGit } from "../../git/spawn-git.ts"
 import { UserError } from "../../user-error.ts"
 import { loadPosition } from "../position/storage.ts"
+import { createClonedCompany } from "./create-cloned-company.testing.ts"
 import { createCompany } from "./create-company.ts"
 import { loadCompany } from "./storage.ts"
 
@@ -70,6 +71,22 @@ describe("createCompany", () => {
         await expect(creation).rejects.toThrow(UserError)
         await expect(creation).rejects.toThrow("A company already exists")
         expect((await loadCompany(projectRoot)).name).toBe("Acme")
+    })
+
+    test("refuses the company of a clone, which its branch aico/data holds", async () => {
+        const { parentFolderPath, clonePath } = await createClonedCompany()
+
+        try {
+            const creation = createCompany(clonePath, {
+                ...acme,
+                name: "Other",
+            })
+
+            await expect(creation).rejects.toThrow("A company already exists")
+            expect((await loadCompany(clonePath)).name).toBe("Acme")
+        } finally {
+            await rm(parentFolderPath, { recursive: true, force: true })
+        }
     })
 
     test("refuses a blank name, before creating the branch", async () => {
