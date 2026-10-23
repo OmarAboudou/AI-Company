@@ -278,3 +278,23 @@ f163c4bc78722547cb8ff1ef6376102cd34a0e50
 
 # Move formatToolInput to a file of its own
 cd98946e7a264853cd084e897a1b27269f5c1c6f
+
+# llmco becomes AICo, the first series of AICo (#141), as it landed on main
+
+# Rename the command llmco to aico
+4b5d2e6653f56d530f989535cf1a9b96b3464bf0
+
+# Rename the data folder .llmco to .aico
+107a13798cef2c21c7c9c67e226fabe30531bad4
+
+# Rename the environment variables LLMCO_* to AICO_*
+22ebca3ab1793fdd3bbe43d9841b06c144a3acc9
+
+# Name the product AICo in texts
+af319381d67e9234d0e193d71cd64f8817ba2475
+
+# Point the links at the AI-Company repository
+0acc20bbc4f307039560bead86373f6828a4a12b
+
+# Rename formatMentions to formatPositionIds
+c28561b4941048de55a6390b894a29783ce2dab8
