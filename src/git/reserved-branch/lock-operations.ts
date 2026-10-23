@@ -27,7 +27,7 @@ function isRunning(processId: number): boolean {
     }
 }
 
-async function readHolderProcessId(
+async function loadHolderProcessId(
     lockFilePath: string,
 ): Promise<number | undefined> {
     const text = await readFile(lockFilePath, "utf8").catch(() => "")
@@ -39,7 +39,7 @@ async function deleteLockOfStoppedProcess(
     lockFilePath: string,
     holderProcessId: number,
 ): Promise<void> {
-    if ((await readHolderProcessId(lockFilePath)) === holderProcessId) {
+    if ((await loadHolderProcessId(lockFilePath)) === holderProcessId) {
         await rm(lockFilePath, { force: true })
     }
 }
@@ -60,7 +60,7 @@ export async function lockOperations(
                 throw error
             }
         }
-        const holderProcessId = await readHolderProcessId(lockFilePath)
+        const holderProcessId = await loadHolderProcessId(lockFilePath)
         if (holderProcessId !== undefined && !isRunning(holderProcessId)) {
             await deleteLockOfStoppedProcess(lockFilePath, holderProcessId)
             continue

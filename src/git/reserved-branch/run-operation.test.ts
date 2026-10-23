@@ -32,12 +32,12 @@ function runGitInData(...args: string[]) {
     return runGit(getDataPath(), args)
 }
 
-function listCommitSubjects(): string[] {
+function readCommitSubjects(): string[] {
     const log = runGitInData("log", "--format=%s")
     return log === undefined || log === "" ? [] : log.split("\n")
 }
 
-function listCommittedFiles(revision: string): string[] {
+function readCommittedFiles(revision: string): string[] {
     const showArgs = ["show", "--format=", "--name-only", revision]
     return (runGitInData(...showArgs) ?? "").split("\n")
 }
@@ -52,8 +52,8 @@ describe("runOperation", () => {
             await writeNote("note.md")
         })
 
-        expect(listCommitSubjects()).toEqual(["aico note write"])
-        expect(listCommittedFiles("HEAD")).toEqual(["note.md"])
+        expect(readCommitSubjects()).toEqual(["aico note write"])
+        expect(readCommittedFiles("HEAD")).toEqual(["note.md"])
         expect(runGitInData("status", "--porcelain")).toBe("")
     })
 
@@ -72,7 +72,7 @@ describe("runOperation", () => {
 
         await runOperation(projectRoot, "aico note show", async () => {})
 
-        expect(listCommitSubjects()).toEqual(["aico note write"])
+        expect(readCommitSubjects()).toEqual(["aico note write"])
     })
 
     test("commits apart the changes found before the operation", async () => {
@@ -82,11 +82,11 @@ describe("runOperation", () => {
             writeNote("note.md"),
         )
 
-        expect(listCommitSubjects()).toEqual([
+        expect(readCommitSubjects()).toEqual([
             "aico note write",
             "Changes made by hand, or left by an interrupted operation",
         ])
-        expect(listCommittedFiles("HEAD~1")).toEqual(["by-hand.md"])
+        expect(readCommittedFiles("HEAD~1")).toEqual(["by-hand.md"])
     })
 
     test("keeps the local state out of its commits", async () => {
@@ -95,7 +95,7 @@ describe("runOperation", () => {
             await saveState(projectRoot, getDataPath(".state", "x.json"), {})
         })
 
-        expect(listCommittedFiles("HEAD")).toEqual(["note.md"])
+        expect(readCommittedFiles("HEAD")).toEqual(["note.md"])
     })
 
     test("commits what a failed operation changed, then fails", async () => {
@@ -109,7 +109,7 @@ describe("runOperation", () => {
         )
 
         await expect(operating).rejects.toThrow("The note is too long.")
-        expect(listCommitSubjects()).toEqual(["aico note write"])
+        expect(readCommitSubjects()).toEqual(["aico note write"])
     })
 
     test("refuses a .aico/ folder that isn't the worktree of aico/data", async () => {
@@ -154,11 +154,11 @@ describe("runOperation", () => {
             ),
         )
 
-        const subjects = listCommitSubjects()
+        const subjects = readCommitSubjects()
         expect(exitCodes).toEqual([0, 0, 0, 0])
         expect(subjects.toSorted()).toEqual(operationNames.toSorted())
         for (const [index, subject] of subjects.entries()) {
-            const files = listCommittedFiles(`HEAD~${index}`)
+            const files = readCommittedFiles(`HEAD~${index}`)
             expect(files).toEqual([`${subject}-1.md`, `${subject}-2.md`])
         }
     })
