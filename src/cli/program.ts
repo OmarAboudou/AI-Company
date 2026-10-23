@@ -3,7 +3,6 @@ import { registerCompanyCommands } from "./commands/company/company.ts"
 import { registerCurrentPositionCommands } from "./commands/current-position/current-position.ts"
 import { registerEmployeeCommands } from "./commands/employee/employee.ts"
 import { registerInitCommand } from "./commands/init.ts"
-import { registerMessageCommands } from "./commands/message/message.ts"
 import { registerModelCommands } from "./commands/model/model.ts"
 import { registerPositionCommands } from "./commands/position/position.ts"
 import { registerProjectCommands } from "./commands/project/project.ts"
@@ -11,7 +10,6 @@ import { registerProviderCommands } from "./commands/provider/provider.ts"
 import { registerRunCommand } from "./commands/run.ts"
 import { registerShellCommands } from "./commands/shell/shell.ts"
 import { registerTaskCommands } from "./commands/task/task.ts"
-import { registerThreadCommands } from "./commands/thread/thread.ts"
 import { registerTurnCommands } from "./commands/turn/turn.ts"
 
 export function createProgram(): Command {
@@ -26,8 +24,6 @@ export function createProgram(): Command {
     registerEmployeeCommands(program)
     registerProviderCommands(program)
     registerModelCommands(program)
-    registerThreadCommands(program)
-    registerMessageCommands(program)
     registerRunCommand(program)
     registerTaskCommands(program)
     registerTurnCommands(program)

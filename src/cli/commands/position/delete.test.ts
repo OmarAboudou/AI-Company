@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { loadJournal } from "../../../journal/storage.ts"
 import { saveExampleLlmModel } from "../../../llm/model/save-example-llm-model.testing.ts"
 import { sendMessage } from "../../../messaging/message/send-message.ts"
 import { createThread } from "../../../messaging/thread/create-thread.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
 import { createExampleWorkCatalog } from "../../../work/create-example-work-catalog.testing.ts"
+import { loadPendingPositionIdsByThread } from "../../../work/task/load-pending-position-ids-by-thread.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
@@ -90,11 +92,15 @@ describe("aico position delete", () => {
             const threadId = await askDeveloper()
 
             const deletion = runCli("position", "delete", "developer", flag)
-            const list = runCli("thread", "list").stdout
+            const journal = await loadJournal(getProjectPath())
+            const pendingPositionIdsByThread =
+                await loadPendingPositionIdsByThread(journal)
 
             expect(deletion.stdout).toContain(`stay pending in: ${threadId}.`)
             expect(runCli("position", "show", "developer").exitCode).toBe(1)
-            expect(list).toContain("tasks pending for @developer")
+            expect(pendingPositionIdsByThread.get(threadId)).toEqual([
+                "developer",
+            ])
         },
     )
 })

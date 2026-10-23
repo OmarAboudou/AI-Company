@@ -160,28 +160,6 @@ describe("a command that changes the company", () => {
         walkTimeoutMs,
     )
 
-    test("commits a thread and its messages", () => {
-        runCli("init", "-n", "Acme")
-
-        const creation = runCommittedCli("thread", "create", "-s", "Stack")
-        const threadId = runCli("thread", "list").stdout.split(" ")[0] ?? ""
-        const sending = runCommittedCli(
-            "message",
-            "send",
-            threadId,
-            "-b",
-            "Hono?",
-        )
-
-        expect([creation, sending]).toEqual([
-            createExpectedCommit(creation.commandLine, "aico thread create"),
-            createExpectedCommit(
-                sending.commandLine,
-                `aico message send ${threadId}`,
-            ),
-        ])
-    })
-
     test("commits nothing when it changes nothing", () => {
         runCli("init", "-n", "Acme")
 
