@@ -1,6 +1,7 @@
 import { runOperation } from "../../../git/reserved-branch/run-operation.ts"
-import { watchJournal } from "../../../journal/storage.ts"
+import { listEvents, watchJournal } from "../../../journal/storage.ts"
 import { requireCompany } from "../../../organization/company/require-company.ts"
+import { getCompanyPause } from "../../../work/pause/get-company-pause.ts"
 import { openNextTask } from "../../../work/task/open-next-task.ts"
 import { formatTaskEnding } from "../../format-task-ending.ts"
 import { createSessionStop, type SessionStop } from "./create-session-stop.ts"
@@ -36,6 +37,12 @@ async function workTasksUntilStopped(
                 continue
             }
             if (!isWaiting) {
+                const events = await listEvents(session.projectRoot)
+                if (getCompanyPause(events) !== undefined) {
+                    console.log(
+                        "\nThe company is paused: only the director's tasks open until `aico company relaunch`.",
+                    )
+                }
                 console.log("\nWaiting for your next task. Ctrl+C to stop.")
                 isWaiting = true
             }

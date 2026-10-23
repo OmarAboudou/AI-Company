@@ -3,7 +3,7 @@ import { createExampleTicket } from "../../../messaging/ticket/create-example-ti
 import { createCompany } from "../../../organization/company/create-company.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
-const { startCliWithEnv, getProjectPath } = useTemporaryProject()
+const { runCli, startCliWithEnv, getProjectPath } = useTemporaryProject()
 
 const sessionTimeoutMs = 30_000
 
@@ -63,6 +63,23 @@ describe("aico task work", () => {
             const { exitCode, stdout } = await session.exited()
             expect(exitCode).toBe(0)
             expect(stdout).toEndWith("\nSession ended.\n")
+        },
+        sessionTimeoutMs,
+    )
+
+    test(
+        "says, while waiting, that the company is paused",
+        async () => {
+            runCli("company", "pause")
+            const session = startSession()
+
+            await session.waitForOutput(
+                "The company is paused: only the director's tasks open until `aico company relaunch`.",
+            )
+            session.write("\x04")
+
+            const { exitCode } = await session.exited()
+            expect(exitCode).toBe(0)
         },
         sessionTimeoutMs,
     )
