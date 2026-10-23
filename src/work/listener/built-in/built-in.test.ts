@@ -8,6 +8,8 @@ import type { TicketActName } from "../../../messaging/ticket/act/ticket-acts.ts
 import { createExampleTicket } from "../../../messaging/ticket/create-example-ticket.testing.ts"
 import { createTemporaryCompany } from "../../../organization/company/create-temporary-company.testing.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
+import { pauseCompany } from "../../pause/pause-company.ts"
+import { relaunchCompany } from "../../pause/relaunch-company.ts"
 import { getTaskStates } from "../../task/get-task-states.ts"
 import {
     type Task,
@@ -103,6 +105,11 @@ async function failTaskOf(positionId: string) {
         runId: "20261023-150000-000-9e8d",
         reason: "The model's turn was cut at its maximum length.",
     })
+    return dispatch()
+}
+
+async function relaunch() {
+    await relaunchCompany(await loadJournal(projectRoot))
     return dispatch()
 }
 
@@ -215,5 +222,33 @@ describe("AICo's listeners", () => {
             "analyse-failure @director",
         ])
         expect(createdTasks[0]?.params).toEqual({ taskId: failedTask?.id })
+    })
+
+    test("give the position with the hand its task again at the relaunch", async () => {
+        await createDeveloperTicket()
+        await failTaskOf("developer")
+
+        const { createdTasks } = await relaunch()
+
+        expect(getTaskSummaries(createdTasks)).toEqual(["resume @developer"])
+    })
+
+    test("give no task at the relaunch on a ticket closed during the pause", async () => {
+        await createDeveloperTicket()
+        await failTaskOf("developer")
+        await act("cancel", director)
+
+        const { createdTasks } = await relaunch()
+
+        expect(createdTasks).toEqual([])
+    })
+
+    test("give no task at a relaunch that follows no failure", async () => {
+        await createDeveloperTicket()
+        await pauseCompany(await loadJournal(projectRoot))
+
+        const { createdTasks } = await relaunch()
+
+        expect(createdTasks).toEqual([])
     })
 })

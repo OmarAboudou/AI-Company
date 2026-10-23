@@ -8,6 +8,7 @@ The pause of the company: until the director relaunches it, no new task starts b
 - The company pauses itself at a failed task, so that the next tasks don't fail for the same reason, a revoked key or a spent credit.
 - Pausing a paused company, or relaunching one that isn't, is refused.
 - During a pause, a model's queued task waits, and a person's opens only if it is the director's or already running.
+- At the relaunch, each ticket whose task failed during the pause goes on: the position that has its hand gets its task again.
 
 ## Decisions
 

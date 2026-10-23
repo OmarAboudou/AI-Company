@@ -11,7 +11,7 @@ import { listTasks } from "../../../task/storage.ts"
 import { type BoundToolInputs, defineTaskType } from "../../define-task-type.ts"
 
 const instructions =
-    "The company is paused since. Find out what went wrong, and readjust what was missing with AICo's commands: the position's title or description, its employee, the model or the provider it runs on. Then relaunch the company with `aico company relaunch`."
+    "The company is paused since. Find out what went wrong, and readjust what was missing with AICo's commands: the position's title or description, its employee, the model or the provider it runs on. Then relaunch the company with `aico company relaunch`: the position that has the ticket's hand gets its task again."
 
 function isRelaunchedSince(
     events: readonly JournalEvent[],

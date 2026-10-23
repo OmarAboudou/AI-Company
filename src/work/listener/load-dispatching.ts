@@ -1,5 +1,5 @@
 import type { IdHistory } from "../../ids/id-history-schema.ts"
-import type { Journal } from "../../journal/schema.ts"
+import type { Journal, JournalEvent } from "../../journal/schema.ts"
 import {
     getTicketStates,
     type TicketState,
@@ -14,6 +14,7 @@ import type { TaskType } from "../task-type/define-task-type.ts"
 
 export type Dispatching = {
     journal: Journal
+    events: JournalEvent[]
     taskTypes: Record<string, TaskType>
     directorPositionId: string
     tasks: Task[]
@@ -38,6 +39,7 @@ export async function loadDispatching(
         ])
     return {
         journal,
+        events,
         taskTypes,
         directorPositionId,
         tasks,

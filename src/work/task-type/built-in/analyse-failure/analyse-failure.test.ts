@@ -80,7 +80,7 @@ describe("Analyse the failure", () => {
                 `Task "${failedTask.id}", handle, of Developer (@developer), failed: ${failureReason}`,
                 'It worked on ticket #1, "Choose the API framework": ticket_show reads its discussion.',
                 "",
-                "The company is paused since. Find out what went wrong, and readjust what was missing with AICo's commands: the position's title or description, its employee, the model or the provider it runs on. Then relaunch the company with `aico company relaunch`.",
+                "The company is paused since. Find out what went wrong, and readjust what was missing with AICo's commands: the position's title or description, its employee, the model or the provider it runs on. Then relaunch the company with `aico company relaunch`: the position that has the ticket's hand gets its task again.",
             ].join("\n"),
         )
         expect(session).toMatchObject({

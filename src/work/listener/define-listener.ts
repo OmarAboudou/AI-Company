@@ -1,5 +1,9 @@
 import type { IdHistory } from "../../ids/id-history-schema.ts"
-import type { EventOfType, EventType } from "../../journal/schema.ts"
+import type {
+    EventOfType,
+    EventType,
+    JournalEvent,
+} from "../../journal/schema.ts"
 import type { TicketState } from "../../messaging/ticket/get-ticket-states.ts"
 import type { TaskState } from "../task/get-task-states.ts"
 import type { Task, UncreatedTask } from "../task/schema.ts"
@@ -15,6 +19,7 @@ export type CancelTaskEffect = {
 export type ListenerEffect = CreateTaskEffect | CancelTaskEffect
 
 export type ListenerContext = {
+    events: readonly JournalEvent[]
     directorPositionId: string
     tasks: readonly Task[]
     taskStates: ReadonlyMap<string, TaskState>
