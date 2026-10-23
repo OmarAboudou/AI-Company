@@ -8,6 +8,7 @@ import { appendRunTranscriptLine } from "../storage.ts"
 export type RunStart = {
     id: string
     apiId?: string
+    processId?: number
     systemPrompt: string
     tools: ToolDefinition[]
     userMessage: string
@@ -16,11 +17,20 @@ export type RunStart = {
 
 export async function startRun(
     projectRoot: string,
-    { id, apiId, systemPrompt, tools, userMessage, session }: RunStart,
+    {
+        id,
+        apiId,
+        processId,
+        systemPrompt,
+        tools,
+        userMessage,
+        session,
+    }: RunStart,
 ): Promise<Run> {
     await appendRunTranscriptLine(projectRoot, id, {
         type: "start",
         ...(apiId !== undefined && { apiId }),
+        ...(processId !== undefined && { processId }),
         systemPrompt,
         tools,
         session,
@@ -34,5 +44,10 @@ export async function startRun(
         ...taskTurn,
     })
     const conversation = { systemPrompt, tools, turns: [taskTurn] }
-    return { id, conversation, session }
+    return {
+        id,
+        conversation,
+        session,
+        ...(processId !== undefined && { processId }),
+    }
 }

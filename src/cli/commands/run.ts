@@ -55,6 +55,10 @@ function formatProgress(
                 : [`← ${formatToolResult(progress.text)}`]
         case "task-ended":
             return formatTaskEnd(progress.result)
+        case "task-cut-short":
+            return [
+                `Task "${progress.task.id}" failed: its session was cut short, the process that ran it having stopped before it ended.`,
+            ]
     }
 }
 

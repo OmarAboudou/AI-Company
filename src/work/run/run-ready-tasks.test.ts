@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { runGit } from "../../git/run-git.ts"
-import { listEvents } from "../../journal/storage.ts"
+import { recordEvent } from "../../journal/record-event.ts"
+import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
 import { listMessages } from "../../messaging/message/storage.ts"
 import { assignPosition } from "../../organization/position/assign-position.ts"
@@ -11,6 +12,7 @@ import { createCompanyWithLlmEmployee } from "../create-company-with-llm-employe
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
 import { sendExampleMessage } from "../send-example-message.testing.ts"
 import { getTaskStates } from "../task/get-task-states.ts"
+import { type Task, taskStartedEventType } from "../task/schema.ts"
 import { listTasks } from "../task/storage.ts"
 import type { WorkCatalog } from "../work-catalog.ts"
 import {
@@ -18,6 +20,7 @@ import {
     type RunReadyTasksProgress,
     runReadyTasks,
 } from "./run-ready-tasks.ts"
+import { startRun } from "./start/start-run.ts"
 
 const fakeServer = useFakeAnthropicServer()
 const environment = { TEST_ANTHROPIC_KEY: "sk-test" }
@@ -50,6 +53,30 @@ function runFakeTasks({
         (progress) => progresses.push(progress),
         { catalog, signal },
     )
+}
+
+async function startTaskElsewhere(processId: number): Promise<Task> {
+    await sendQuestion("Hono or Express?")
+    const [task] = await listTasks(projectRoot)
+    if (task === undefined) {
+        throw new Error("Asking the developer created no task")
+    }
+    const runId = "20261023-140324-000-1b2c"
+    await startRun(projectRoot, {
+        id: runId,
+        processId,
+        systemPrompt: "You are Claude Senior.",
+        tools: [],
+        userMessage: "Answer the last message of ticket #1.",
+        session: { toolNames: [], result: {} },
+    })
+    await recordEvent(await loadJournal(projectRoot), taskStartedEventType, {
+        depth: 1,
+        taskId: task.id,
+        runId,
+        worker: { kind: "employee", employeeId: "claude" },
+    })
+    return task
 }
 
 async function askBothDevelopers(): Promise<WorkCatalog> {
@@ -223,5 +250,17 @@ describe("runReadyTasks", () => {
 
         expect(result).toEqual({ kind: "stopped" })
         expect(await listTaskStates()).toEqual(["queued"])
+    })
+
+    test("fails first the tasks whose process stopped short, then stops", async () => {
+        const task = await startTaskElsewhere(Bun.spawnSync(["true"]).pid)
+
+        const failedRun = runFakeTasks()
+
+        await expect(failedRun).rejects.toThrow(
+            `aico run stops at the failure of task "${task.id}"`,
+        )
+        expect(progresses).toEqual([{ kind: "task-cut-short", task }])
+        expect(await listTaskStates()).toEqual(["failed"])
     })
 })

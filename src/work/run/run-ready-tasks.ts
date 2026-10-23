@@ -11,6 +11,7 @@ import {
 } from "../task/list-pending-tasks.ts"
 import type { Task } from "../task/schema.ts"
 import { builtInWorkCatalog, type WorkCatalog } from "../work-catalog.ts"
+import { failCutShortTasks } from "./fail-cut-short-tasks.ts"
 import { type RunTaskResult, runTask } from "./run-task.ts"
 import type { RunProgress } from "./schema.ts"
 
@@ -25,6 +26,7 @@ export type RunReadyTasksProgress =
           employee: Employee
       }
     | { kind: "task-ended"; task: Task; result: RunTaskResult }
+    | { kind: "task-cut-short"; task: Task }
 
 export type ReadyTasksRunning = {
     catalog?: WorkCatalog
@@ -35,6 +37,10 @@ export type RunReadyTasksResult =
     | { kind: "none-ready"; waitingTasks: WaitingTask[] }
     | { kind: "stopped" }
 
+function formatFailureStop(failedTask: Task): string {
+    return `aico run stops at the failure of task "${failedTask.id}", so that the next tasks don't fail for the same reason. Once its cause is fixed, run \`aico run\` again for them: a failed task doesn't run again.`
+}
+
 export async function runReadyTasks(
     projectRoot: string,
     environment: NodeJS.ProcessEnv,
@@ -44,6 +50,16 @@ export async function runReadyTasks(
 ): Promise<RunReadyTasksResult> {
     await requireCompany(projectRoot)
     const journal = await loadJournal(projectRoot)
+    const cutShortTasks = await runOperation(projectRoot, operationName, () =>
+        failCutShortTasks(journal),
+    )
+    for (const task of cutShortTasks) {
+        onProgress({ kind: "task-cut-short", task })
+    }
+    const [firstCutShortTask] = cutShortTasks
+    if (firstCutShortTask !== undefined) {
+        throw new UserError(formatFailureStop(firstCutShortTask))
+    }
     while (true) {
         await runOperation(projectRoot, operationName, async () => {
             // Another process, a person's terminal for one, may have
@@ -90,9 +106,7 @@ export async function runReadyTasks(
             return { kind: "stopped" }
         }
         if (result.taskEnding.state === "failed") {
-            throw new UserError(
-                `aico run stops at the failure of task "${task.id}", so that the next tasks don't fail for the same reason. Once its cause is fixed, run \`aico run\` again for them: a failed task doesn't run again.`,
-            )
+            throw new UserError(formatFailureStop(task))
         }
     }
 }

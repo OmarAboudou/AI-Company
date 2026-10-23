@@ -63,20 +63,14 @@ export async function runTask(
             loadProject(projectRoot),
         ])
     const runId = createTimeOrderedId(readMonotonicTime())
-    await runOperation(projectRoot, operationName, () =>
-        recordEvent(journal, taskStartedEventType, {
-            depth: taskDepth,
-            taskId: task.id,
-            runId,
-            worker: { kind: "employee", employeeId: employee.id },
-            model: { providerId: provider.id, modelId: model.id },
-        }),
-    )
     const { toolNames, boundToolInputs, result: sessionResult } = session
     const tools = getRunTools(toolNames, boundToolInputs)
+    // Written before the task is recorded as started, so that a task found
+    // running has the transcript that tells whether its process still runs.
     const run = await startRun(projectRoot, {
         id: runId,
         apiId: model.apiId,
+        processId: process.pid,
         systemPrompt: buildSystemPrompt({
             company,
             project,
@@ -87,6 +81,15 @@ export async function runTask(
         userMessage: session.userMessage,
         session: { toolNames, boundToolInputs, result: sessionResult },
     })
+    await runOperation(projectRoot, operationName, () =>
+        recordEvent(journal, taskStartedEventType, {
+            depth: taskDepth,
+            taskId: task.id,
+            runId,
+            worker: { kind: "employee", employeeId: employee.id },
+            model: { providerId: provider.id, modelId: model.id },
+        }),
+    )
     const { taskEnding, usage } = await runToolLoop({
         run,
         ctx: {

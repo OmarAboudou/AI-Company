@@ -80,7 +80,7 @@ aico current-position clear            # (director)
 
 ## Running the company
 
-`aico run` runs the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then it lists the tasks left waiting, for a vacant position or for the directors, who work theirs themselves (see [Working your tasks](#working-your-tasks)). A task that fails, on an error of a provider's API for one, stops it, so that the next ones don't fail for the same reason: a failed task doesn't run again. Ctrl+C stops it too, failing the task in progress; a second one quits at once. Only `aico run` calls LLMs: sending a message never does.
+`aico run` runs the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then it lists the tasks left waiting, for a vacant position or for the directors, who work theirs themselves (see [Working your tasks](#working-your-tasks)). A task that fails, on an error of a provider's API for one, stops it, so that the next ones don't fail for the same reason: a failed task doesn't run again. Ctrl+C stops it too, failing the task in progress; a second one quits at once, and the next `aico run` fails the task left running. Only `aico run` calls LLMs: sending a message never does.
 
 Each run is a fresh conversation with the employee's model: who it is, the task's situation, as its type tells it, and the tools its type gives, with those that mark the task as done or failed. What a run does, such as the messages it sends, can give tasks in turn, which the same `aico run` runs.
 

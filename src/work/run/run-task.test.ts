@@ -20,6 +20,7 @@ import {
     taskStartedEventType,
 } from "../task/schema.ts"
 import { runTask } from "./run-task.ts"
+import { loadRun } from "./storage.ts"
 
 const fakeServer = useFakeAnthropicServer()
 const environment = { TEST_ANTHROPIC_KEY: "sk-test" }
@@ -96,6 +97,15 @@ describe("runTask", () => {
             worker: { kind: "employee", employeeId: "claude" },
             model: { providerId: "anthropic", modelId: "opus" },
         })
+    })
+
+    test("keeps in the run's transcript the process that runs it", async () => {
+        fakeServer.respondWith(closingReply)
+
+        const { run } = await runFakeTask()
+
+        const { processId } = await loadRun(projectRoot, run?.runId ?? "")
+        expect(processId).toBe(process.pid)
     })
 
     test("gives the runs' system prompt and the task's user message", async () => {
