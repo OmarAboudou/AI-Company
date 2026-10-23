@@ -11,7 +11,11 @@ import { createExampleWorkCatalog } from "../create-example-work-catalog.testing
 import { reminderText } from "../run/apply-assistant-turn.ts"
 import { loadRun } from "../run/storage.ts"
 import type { OpenedTask } from "../task/open-next-task.ts"
-import { taskDoneEventType, taskFailedEventType } from "../task/schema.ts"
+import {
+    taskCancelledEventType,
+    taskDoneEventType,
+    taskFailedEventType,
+} from "../task/schema.ts"
 import { addTurnText } from "./add-turn-text.ts"
 import { addTurnTool } from "./add-turn-tool.ts"
 import { createCompanyWithTaskInProgress } from "./create-company-with-task-in-progress.testing.ts"
@@ -214,6 +218,26 @@ describe("sendTurn", () => {
         expect(await findLastEvent(taskFailedEventType)).toMatchObject({
             depth: 0,
             taskId: openedTask.task.id,
+            reason,
+        })
+    })
+
+    test("stops the turn at its next call once the task became pointless", async () => {
+        await addToolCall("message_send", { body: "Stop." })
+        await addToolCall("message_send", { body: "Friday." })
+
+        const { taskEnding } = await sendPersonTurn()
+
+        const messages = await listMessages(projectRoot, ticketNumber)
+        const reason = `Ticket #${ticketNumber}'s discussion says Stop.`
+        expect(messages.map(({ body }) => body)).toEqual([
+            "Can we ship on Friday?",
+            "Stop.",
+        ])
+        expect(taskEnding).toEqual({ state: "cancelled", reason })
+        expect(await findLastEvent(taskCancelledEventType)).toMatchObject({
+            taskId: openedTask.task.id,
+            runId: openedTask.run.id,
             reason,
         })
     })

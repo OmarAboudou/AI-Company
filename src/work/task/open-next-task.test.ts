@@ -170,6 +170,24 @@ describe("openNextTask", () => {
         expect(openedTask?.run.id).not.toBe(modelRunId)
     })
 
+    test("ends rather than resumes a run whose task became pointless", async () => {
+        const shipping = await ask("qa-tester", "Can we ship on Friday?")
+        await openNextExampleTask()
+        await sendExampleMessage(
+            projectRoot,
+            ticketNumber,
+            "Stop.",
+            createExampleWorkCatalog(),
+        )
+
+        const { openedTask, endedTasks } = await openNextExampleTask()
+
+        const reason = `Ticket #${ticketNumber}'s discussion says Stop.`
+        const taskEnding = { state: "cancelled", reason } as const
+        expect(endedTasks).toEqual([{ task: shipping.task, taskEnding }])
+        expect(openedTask).toBeUndefined()
+    })
+
     test("opens nothing when no task waits for the person", async () => {
         const result = await openNextExampleTask()
 

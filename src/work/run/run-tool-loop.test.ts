@@ -50,7 +50,10 @@ const markAsDoneCall = {
     input: { summary: "Wrote the notes." },
 }
 
-async function runFakeLoop(progresses: RunProgress[] = []) {
+async function runFakeLoop(
+    progresses: RunProgress[] = [],
+    loadCancellationReason?: () => Promise<string | undefined>,
+) {
     const run = await startRun(projectRoot, {
         id: runId,
         apiId: "claude-opus-5-5",
@@ -67,6 +70,7 @@ async function runFakeLoop(progresses: RunProgress[] = []) {
         apiId: "claude-opus-5-5",
         tools,
         onProgress: (progress) => progresses.push(progress),
+        loadCancellationReason,
     })
 }
 
@@ -198,4 +202,20 @@ describe("runToolLoop", () => {
             expect(writtenNotes).toEqual([])
         },
     )
+
+    test("stops before calling the model again once the task became pointless", async () => {
+        fakeServer.respondWith({
+            toolCalls: [{ name: "note_write", input: { text: "first" } }],
+        })
+        const loadCancellationReason = async () =>
+            writtenNotes.length > 0 ? "No more notes needed." : undefined
+
+        const { taskEnding } = await runFakeLoop([], loadCancellationReason)
+
+        expect(fakeServer.requests).toHaveLength(1)
+        expect(taskEnding).toEqual({
+            state: "cancelled",
+            reason: "No more notes needed.",
+        })
+    })
 })

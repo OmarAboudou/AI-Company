@@ -134,6 +134,29 @@ describe("applyAssistantTurn", () => {
         })
     })
 
+    test("stops before its next call once the task became pointless", async () => {
+        const turn = createTurn(...createNoteWritings(2))
+
+        const { run, taskEnding } = await applyAssistantTurn(startedRun, turn, {
+            tools,
+            ctx: { ...exampleToolContext, projectRoot, runId },
+            loadCancellationReason: async () =>
+                writtenNotes.length > 0 ? "No more notes needed." : undefined,
+        })
+
+        expect(writtenNotes).toEqual(["note 0"])
+        expect(taskEnding).toEqual({
+            state: "cancelled",
+            reason: "No more notes needed.",
+        })
+        expect(run.conversation.turns.at(-1)?.blocks.at(-1)).toEqual({
+            type: "tool-result",
+            toolCallId: "call_1",
+            text: "Not run: the task was cancelled. No more notes needed.",
+            isError: true,
+        })
+    })
+
     test("reports each call and its result as it runs", async () => {
         const progresses: RunProgress[] = []
         const turn = createTurn(markAsDoneCall)

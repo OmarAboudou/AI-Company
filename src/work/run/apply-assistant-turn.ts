@@ -22,6 +22,7 @@ export type TurnApplication = {
     tools: Record<string, Tool>
     ctx: ToolContext
     onProgress?: (progress: RunProgress) => void
+    loadCancellationReason?: () => Promise<string | undefined>
 }
 
 type TurnAnswer = { answeringTurn?: UserTurn; taskEnding?: TaskEnding }
@@ -74,13 +75,37 @@ function getFailureReason(
     return undefined
 }
 
+function createUnrunResult(
+    { id }: ToolCallBlock,
+    cancellationReason: string,
+): ToolResultBlock {
+    return {
+        type: "tool-result",
+        toolCallId: id,
+        text: `Not run: the task was cancelled. ${cancellationReason}`,
+        isError: true,
+    }
+}
+
 async function runToolCalls(
     toolCalls: ToolCallBlock[],
-    { tools, ctx, onProgress }: TurnApplication,
+    { tools, ctx, onProgress, loadCancellationReason }: TurnApplication,
 ) {
     const toolResults: ToolResultBlock[] = []
     let taskEnding: TaskEnding | undefined
-    for (const { id, name, input } of toolCalls) {
+    for (const [index, toolCall] of toolCalls.entries()) {
+        const cancellationReason = await loadCancellationReason?.()
+        if (cancellationReason !== undefined) {
+            const unrunResults = toolCalls
+                .slice(index)
+                .map((unrunCall) =>
+                    createUnrunResult(unrunCall, cancellationReason),
+                )
+            toolResults.push(...unrunResults)
+            taskEnding ??= { state: "cancelled", reason: cancellationReason }
+            break
+        }
+        const { id, name, input } = toolCall
         onProgress?.({ kind: "tool-call", name, input })
         const operationName = `${name} in task ${ctx.task.id}`
         const { text, isError, ...result } = await runOperation(

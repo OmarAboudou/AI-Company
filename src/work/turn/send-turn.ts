@@ -5,6 +5,7 @@ import type { AssistantTurn, UserTurn } from "../../llm/conversation/schema.ts"
 import { UserError } from "../../user-error.ts"
 import { applyAssistantTurn } from "../run/apply-assistant-turn.ts"
 import { endTask } from "../run/end-task.ts"
+import { loadCancellationReason } from "../run/load-cancellation-reason.ts"
 import { requireRunTools } from "../run/require-run-tools.ts"
 import type { RunWorker, TaskEnding } from "../tool/define-tool.ts"
 import { builtInWorkCatalog, type WorkCatalog } from "../work-catalog.ts"
@@ -55,6 +56,12 @@ export async function sendTurn(
                 worker,
                 runId: run.id,
             },
+            loadCancellationReason: () =>
+                loadCancellationReason(journal, {
+                    task,
+                    position,
+                    taskTypes: catalog.taskTypes,
+                }),
         },
     )
     if (taskEnding !== undefined) {

@@ -17,6 +17,7 @@ import { beginTask } from "./begin-task.ts"
 import { buildSystemPrompt } from "./build-system-prompt.ts"
 import { endTask } from "./end-task.ts"
 import { getRunTools } from "./get-run-tools.ts"
+import { loadCancellationReason } from "./load-cancellation-reason.ts"
 import { runToolLoop } from "./run-tool-loop.ts"
 import type { RunProgress } from "./schema.ts"
 import { startRun } from "./start-run.ts"
@@ -100,6 +101,8 @@ export async function runTask(
         apiId: model.apiId,
         tools,
         onProgress,
+        loadCancellationReason: () =>
+            loadCancellationReason(journal, { task, position, taskTypes }),
     })
     await runOperation(projectRoot, operationName, () =>
         endTask(

@@ -1,3 +1,5 @@
+import { requireJournalEvent } from "../../journal/require-journal-event.ts"
+import type { Journal } from "../../journal/schema.ts"
 import { loadJournal } from "../../journal/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
 import { getPositionsWorkedByDirectors } from "../../organization/human/get-positions-worked-by-directors.ts"
@@ -7,9 +9,12 @@ import { listPositionAssignments } from "../../organization/position/list-positi
 import type { Position } from "../../organization/position/schema.ts"
 import { dispatchEvents } from "../listener/dispatch-events.ts"
 import { beginTask } from "../run/begin-task.ts"
+import { endTask } from "../run/end-task.ts"
+import { loadCancellationReason } from "../run/load-cancellation-reason.ts"
 import { loadResumableRun } from "../run/load-resumable-run.ts"
 import type { Run } from "../run/schema.ts"
 import { startHumanRun } from "../run/start-human-run.ts"
+import type { TaskType } from "../task-type/define-task-type.ts"
 import type { TaskEnding } from "../tool/define-tool.ts"
 import type { StagedTurn } from "../turn/schema.ts"
 import { loadStagedTurn } from "../turn/storage.ts"
@@ -33,6 +38,39 @@ export type EndedTask = { task: Task; taskEnding: TaskEnding }
 export type OpenNextTaskResult = {
     openedTask: OpenedTask | undefined
     endedTasks: EndedTask[]
+}
+
+type ResumableTask = {
+    task: Task
+    position: Position
+    run: Run
+    taskTypes: Record<string, TaskType>
+}
+
+async function endPointlessRun(
+    journal: Journal,
+    { task, position, run, taskTypes }: ResumableTask,
+): Promise<TaskEnding | undefined> {
+    const cancellationReason = await loadCancellationReason(journal, {
+        task,
+        position,
+        taskTypes,
+    })
+    if (cancellationReason === undefined) {
+        return undefined
+    }
+    const taskEnding: TaskEnding = {
+        state: "cancelled",
+        reason: cancellationReason,
+    }
+    const { depth } = requireJournalEvent(journal, task.causeEventId)
+    const sessionResult = run.session.result
+    await endTask(
+        journal,
+        { task, position, runId: run.id, depth, sessionResult, taskTypes },
+        taskEnding,
+    )
+    return taskEnding
 }
 
 export async function openNextTask(
@@ -78,6 +116,18 @@ export async function openNextTask(
             continue
         }
         const resumableRun = await loadResumableRun(journal, task)
+        const taskEnding =
+            resumableRun &&
+            (await endPointlessRun(journal, {
+                task,
+                position,
+                run: resumableRun,
+                taskTypes: catalog.taskTypes,
+            }))
+        if (taskEnding !== undefined) {
+            endedTasks.push({ task, taskEnding })
+            continue
+        }
         if (resumableRun !== undefined) {
             const openedTask = {
                 task,

@@ -31,7 +31,8 @@ function addUsage(usage: TokenUsage, addedUsage: TokenUsage): TokenUsage {
 }
 
 export async function runToolLoop(loop: ToolLoop): Promise<RunToolLoopResult> {
-    const { connection, apiKey, apiId, onProgress } = loop
+    const { connection, apiKey, apiId, onProgress, loadCancellationReason } =
+        loop
     let { run } = loop
     let usage: TokenUsage = {
         inputTokens: 0,
@@ -40,6 +41,14 @@ export async function runToolLoop(loop: ToolLoop): Promise<RunToolLoopResult> {
         cacheCreationInputTokens: 0,
     }
     while (true) {
+        const cancellationReason = await loadCancellationReason?.()
+        if (cancellationReason !== undefined) {
+            const taskEnding: TaskEnding = {
+                state: "cancelled",
+                reason: cancellationReason,
+            }
+            return { taskEnding, usage }
+        }
         const modelTurn = await callAnthropicMessages({
             connection,
             apiKey,
