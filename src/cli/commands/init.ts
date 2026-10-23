@@ -18,13 +18,13 @@ export function registerInitCommand(program: Command): void {
         )
         .addOption(createDescriptionFileOption())
         .action(async (options) => {
-            const description = await readTextOrFile(
+            const projectDescription = await readTextOrFile(
                 options.description,
                 options.descriptionFile,
             )
             const company = await createCompany(projectRoot, {
                 name: options.name,
-                description,
+                projectDescription,
             })
             console.log(
                 `Created company "${company.name}" and its director's position "${company.directorPositionId}".`,

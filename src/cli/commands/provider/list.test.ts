@@ -7,7 +7,7 @@ const { runCli, getProjectPath } = useTemporaryProject()
 describe("aico provider", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
     })
 
     function createAnthropic() {

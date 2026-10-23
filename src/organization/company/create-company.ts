@@ -14,7 +14,10 @@ const directorPositionId = "director"
 
 export async function createCompany(
     projectRoot: string,
-    { name, description }: { name: string; description: string },
+    {
+        name,
+        projectDescription = "",
+    }: { name: string; projectDescription?: string },
 ): Promise<Company> {
     requireGitRepository(projectRoot)
     await openReservedBranch(projectRoot)
@@ -38,7 +41,7 @@ export async function createCompany(
                 createdAt: new Date().toISOString(),
                 description: "",
             }),
-            saveProject(projectRoot, { description }),
+            saveProject(projectRoot, { description: projectDescription }),
         ])
         // The company comes last: until its config.json exists, AICo
         // sees no company, so an interrupted init can be run again.

@@ -6,7 +6,7 @@ const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("aico project update", () => {
     beforeEach(async () => {
-        await createCompany(getProjectPath(), { name: "Acme", description: "" })
+        await createCompany(getProjectPath(), { name: "Acme" })
     })
 
     test("update -d replaces the description, which show displays", () => {

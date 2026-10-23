@@ -25,7 +25,7 @@ function createEmployeeWorker(employeeId: string) {
 describe("aico employee replace", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await saveExampleLlmModel(projectRoot)
         await Promise.all([
             ...["developer", "qa-tester", "designer"].map((id) =>

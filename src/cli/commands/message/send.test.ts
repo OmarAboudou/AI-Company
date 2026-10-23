@@ -12,7 +12,7 @@ describe("aico message send", () => {
 
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         const { thread } = await createThread(
             projectRoot,
             {},
@@ -99,7 +99,7 @@ describe("--as-position", () => {
 
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await createPosition(projectRoot, "support", {
             title: "support",
             description: "",

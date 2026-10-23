@@ -24,7 +24,7 @@ function createEmployeeWorker(employeeId: string) {
 describe("aico employee delete", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await saveExampleLlmModel(projectRoot)
         await Promise.all([
             createEmployee(projectRoot, "omar", {

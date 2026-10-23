@@ -23,7 +23,7 @@ async function loadPositionStateFile(id: string): Promise<unknown> {
 describe("aico position assign and unassign", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await Promise.all([
             createPosition(projectRoot, "developer", {
                 title: "Developer",
@@ -134,7 +134,7 @@ describe("a temporary assignment through the position's lifecycle", () => {
 
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await saveExampleLlmModel(projectRoot)
         await Promise.all([
             createPosition(projectRoot, "developer", {

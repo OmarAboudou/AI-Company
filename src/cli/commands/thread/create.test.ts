@@ -11,7 +11,7 @@ describe("aico thread create", () => {
 
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
     })
 
     function createThread(...args: string[]) {
@@ -65,7 +65,7 @@ describe("--as-position", () => {
 
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await createPosition(projectRoot, "support", {
             title: "support",
             description: "",

@@ -21,7 +21,7 @@ async function askTester(threadId: string): Promise<void> {
 describe("aico thread list", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
     })
 
     function createThread(...args: string[]) {
@@ -53,7 +53,7 @@ describe("pending tasks", () => {
 
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         const { thread } = await createThread(
             projectRoot,
             {},

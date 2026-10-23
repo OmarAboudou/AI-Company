@@ -7,10 +7,7 @@ const { runCli, getProjectPath } = useTemporaryProject()
 describe("aico company update", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, {
-            name: "Acme",
-            description: "We build things.",
-        })
+        await createCompany(projectRoot, { name: "Acme" })
     })
 
     test("update -n changes the name", () => {

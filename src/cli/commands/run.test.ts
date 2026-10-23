@@ -13,7 +13,7 @@ describe("aico run", () => {
 
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await createPosition(projectRoot, "qa-tester", {
             title: "QA Tester",
             description: "",

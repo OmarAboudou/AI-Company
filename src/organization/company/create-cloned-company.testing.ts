@@ -20,7 +20,7 @@ export async function createClonedCompany(): Promise<ClonedCompany> {
         name: "Test User",
         email: "test@example.com",
     })
-    await createCompany(projectRoot, { name: "Acme", description: "" })
+    await createCompany(projectRoot, { name: "Acme" })
     runGit(parentFolderPath, ["clone", "-q", projectRoot, clonePath])
     return { parentFolderPath, projectRoot, clonePath }
 }

@@ -12,7 +12,7 @@ const { runCli, getProjectPath } = useTemporaryProject()
 describe("aico employee", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" })
         await createLlmConnection(
             projectRoot,
@@ -86,7 +86,7 @@ describe("--reuse-id", () => {
 
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
     })
 
     async function archiveMessageBy(employeeId: string, sentAt: string) {

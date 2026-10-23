@@ -27,7 +27,7 @@ describe("aico employee update", () => {
 
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await Promise.all([
             createProvider("anthropic", "https://api.anthropic.com"),
             createProvider("ollama", "http://localhost:11434"),

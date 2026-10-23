@@ -29,7 +29,7 @@ async function askDeveloper(): Promise<string> {
 describe("aico position delete", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await saveExampleLlmModel(projectRoot)
         await createPosition(projectRoot, "developer", {
             title: "Developer",
