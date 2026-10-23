@@ -21,9 +21,6 @@ export async function createClonedCompany(): Promise<ClonedCompany> {
         email: "test@example.com",
     })
     await createCompany(projectRoot, { name: "Acme", description: "" })
-    const aicoFolderPath = join(projectRoot, ".aico")
-    runGit(aicoFolderPath, ["add", "--all"])
-    runGit(aicoFolderPath, ["commit", "-q", "-m", "aico init"])
     runGit(parentFolderPath, ["clone", "-q", projectRoot, clonePath])
     return { parentFolderPath, projectRoot, clonePath }
 }

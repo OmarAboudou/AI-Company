@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { createGitRepository } from "../../git/create-git-repository.testing.ts"
 import { createReservedBranch } from "../../git/reserved-branch/create-reserved-branch.ts"
 import { isReservedBranchWorktree } from "../../git/reserved-branch/is-reserved-branch-worktree.ts"
 import { runGit } from "../../git/run-git.ts"
-import { spawnGit } from "../../git/spawn-git.ts"
 import { UserError } from "../../user-error.ts"
 import { loadPosition } from "../position/storage.ts"
 import { createClonedCompany } from "./create-cloned-company.testing.ts"
@@ -16,7 +16,10 @@ let projectRoot: string
 
 beforeEach(async () => {
     projectRoot = await mkdtemp(join(tmpdir(), "aico-"))
-    spawnGit(projectRoot, ["init", "-q"])
+    createGitRepository(projectRoot, {
+        name: "Test User",
+        email: "test@example.com",
+    })
 })
 
 afterEach(async () => {
@@ -53,6 +56,15 @@ describe("createCompany", () => {
         expect(await isReservedBranchWorktree(projectRoot)).toBe(true)
         expect(await loadCompany(projectRoot)).toEqual(createdCompany)
         expect(runGit(projectRoot, ["status", "--porcelain"])).toBe("")
+    })
+
+    test("commits the company on its branch, as aico init", async () => {
+        await createCompany(projectRoot, acme)
+
+        const aicoFolderPath = join(projectRoot, ".aico")
+        const log = runGit(aicoFolderPath, ["log", "--format=%s"])
+        expect(log).toBe("aico init")
+        expect(runGit(aicoFolderPath, ["status", "--porcelain"])).toBe("")
     })
 
     test("runs again once interrupted, the branch already created", async () => {

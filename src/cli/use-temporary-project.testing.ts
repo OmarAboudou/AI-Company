@@ -1,7 +1,7 @@
 import { afterEach, beforeEach } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { join, resolve } from "node:path"
 import type { Subprocess } from "bun"
 import { createGitRepository } from "../git/create-git-repository.testing.ts"
 import { startInteractiveCli } from "./start-interactive-cli.testing.ts"
@@ -58,7 +58,7 @@ export function useTemporaryProject() {
         folder = ".",
     }: RunOptions) {
         return {
-            cwd: join(projectRoot, folder),
+            cwd: resolve(projectRoot, folder),
             env: readCliEnvironment(env),
             stdin: new TextEncoder().encode(stdin),
         }

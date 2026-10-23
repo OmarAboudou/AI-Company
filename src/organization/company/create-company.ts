@@ -2,6 +2,7 @@ import { requireGitRepository } from "../../git/require-git-repository.ts"
 import { createReservedBranch } from "../../git/reserved-branch/create-reserved-branch.ts"
 import { isReservedBranchWorktree } from "../../git/reserved-branch/is-reserved-branch-worktree.ts"
 import { openReservedBranch } from "../../git/reserved-branch/open-reserved-branch.ts"
+import { runOperation } from "../../git/reserved-branch/run-operation.ts"
 import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
 import { savePosition } from "../position/storage.ts"
@@ -26,15 +27,19 @@ export async function createCompany(
     if (!(await isReservedBranchWorktree(projectRoot))) {
         await createReservedBranch(projectRoot)
     }
-    await savePosition(projectRoot, {
-        id: directorPositionId,
-        title: "Director",
-        createdAt: new Date().toISOString(),
-        description: "",
+    // Other commands run as operations of the command line; init runs its
+    // own once the branch exists, whose worktree keeps the operations' lock.
+    return runOperation(projectRoot, "aico init", async () => {
+        await savePosition(projectRoot, {
+            id: directorPositionId,
+            title: "Director",
+            createdAt: new Date().toISOString(),
+            description: "",
+        })
+        // The company comes last: until its config.json exists, AICo
+        // sees no company, so an interrupted init can be run again.
+        const company = { ...companyConfig, description }
+        await saveCompany(projectRoot, company)
+        return company
     })
-    // The company comes last: until its config.json exists, AICo
-    // sees no company, so an interrupted init can be run again.
-    const company = { ...companyConfig, description }
-    await saveCompany(projectRoot, company)
-    return company
 }
