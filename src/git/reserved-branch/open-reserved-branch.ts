@@ -11,20 +11,20 @@ const reservedBranchRef = `refs/heads/${reservedBranchName}`
 
 type Worktree = { path: string; branchRef?: string; isPrunable: boolean }
 
-function listWorktrees(projectRoot: string): Worktree[] {
+function readWorktrees(projectRoot: string): Worktree[] {
     const listing = runGit(projectRoot, ["worktree", "list", "--porcelain"])
     return (listing ?? "")
         .split("\n\n")
         .filter((block) => block !== "")
         .map((block) => {
             const lines = block.split("\n")
-            const readValue = (key: string) =>
+            const getValue = (key: string) =>
                 lines
                     .find((line) => line.startsWith(`${key} `))
                     ?.slice(key.length + 1)
             return {
-                path: readValue("worktree") ?? "",
-                branchRef: readValue("branch"),
+                path: getValue("worktree") ?? "",
+                branchRef: getValue("branch"),
                 isPrunable: lines.some((line) => line.startsWith("prunable")),
             }
         })
@@ -33,7 +33,7 @@ function listWorktrees(projectRoot: string): Worktree[] {
 // git refuses to check a branch out twice, and keeps a worktree deleted
 // by hand registered until it's removed.
 function freeReservedBranch(projectRoot: string): void {
-    const worktree = listWorktrees(projectRoot).find(
+    const worktree = readWorktrees(projectRoot).find(
         ({ branchRef }) => branchRef === reservedBranchRef,
     )
     if (worktree === undefined) {

@@ -56,7 +56,7 @@ async function findLastEvent<Content extends Omit<JournalEvent, "id">>(
         .findLast(Boolean)
 }
 
-function listLastCommits(count: number) {
+function readLastCommits(count: number) {
     const aicoFolderPath = join(projectRoot, ".aico")
     return Array.from({ length: count }, (_, index) => {
         const revision = `HEAD~${index}`
@@ -145,7 +145,7 @@ describe("sendTurn", () => {
         await sendPersonTurn()
 
         const subject = `message_send in task ${openedTask.task.id}`
-        expect(listLastCommits(2)).toEqual([
+        expect(readLastCommits(2)).toEqual([
             { subject, messageFileCount: 1 },
             { subject, messageFileCount: 1 },
         ])
@@ -156,7 +156,7 @@ describe("sendTurn", () => {
 
         await sendPersonTurn()
 
-        const [lastCommit] = listLastCommits(1)
+        const [lastCommit] = readLastCommits(1)
         expect(lastCommit?.subject).toBe("aico turn send")
         expect(await findLastEvent(taskDoneEventType)).toBeDefined()
     })
