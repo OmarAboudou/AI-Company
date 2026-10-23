@@ -5,14 +5,19 @@ import { recordEvent } from "../../journal/record-event.ts"
 import type { EventType, JournalEvent } from "../../journal/schema.ts"
 import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
+import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { sendMessage } from "../../messaging/message/send-message.ts"
-import { listMessages } from "../../messaging/message/storage.ts"
 import type { LlmEmployee } from "../../organization/employee/schema.ts"
 import { loadEmployee } from "../../organization/employee/storage.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { loadPosition } from "../../organization/position/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { createCompanyWithLlmEmployee } from "../create-company-with-llm-employee.testing.ts"
+import {
+    createExampleWorkCatalog,
+    exampleTaskType,
+} from "../create-example-work-catalog.testing.ts"
+import { createTask } from "../task/create-task.ts"
 import { getTaskStates } from "../task/get-task-states.ts"
 import {
     type Task,
@@ -20,27 +25,31 @@ import {
     taskFailedEventType,
     taskStartedEventType,
 } from "../task/schema.ts"
-import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
+import { createUncreatedTask } from "../task-type/create-uncreated-task.ts"
 import { runTask } from "./run-task.ts"
 
 const fakeServer = useFakeAnthropicServer()
 const environment = { TEST_ANTHROPIC_KEY: "sk-test" }
+const exampleCatalog = createExampleWorkCatalog(["backend-developer"])
 let projectRoot: string
 let threadId: string
-let questionId: string
 let task: Task
 let position: Position
 let employee: LlmEmployee
 
 async function askDeveloper(body: string) {
-    const sending = await sendMessage(projectRoot, environment, threadId, {
-        body: `@backend-developer ${body}`,
-    })
-    const [catchUp] = sending.createdTasks
-    if (catchUp === undefined) {
+    const sending = await sendMessage(
+        projectRoot,
+        environment,
+        threadId,
+        { body },
+        exampleCatalog,
+    )
+    const [exampleTask] = sending.createdTasks
+    if (exampleTask === undefined) {
         throw new Error("Asking the developer created no task")
     }
-    return { messageId: sending.message.id, catchUp }
+    return exampleTask
 }
 
 beforeEach(async () => {
@@ -49,9 +58,7 @@ beforeEach(async () => {
     )
     projectRoot = companyWithLlmEmployee.projectRoot
     threadId = companyWithLlmEmployee.threadId
-    const question = await askDeveloper("Hono or Express?")
-    questionId = question.messageId
-    task = question.catchUp
+    task = await askDeveloper("Hono or Express?")
     position = await loadPosition(projectRoot, "backend-developer")
     const claude = await loadEmployee(projectRoot, "claude")
     if (claude.kind !== "llm") {
@@ -73,7 +80,7 @@ async function runFakeTask(
         task: taskToRun,
         position,
         employee,
-        taskTypes: builtInTaskTypes,
+        taskTypes: exampleCatalog.taskTypes,
         onProgress,
     })
 }
@@ -117,7 +124,7 @@ describe("runTask", () => {
         expect(body?.messages[0]?.content).toMatchObject([
             {
                 type: "text",
-                text: expect.stringContaining("Hono or Express?\n</message>"),
+                text: `Answer the last message of thread ${threadId}.`,
             },
         ])
     })
@@ -176,30 +183,13 @@ describe("runTask", () => {
         expect(getTaskStates([task], events).get(task.id)).toBe("done")
     })
 
-    test("records as its result the last entry shown, when the run sends nothing", async () => {
+    test("records as its result what the task's type makes of the run", async () => {
         fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
 
-        await runFakeTask()
+        const { run } = await runFakeTask()
 
         expect(await findEvent(taskDoneEventType)).toMatchObject({
-            result: { lastReadEntryId: questionId },
-        })
-    })
-
-    test("records the messages the run sent as read too", async () => {
-        const answer = { body: "Hono, for Bun." }
-        fakeServer.respondWith({
-            toolCalls: [
-                { name: "message_send", input: answer },
-                markAsDoneCall,
-            ],
-        })
-
-        await runFakeTask()
-
-        const answerMessage = (await listMessages(projectRoot, threadId)).at(-1)
-        expect(await findEvent(taskDoneEventType)).toMatchObject({
-            result: { lastReadEntryId: answerMessage?.id },
+            result: { runId: run?.runId },
         })
     })
 
@@ -214,25 +204,34 @@ describe("runTask", () => {
         expect(await findEvent(taskFailedEventType)).toMatchObject({ reason })
     })
 
-    test("marks as done a task whose cause was read, without a run", async () => {
-        const followUp = await askDeveloper("And the database?")
-        const readTask = followUp.catchUp
-        await recordEvent(await loadJournal(projectRoot), taskDoneEventType, {
-            depth: 1,
-            taskId: task.id,
-            summary: "Answered both.",
-            result: { lastReadEntryId: followUp.messageId },
+    test("marks as done, without a run, a task its type finds done", async () => {
+        const journal = await loadJournal(projectRoot)
+        const questionSent = await recordEvent(journal, messageSentEventType, {
+            depth: 0,
+            threadId,
+            messageId: "20261018-140322-123-3f9a",
+            positionId: "director",
+            mentions: [],
         })
+        const summary = "Already answered."
+        const answeredTask = await createTask(
+            journal,
+            createUncreatedTask(exampleTaskType, {
+                positionId: "backend-developer",
+                params: { threadId, doneSummary: summary },
+            }),
+            questionSent,
+        )
 
-        const result = await runFakeTask(readTask)
+        const result = await runFakeTask(answeredTask)
 
-        const summary =
-            "Already read: an earlier task read the thread up to entry #2."
         expect(result).toEqual({ taskEnding: { state: "done", summary } })
         expect(fakeServer.requests).toHaveLength(0)
         const events = await listEvents(projectRoot)
-        const readTaskState = getTaskStates([readTask], events).get(readTask.id)
-        expect(readTaskState).toBe("done")
+        const answeredTaskState = getTaskStates([answeredTask], events).get(
+            answeredTask.id,
+        )
+        expect(answeredTaskState).toBe("done")
     })
 
     test("leaves the task running when the provider's API fails", async () => {
