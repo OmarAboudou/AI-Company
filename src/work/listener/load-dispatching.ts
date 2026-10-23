@@ -13,7 +13,6 @@ export type Dispatching = {
     taskStates: Map<string, TaskState>
     positions: IdHistory[]
     createdTasks: Task[]
-    doneTasks: Task[]
     cancelledTasks: Task[]
 }
 
@@ -33,7 +32,6 @@ export async function loadDispatching(
         taskStates: getTaskStates(tasks, events),
         positions,
         createdTasks: [],
-        doneTasks: [],
         cancelledTasks: [],
     }
 }

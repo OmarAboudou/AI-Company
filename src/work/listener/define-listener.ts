@@ -1,16 +1,9 @@
 import type { IdHistory } from "../../ids/id-history-schema.ts"
 import type { EventOfType, EventType } from "../../journal/schema.ts"
 import type { TaskState } from "../task/get-task-states.ts"
-import type { Task, TaskResult, UncreatedTask } from "../task/schema.ts"
+import type { Task, UncreatedTask } from "../task/schema.ts"
 
 export type CreateTaskEffect = { kind: "create-task"; task: UncreatedTask }
-
-export type MarkTaskAsDoneEffect = {
-    kind: "mark-task-as-done"
-    taskId: string
-    summary: string
-    result: TaskResult
-}
 
 export type CancelTaskEffect = {
     kind: "cancel-task"
@@ -18,10 +11,7 @@ export type CancelTaskEffect = {
     reason: string
 }
 
-export type ListenerEffect =
-    | CreateTaskEffect
-    | MarkTaskAsDoneEffect
-    | CancelTaskEffect
+export type ListenerEffect = CreateTaskEffect | CancelTaskEffect
 
 export type ListenerContext = {
     tasks: readonly Task[]

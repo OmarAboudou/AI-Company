@@ -52,7 +52,7 @@ const reviewListener = defineListener({
 
 const positionNotedEventType = defineEventType({
     type: "test-position-noted",
-    description: "A test noted that a position finished its tasks.",
+    description: "A test noted that a position has nothing left to do.",
     fields: { positionId: IdSchema },
 })
 
@@ -66,10 +66,9 @@ const notingListener = defineListener({
                     taskStates.get(task.id) === "queued",
             )
             .map((task) => ({
-                kind: "mark-task-as-done",
+                kind: "cancel-task",
                 taskId: task.id,
-                summary: "Noted as finished.",
-                result: {},
+                reason: "Noted as having nothing left to do.",
             })),
 })
 
@@ -175,10 +174,11 @@ describe("dispatchEvents", () => {
         )
         const listeners = [...exampleCatalog.listeners, notingListener]
 
-        const { createdTasks, doneTasks } = await dispatchToListeners(listeners)
+        const { createdTasks, cancelledTasks } =
+            await dispatchToListeners(listeners)
 
         expect(createdTasks).toHaveLength(1)
-        expect(doneTasks).toEqual(createdTasks)
+        expect(cancelledTasks).toEqual(createdTasks)
     })
 
     test("passes over an event of a type no listener handles", async () => {
