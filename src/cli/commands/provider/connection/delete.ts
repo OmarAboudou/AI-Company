@@ -2,7 +2,6 @@ import type { Command } from "@commander-js/extra-typings"
 import { deleteLlmConnection } from "../../../../llm/connection/delete-llm-connection.ts"
 import { formatIdArgumentDescription } from "../../../id-argument-descriptions.ts"
 import { projectRoot } from "../../../project-root.ts"
-import { requireDirector } from "../../../require-director.ts"
 import { createProtocolArgument } from "./create-protocol-argument.ts"
 
 export function registerProviderConnectionDeleteCommand(
@@ -16,7 +15,6 @@ export function registerProviderConnectionDeleteCommand(
             formatIdArgumentDescription("provider", "anthropic"),
         )
         .addArgument(createProtocolArgument())
-        .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol) => {
             const provider = await deleteLlmConnection(
                 projectRoot,

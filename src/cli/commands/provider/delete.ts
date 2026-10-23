@@ -2,7 +2,6 @@ import type { Command } from "@commander-js/extra-typings"
 import { deleteLlmProvider } from "../../../llm/provider/delete-llm-provider.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
-import { requireDirector } from "../../require-director.ts"
 
 export function registerProviderDeleteCommand(providerCommand: Command): void {
     providerCommand
@@ -15,7 +14,6 @@ export function registerProviderDeleteCommand(providerCommand: Command): void {
             formatIdArgumentDescription("provider", "anthropic"),
         )
         .option("-f, --force", "delete it even if it has models, deleting them")
-        .hook("preAction", requireDirector)
         .action(async (rawId, { force: shouldForce }) => {
             const { provider, deletedModelIds } = await deleteLlmProvider(
                 projectRoot,

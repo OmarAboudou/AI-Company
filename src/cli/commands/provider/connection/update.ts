@@ -3,7 +3,6 @@ import { updateLlmConnection } from "../../../../llm/connection/update-llm-conne
 import { formatIdArgumentDescription } from "../../../id-argument-descriptions.ts"
 import { projectRoot } from "../../../project-root.ts"
 import { requireAtLeastOneOption } from "../../../require-at-least-one-option.ts"
-import { requireDirector } from "../../../require-director.ts"
 import { createAuthOption } from "./create-auth-option.ts"
 import { createBaseUrlOption } from "./create-base-url-option.ts"
 import { createProtocolArgument } from "./create-protocol-argument.ts"
@@ -21,7 +20,6 @@ export function registerProviderConnectionUpdateCommand(
         .addArgument(createProtocolArgument())
         .addOption(createBaseUrlOption())
         .addOption(createAuthOption())
-        .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol, options) => {
             requireAtLeastOneOption(options)
             const provider = await updateLlmConnection(

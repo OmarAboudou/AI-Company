@@ -3,7 +3,6 @@ import { formatWorkerName } from "../../../organization/position/format-worker-n
 import { unassignPositionTemporarily } from "../../../organization/position/unassign-position-temporarily.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
-import { requireDirector } from "../../require-director.ts"
 
 export function registerPositionUnassignTemporarilyCommand(
     positionCommand: Command,
@@ -18,7 +17,6 @@ export function registerPositionUnassignTemporarilyCommand(
             "<position-id>",
             formatIdArgumentDescription("position", "backend-developer"),
         )
-        .hook("preAction", requireDirector)
         .action(async (rawId) => {
             const { position, endedTemporaryAssignment } =
                 await unassignPositionTemporarily(projectRoot, rawId)

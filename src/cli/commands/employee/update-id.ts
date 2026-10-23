@@ -8,7 +8,6 @@ import {
     formatNewIdArgumentDescription,
 } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
-import { requireDirector } from "../../require-director.ts"
 import { createReuseIdOption } from "./create-reuse-id-option.ts"
 
 function formatRenamedMessage({
@@ -44,7 +43,6 @@ export function registerEmployeeUpdateIdCommand(
             formatNewIdArgumentDescription("employee", "claude-lead"),
         )
         .addOption(createReuseIdOption())
-        .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId, { reuseId: shouldReuseId }) => {
             const renaming = await updateEmployeeId(
                 projectRoot,

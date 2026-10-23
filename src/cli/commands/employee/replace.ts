@@ -5,7 +5,6 @@ import {
 } from "../../../organization/employee/replace-employee.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
-import { requireDirector } from "../../require-director.ts"
 
 function formatReplacedMessage({
     employeeId,
@@ -65,7 +64,6 @@ export function registerEmployeeReplaceCommand(employeeCommand: Command): void {
             "id of the employee taking its positions over (e.g. omar)",
         )
         .option("-t, --temporary", "also hand over its temporary assignments")
-        .hook("preAction", requireDirector)
         .action(async (rawId, rawReplacementId, options) => {
             const handover = await replaceEmployee(
                 projectRoot,

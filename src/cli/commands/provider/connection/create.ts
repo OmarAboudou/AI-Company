@@ -2,7 +2,6 @@ import type { Command } from "@commander-js/extra-typings"
 import { createLlmConnection } from "../../../../llm/connection/create-llm-connection.ts"
 import { formatIdArgumentDescription } from "../../../id-argument-descriptions.ts"
 import { projectRoot } from "../../../project-root.ts"
-import { requireDirector } from "../../../require-director.ts"
 import { createAuthOption } from "./create-auth-option.ts"
 import { createBaseUrlOption } from "./create-base-url-option.ts"
 import { createProtocolArgument } from "./create-protocol-argument.ts"
@@ -20,7 +19,6 @@ export function registerProviderConnectionCreateCommand(
         .addArgument(createProtocolArgument())
         .addOption(createBaseUrlOption().makeOptionMandatory())
         .addOption(createAuthOption())
-        .hook("preAction", requireDirector)
         .action(async (rawProviderId, protocol, { baseUrl, auth }) => {
             const provider = await createLlmConnection(
                 projectRoot,

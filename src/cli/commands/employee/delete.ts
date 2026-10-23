@@ -5,7 +5,6 @@ import {
 } from "../../../organization/employee/delete-employee.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
-import { requireDirector } from "../../require-director.ts"
 
 function formatDeletedMessage({
     employee,
@@ -39,7 +38,6 @@ export function registerEmployeeDeleteCommand(employeeCommand: Command): void {
             "-f, --force",
             "delete it even if it fills positions, leaving them vacant, or works them temporarily, ending these assignments",
         )
-        .hook("preAction", requireDirector)
         .action(async (rawId, { force: shouldForce }) => {
             const deletion = await deleteEmployee(projectRoot, rawId, {
                 shouldForce,

@@ -4,7 +4,6 @@ import { createDescriptionFileOption } from "../../options.ts"
 import { projectRoot } from "../../project-root.ts"
 import { readTextOrFile } from "../../read-text-or-file.ts"
 import { requireAtLeastOneOption } from "../../require-at-least-one-option.ts"
-import { requireDirector } from "../../require-director.ts"
 
 export function registerCompanyUpdateCommand(companyCommand: Command): void {
     companyCommand
@@ -13,7 +12,6 @@ export function registerCompanyUpdateCommand(companyCommand: Command): void {
         .option("-n, --name <name>", "company name")
         .option("-d, --description <text>", "company description")
         .addOption(createDescriptionFileOption())
-        .hook("preAction", requireDirector)
         .action(async (options) => {
             requireAtLeastOneOption(options)
             const description = await readTextOrFile(

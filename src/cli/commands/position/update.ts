@@ -5,7 +5,6 @@ import { createDescriptionFileOption } from "../../options.ts"
 import { projectRoot } from "../../project-root.ts"
 import { readTextOrFile } from "../../read-text-or-file.ts"
 import { requireAtLeastOneOption } from "../../require-at-least-one-option.ts"
-import { requireDirector } from "../../require-director.ts"
 
 export function registerPositionUpdateCommand(positionCommand: Command): void {
     positionCommand
@@ -23,7 +22,6 @@ export function registerPositionUpdateCommand(positionCommand: Command): void {
             "what the position is responsible for",
         )
         .addOption(createDescriptionFileOption())
-        .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
             requireAtLeastOneOption(options)
             const description = await readTextOrFile(

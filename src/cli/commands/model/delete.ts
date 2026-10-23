@@ -2,7 +2,6 @@ import type { Command } from "@commander-js/extra-typings"
 import { deleteLlmModel } from "../../../llm/model/delete-llm-model.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
-import { requireDirector } from "../../require-director.ts"
 
 export function registerModelDeleteCommand(modelCommand: Command): void {
     modelCommand
@@ -16,7 +15,6 @@ export function registerModelDeleteCommand(modelCommand: Command): void {
             "<model-id>",
             formatIdArgumentDescription("model", "claude-opus-5-5"),
         )
-        .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId) => {
             const model = await deleteLlmModel(
                 projectRoot,

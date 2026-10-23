@@ -3,7 +3,6 @@ import { updateLlmProvider } from "../../../llm/provider/update-llm-provider.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { requireAtLeastOneOption } from "../../require-at-least-one-option.ts"
-import { requireDirector } from "../../require-director.ts"
 import { createApiKeyEnvOption } from "./create-api-key-env-option.ts"
 import { createApiKeyFileOption } from "./create-api-key-file-option.ts"
 import { getApiKeySource } from "./get-api-key-source.ts"
@@ -19,7 +18,6 @@ export function registerProviderUpdateCommand(providerCommand: Command): void {
         .option("-n, --name <name>", "provider name")
         .addOption(createApiKeyEnvOption())
         .addOption(createApiKeyFileOption())
-        .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
             requireAtLeastOneOption(options)
             const provider = await updateLlmProvider(projectRoot, rawId, {

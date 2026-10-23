@@ -5,7 +5,6 @@ import {
 } from "../../../organization/position/assign-position.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
-import { requireDirector } from "../../require-director.ts"
 import { formatStillTemporaryMessage } from "./format-still-temporary-message.ts"
 
 function formatAssignedMessage({
@@ -42,7 +41,6 @@ export function registerPositionAssignCommand(positionCommand: Command): void {
             formatIdArgumentDescription("employee", "claude-senior"),
         )
         .option("-r, --replace", "replace the current default employee")
-        .hook("preAction", requireDirector)
         .action(async (rawPositionId, rawEmployeeId, options) => {
             const assignment = await assignPosition(
                 projectRoot,
