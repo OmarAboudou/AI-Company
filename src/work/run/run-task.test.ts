@@ -77,6 +77,7 @@ async function runFakeTask(
         position,
         employee,
         taskTypes: exampleCatalog.taskTypes,
+        operationName: "aico run",
         onProgress,
     })
 }

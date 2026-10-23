@@ -1,3 +1,4 @@
+import { runOperation } from "../../git/reserved-branch/run-operation.ts"
 import { requireJournalEvent } from "../../journal/require-journal-event.ts"
 import { loadJournal } from "../../journal/storage.ts"
 import type { AssistantTurn, UserTurn } from "../../llm/conversation/schema.ts"
@@ -19,6 +20,7 @@ export type SendTurnResult = {
 export async function sendTurn(
     projectRoot: string,
     environment: NodeJS.ProcessEnv,
+    operationName: string,
     catalog: WorkCatalog = builtInWorkCatalog,
 ): Promise<SendTurnResult> {
     const journal = await loadJournal(projectRoot)
@@ -57,17 +59,19 @@ export async function sendTurn(
     )
     if (taskEnding !== undefined) {
         const sessionResult = run.session.result
-        await endTask(
-            journal,
-            {
-                task,
-                position,
-                runId: run.id,
-                depth,
-                sessionResult,
-                taskTypes: catalog.taskTypes,
-            },
-            taskEnding,
+        await runOperation(projectRoot, operationName, () =>
+            endTask(
+                journal,
+                {
+                    task,
+                    position,
+                    runId: run.id,
+                    depth,
+                    sessionResult,
+                    taskTypes: catalog.taskTypes,
+                },
+                taskEnding,
+            ),
         )
     }
     return { sentTurn, answeringTurn, taskEnding }

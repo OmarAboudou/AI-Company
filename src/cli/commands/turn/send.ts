@@ -1,6 +1,7 @@
 import type { Command } from "@commander-js/extra-typings"
 import type { TaskEnding } from "../../../work/tool/define-tool.ts"
 import { sendTurn } from "../../../work/turn/send-turn.ts"
+import { formatOperationName } from "../../format-operation-name.ts"
 import { formatTurn } from "../../format-turn.ts"
 import { projectRoot } from "../../project-root.ts"
 
@@ -21,10 +22,11 @@ export function registerTurnSendCommand(turnCommand: Command): void {
         .description(
             "Send your next turn: its tool calls run and you get their results, as a model does. A call to task_mark-as-done or task_mark-as-failed ends your task.",
         )
-        .action(async () => {
+        .action(async (_options, command) => {
             const { sentTurn, answeringTurn, taskEnding } = await sendTurn(
                 projectRoot,
                 process.env,
+                formatOperationName(command),
             )
             console.log(formatTurn(sentTurn.blocks, answeringTurn))
             console.log(`\n${formatNextStep(taskEnding)}`)

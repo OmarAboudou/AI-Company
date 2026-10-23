@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
+import { join } from "node:path"
+import { runGit } from "../../git/run-git.ts"
 import { listEvents } from "../../journal/storage.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
 import { sendMessage } from "../../messaging/message/send-message.ts"
@@ -36,6 +38,7 @@ function runFakeTasks(catalog: WorkCatalog = developerCatalog) {
     return runReadyTasks(
         projectRoot,
         environment,
+        "aico run",
         (progress) => progresses.push(progress),
         catalog,
     )
@@ -82,6 +85,24 @@ describe("runReadyTasks", () => {
         ])
         expect(await listTaskStates()).toEqual(["done"])
         expect(waitingTasks).toEqual([])
+    })
+
+    test("commits its steps as aico run, and each tool call apart", async () => {
+        await sendQuestion("Hono or Express?")
+        fakeServer.respondWith({
+            toolCalls: [createAnswer("Hono."), markAsDoneCall],
+        })
+
+        await runFakeTasks()
+
+        const [task] = await listTasks(projectRoot)
+        const logArgs = ["log", "-3", "--format=%s"]
+        const log = runGit(join(projectRoot, ".aico"), logArgs)
+        expect(log?.split("\n")).toEqual([
+            "aico run",
+            `message_send in task ${task?.id}`,
+            "aico run",
+        ])
     })
 
     test("reports each task as it starts and ends", async () => {

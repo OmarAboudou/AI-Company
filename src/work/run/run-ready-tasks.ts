@@ -1,3 +1,4 @@
+import { runOperation } from "../../git/reserved-branch/run-operation.ts"
 import { loadJournal, refreshJournal } from "../../journal/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
 import type { Employee } from "../../organization/employee/schema.ts"
@@ -30,16 +31,19 @@ export type RunReadyTasksResult = { waitingTasks: WaitingTask[] }
 export async function runReadyTasks(
     projectRoot: string,
     environment: NodeJS.ProcessEnv,
+    operationName: string,
     onProgress: (progress: RunReadyTasksProgress) => void,
     catalog: WorkCatalog = builtInWorkCatalog,
 ): Promise<RunReadyTasksResult> {
     await requireCompany(projectRoot)
     const journal = await loadJournal(projectRoot)
     while (true) {
-        // Another process, a person's terminal for one, may have written
-        // events since the last turn.
-        await refreshJournal(journal)
-        await dispatchEvents(journal, catalog)
+        await runOperation(projectRoot, operationName, async () => {
+            // Another process, a person's terminal for one, may have
+            // written events since the last turn.
+            await refreshJournal(journal)
+            await dispatchEvents(journal, catalog)
+        })
         const pendingTasks = await listPendingTasks(journal, catalog.taskTypes)
         const readyTask = pendingTasks.find(
             (pendingTask) => pendingTask.kind === "ready",
@@ -58,6 +62,7 @@ export async function runReadyTasks(
                 position,
                 employee,
                 taskTypes: catalog.taskTypes,
+                operationName,
                 onProgress,
             })
             onProgress({ kind: "task-ended", task, result })

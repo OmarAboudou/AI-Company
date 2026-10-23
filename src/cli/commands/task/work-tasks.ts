@@ -1,4 +1,6 @@
+import { runOperation } from "../../../git/reserved-branch/run-operation.ts"
 import { watchJournal } from "../../../journal/storage.ts"
+import { requireCompany } from "../../../organization/company/require-company.ts"
 import { openNextTask } from "../../../work/task/open-next-task.ts"
 import { createSessionStop, type SessionStop } from "./create-session-stop.ts"
 import { type TaskSession, workTask } from "./work-task.ts"
@@ -19,9 +21,10 @@ async function workTasksUntilStopped(
     try {
         while (!stop.signal.aborted) {
             journalWatch.forgetChanges()
-            const { openedTask, doneTasks } = await openNextTask(
+            const { openedTask, doneTasks } = await runOperation(
                 session.projectRoot,
-                session.environment,
+                session.operationName,
+                () => openNextTask(session.projectRoot, session.environment),
             )
             for (const { task, summary } of doneTasks) {
                 console.log(`Task "${task.id}" done at once: ${summary}`)
@@ -46,11 +49,15 @@ async function workTasksUntilStopped(
 export async function workTasks(
     projectRoot: string,
     environment: NodeJS.ProcessEnv,
+    operationName: string,
 ): Promise<void> {
+    // Opened first: watching the journal creates its folder.
+    await requireCompany(projectRoot)
     const stop = createSessionStop(process.stdin)
     const session = {
         projectRoot,
         environment,
+        operationName,
         context: { signal: stop.signal },
     }
     try {

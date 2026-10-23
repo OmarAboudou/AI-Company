@@ -7,6 +7,7 @@ import {
     type WaitingTask,
 } from "../../work/run/run-ready-tasks.ts"
 import type { RunTaskResult } from "../../work/run/run-task.ts"
+import { formatOperationName } from "../format-operation-name.ts"
 import { formatToolInput } from "../format-tool-input.ts"
 import { printColumns } from "../print-columns.ts"
 import { projectRoot } from "../project-root.ts"
@@ -101,10 +102,11 @@ export function registerRunCommand(program: Command): void {
         .description(
             "Run the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then list the tasks left waiting.",
         )
-        .action(async () => {
+        .action(async (_options, command) => {
             const { waitingTasks } = await runReadyTasks(
                 projectRoot,
                 process.env,
+                formatOperationName(command),
                 createProgressPrinter(),
             )
             printWaitingTasks(waitingTasks)

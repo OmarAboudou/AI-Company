@@ -62,7 +62,7 @@ describe("formatOpenedTask", () => {
                 rawInput: '{"body": "Friday."}',
             },
         )
-        await sendTurn(projectRoot, {}, exampleCatalog)
+        await sendTurn(projectRoot, {}, "aico turn send", exampleCatalog)
         await addTurnText(projectRoot, {}, "Checking the notes.")
 
         const text = await formatDirectorsTask()
