@@ -133,6 +133,28 @@ describe("createTaskOnce on a ticket", () => {
         expect(await listTasks(projectRoot)).toHaveLength(1)
     })
 
+    test("replaces a position's queued task on a ticket by one of another type", async () => {
+        const firstQuestionSent = await recordQuestionSent()
+        const secondQuestionSent = await recordQuestionSent()
+        const firstCreation = await createInNewDispatching(
+            createExampleRequest(),
+            firstQuestionSent,
+        )
+        const reviewRequest = {
+            type: "review",
+            positionId: "qa-tester",
+            params: { ticketNumber },
+        }
+
+        const { createdTasks, cancelledTasks } = await createInNewDispatching(
+            reviewRequest,
+            secondQuestionSent,
+        )
+
+        expect(cancelledTasks).toEqual(firstCreation.createdTasks)
+        expect(createdTasks).toMatchObject([{ type: "review" }])
+    })
+
     test("gives another position, or another ticket, a task of its own", async () => {
         const firstQuestionSent = await recordQuestionSent()
         const secondQuestionSent = await recordQuestionSent()

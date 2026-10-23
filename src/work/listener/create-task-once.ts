@@ -3,30 +3,29 @@ import type { JournalEvent } from "../../journal/schema.ts"
 import { createTask } from "../task/create-task.ts"
 import { createTaskId } from "../task/create-task-id.ts"
 import { getTaskPositionId } from "../task/get-task-position-id.ts"
-import type { UncreatedTask } from "../task/schema.ts"
+import type { Task, UncreatedTask } from "../task/schema.ts"
+import { cancelTaskOnce } from "./cancel-task-once.ts"
 import type { Dispatching } from "./load-dispatching.ts"
 
 function isExistingFileError(error: unknown): boolean {
     return error instanceof Error && "code" in error && error.code === "EEXIST"
 }
 
-// The queued task shows the ticket as it is when it runs, this change
-// included: a second one would only repeat it.
-function hasQueuedTaskOnTicket(
+function findQueuedTaskOnTicket(
     askedTask: UncreatedTask,
     causeEvent: JournalEvent,
     { tasks, taskStates, positions }: Dispatching,
-): boolean {
+): Task | undefined {
     const { ticketNumber } = askedTask.params
     if (ticketNumber === undefined) {
-        return false
+        return undefined
     }
     const positionId = getCurrentId(
         positions,
         askedTask.positionId,
         causeEvent.occurredAt,
     )
-    return tasks.some(
+    return tasks.find(
         (task) =>
             task.params.ticketNumber === ticketNumber &&
             taskStates.get(task.id) === "queued" &&
@@ -40,11 +39,26 @@ export async function createTaskOnce(
     dispatching: Dispatching,
 ): Promise<void> {
     const taskId = createTaskId(causeEvent.id, askedTask)
-    if (
-        dispatching.tasks.some(({ id }) => id === taskId) ||
-        hasQueuedTaskOnTicket(askedTask, causeEvent, dispatching)
-    ) {
+    if (dispatching.tasks.some(({ id }) => id === taskId)) {
         return
+    }
+    // A queued task shows the ticket as it is when it runs, this change
+    // included: one of the same type would only repeat it, whereas one
+    // of another type was asked for what the ticket no longer needs.
+    const queuedTask = findQueuedTaskOnTicket(
+        askedTask,
+        causeEvent,
+        dispatching,
+    )
+    if (queuedTask?.type === askedTask.type) {
+        return
+    }
+    if (queuedTask !== undefined) {
+        const reason = `Ticket #${queuedTask.params.ticketNumber} changed since: a task of type ${askedTask.type} replaces it.`
+        await cancelTaskOnce(
+            { kind: "cancel-task", taskId: queuedTask.id, reason },
+            dispatching,
+        )
     }
     try {
         const task = await createTask(
