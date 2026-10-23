@@ -10,19 +10,19 @@ import {
 
 const threadId = "2026-10-21-release"
 
-const catchUpToolDefinitions = getToolDefinitions(
+const toolDefinitions = getToolDefinitions(
     getRunTools(["message_send", "thread_show"], {
         message_send: { threadId },
         thread_show: { threadId },
     }),
 )
 
-function getCatchUpTool(name: string): ToolDefinition {
-    const tool = catchUpToolDefinitions.find((definition) => {
+function getToolDefinition(name: string): ToolDefinition {
+    const tool = toolDefinitions.find((definition) => {
         return definition.name === name
     })
     if (tool === undefined) {
-        throw new Error(`The catch-up gives no ${name}`)
+        throw new Error(`No tool definition is named ${name}`)
     }
     return tool
 }
@@ -65,7 +65,7 @@ describe("askToolInput", () => {
         const { prompts, questions } = createPrompts({ texts: ["Yes."] })
 
         const input = await askToolInput(
-            getCatchUpTool("message_send"),
+            getToolDefinition("message_send"),
             prompts,
         )
 
@@ -81,7 +81,7 @@ describe("askToolInput", () => {
 
     test("asks for a short text on its line, as a task's summary", async () => {
         const { prompts, questions } = createPrompts({ lines: ["Answered."] })
-        const tool = getCatchUpTool("task_mark-as-done")
+        const tool = getToolDefinition("task_mark-as-done")
 
         const input = await askToolInput(tool, prompts)
 
@@ -94,7 +94,10 @@ describe("askToolInput", () => {
             numbers: [1, undefined],
         })
 
-        const input = await askToolInput(getCatchUpTool("thread_show"), prompts)
+        const input = await askToolInput(
+            getToolDefinition("thread_show"),
+            prompts,
+        )
 
         expect(input).toEqual({ from: 1 })
         expect(questions).toMatchObject([

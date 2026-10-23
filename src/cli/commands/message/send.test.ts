@@ -175,36 +175,3 @@ describe("--as-position", () => {
         expect(loadLastPositionId(threadId)).toBe("support")
     })
 })
-
-describe("the positions it mentions", () => {
-    let threadId = ""
-
-    beforeEach(async () => {
-        const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
-        await createPosition(projectRoot, "backend-developer", {
-            title: "Backend",
-            description: "",
-        })
-        const { thread } = await createThread(
-            projectRoot,
-            {},
-            {
-                subject: "Stack",
-            },
-        )
-        threadId = thread.id
-    })
-
-    test("message send gives each a task, which aico run runs", () => {
-        const body = "@backend-developer Hono or Express?"
-
-        const sending = runCli("message", "send", threadId, "-b", body)
-
-        const createdTaskPattern =
-            /Created task "[^"]+" for @backend-developer: catch-up-thread\./
-        expect(sending.exitCode).toBe(0)
-        expect(sending.stderr).toMatch(createdTaskPattern)
-        expect(sending.stderr).toContain("Run `aico run`")
-    })
-})

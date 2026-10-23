@@ -13,13 +13,13 @@
             "type": "string",
             "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
             "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-            "description": "Id of the task's type, which builds, each time the task runs, what its run is given from the parameters, e.g. catch-up-thread to catch up on a thread."
+            "description": "Id of the task's type, which builds, each time the task runs, what its run is given from the parameters."
         },
         "params": {
             "type": "object",
             "propertyNames": { "type": "string" },
             "additionalProperties": {},
-            "description": "The task's parameters, as its type expects them, e.g. the threadId of the thread to catch up on."
+            "description": "The task's parameters, as its type expects them."
         },
         "positionId": {
             "type": "string",

@@ -36,16 +36,6 @@ describe("aico turn send", () => {
         )
     })
 
-    test("says when the turn ends the task", async () => {
-        await addJulieToolCall("task_mark-as-done", '{"summary": "Answered."}')
-
-        const sending = sendJulieTurn()
-
-        expect(sending.stdout).toEndWith(
-            "\nTask done: Answered. Run `aico task next` for your next task.\n",
-        )
-    })
-
     test("reminds the person who calls no tool", async () => {
         await addTurnText(getProjectPath(), julieEnvironment, "Let me think.")
 

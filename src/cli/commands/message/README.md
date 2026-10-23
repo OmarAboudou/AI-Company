@@ -1,6 +1,6 @@
 # `aico message`
 
-Writing in threads: `aico message send` adds a message to a thread, from the position you write from. It only writes: the tasks its mentions create run in `aico run`, or wait for the people working those positions.
+Writing in threads: `aico message send` adds a message to a thread, from the position you write from. It only writes: the tasks that listeners may create run in `aico run`, or wait for the people working their positions.
 
 ## Decisions
 

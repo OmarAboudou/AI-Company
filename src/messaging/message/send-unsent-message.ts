@@ -26,7 +26,7 @@ export async function sendUnsentMessage(
     }
     // The event comes first: should the sending stop between the two, an
     // event naming no message asks for nothing new, whereas a message
-    // without its event would mention positions that are never asked.
+    // without its event would never reach the listeners.
     await recordEvent(journal, messageSentEventType, {
         depth,
         threadId,

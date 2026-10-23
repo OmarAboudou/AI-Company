@@ -13,11 +13,10 @@ export const TaskSchema = z
         }),
         type: IdSchema.meta({
             description:
-                "Id of the task's type, which builds, each time the task runs, what its run is given from the parameters, e.g. catch-up-thread to catch up on a thread.",
+                "Id of the task's type, which builds, each time the task runs, what its run is given from the parameters.",
         }),
         params: z.record(z.string(), z.unknown()).meta({
-            description:
-                "The task's parameters, as its type expects them, e.g. the threadId of the thread to catch up on.",
+            description: "The task's parameters, as its type expects them.",
         }),
         positionId: IdSchema.meta({
             description:
@@ -43,8 +42,7 @@ export type Task = z.infer<typeof TaskSchema> & { id: string }
 export type UncreatedTask = Pick<Task, "type" | "positionId" | "params">
 
 export const TaskResultSchema = z.record(z.string(), z.unknown()).meta({
-    description:
-        "What the task produced, as its type defines and checks it, e.g. the lastReadEntryId of a task catching up on a thread: the last of the thread's entries it read.",
+    description: "What the task produced, as its type defines and checks it.",
 })
 
 export type TaskResult = z.infer<typeof TaskResultSchema>
@@ -91,7 +89,7 @@ export const taskDoneEventType = defineEventType({
         }),
         runId: RunIdSchema.optional().meta({
             description:
-                "Id of the run in which the task was marked as done. Absent when it was done outside a run, as when a message from its position marks a catch-up as done.",
+                "Id of the run in which the task was marked as done. Absent when it was done outside a run, as when a listener marks it as done.",
         }),
         usage: TokenUsageSchema.optional(),
         result: TaskResultSchema,

@@ -16,7 +16,7 @@ export function registerMessageSendCommand(messageCommand: Command): void {
     messageCommand
         .command("send")
         .description(
-            "Send a message in a thread, as the person at the keyboard (see current-human). Each position it mentions gets a task, which `aico run` runs if an LLM employee works it.",
+            "Send a message in a thread, as the person at the keyboard (see current-human).",
         )
         .argument(
             "<thread-id>",

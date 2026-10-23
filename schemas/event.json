@@ -212,7 +212,7 @@
                     "description": "What was done, as whoever did it sums it up."
                 },
                 "runId": {
-                    "description": "Id of the run in which the task was marked as done. Absent when it was done outside a run, as when a message from its position marks a catch-up as done.",
+                    "description": "Id of the run in which the task was marked as done. Absent when it was done outside a run, as when a listener marks it as done.",
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
@@ -254,7 +254,7 @@
                     "type": "object",
                     "propertyNames": { "type": "string" },
                     "additionalProperties": {},
-                    "description": "What the task produced, as its type defines and checks it, e.g. the lastReadEntryId of a task catching up on a thread: the last of the thread's entries it read."
+                    "description": "What the task produced, as its type defines and checks it."
                 }
             },
             "required": [

@@ -93,26 +93,3 @@ describe("--as-position", () => {
         expect(show).toContain("Created by Test User, support (@support)")
     })
 })
-
-describe("the positions its first message mentions", () => {
-    beforeEach(async () => {
-        const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
-        await createPosition(projectRoot, "backend-developer", {
-            title: "Backend",
-            description: "",
-        })
-    })
-
-    test("thread create -b gives each a task, which aico run runs", () => {
-        const body = "@backend-developer 50 € for the API?"
-
-        const creation = runCli("thread", "create", "-s", "Budget", "-b", body)
-
-        const createdTaskPattern =
-            /Created task "[^"]+" for @backend-developer: catch-up-thread\./
-        expect(creation.exitCode).toBe(0)
-        expect(creation.stderr).toMatch(createdTaskPattern)
-        expect(creation.stderr).toContain("Run `aico run`")
-    })
-})
