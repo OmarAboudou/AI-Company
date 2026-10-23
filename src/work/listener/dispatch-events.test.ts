@@ -182,20 +182,20 @@ describe("dispatchEvents", () => {
     })
 
     test("passes over an event of a type no listener handles", async () => {
-        const ticketClosed = {
+        const ticketStarred = {
             id: "20261018-150000-000-9e3f",
-            type: "ticket-closed",
+            type: "ticket-starred",
             occurredAt: "2026-10-18T15:00:00.000Z",
             depth: 0,
             ticketNumber,
         }
-        await saveEvent(projectRoot, ticketClosed)
+        await saveEvent(projectRoot, ticketStarred)
 
         const { createdTasks } = await dispatchToExampleListener()
 
         expect(createdTasks).toEqual([])
         expect(await listDispatchings()).toMatchObject([
-            { eventIds: [ticketClosed.id] },
+            { eventIds: [ticketStarred.id] },
         ])
     })
 })

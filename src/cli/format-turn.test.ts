@@ -37,11 +37,14 @@ describe("formatTurn", () => {
     })
 
     test("marks a call that failed, and indents its result's later lines", () => {
-        const answer = createAnswer("No thread.\n\nRun aico thread list.", true)
+        const answer = createAnswer(
+            "No ticket #4.\n\nRun aico ticket list.",
+            true,
+        )
 
         const text = formatTurn([messageSendCall], answer)
 
-        expect(text).toEndWith("\n✗ No thread.\n\n  Run aico thread list.")
+        expect(text).toEndWith("\n✗ No ticket #4.\n\n  Run aico ticket list.")
     })
 
     test("shows the reminder that answers a turn without calls", () => {

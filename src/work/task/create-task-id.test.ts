@@ -7,7 +7,7 @@ const causeEventId = "20261018-140322-123-5d1e"
 const exampleTask = {
     type: "example",
     positionId: "backend-developer",
-    params: { threadId: "2026-10-18-choice-of-framework" },
+    params: { ticketNumber: 1 },
 }
 
 describe("createTaskId", () => {
@@ -27,9 +27,9 @@ describe("createTaskId", () => {
 
     test("tells apart tasks of other types, positions or parameters", () => {
         const otherTasks = [
-            { ...exampleTask, type: "review-thread" },
+            { ...exampleTask, type: "review-ticket" },
             { ...exampleTask, positionId: "qa-tester" },
-            { ...exampleTask, params: { threadId: "2026-10-18-budget" } },
+            { ...exampleTask, params: { ticketNumber: 2 } },
         ]
 
         const taskIds = otherTasks.map((task) =>
@@ -41,8 +41,8 @@ describe("createTaskId", () => {
     })
 
     test("ignores the order of the parameters' keys", () => {
-        const params = { threadId: "2026-10-18-stack", from: 3 }
-        const reorderedParams = { from: 3, threadId: "2026-10-18-stack" }
+        const params = { ticketNumber: 3, from: 3 }
+        const reorderedParams = { from: 3, ticketNumber: 3 }
 
         const taskId = createTaskId(causeEventId, { ...exampleTask, params })
         const reorderedId = createTaskId(causeEventId, {

@@ -94,7 +94,7 @@ describe("getAnthropicTurns", () => {
                     {
                         type: "tool-result",
                         toolCallId: "toolu_02",
-                        text: "There is no tool named thread_read.",
+                        text: "There is no tool named ticket_read.",
                         isError: true,
                     },
                 ],
@@ -112,7 +112,7 @@ describe("getAnthropicTurns", () => {
                 {
                     type: "tool_result",
                     tool_use_id: "toolu_02",
-                    content: "There is no tool named thread_read.",
+                    content: "There is no tool named ticket_read.",
                     is_error: true,
                 },
             ],

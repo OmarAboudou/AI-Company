@@ -10,7 +10,7 @@ describe("getAnthropicTools", () => {
         }
         const tools = [
             { name: "message_send", description: "Send.", inputSchema },
-            { name: "thread_show", description: "Show.", inputSchema },
+            { name: "ticket_show", description: "Show.", inputSchema },
         ]
 
         expect(getAnthropicTools(tools)).toEqual([
@@ -20,7 +20,7 @@ describe("getAnthropicTools", () => {
                 input_schema: inputSchema,
             },
             {
-                name: "thread_show",
+                name: "ticket_show",
                 description: "Show.",
                 input_schema: inputSchema,
             },

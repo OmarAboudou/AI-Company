@@ -49,7 +49,7 @@ describe("ConversationTurnSchema", () => {
                 {
                     type: "tool-result",
                     toolCallId: "toolu_01",
-                    text: "Sent as entry #2 of thread 2026-10-18-stack.",
+                    text: "Sent as message #2 of ticket #3.",
                     isError: false,
                 },
             ],

@@ -7,7 +7,7 @@ const tools = { "task_mark-as-failed": taskMarkAsFailedTool }
 
 describe("task_mark-as-failed", () => {
     test("ends the task as failed, with its reason", async () => {
-        const reason = "The thread asks for figures I don't have."
+        const reason = "The ticket asks for figures I don't have."
         const call = { name: "task_mark-as-failed", input: { reason } }
 
         const result = await runToolCall(tools, call, exampleToolContext)

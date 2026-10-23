@@ -11,7 +11,7 @@ import {
 const exampleTask = {
     askedAt: "2026-10-18T14:03:23.000Z",
     type: "example",
-    params: { threadId: "2026-10-18-choice-of-framework" },
+    params: { ticketNumber: 1 },
     positionId: "backend-developer",
     causeEventId: "20261018-140322-123-5d1e",
 }
@@ -62,7 +62,7 @@ describe("the task event types", () => {
             taskDoneEventType,
             { summary: "Answered: Hono, for Bun.", result: {} },
         ],
-        [taskFailedEventType, { reason: "The thread asks nothing." }],
+        [taskFailedEventType, { reason: "The ticket asks nothing." }],
     ])("accept their events, with the task's id", (eventType, fields) => {
         const event = { ...taskEvent, type: eventType.type, ...fields }
 

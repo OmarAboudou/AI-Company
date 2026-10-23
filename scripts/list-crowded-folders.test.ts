@@ -75,12 +75,12 @@ describe("listCrowdedFolders", () => {
     })
 
     test("looks into every subfolder", async () => {
-        await createFiles("commands/thread", createFileNames(16))
+        await createFiles("commands/ticket", createFileNames(16))
 
         const crowdedFolders = await listCrowdedFolders(folderPath)
 
         expect(crowdedFolders).toEqual([
-            { path: join(folderPath, "commands/thread"), sourceEntryCount: 16 },
+            { path: join(folderPath, "commands/ticket"), sourceEntryCount: 16 },
         ])
     })
 })

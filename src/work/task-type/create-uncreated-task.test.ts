@@ -4,8 +4,8 @@ import { createUncreatedTask } from "./create-uncreated-task.ts"
 import { defineTaskType } from "./define-task-type.ts"
 
 const reviewTaskType = defineTaskType({
-    type: "review-thread",
-    paramsSchema: z.strictObject({ threadId: z.string().min(1) }),
+    type: "review-ticket",
+    paramsSchema: z.strictObject({ ticketNumber: z.int().min(1) }),
     resultSchema: z.strictObject({}),
     createSession: async () => ({
         kind: "done",
@@ -18,13 +18,13 @@ describe("createUncreatedTask", () => {
     test("asks for a task of the type, for a position, with its parameters", () => {
         const uncreatedTask = createUncreatedTask(reviewTaskType, {
             positionId: "qa-tester",
-            params: { threadId: "2026-10-18-stack" },
+            params: { ticketNumber: 3 },
         })
 
         expect(uncreatedTask).toEqual({
-            type: "review-thread",
+            type: "review-ticket",
             positionId: "qa-tester",
-            params: { threadId: "2026-10-18-stack" },
+            params: { ticketNumber: 3 },
         })
     })
 
@@ -32,7 +32,7 @@ describe("createUncreatedTask", () => {
         const creation = () =>
             createUncreatedTask(reviewTaskType, {
                 positionId: "qa-tester",
-                params: { threadId: "" },
+                params: { ticketNumber: 0 },
             })
 
         expect(creation).toThrow(z.ZodError)

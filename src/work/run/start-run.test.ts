@@ -25,10 +25,10 @@ const runStart = {
             inputSchema: { type: "object" },
         },
     ],
-    userMessage: "Answer the last message of this thread.",
+    userMessage: "Answer the last message of this ticket.",
     session: {
         toolNames: ["message_send"],
-        boundToolInputs: { message_send: { threadId: "2026-10-18-stack" } },
+        boundToolInputs: { message_send: { ticketNumber: 3 } },
         result: { askedEntryId: "20261018-140322-123-3f9a" },
     },
 }
@@ -48,7 +48,7 @@ describe("startRun", () => {
                         blocks: [
                             {
                                 type: "text",
-                                text: "Answer the last message of this thread.",
+                                text: "Answer the last message of this ticket.",
                             },
                         ],
                     },
