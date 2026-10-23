@@ -1,35 +1,9 @@
 import { z } from "zod"
-import { IdSchema } from "../../ids/id-schema.ts"
-
-export const PositionSnapshotSchema = z
-    .strictObject({
-        id: IdSchema,
-        title: z.string().trim().min(1),
-    })
-    .meta({
-        description:
-            "A position as it was when this was written: its id and title. Never rewritten afterwards, even if the position is renamed or deleted.",
-    })
-
-export const EmployeeSnapshotSchema = z
-    .strictObject({
-        id: IdSchema,
-        name: z.string().trim().min(1),
-    })
-    .meta({
-        description:
-            "An employee as it was when this was written: its id and name. Never rewritten afterwards.",
-    })
-
-export const CommitterSchema = z
-    .strictObject({
-        name: z.string().trim().min(1),
-        email: z.string().trim().min(1),
-    })
-    .meta({
-        description:
-            "The person at the keyboard according to git config user.name and user.email, as in a commit.",
-    })
+import {
+    CommitterSchema,
+    EmployeeSnapshotSchema,
+    PositionSnapshotSchema,
+} from "../ticket/schema.ts"
 
 export const ThreadConfigSchema = z
     .strictObject({
