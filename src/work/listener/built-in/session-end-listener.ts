@@ -10,7 +10,7 @@ export const sessionEndListener = defineListener({
     eventType: taskDoneEventType,
     getEffects: (
         { taskId, hasPassedHand },
-        { tasks, positions, ticketStates },
+        { directorPositionId, tasks, positions, ticketStates },
     ) => {
         const task = tasks.find(({ id }) => id === taskId)
         const ticketNumber = task?.params.ticketNumber
@@ -22,7 +22,7 @@ export const sessionEndListener = defineListener({
             return []
         }
         const state = ticketStates.get(ticketNumber)
-        const handTask = state && getHandTask(state)
+        const handTask = state && getHandTask(state, directorPositionId)
         if (handTask?.positionId !== getTaskPositionId(task, positions)) {
             return []
         }

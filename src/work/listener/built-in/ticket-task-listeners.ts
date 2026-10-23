@@ -4,8 +4,11 @@ import {
     questionAskedEventType,
     ticketDeliveredEventType,
     ticketHandedOverEventType,
+    ticketRenouncedEventType,
 } from "../../../messaging/ticket/act/schema.ts"
+import type { TicketState } from "../../../messaging/ticket/get-ticket-states.ts"
 import { ticketCreatedEventType } from "../../../messaging/ticket/schema.ts"
+import { analyseRenouncementTaskType } from "../../task-type/built-in/analyse-renouncement/analyse-renouncement.ts"
 import { answerTaskType } from "../../task-type/built-in/answer/answer.ts"
 import { handleTaskType } from "../../task-type/built-in/handle/handle.ts"
 import { resumeTaskType } from "../../task-type/built-in/resume/resume.ts"
@@ -40,25 +43,49 @@ const ticketTaskRules = [
         recipientRole: "assignee",
     },
     {
+        eventType: ticketRenouncedEventType,
+        taskType: analyseRenouncementTaskType,
+        recipientRole: "director",
+    },
+    {
         eventType: ticketHandedOverEventType,
         taskType: handleTaskType,
         recipientRole: "assignee",
     },
 ] as const
 
+function getRecipientPositionId(
+    recipientRole: (typeof ticketTaskRules)[number]["recipientRole"],
+    state: TicketState,
+    directorPositionId: string,
+): string {
+    switch (recipientRole) {
+        case "requester":
+            return state.requesterPositionId
+        case "assignee":
+            return state.assigneePositionId
+        case "director":
+            return directorPositionId
+    }
+}
+
 export const ticketTaskListeners: Listener[] = ticketTaskRules.map(
     ({ eventType, taskType, recipientRole }) =>
         defineListener({
             eventType,
-            getEffects: ({ ticketNumber }, { ticketStates }) => {
+            getEffects: (
+                { ticketNumber },
+                { directorPositionId, ticketStates },
+            ) => {
                 const state = ticketStates.get(ticketNumber)
                 if (state === undefined || state.status === "closed") {
                     return []
                 }
-                const positionId =
-                    recipientRole === "requester"
-                        ? state.requesterPositionId
-                        : state.assigneePositionId
+                const positionId = getRecipientPositionId(
+                    recipientRole,
+                    state,
+                    directorPositionId,
+                )
                 const task = createUncreatedTask(taskType, {
                     positionId,
                     params: { ticketNumber },

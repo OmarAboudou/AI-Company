@@ -5,7 +5,7 @@ import { defineTicketTaskType } from "../define-ticket-task-type.ts"
 export const handleTaskType = defineTicketTaskType({
     type: "handle",
     status: "open",
-    toolNames: ["ticket_ask", "ticket_deliver"],
+    toolNames: ["ticket_ask", "ticket_deliver", "ticket_renounce"],
     buildIntroduction: (situation) => {
         const { ticket, state } = situation
         const requesterLabel = formatTicketPositionLabel(

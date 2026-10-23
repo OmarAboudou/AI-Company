@@ -143,7 +143,7 @@ describe("a ticket's task", () => {
                 "Hono or Express?",
                 "</request>",
                 "",
-                "Once its request is met, deliver it with ticket_deliver, saying what you did and how to check it. If you can't go on without an answer, ask its requester with ticket_ask.",
+                "Once its request is met, deliver it with ticket_deliver, saying what you did and how to check it. If you can't go on without an answer, ask its requester with ticket_ask. If you can't meet the request at all, renounce it with ticket_renounce, saying what went wrong.",
             ].join("\n"),
         )
     })

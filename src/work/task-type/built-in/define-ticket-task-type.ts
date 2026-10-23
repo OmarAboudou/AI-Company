@@ -6,6 +6,7 @@ import {
     type TicketStatus,
 } from "../../../messaging/ticket/schema.ts"
 import { loadTicket } from "../../../messaging/ticket/storage.ts"
+import { loadCompany } from "../../../organization/company/storage.ts"
 import { listPositions } from "../../../organization/position/storage.ts"
 import type { BuiltInToolName } from "../../tool/built-in/built-in.ts"
 import { type BoundToolInputs, defineTaskType } from "../define-task-type.ts"
@@ -20,8 +21,11 @@ type TicketToolName = Extract<
     | "ticket_answer"
     | "ticket_ask"
     | "ticket_cancel"
+    | "ticket_close"
     | "ticket_deliver"
+    | "ticket_hand-over"
     | "ticket_refuse"
+    | "ticket_renounce"
     | "ticket_validate"
 >
 
@@ -66,10 +70,12 @@ export function defineTicketTaskType({
             { ticketNumber },
             { projectRoot, journal, position },
         ) {
-            const [ticket, positions] = await Promise.all([
-                loadTicket(projectRoot, ticketNumber),
-                listPositions(projectRoot),
-            ])
+            const [ticket, positions, { directorPositionId }] =
+                await Promise.all([
+                    loadTicket(projectRoot, ticketNumber),
+                    listPositions(projectRoot),
+                    loadCompany(projectRoot),
+                ])
             const state = getTicketStates(
                 [ticket],
                 journal.events,
@@ -78,7 +84,8 @@ export function defineTicketTaskType({
             if (state?.status === "closed") {
                 return `Ticket #${ticketNumber} was closed, ${state.outcome}.`
             }
-            const handPositionId = state && getHandPositionId(state)
+            const handPositionId =
+                state && getHandPositionId(state, directorPositionId)
             return state?.status === status && handPositionId === position.id
                 ? undefined
                 : `Ticket #${ticketNumber} changed since: @${handPositionId} has the hand.`

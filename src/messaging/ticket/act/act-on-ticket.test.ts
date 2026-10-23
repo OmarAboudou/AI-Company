@@ -126,6 +126,27 @@ describe("actOnTicket", () => {
         },
     )
 
+    test("lets the assignee renounce, for the director to arbitrate", async () => {
+        await act("renounce", developer, "No access to the API.")
+
+        const delivering = act("deliver", developer)
+
+        expect((await loadTicketState())?.status).toBe("to-arbitrate")
+        await expect(delivering).rejects.toThrow(
+            `You can't deliver ticket #${ticketNumber} now: it waits for @director to arbitrate it.`,
+        )
+    })
+
+    test("refuses to renounce a ticket whose requester has the hand", async () => {
+        await act("ask", developer)
+
+        const renouncing = act("renounce", developer)
+
+        await expect(renouncing).rejects.toThrow(
+            `You can't renounce ticket #${ticketNumber} now: it waits for @director to answer.`,
+        )
+    })
+
     test("lets the director close the ticket, failed, whoever has the hand", async () => {
         await act("ask", developer)
 

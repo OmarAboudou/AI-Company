@@ -95,6 +95,23 @@ describe("handOverTicket", () => {
         })
     })
 
+    test("hands over a ticket its assignee renounced", async () => {
+        await actOnTicket(
+            await loadJournal(projectRoot),
+            "renounce",
+            developer,
+            { ticketNumber, body: "No design skills." },
+            { depth: 0 },
+        )
+
+        await handOver("designer")
+
+        expect(await loadTicketState()).toMatchObject({
+            status: "open",
+            assigneePositionId: "designer",
+        })
+    })
+
     test("refuses to hand a ticket over to its assignee", async () => {
         const handingOver = handOver("developer")
 

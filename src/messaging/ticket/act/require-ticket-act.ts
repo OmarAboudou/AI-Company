@@ -27,11 +27,10 @@ function formatActorRole({ actorRole }: TicketAct): string {
     return actorRole === "director" ? "the director" : `its ${actorRole}`
 }
 
-function formatStatusReason({
-    status,
-    outcome,
-    requesterPositionId,
-}: TicketState): string {
+function formatStatusReason(
+    { status, outcome, requesterPositionId }: TicketState,
+    directorPositionId: string,
+): string {
     switch (status) {
         case "open":
             return "its assignee has the hand"
@@ -39,6 +38,8 @@ function formatStatusReason({
             return `it waits for @${requesterPositionId} to answer`
         case "to-validate":
             return `it waits for @${requesterPositionId} to validate it`
+        case "to-arbitrate":
+            return `it waits for @${directorPositionId} to arbitrate it`
         case "closed":
             return `it is closed, ${outcome}`
     }
@@ -72,7 +73,7 @@ export async function requireTicketAct(
     }
     if (!act.fromStatuses.includes(state.status)) {
         throw new UserError(
-            `You can't ${act.action} ticket #${ticket.number} now: ${formatStatusReason(state)}.`,
+            `You can't ${act.action} ticket #${ticket.number} now: ${formatStatusReason(state, directorPositionId)}.`,
         )
     }
     return { ticket, state }

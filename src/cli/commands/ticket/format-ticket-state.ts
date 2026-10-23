@@ -13,6 +13,8 @@ export function formatTicketState({
             return `waiting for @${requesterPositionId} to answer`
         case "to-validate":
             return `to validate by @${requesterPositionId}`
+        case "to-arbitrate":
+            return "to arbitrate by the director"
         case "closed":
             return `closed, ${outcome}`
     }

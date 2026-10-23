@@ -44,6 +44,20 @@ describe("getCompanyPause", () => {
         })
     })
 
+    test("pauses the company at a renouncement", () => {
+        const renouncedEvent = {
+            ...createEvent("ticket-renounced", 2),
+            ticketNumber: 3,
+            messageId: "20261024-090200-000-5e6f",
+            positionId: "developer",
+        }
+
+        expect(getCompanyPause([renouncedEvent])).toEqual({
+            pausedAt: "2026-10-24T09:02:00.000Z",
+            cause: { kind: "renouncement", ticketNumber: 3 },
+        })
+    })
+
     test("pauses the company at a failed task", () => {
         const failedEvent = {
             ...createEvent("task-failed", 2),

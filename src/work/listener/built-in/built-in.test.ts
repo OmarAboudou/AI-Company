@@ -113,4 +113,25 @@ describe("AICo's listeners", () => {
 
         expect(getTaskSummaries(createdTasks)).toEqual(["handle @designer"])
     })
+
+    test("give the director Analyse the renouncement once the assignee renounced", async () => {
+        await createDeveloperTicket()
+
+        const { createdTasks } = await act("renounce", developer)
+
+        expect(getTaskSummaries(createdTasks)).toEqual([
+            "analyse-renouncement @director",
+        ])
+    })
+
+    test("give the director Analyse the renouncement again once it ended without arbitrating", async () => {
+        await createDeveloperTicket()
+        await act("renounce", developer)
+
+        const { createdTasks } = await endSessionOf("director")
+
+        expect(getTaskSummaries(createdTasks)).toEqual([
+            "analyse-renouncement @director",
+        ])
+    })
 })

@@ -9,6 +9,7 @@ import {
     ticketDeliveredEventType,
     ticketFailedEventType,
     ticketHandedOverEventType,
+    ticketRenouncedEventType,
 } from "./schema.ts"
 
 export type TicketAct = {
@@ -65,18 +66,25 @@ export const ticketActs = {
         toStatus: "closed",
         outcome: "cancelled",
     },
+    renounce: {
+        eventType: ticketRenouncedEventType,
+        actorRole: "assignee",
+        action: "renounce",
+        fromStatuses: ["open"],
+        toStatus: "to-arbitrate",
+    },
     "hand-over": {
         eventType: ticketHandedOverEventType,
         actorRole: "director",
         action: "hand over",
-        fromStatuses: ["open", "waiting", "to-validate"],
+        fromStatuses: ["open", "waiting", "to-validate", "to-arbitrate"],
         toStatus: "open",
     },
     close: {
         eventType: ticketFailedEventType,
         actorRole: "director",
         action: "close",
-        fromStatuses: ["open", "waiting", "to-validate"],
+        fromStatuses: ["open", "waiting", "to-validate", "to-arbitrate"],
         toStatus: "closed",
         outcome: "failed",
     },

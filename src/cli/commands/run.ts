@@ -89,6 +89,8 @@ function formatPause({ cause }: CompanyPause): string {
             return "The company is paused: `aico company relaunch` relaunches it."
         case "failure":
             return `The company is paused since task "${cause.taskId}" failed: the director analyses the failure in \`aico task work\`, then relaunches it with \`aico company relaunch\`.`
+        case "renouncement":
+            return `The company is paused since ticket #${cause.ticketNumber} was renounced: the director arbitrates it in \`aico task work\`, then relaunches it with \`aico company relaunch\`.`
     }
 }
 

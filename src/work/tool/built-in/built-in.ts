@@ -7,6 +7,7 @@ import { ticketCreateTool } from "./ticket/create.ts"
 import { ticketDeliverTool } from "./ticket/deliver.ts"
 import { ticketHandOverTool } from "./ticket/hand-over.ts"
 import { ticketRefuseTool } from "./ticket/refuse.ts"
+import { ticketRenounceTool } from "./ticket/renounce.ts"
 import { ticketShowTool } from "./ticket/show.ts"
 import { ticketValidateTool } from "./ticket/validate.ts"
 
@@ -19,6 +20,7 @@ export const builtInTools = {
     ticket_deliver: ticketDeliverTool,
     "ticket_hand-over": ticketHandOverTool,
     ticket_refuse: ticketRefuseTool,
+    ticket_renounce: ticketRenounceTool,
     ticket_show: ticketShowTool,
     ticket_validate: ticketValidateTool,
 } satisfies Record<string, Tool>
