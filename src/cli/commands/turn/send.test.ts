@@ -1,34 +1,37 @@
 import { beforeEach, describe, expect, test } from "bun:test"
-import { julieEnvironment } from "../../../work/create-company-with-human-employee.testing.ts"
 import { addTurnText } from "../../../work/turn/add-turn-text.ts"
 import { addTurnTool } from "../../../work/turn/add-turn-tool.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
-import { openJulieTask } from "./open-julie-task.testing.ts"
+import { openDirectorsTask } from "./open-directors-task.testing.ts"
 
-const { runCliWithEnv, getProjectPath } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 let threadId = ""
 
 beforeEach(async () => {
-    ;({ threadId } = await openJulieTask(getProjectPath()))
+    ;({ threadId } = await openDirectorsTask(getProjectPath()))
 })
 
-async function addJulieToolCall(toolName: string, rawInput: string) {
-    await addTurnTool(getProjectPath(), julieEnvironment, {
-        toolName,
-        rawInput,
-    })
+async function addToolCall(toolName: string, rawInput: string) {
+    await addTurnTool(
+        getProjectPath(),
+        {},
+        {
+            toolName,
+            rawInput,
+        },
+    )
 }
 
-function sendJulieTurn() {
-    return runCliWithEnv(julieEnvironment, "turn", "send")
+function sendPersonTurn() {
+    return runCli("turn", "send")
 }
 
 describe("aico turn send", () => {
     test("runs the turn's tool calls and shows their results", async () => {
-        await addJulieToolCall("message_send", '{"body": "Friday."}')
+        await addToolCall("message_send", '{"body": "Friday."}')
 
-        const sending = sendJulieTurn()
+        const sending = sendPersonTurn()
 
         expect(sending.exitCode).toBe(0)
         expect(sending.stdout).toBe(
@@ -37,9 +40,9 @@ describe("aico turn send", () => {
     })
 
     test("reminds the person who calls no tool", async () => {
-        await addTurnText(getProjectPath(), julieEnvironment, "Let me think.")
+        await addTurnText(getProjectPath(), {}, "Let me think.")
 
-        const sending = sendJulieTurn()
+        const sending = sendPersonTurn()
 
         expect(sending.stdout).toStartWith(
             "Let me think.\nReminder: You ended your turn without calling a tool,",
@@ -47,7 +50,7 @@ describe("aico turn send", () => {
     })
 
     test("refuses an empty turn", () => {
-        const sending = sendJulieTurn()
+        const sending = sendPersonTurn()
 
         expect(sending.exitCode).toBe(1)
         expect(sending.stderr).toBe(

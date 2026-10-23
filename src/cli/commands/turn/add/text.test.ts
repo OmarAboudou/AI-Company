@@ -1,32 +1,28 @@
 import { beforeEach, describe, expect, test } from "bun:test"
-import { julieEnvironment } from "../../../../work/create-company-with-human-employee.testing.ts"
 import { loadCurrentStagedTurn } from "../../../../work/turn/load-current-staged-turn.ts"
 import { useTemporaryProject } from "../../../use-temporary-project.testing.ts"
-import { openJulieTask } from "../open-julie-task.testing.ts"
+import { openDirectorsTask } from "../open-directors-task.testing.ts"
 
-const { runCliWithEnv, getProjectPath } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 beforeEach(async () => {
-    await openJulieTask(getProjectPath())
+    await openDirectorsTask(getProjectPath())
 })
 
-async function loadJulieTurnBlocks() {
-    const { blocks } = await loadCurrentStagedTurn(
-        getProjectPath(),
-        julieEnvironment,
-    )
+async function loadTurnBlocks() {
+    const { blocks } = await loadCurrentStagedTurn(getProjectPath(), {})
     return blocks
 }
 
-function addJulieText(...options: string[]) {
-    return runCliWithEnv(julieEnvironment, "turn", "add", "text", ...options)
+function addText(...options: string[]) {
+    return runCli("turn", "add", "text", ...options)
 }
 
 describe("aico turn add text", () => {
     test("adds a text to the person's next turn", async () => {
-        const adding = addJulieText("-t", "Checking.")
+        const adding = addText("-t", "Checking.")
 
-        const blocks = await loadJulieTurnBlocks()
+        const blocks = await loadTurnBlocks()
         expect(adding.exitCode).toBe(0)
         expect(adding.stderr).toBe(
             "Added a text to your turn. Send it with `aico turn send`.\n",
@@ -37,14 +33,14 @@ describe("aico turn add text", () => {
     test("reads the text from a file", async () => {
         await Bun.write(getProjectPath("notes.md"), "Checked the build.\n")
 
-        addJulieText("-F", "notes.md")
+        addText("-F", "notes.md")
 
-        const blocks = await loadJulieTurnBlocks()
+        const blocks = await loadTurnBlocks()
         expect(blocks).toEqual([{ type: "text", text: "Checked the build.\n" }])
     })
 
     test("asks for the text", () => {
-        const adding = addJulieText()
+        const adding = addText()
 
         expect(adding.exitCode).toBe(1)
         expect(adding.stderr).toBe(

@@ -1,21 +1,17 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { createCompany } from "../../../organization/company/create-company.ts"
-import { createEmployee } from "../../../organization/employee/create-employee.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
-const { runCli, runCliWithEnv, getProjectPath } = useTemporaryProject()
+const { runCli, getProjectPath } = useTemporaryProject()
 
 beforeEach(async () => {
     const projectRoot = getProjectPath()
     await createCompany(projectRoot, { name: "Acme", description: "" })
-    await Promise.all([
-        createEmployee(projectRoot, "julie", { name: "Julie", kind: "human" }),
-        createPosition(projectRoot, "graphics", {
-            title: "Graphics",
-            description: "",
-        }),
-    ])
+    await createPosition(projectRoot, "graphics", {
+        title: "Graphics",
+        description: "",
+    })
 })
 
 describe("aico current-position set", () => {
@@ -41,17 +37,12 @@ describe("aico current-position set", () => {
     })
 
     test("--shell-code prints nothing for a position you don't work", () => {
-        const julieEnv = { AICO_CURRENT_HUMAN_ID: "julie" }
         const selectionArgs = ["current-position", "set", "graphics"]
 
-        const selection = runCliWithEnv(
-            julieEnv,
-            ...selectionArgs,
-            "--shell-code",
-        )
+        const selection = runCli(...selectionArgs, "--shell-code")
 
         expect(selection.exitCode).toBe(1)
-        expect(selection.stderr).toContain("assign-temporarily employee")
+        expect(selection.stderr).toContain("assign-temporarily directors")
         expect(selection.stdout).toBe("")
     })
 })

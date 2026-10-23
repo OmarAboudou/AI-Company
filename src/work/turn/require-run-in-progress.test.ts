@@ -2,10 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { loadJournal } from "../../journal/storage.ts"
 import { sendMessage } from "../../messaging/message/send-message.ts"
-import {
-    createCompanyWithHumanEmployee,
-    julieEnvironment,
-} from "../create-company-with-human-employee.testing.ts"
+import { createCompanyWorkedByDirectors } from "../create-company-worked-by-directors.testing.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
 import { openNextTask } from "../task/open-next-task.ts"
 import { requireRunInProgress } from "./require-run-in-progress.ts"
@@ -14,7 +11,7 @@ let projectRoot: string
 let threadId: string
 
 beforeEach(async () => {
-    const company = await createCompanyWithHumanEmployee()
+    const company = await createCompanyWorkedByDirectors()
     projectRoot = company.projectRoot
     threadId = company.threadId
 })
@@ -31,10 +28,7 @@ async function askAndOpen(body: string, positionId: string) {
         { body },
         createExampleWorkCatalog([positionId]),
     )
-    const environment = {
-        ...julieEnvironment,
-        AICO_CURRENT_POSITION_ID: positionId,
-    }
+    const environment = { AICO_CURRENT_POSITION_ID: positionId }
     const { openedTask } = await openNextTask(
         projectRoot,
         environment,
@@ -46,7 +40,7 @@ async function askAndOpen(body: string, positionId: string) {
     return openedTask
 }
 
-async function requireJulieRun(environment = julieEnvironment) {
+async function requirePersonRun(environment: NodeJS.ProcessEnv = {}) {
     return requireRunInProgress(await loadJournal(projectRoot), environment)
 }
 
@@ -54,7 +48,7 @@ describe("requireRunInProgress", () => {
     test("finds the run of the person's task in progress", async () => {
         const openedTask = await askAndOpen("Ship?", "qa-tester")
 
-        const { task, position, run } = await requireJulieRun()
+        const { task, position, run } = await requirePersonRun()
 
         expect(task).toEqual(openedTask.task)
         expect(position.id).toBe("qa-tester")
@@ -62,7 +56,7 @@ describe("requireRunInProgress", () => {
     })
 
     test("refuses when no task of the person is in progress", async () => {
-        const requiring = requireJulieRun()
+        const requiring = requirePersonRun()
 
         await expect(requiring).rejects.toThrow(
             "No task of yours is in progress: run `aico task next` to open one.",
@@ -73,7 +67,7 @@ describe("requireRunInProgress", () => {
         await askAndOpen("Ship?", "qa-tester")
         await askAndOpen("Logo?", "designer")
 
-        const requiring = requireJulieRun()
+        const requiring = requirePersonRun()
 
         await expect(requiring).rejects.toThrow(
             "You have tasks in progress as QA (@qa-tester) and Designer (@designer): select the position to answer from",
@@ -84,11 +78,10 @@ describe("requireRunInProgress", () => {
         await askAndOpen("Ship?", "qa-tester")
         const logoTask = await askAndOpen("Logo?", "designer")
         const environment = {
-            ...julieEnvironment,
             AICO_CURRENT_POSITION_ID: "designer",
         }
 
-        const { run } = await requireJulieRun(environment)
+        const { run } = await requirePersonRun(environment)
 
         expect(run.id).toBe(logoTask.run.id)
     })

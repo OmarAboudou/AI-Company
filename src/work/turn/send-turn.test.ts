@@ -5,7 +5,6 @@ import type { EventType, JournalEvent } from "../../journal/schema.ts"
 import { listEvents } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { listMessages } from "../../messaging/message/storage.ts"
-import { julieEnvironment } from "../create-company-with-human-employee.testing.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
 import { reminderText } from "../run/apply-assistant-turn.ts"
 import { loadRun } from "../run/storage.ts"
@@ -32,13 +31,13 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-async function addJulieToolCall(toolName: string, input: object) {
+async function addToolCall(toolName: string, input: object) {
     const rawInput = JSON.stringify(input)
-    await addTurnTool(projectRoot, julieEnvironment, { toolName, rawInput })
+    await addTurnTool(projectRoot, {}, { toolName, rawInput })
 }
 
-async function sendJulieTurn() {
-    return sendTurn(projectRoot, julieEnvironment, createExampleWorkCatalog())
+async function sendPersonTurn() {
+    return sendTurn(projectRoot, {}, createExampleWorkCatalog())
 }
 
 async function findLastEvent<Content extends Omit<JournalEvent, "id">>(
@@ -51,23 +50,24 @@ async function findLastEvent<Content extends Omit<JournalEvent, "id">>(
 }
 
 describe("sendTurn", () => {
-    test("runs the turn's calls as the person's position and employee", async () => {
-        await addJulieToolCall("message_send", { body: "Friday." })
+    test("runs the turn's calls from the person's position, as a director", async () => {
+        await addToolCall("message_send", { body: "Friday." })
 
-        await sendJulieTurn()
+        await sendPersonTurn()
 
         const [, answer] = await listMessages(projectRoot, threadId)
         expect(answer).toMatchObject({
             position: { id: "qa-tester", title: "QA" },
-            employee: { id: "julie", name: "Julie" },
+            committer: { name: "Omar Aboudou", email: "omar@example.com" },
             body: "Friday.",
         })
+        expect(answer).not.toHaveProperty("employee")
     })
 
     test("gives back the turn and its answer, as the run's transcript keeps them", async () => {
-        await addJulieToolCall("message_send", { body: "Friday." })
+        await addToolCall("message_send", { body: "Friday." })
 
-        const { sentTurn, answeringTurn } = await sendJulieTurn()
+        const { sentTurn, answeringTurn } = await sendPersonTurn()
 
         const run = await loadRun(projectRoot, openedTask.run.id)
         const [, keptSentTurn, keptAnsweringTurn] = run.conversation.turns
@@ -97,9 +97,9 @@ describe("sendTurn", () => {
     })
 
     test("records what the run causes at the depth of the task's cause", async () => {
-        await addJulieToolCall("message_send", { body: "Logo?" })
+        await addToolCall("message_send", { body: "Logo?" })
 
-        await sendJulieTurn()
+        await sendPersonTurn()
 
         const messageSentEvent = await findLastEvent(messageSentEventType)
         expect(messageSentEvent?.depth).toBe(0)
@@ -107,20 +107,20 @@ describe("sendTurn", () => {
     })
 
     test("empties the turn once it is sent", async () => {
-        await addJulieToolCall("message_send", { body: "Friday." })
+        await addToolCall("message_send", { body: "Friday." })
 
-        await sendJulieTurn()
+        await sendPersonTurn()
 
         const stagedTurn = await loadStagedTurn(projectRoot, openedTask.run.id)
         expect(stagedTurn).toEqual({ blocks: [] })
     })
 
     test("goes on from the turns sent before, in a later call", async () => {
-        await addJulieToolCall("message_send", { body: "Friday." })
-        await sendJulieTurn()
-        await addJulieToolCall("task_mark-as-done", { summary: "Answered." })
+        await addToolCall("message_send", { body: "Friday." })
+        await sendPersonTurn()
+        await addToolCall("task_mark-as-done", { summary: "Answered." })
 
-        const { taskEnding } = await sendJulieTurn()
+        const { taskEnding } = await sendPersonTurn()
 
         const run = await loadRun(projectRoot, openedTask.run.id)
         expect(taskEnding).toEqual({ state: "done", summary: "Answered." })
@@ -128,10 +128,10 @@ describe("sendTurn", () => {
     })
 
     test("ends the task when the turn marks it as done, with its result", async () => {
-        await addJulieToolCall("message_send", { body: "Friday." })
-        await addJulieToolCall("task_mark-as-done", { summary: "Answered." })
+        await addToolCall("message_send", { body: "Friday." })
+        await addToolCall("task_mark-as-done", { summary: "Answered." })
 
-        await sendJulieTurn()
+        await sendPersonTurn()
 
         expect(await findLastEvent(taskDoneEventType)).toEqual({
             id: expect.any(String),
@@ -146,9 +146,9 @@ describe("sendTurn", () => {
     })
 
     test("reminds the person who calls no tool, as it reminds a model", async () => {
-        await addTurnText(projectRoot, julieEnvironment, "Let me think.")
+        await addTurnText(projectRoot, {}, "Let me think.")
 
-        const { answeringTurn, taskEnding } = await sendJulieTurn()
+        const { answeringTurn, taskEnding } = await sendPersonTurn()
 
         const reminderBlock = { type: "text" as const, text: reminderText }
         expect(taskEnding).toBeUndefined()
@@ -156,11 +156,11 @@ describe("sendTurn", () => {
     })
 
     test("fails the task at a second turn that calls no tool", async () => {
-        await addTurnText(projectRoot, julieEnvironment, "Let me think.")
-        await sendJulieTurn()
-        await addTurnText(projectRoot, julieEnvironment, "Still thinking.")
+        await addTurnText(projectRoot, {}, "Let me think.")
+        await sendPersonTurn()
+        await addTurnText(projectRoot, {}, "Still thinking.")
 
-        const { taskEnding } = await sendJulieTurn()
+        const { taskEnding } = await sendPersonTurn()
 
         const reason =
             "Two turns ended without calling a tool, the second after a reminder."
@@ -173,7 +173,7 @@ describe("sendTurn", () => {
     })
 
     test("refuses an empty turn", async () => {
-        const sending = sendJulieTurn()
+        const sending = sendPersonTurn()
 
         await expect(sending).rejects.toThrow(
             "Your turn is empty: add to it with `aico turn add text` or `aico turn add tool`.",
