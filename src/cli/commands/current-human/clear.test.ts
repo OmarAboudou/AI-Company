@@ -13,7 +13,7 @@ describe("aico current-human clear", () => {
 
     test("--shell-code prints the code switching back to a director", () => {
         const unsetLine =
-            "unset LLMCO_CURRENT_HUMAN_ID LLMCO_CURRENT_POSITION_ID\n"
+            "unset AICO_CURRENT_HUMAN_ID AICO_CURRENT_POSITION_ID\n"
 
         const switching = runCli("current-human", "clear", "--shell-code")
 

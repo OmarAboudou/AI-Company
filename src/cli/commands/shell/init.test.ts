@@ -19,7 +19,7 @@ const { runCli, runCliWithEnv, getProjectPath, getHomePath } =
     useTemporaryProject()
 const cliPath = join(import.meta.dir, "..", "..", "main.ts")
 const printShellState =
-    '_aico_update_prompt; printf "%s|%s" "${LLMCO_CURRENT_HUMAN_ID-unset}" "$PS1"'
+    '_aico_update_prompt; printf "%s|%s" "${AICO_CURRENT_HUMAN_ID-unset}" "$PS1"'
 const printRegistrations: Record<(typeof shells)[number], string> = {
     bash: 'printf "%s" "$PROMPT_COMMAND"',
     zsh: 'printf "%s" "${precmd_functions[*]}"',
@@ -94,7 +94,7 @@ for (const shell of shells) {
 
             test("lets current-position set select a position, cleared by a new identity", () => {
                 const printPositionId =
-                    'printf "%s|" "${LLMCO_CURRENT_POSITION_ID-unset}"'
+                    'printf "%s|" "${AICO_CURRENT_POSITION_ID-unset}"'
 
                 const shellRun = runFunction(
                     "aico current-position set director",
@@ -126,7 +126,7 @@ for (const shell of shells) {
                 const shellRun = runFunction(
                     "_aico_update_prompt",
                     printShellState,
-                    "LLMCO_DISABLE_PROMPT=1",
+                    "AICO_DISABLE_PROMPT=1",
                     printShellState,
                 )
 

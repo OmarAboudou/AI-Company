@@ -75,7 +75,7 @@ describe("readCurrentAuthor", () => {
 
     test("is a human employee at their only position", async () => {
         await assignPosition(projectRoot, "graphics", "julie")
-        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.AICO_CURRENT_HUMAN_ID = "julie"
 
         const author = await readCurrentAuthor(projectRoot, environment)
 
@@ -110,7 +110,7 @@ describe("readCurrentAuthor", () => {
             kind: "employee",
             rawEmployeeId: "julie",
         })
-        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.AICO_CURRENT_HUMAN_ID = "julie"
         const archive = createArchive("director", ["support"])
 
         expect(await readPositionId({ archive })).toBe("support")
@@ -122,7 +122,7 @@ describe("readCurrentAuthor", () => {
             kind: "employee",
             rawEmployeeId: "julie",
         })
-        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.AICO_CURRENT_HUMAN_ID = "julie"
         const refusalMessage =
             "Julie (julie) works several positions, graphics, support:"
 
@@ -135,7 +135,7 @@ describe("readCurrentAuthor", () => {
     })
 
     test("refuses a human employee working no position", async () => {
-        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.AICO_CURRENT_HUMAN_ID = "julie"
         const assignmentCommand =
             "`aico position assign-temporarily employee <position-id> julie`"
 
@@ -162,7 +162,7 @@ describe("readCurrentAuthor with a position chosen", () => {
             kind: "employee",
             rawEmployeeId: "julie",
         })
-        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.AICO_CURRENT_HUMAN_ID = "julie"
 
         const positionId = await readPositionId({ asPositionId: "support" })
 
@@ -187,7 +187,7 @@ describe("readCurrentAuthor with a position chosen", () => {
     })
 
     test("refuses a vacant position, giving the command to work it", async () => {
-        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.AICO_CURRENT_HUMAN_ID = "julie"
         const refusalMessage =
             "it is vacant. A director can assign it to julie temporarily: `aico position assign-temporarily employee support julie`."
 
@@ -202,7 +202,7 @@ describe("readCurrentAuthor with a position chosen", () => {
             kind: "employee",
             rawEmployeeId: "bob",
         })
-        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.AICO_CURRENT_HUMAN_ID = "julie"
         const refusalMessage =
             "Bob, a human employee, works it. A director can give it back to julie: `aico position unassign-temporarily graphics`."
 
@@ -213,7 +213,7 @@ describe("readCurrentAuthor with a position chosen", () => {
 
     test("refuses the director's position to a human employee", async () => {
         await assignPosition(projectRoot, "graphics", "julie")
-        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.AICO_CURRENT_HUMAN_ID = "julie"
 
         const reading = readPositionId({ asPositionId: "director" })
 
@@ -234,11 +234,11 @@ describe("readCurrentAuthor with a position selected in the shell", () => {
             kind: "employee",
             rawEmployeeId: "julie",
         })
-        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.AICO_CURRENT_HUMAN_ID = "julie"
     })
 
     test("writes from the selected position", async () => {
-        environment.LLMCO_CURRENT_POSITION_ID = "support"
+        environment.AICO_CURRENT_POSITION_ID = "support"
 
         const positionId = await readPositionId()
 
@@ -246,7 +246,7 @@ describe("readCurrentAuthor with a position selected in the shell", () => {
     })
 
     test("lets --as-position choose another one for a message", async () => {
-        environment.LLMCO_CURRENT_POSITION_ID = "support"
+        environment.AICO_CURRENT_POSITION_ID = "support"
 
         const positionId = await readPositionId({ asPositionId: "graphics" })
 
@@ -254,7 +254,7 @@ describe("readCurrentAuthor with a position selected in the shell", () => {
     })
 
     test("refuses a selected position the person doesn't work now", async () => {
-        environment.LLMCO_CURRENT_POSITION_ID = "director"
+        environment.AICO_CURRENT_POSITION_ID = "director"
 
         const reading = readPositionId()
 

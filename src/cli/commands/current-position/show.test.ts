@@ -11,7 +11,7 @@ describe("aico current-position", () => {
     })
 
     test("shows the position selected in this shell", () => {
-        const graphicsEnv = { LLMCO_CURRENT_POSITION_ID: "graphics" }
+        const graphicsEnv = { AICO_CURRENT_POSITION_ID: "graphics" }
 
         const show = runCliWithEnv(graphicsEnv, "current-position", "show")
 

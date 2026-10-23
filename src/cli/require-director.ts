@@ -21,7 +21,7 @@ export function requireDirector(
     const currentHumanId = readCurrentHumanId(process.env)
     if (currentHumanId !== undefined) {
         throw new UserError(
-            `Only directors run \`${formatCommandPath(actionCommand)}\`: LLMCO_CURRENT_HUMAN_ID has you act as "${currentHumanId}". Run \`aico current-human clear\` to act as a director.`,
+            `Only directors run \`${formatCommandPath(actionCommand)}\`: AICO_CURRENT_HUMAN_ID has you act as "${currentHumanId}". Run \`aico current-human clear\` to act as a director.`,
         )
     }
 }

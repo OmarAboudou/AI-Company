@@ -45,7 +45,7 @@ describe("setCurrentPosition", () => {
 
     test("selects a position the human employee works", async () => {
         await assignPosition(projectRoot, "graphics", "julie")
-        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.AICO_CURRENT_HUMAN_ID = "julie"
 
         const position = await setCurrentPosition(
             projectRoot,
@@ -57,7 +57,7 @@ describe("setCurrentPosition", () => {
     })
 
     test("refuses a position the human doesn't work, saying how to", async () => {
-        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.AICO_CURRENT_HUMAN_ID = "julie"
 
         const selection = setCurrentPosition(
             projectRoot,

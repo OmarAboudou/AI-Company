@@ -7,7 +7,7 @@ import { UserError } from "../../user-error.ts"
 import { readApiKey } from "./read-api-key.ts"
 import type { LlmProvider } from "./schema.ts"
 
-const variableName = "LLMCO_TEST_API_KEY"
+const variableName = "AICO_TEST_API_KEY"
 let projectRoot: string
 let outsideFolderPath: string
 

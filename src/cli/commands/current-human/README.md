@@ -2,7 +2,7 @@
 
 Who is at the keyboard in this shell: a director by default, or a fictitious human employee, from `set` until `clear`. Its alias, `whoami`, is the idiom, as `hire` is for `create`.
 
-`set` and `clear` change the shell's environment, which a program can't do for the shell that started it: llmco's shell function evaluates the code they print, and without it they refuse, saying how to set it up. A script sets `LLMCO_CURRENT_HUMAN_ID` itself.
+`set` and `clear` change the shell's environment, which a program can't do for the shell that started it: llmco's shell function evaluates the code they print, and without it they refuse, saying how to set it up. A script sets `AICO_CURRENT_HUMAN_ID` itself.
 
 ## Invariants
 

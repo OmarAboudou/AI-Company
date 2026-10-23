@@ -116,7 +116,7 @@ export async function workTask(
         ...session,
         environment: {
             ...session.environment,
-            LLMCO_CURRENT_POSITION_ID: openedTask.position.id,
+            AICO_CURRENT_POSITION_ID: openedTask.position.id,
         },
     }
     const { projectRoot, environment, context } = taskSession
