@@ -6,6 +6,10 @@ import type { Position } from "../../organization/position/schema.ts"
 import { UserError } from "../../user-error.ts"
 import { dispatchEvents } from "../listener/dispatch-events.ts"
 import {
+    type CompanyPause,
+    getCompanyPause,
+} from "../pause/get-company-pause.ts"
+import {
     listPendingTasks,
     type PendingTask,
 } from "../task/list-pending-tasks.ts"
@@ -34,12 +38,12 @@ export type ReadyTasksRunning = {
 }
 
 export type RunReadyTasksResult =
-    | { kind: "none-ready"; waitingTasks: WaitingTask[] }
+    | {
+          kind: "none-ready"
+          waitingTasks: WaitingTask[]
+          pause: CompanyPause | undefined
+      }
     | { kind: "stopped" }
-
-function formatFailureStop(failedTask: Task): string {
-    return `aico run stops at the failure of task "${failedTask.id}", so that the next tasks don't fail for the same reason. Once its cause is fixed, run \`aico run\` again for them: a failed task doesn't run again.`
-}
 
 export async function runReadyTasks(
     projectRoot: string,
@@ -55,10 +59,6 @@ export async function runReadyTasks(
     )
     for (const task of cutShortTasks) {
         onProgress({ kind: "task-cut-short", task })
-    }
-    const [firstCutShortTask] = cutShortTasks
-    if (firstCutShortTask !== undefined) {
-        throw new UserError(formatFailureStop(firstCutShortTask))
     }
     while (true) {
         await runOperation(projectRoot, operationName, async () => {
@@ -78,7 +78,8 @@ export async function runReadyTasks(
             const waitingTasks = pendingTasks.filter(
                 (pendingTask) => pendingTask.kind === "waiting",
             )
-            return { kind: "none-ready", waitingTasks }
+            const pause = getCompanyPause(journal.events)
+            return { kind: "none-ready", waitingTasks, pause }
         }
         const { task, position, employee } = readyTask
         onProgress({ kind: "task-started", task, position, employee })
@@ -104,9 +105,6 @@ export async function runReadyTasks(
         onProgress({ kind: "task-ended", task, result })
         if (signal?.aborted) {
             return { kind: "stopped" }
-        }
-        if (result.taskEnding.state === "failed") {
-            throw new UserError(formatFailureStop(task))
         }
     }
 }

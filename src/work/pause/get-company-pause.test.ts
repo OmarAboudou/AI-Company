@@ -23,6 +23,7 @@ describe("getCompanyPause", () => {
 
         expect(getCompanyPause(events)).toEqual({
             pausedAt: "2026-10-24T09:02:00.000Z",
+            cause: { kind: "command" },
         })
     })
 
@@ -39,6 +40,29 @@ describe("getCompanyPause", () => {
         expect(getCompanyPause(relaunchedEvents)).toBe(undefined)
         expect(getCompanyPause(pausedAgainEvents)).toEqual({
             pausedAt: "2026-10-24T09:03:00.000Z",
+            cause: { kind: "command" },
+        })
+    })
+
+    test("pauses the company at a failed task", () => {
+        const failedEvent = {
+            ...createEvent("task-failed", 2),
+            taskId: "20261024-090100-000-1a2b-3c4d5e6f",
+            reason: "The model's turn was cut at its maximum length.",
+        }
+
+        const pause = getCompanyPause([
+            createEvent("task-created", 1),
+            failedEvent,
+        ])
+
+        expect(pause).toEqual({
+            pausedAt: "2026-10-24T09:02:00.000Z",
+            cause: {
+                kind: "failure",
+                taskId: failedEvent.taskId,
+                reason: failedEvent.reason,
+            },
         })
     })
 })

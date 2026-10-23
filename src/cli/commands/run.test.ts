@@ -9,7 +9,8 @@ import { createExampleWorkCatalog } from "../../work/create-example-work-catalog
 import { sendExampleMessage } from "../../work/send-example-message.testing.ts"
 import { useTemporaryProject } from "../use-temporary-project.testing.ts"
 
-const { runCli, startCliWithEnv, getProjectPath } = useTemporaryProject()
+const { runCli, runCliAsync, startCliWithEnv, getProjectPath } =
+    useTemporaryProject()
 const fakeServer = useFakeAnthropicServer()
 
 const runTimeoutMs = 30_000
@@ -87,6 +88,30 @@ describe("aico run", () => {
             /@qa-tester +handle +until the company is relaunched\n\nThe company is paused: `aico company relaunch` relaunches it\.\n$/,
         )
         expect(fakeServer.requests).toHaveLength(0)
+    })
+
+    test("pauses the company at a task that fails", async () => {
+        const projectRoot = getProjectPath()
+        await createLlmEmployee(projectRoot, fakeServer.getUrl())
+        await assignPosition(projectRoot, "qa-tester", "claude")
+        await createExampleTicket(projectRoot, {
+            title: "Release",
+            rawAssigneePositionId: "qa-tester",
+        })
+        fakeServer.respondWith({ status: 401, error: "invalid x-api-key" })
+
+        const running = await runCliAsync(
+            { TEST_ANTHROPIC_KEY: "sk-test" },
+            "run",
+        )
+
+        expect(running.exitCode).toBe(0)
+        expect(running.stderr).toContain(
+            "Task failed: The anthropic-messages API",
+        )
+        expect(running.stdout).toMatch(
+            /\nThe company is paused since task "[^"]+" failed: once what failed it is fixed, `aico company relaunch` relaunches it\.\n$/,
+        )
     })
 
     test(

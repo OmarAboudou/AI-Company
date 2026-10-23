@@ -7,9 +7,9 @@ import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
 import { listMessages } from "../../messaging/message/storage.ts"
 import { assignPosition } from "../../organization/position/assign-position.ts"
-import { UserError } from "../../user-error.ts"
 import { createCompanyWithLlmEmployee } from "../create-company-with-llm-employee.testing.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
+import { relaunchCompany } from "../pause/relaunch-company.ts"
 import { sendExampleMessage } from "../send-example-message.testing.ts"
 import { getTaskStates } from "../task/get-task-states.ts"
 import { type Task, taskStartedEventType } from "../task/schema.ts"
@@ -119,7 +119,11 @@ describe("runReadyTasks", () => {
             "Hono.",
         ])
         expect(await listTaskStates()).toEqual(["done"])
-        expect(result).toEqual({ kind: "none-ready", waitingTasks: [] })
+        expect(result).toEqual({
+            kind: "none-ready",
+            waitingTasks: [],
+            pause: undefined,
+        })
     })
 
     test("commits its steps as aico run, and each tool call apart", async () => {
@@ -181,27 +185,34 @@ describe("runReadyTasks", () => {
         })
     })
 
-    test("stops at a task that failed, before the next one", async () => {
+    test("pauses the company at a task that failed, before the next one", async () => {
         const catalog = await askBothDevelopers()
         fakeServer.respondWith({ status: 401, error: "invalid x-api-key" })
 
-        const failedRun = runFakeTasks({ catalog })
+        const result = await runFakeTasks({ catalog })
 
-        await expect(failedRun).rejects.toThrow(UserError)
-        await expect(failedRun).rejects.toThrow(
-            "aico run stops at the failure of task",
-        )
+        const [failedTask] = await listTasks(projectRoot)
         expect(await listTaskStates()).toEqual(["failed", "queued"])
+        expect(result).toMatchObject({
+            kind: "none-ready",
+            waitingTasks: [{ positionId: "qa-tester", reason: "paused" }],
+            pause: { cause: { kind: "failure", taskId: failedTask?.id } },
+        })
     })
 
-    test("doesn't run a failed task again", async () => {
+    test("doesn't run a failed task again, once relaunched", async () => {
         await sendQuestion("Hono or Express?")
         fakeServer.respondWith({ status: 401, error: "invalid x-api-key" })
-        await runFakeTasks().catch(() => {})
+        await runFakeTasks()
+        await relaunchCompany(await loadJournal(projectRoot))
 
         const result = await runFakeTasks()
 
-        expect(result).toEqual({ kind: "none-ready", waitingTasks: [] })
+        expect(result).toEqual({
+            kind: "none-ready",
+            waitingTasks: [],
+            pause: undefined,
+        })
         expect(fakeServer.requests).toHaveLength(1)
         expect(await listTaskStates()).toEqual(["failed"])
     })
@@ -252,16 +263,16 @@ describe("runReadyTasks", () => {
         expect(await listTaskStates()).toEqual(["queued"])
     })
 
-    test("fails first the tasks whose process stopped short, then stops", async () => {
+    test("fails first the tasks whose process stopped short, which pauses the company", async () => {
         const task = await startTaskElsewhere(Bun.spawnSync(["true"]).pid)
 
-        const failedRun = runFakeTasks()
+        const result = await runFakeTasks()
 
-        await expect(failedRun).rejects.toThrow(
-            `aico run stops at the failure of task "${task.id}"`,
-        )
         expect(progresses).toEqual([{ kind: "task-cut-short", task }])
         expect(await listTaskStates()).toEqual(["failed"])
+        expect(result).toMatchObject({
+            pause: { cause: { kind: "failure", taskId: task.id } },
+        })
     })
 
     test("leaves a task that another process runs", async () => {

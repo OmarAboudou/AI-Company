@@ -1,6 +1,7 @@
 import type { Command } from "@commander-js/extra-typings"
 import type { TokenUsage } from "../../llm/conversation/schema.ts"
 import { formatPositionLabel } from "../../messaging/message/format-position-label.ts"
+import type { CompanyPause } from "../../work/pause/get-company-pause.ts"
 import {
     type RunReadyTasksProgress,
     runReadyTasks,
@@ -82,6 +83,15 @@ function createProgressPrinter(): (progress: RunReadyTasksProgress) => void {
     }
 }
 
+function formatPause({ cause }: CompanyPause): string {
+    switch (cause.kind) {
+        case "command":
+            return "The company is paused: `aico company relaunch` relaunches it."
+        case "failure":
+            return `The company is paused since task "${cause.taskId}" failed: once what failed it is fixed, \`aico company relaunch\` relaunches it.`
+    }
+}
+
 function printWaitingTasks(waitingTasks: WaitingTask[]): void {
     if (waitingTasks.length === 0) {
         console.log("No task is ready, nor waiting.")
@@ -96,11 +106,6 @@ function printWaitingTasks(waitingTasks: WaitingTask[]): void {
             waitingReasonTexts[reason],
         ]),
     )
-    if (waitingTasks.some(({ reason }) => reason === "paused")) {
-        console.log(
-            "\nThe company is paused: `aico company relaunch` relaunches it.",
-        )
-    }
 }
 
 type RunStop = { signal: AbortSignal; dispose(): void }
@@ -130,7 +135,7 @@ export function registerRunCommand(program: Command): void {
     program
         .command("run")
         .description(
-            "Run the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then list the tasks left waiting. A task that fails stops it, and so does Ctrl+C, which fails the task in progress.",
+            "Run the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then list the tasks left waiting. A task that fails pauses the company, which starts no other; Ctrl+C stops it, failing the task in progress.",
         )
         .action(async (_options, command) => {
             const stop = createRunStop()
@@ -147,6 +152,9 @@ export function registerRunCommand(program: Command): void {
                     return
                 }
                 printWaitingTasks(result.waitingTasks)
+                if (result.pause !== undefined) {
+                    console.log(`\n${formatPause(result.pause)}`)
+                }
             } finally {
                 stop.dispose()
             }
