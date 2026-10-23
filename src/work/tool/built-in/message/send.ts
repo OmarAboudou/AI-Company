@@ -1,11 +1,11 @@
 import { z } from "zod"
-import { readGitCommitter } from "../../../../git/read-git-committer.ts"
 import { createUnsentMessage } from "../../../../messaging/message/create-unsent-message.ts"
 import { sendUnsentMessage } from "../../../../messaging/message/send-unsent-message.ts"
 import { listMessages } from "../../../../messaging/message/storage.ts"
 import { loadExistingTicket } from "../../../../messaging/ticket/load-existing-ticket.ts"
 import { TicketNumberSchema } from "../../../../messaging/ticket/schema.ts"
 import { defineTool } from "../../define-tool.ts"
+import { readCallAuthor } from "../../read-call-author.ts"
 
 function buildDescription(ticket: string): string {
     return `Send a message in ${ticket} discussion, from your position.`
@@ -26,19 +26,9 @@ export const messageSendTool = defineTool({
         }),
     }),
     async execute({ ticketNumber, body }, ctx) {
-        const { projectRoot, position, worker } = ctx
+        const { projectRoot } = ctx
         const ticket = await loadExistingTicket(projectRoot, ticketNumber)
-        const author = {
-            position: { id: position.id, title: position.title },
-            ...(worker.kind === "employee" && {
-                employee: {
-                    id: worker.employee.id,
-                    name: worker.employee.name,
-                },
-            }),
-            committer: readGitCommitter(projectRoot),
-        }
-        const unsentMessage = createUnsentMessage(author, body)
+        const unsentMessage = createUnsentMessage(readCallAuthor(ctx), body)
         const message = await sendUnsentMessage(
             ctx.journal,
             ticket.number,
