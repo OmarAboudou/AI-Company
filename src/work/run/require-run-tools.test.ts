@@ -11,11 +11,7 @@ describe("requireRunTools", () => {
             result: {},
         })
 
-        expect(Object.keys(tools)).toEqual([
-            "message_send",
-            "task_mark-as-done",
-            "task_mark-as-failed",
-        ])
+        expect(Object.keys(tools)).toEqual(["message_send"])
         const messageSendInputNames = Object.keys(
             tools.message_send?.inputSchema.shape ?? {},
         )

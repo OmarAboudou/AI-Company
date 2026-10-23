@@ -1,13 +1,12 @@
 import { z } from "zod"
 import { UserError } from "../../user-error.ts"
-import type { TaskEnding, Tool, ToolContext } from "./define-tool.ts"
+import type { Tool, ToolContext } from "./define-tool.ts"
 
 export type ToolCall = { name: string; input: unknown }
 
 export type ToolCallResult = {
     text: string
     isError: boolean
-    taskEnding?: TaskEnding
     hasPassedHand?: boolean
 }
 

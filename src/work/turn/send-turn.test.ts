@@ -170,7 +170,7 @@ describe("sendTurn", () => {
     })
 
     test("commits the task's end as the command that sends the turn", async () => {
-        await addToolCall("task_mark-as-done", { summary: "Answered." })
+        await addTurnText(projectRoot, {}, "Friday works.")
 
         await sendPersonTurn()
 
@@ -182,22 +182,17 @@ describe("sendTurn", () => {
     test("goes on from the turns sent before, in a later call", async () => {
         await addToolCall("message_send", { body: "Friday." })
         await sendPersonTurn()
-        await addToolCall("task_mark-as-done", { summary: "Answered." })
+        await addTurnText(projectRoot, {}, "Done for now.")
 
         const { taskEnding } = await sendPersonTurn()
 
         const run = await loadRun(projectRoot, openedTask.run.id)
-        expect(taskEnding).toEqual({
-            state: "done",
-            hasPassedHand: false,
-            summary: "Answered.",
-        })
-        expect(run.conversation.turns).toHaveLength(5)
+        expect(taskEnding).toEqual({ state: "done", hasPassedHand: false })
+        expect(run.conversation.turns).toHaveLength(4)
     })
 
-    test("ends the task when the turn marks it as done, with its result", async () => {
-        await addToolCall("message_send", { body: "Friday." })
-        await addToolCall("task_mark-as-done", { summary: "Answered." })
+    test("ends the task with what its type makes of the run", async () => {
+        await addTurnText(projectRoot, {}, "Friday works.")
 
         await sendPersonTurn()
 
@@ -209,7 +204,6 @@ describe("sendTurn", () => {
             taskId: openedTask.task.id,
             runId: openedTask.run.id,
             hasPassedHand: false,
-            summary: "Answered.",
             result: { runId: openedTask.run.id },
         })
     })

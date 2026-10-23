@@ -35,6 +35,7 @@ const developerTaskEvents = {
     done: {
         id: "20261018-140351-000-0a03",
         type: "task-done",
+        runId: "20261018-140324-000-1b2c",
         hasPassedHand: true,
         result: {},
     },
@@ -72,7 +73,7 @@ describe("getTaskStates", () => {
         expect(state).toBe("running")
     })
 
-    test("is done once marked as done", () => {
+    test("is done once its session ended", () => {
         const state = getDeveloperTaskState(["created", "started", "done"])
 
         expect(state).toBe("done")

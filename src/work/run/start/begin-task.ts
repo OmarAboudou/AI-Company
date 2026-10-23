@@ -2,11 +2,7 @@ import { recordEvent } from "../../../journal/record-event.ts"
 import { requireJournalEvent } from "../../../journal/require-journal-event.ts"
 import type { Journal } from "../../../journal/schema.ts"
 import type { Position } from "../../../organization/position/schema.ts"
-import {
-    type Task,
-    taskCancelledEventType,
-    taskDoneEventType,
-} from "../../task/schema.ts"
+import { type Task, taskCancelledEventType } from "../../task/schema.ts"
 import type { TaskSession, TaskType } from "../../task-type/define-task-type.ts"
 import { parseTaskParams } from "../../task-type/parse-task-params.ts"
 import { requireTaskType } from "../../task-type/require-task-type.ts"
@@ -18,7 +14,7 @@ export type BeginTaskResult =
     | {
           kind: "run"
           taskDepth: number
-          session: Extract<TaskSession, { kind: "run" }>
+          session: TaskSession
       }
 
 export type TaskBeginning = {
@@ -55,21 +51,5 @@ export async function beginTask(
     const { projectRoot } = journal
     const ctx = { projectRoot, journal, task, position, causeEvent }
     const session = await taskType.createSession(params, ctx)
-    if (session.kind === "done") {
-        const { summary } = session
-        await recordEvent(journal, taskDoneEventType, {
-            depth: taskDepth,
-            taskId: task.id,
-            hasPassedHand: false,
-            summary,
-            result: taskType.resultSchema.parse(session.result),
-        })
-        const taskEnding: TaskEnding = {
-            state: "done",
-            hasPassedHand: false,
-            summary,
-        }
-        return { kind: "ended", taskEnding }
-    }
     return { kind: "run", taskDepth, session }
 }

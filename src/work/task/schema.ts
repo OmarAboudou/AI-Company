@@ -88,13 +88,8 @@ export const taskDoneEventType = defineEventType({
             description:
                 "Whether the session ended at an act that passed the hand on its ticket, rather than when its worker stopped without passing it.",
         }),
-        summary: z.string().trim().min(1).optional().meta({
-            description:
-                "What was done, as whoever did it sums it up, when they marked the task as done.",
-        }),
-        runId: RunIdSchema.optional().meta({
-            description:
-                "Id of the run in which the task was marked as done. Absent when it was done outside a run, as when a listener marks it as done.",
+        runId: RunIdSchema.meta({
+            description: "Id of the run whose session ended.",
         }),
         usage: TokenUsageSchema.optional(),
         result: TaskResultSchema,

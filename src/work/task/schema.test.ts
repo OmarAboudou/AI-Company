@@ -58,7 +58,7 @@ describe("the task event types", () => {
     test.each([
         [taskCreatedEventType, {}],
         [taskStartedEventType, { runId, worker: { kind: "directors" } }],
-        [taskDoneEventType, { hasPassedHand: true, result: {} }],
+        [taskDoneEventType, { runId, hasPassedHand: true, result: {} }],
         [taskFailedEventType, { reason: "The ticket asks nothing." }],
     ])("accept their events, with the task's id", (eventType, fields) => {
         const event = { ...taskEvent, type: eventType.type, ...fields }

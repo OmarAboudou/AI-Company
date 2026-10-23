@@ -70,9 +70,6 @@ export async function endTask(
     await recordEvent(journal, taskDoneEventType, {
         ...runEnd,
         hasPassedHand: taskEnding.hasPassedHand,
-        ...(taskEnding.summary !== undefined && {
-            summary: taskEnding.summary,
-        }),
         result: taskType.resultSchema.parse(result),
     })
 }

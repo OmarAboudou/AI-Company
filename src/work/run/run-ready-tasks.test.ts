@@ -60,10 +60,7 @@ async function listTaskStates() {
     return tasks.map(({ id }) => taskStates.get(id))
 }
 
-const markAsDoneCall = {
-    name: "task_mark-as-done",
-    input: { summary: "Answered: Hono." },
-}
+const closingReply = { text: "That's all for now." }
 
 function createAnswer(body: string) {
     return { name: "message_send", input: { body } }
@@ -72,9 +69,10 @@ function createAnswer(body: string) {
 describe("runReadyTasks", () => {
     test("runs the task of a position an LLM works", async () => {
         await sendQuestion("Hono or Express?")
-        fakeServer.respondWith({
-            toolCalls: [createAnswer("Hono."), markAsDoneCall],
-        })
+        fakeServer.respondWith(
+            { toolCalls: [createAnswer("Hono.")] },
+            closingReply,
+        )
 
         const { waitingTasks } = await runFakeTasks()
 
@@ -82,6 +80,7 @@ describe("runReadyTasks", () => {
         expect(messages.map(({ body }) => body)).toEqual([
             "Hono or Express?",
             "Hono.",
+            "That's all for now.",
         ])
         expect(await listTaskStates()).toEqual(["done"])
         expect(waitingTasks).toEqual([])
@@ -89,18 +88,20 @@ describe("runReadyTasks", () => {
 
     test("commits its steps as aico run, and each tool call apart", async () => {
         await sendQuestion("Hono or Express?")
-        fakeServer.respondWith({
-            toolCalls: [createAnswer("Hono."), markAsDoneCall],
-        })
+        fakeServer.respondWith(
+            { toolCalls: [createAnswer("Hono.")] },
+            closingReply,
+        )
 
         await runFakeTasks()
 
         const [task] = await listTasks(projectRoot)
-        const logArgs = ["log", "-5", "--format=%s"]
+        const logArgs = ["log", "-6", "--format=%s"]
         const log = runGit(join(projectRoot, ".aico"), logArgs)
         expect(log?.split("\n")).toEqual([
             "aico run",
             "aico run",
+            `text in task ${task?.id}`,
             `message_send in task ${task?.id}`,
             "aico run",
             "aico run",
@@ -109,15 +110,21 @@ describe("runReadyTasks", () => {
 
     test("reports each task as it starts and ends", async () => {
         await sendQuestion("Hono or Express?")
-        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
+        fakeServer.respondWith(
+            { toolCalls: [createAnswer("Hono.")] },
+            closingReply,
+        )
 
         await runFakeTasks()
 
-        const kinds = progresses.map(({ kind }) => kind)
+        const kinds = progresses
+            .map(({ kind }) => kind)
+            .filter((kind, index, allKinds) => kind !== allKinds[index - 1])
         expect(kinds).toEqual([
             "task-started",
             "tool-call",
             "tool-result",
+            "text",
             "task-ended",
         ])
     })
@@ -129,7 +136,7 @@ describe("runReadyTasks", () => {
         ])
         await sendQuestion("Hono or Express?", catalog)
         const answer = createAnswer("Hono, for Bun.")
-        fakeServer.respondWith({ toolCalls: [answer, markAsDoneCall] })
+        fakeServer.respondWith({ toolCalls: [answer] }, closingReply)
 
         const { waitingTasks } = await runFakeTasks(catalog)
 
@@ -143,7 +150,7 @@ describe("runReadyTasks", () => {
         await sendQuestion("Hono or Express?")
         fakeServer.respondWith(
             { status: 401, error: "invalid x-api-key" },
-            { toolCalls: [markAsDoneCall] },
+            closingReply,
         )
 
         const failedRun = runFakeTasks()

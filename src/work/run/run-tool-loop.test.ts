@@ -4,8 +4,6 @@ import { z } from "zod"
 import { getAnthropicTools } from "../../llm/anthropic-messages/get-anthropic-tools.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
-import { taskMarkAsDoneTool } from "../tool/built-in/task/mark-as-done.ts"
-import { taskMarkAsFailedTool } from "../tool/built-in/task/mark-as-failed.ts"
 import { defineTool } from "../tool/define-tool.ts"
 import { exampleToolContext } from "../tool/example-tool-context.testing.ts"
 import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
@@ -47,14 +45,9 @@ const noteHandOverTool = defineTool({
 const tools = {
     note_write: noteWriteTool,
     "note_hand-over": noteHandOverTool,
-    "task_mark-as-done": taskMarkAsDoneTool,
-    "task_mark-as-failed": taskMarkAsFailedTool,
 }
 
-const markAsDoneCall = {
-    name: "task_mark-as-done",
-    input: { summary: "Wrote the notes." },
-}
+const handOverCall = { name: "note_hand-over", input: {} }
 
 async function runFakeLoop(
     progresses: RunProgress[] = [],
@@ -86,7 +79,7 @@ function getRequestTurns(requestIndex: number) {
 
 describe("runToolLoop", () => {
     test("starts a fresh conversation: system prompt, tools, task's message", async () => {
-        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
+        fakeServer.respondWith({ toolCalls: [handOverCall] })
 
         await runFakeLoop()
 
@@ -110,7 +103,7 @@ describe("runToolLoop", () => {
                     { name: "note_write", input: {} },
                 ],
             },
-            { toolCalls: [markAsDoneCall] },
+            { toolCalls: [handOverCall] },
         )
 
         await runFakeLoop()
@@ -132,29 +125,10 @@ describe("runToolLoop", () => {
         expect(taskEnding).toEqual({ state: "done", hasPassedHand: false })
     })
 
-    test("ends after the turn that marks the task as done, calling no model", async () => {
-        fakeServer.respondWith({
-            toolCalls: [
-                { name: "note_write", input: { text: "first" } },
-                markAsDoneCall,
-            ],
-        })
-
-        const { taskEnding } = await runFakeLoop()
-
-        expect(taskEnding).toEqual({
-            state: "done",
-            hasPassedHand: false,
-            summary: "Wrote the notes.",
-        })
-        expect(fakeServer.requests).toHaveLength(1)
-        expect(writtenNotes).toEqual(["first"])
-    })
-
     test("sums the tokens of the run's requests", async () => {
         fakeServer.respondWith(
             { toolCalls: [{ name: "note_write", input: { text: "first" } }] },
-            { toolCalls: [markAsDoneCall] },
+            { toolCalls: [handOverCall] },
         )
 
         const { usage } = await runFakeLoop()
@@ -168,7 +142,7 @@ describe("runToolLoop", () => {
     })
 
     test("keeps each of the model's turns in the transcript, with its response", async () => {
-        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
+        fakeServer.respondWith({ toolCalls: [handOverCall] })
 
         await runFakeLoop()
 
@@ -179,7 +153,7 @@ describe("runToolLoop", () => {
             { role: "user", blocks: [{ type: "text" }] },
             {
                 role: "assistant",
-                blocks: [{ type: "tool-call", name: "task_mark-as-done" }],
+                blocks: [{ type: "tool-call", name: "note_hand-over" }],
                 modelResponse,
             },
             { role: "user", blocks: [{ type: "tool-result" }] },

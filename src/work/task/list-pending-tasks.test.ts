@@ -157,8 +157,8 @@ describe("listPendingTasks", () => {
         await recordEvent(await loadJournal(projectRoot), taskDoneEventType, {
             depth: 1,
             taskId: doneTask.id,
+            runId: "20261018-150000-000-9e8d",
             hasPassedHand: false,
-            summary: "Answered.",
             result: {},
         })
 

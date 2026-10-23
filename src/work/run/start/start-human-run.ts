@@ -18,7 +18,7 @@ import { startRun } from "./start-run.ts"
 export type HumanRunStart = {
     task: Task
     position: Position
-    session: Extract<TaskSession, { kind: "run" }>
+    session: TaskSession
 }
 
 export async function startHumanRun(

@@ -47,7 +47,6 @@ export function defineTicketTaskType({
                 boundToolInputs[toolName] = { ticketNumber }
             }
             return {
-                kind: "run",
                 userMessage: buildTicketMessage(situation, {
                     introduction: buildIntroduction(situation),
                     instructions,

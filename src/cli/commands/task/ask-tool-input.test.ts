@@ -11,7 +11,7 @@ import {
 const ticketNumber = 1
 
 const toolDefinitions = getToolDefinitions(
-    getRunTools(["message_send", "ticket_show"], {
+    getRunTools(["message_send", "ticket_create", "ticket_show"], {
         message_send: { ticketNumber },
         ticket_show: { ticketNumber },
     }),
@@ -79,14 +79,25 @@ describe("askToolInput", () => {
         ])
     })
 
-    test("asks for a short text on its line, as a task's summary", async () => {
-        const { prompts, questions } = createPrompts({ lines: ["Answered."] })
-        const tool = getToolDefinition("task_mark-as-done")
+    test("asks for a short text on its line, as a ticket's title", async () => {
+        const { prompts, questions } = createPrompts({
+            lines: ["Choose the API framework", "backend-developer"],
+            texts: ["Hono or Express?"],
+        })
+        const tool = getToolDefinition("ticket_create")
 
         const input = await askToolInput(tool, prompts)
 
-        expect(input).toEqual({ summary: "Answered." })
-        expect(questions.map(({ kind }) => kind)).toEqual(["line"])
+        expect(input).toEqual({
+            title: "Choose the API framework",
+            request: "Hono or Express?",
+            assigneePositionId: "backend-developer",
+        })
+        expect(questions.map(({ kind }) => kind)).toEqual([
+            "line",
+            "text",
+            "line",
+        ])
     })
 
     test("asks for whole numbers, leaving out an optional one left empty", async () => {

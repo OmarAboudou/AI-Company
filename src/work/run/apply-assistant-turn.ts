@@ -117,7 +117,6 @@ async function applyBlocks(
         )
         onProgress?.({ kind: "tool-result", name, text, isError })
         toolResults.push({ type: "tool-result", toolCallId: id, text, isError })
-        taskEnding ??= result.taskEnding
         if (result.hasPassedHand) {
             taskEnding ??= { state: "done", hasPassedHand: true }
             unrunReason = `you passed the hand with ${name}, which ended your session.`

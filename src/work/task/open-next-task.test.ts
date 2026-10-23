@@ -3,18 +3,12 @@ import { rm } from "node:fs/promises"
 import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import { recordEvent } from "../../journal/record-event.ts"
 import { listEvents, loadJournal } from "../../journal/storage.ts"
-import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createExampleTicket } from "../../messaging/ticket/create-example-ticket.testing.ts"
 import { createPosition } from "../../organization/position/create-position.ts"
 import { createCompanyWorkedByDirectors } from "../create-company-worked-by-directors.testing.ts"
-import {
-    createExampleWorkCatalog,
-    exampleTaskType,
-} from "../create-example-work-catalog.testing.ts"
+import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
 import { sendExampleMessage } from "../send-example-message.testing.ts"
-import { createUncreatedTask } from "../task-type/create-uncreated-task.ts"
 import { addTurnText } from "../turn/add-turn-text.ts"
-import { createTask } from "./create-task.ts"
 import { openNextTask } from "./open-next-task.ts"
 import { taskStartedEventType } from "./schema.ts"
 
@@ -108,8 +102,6 @@ describe("openNextTask", () => {
         const sendingTool = tools.find(({ name }) => name === "message_send")
         expect(tools.map(({ name }) => name)).toEqual([
             "message_send",
-            "task_mark-as-done",
-            "task_mark-as-failed",
             "ticket_show",
         ])
         expect(sendingTool?.description).toStartWith(
@@ -232,38 +224,7 @@ describe("openNextTask among the person's positions", () => {
     })
 })
 
-describe("openNextTask with a task that needs no run", () => {
-    async function createAnsweredTask(doneSummary: string) {
-        const journal = await loadJournal(projectRoot)
-        const questionSent = await recordEvent(journal, messageSentEventType, {
-            depth: 0,
-            ticketNumber,
-            messageId: "20261018-140322-123-3f9a",
-            positionId: "director",
-        })
-        const answeredTask = createUncreatedTask(exampleTaskType, {
-            positionId: "qa-tester",
-            params: { ticketNumber, doneSummary },
-        })
-        return createTask(journal, answeredTask, questionSent)
-    }
-
-    test("marks it as done at once, then opens the next", async () => {
-        const doneSummary = "Already answered."
-        const answeredTask = await createAnsweredTask(doneSummary)
-        const logo = await ask("designer", "Is the logo ready?")
-
-        const { openedTask, endedTasks } = await openNextExampleTask()
-
-        const taskEnding = {
-            state: "done",
-            hasPassedHand: false,
-            summary: doneSummary,
-        } as const
-        expect(endedTasks).toEqual([{ task: answeredTask, taskEnding }])
-        expect(openedTask?.task).toEqual(logo.task)
-    })
-
+describe("openNextTask with a task that became pointless", () => {
     test("cancels at once a task that became pointless, then opens the next", async () => {
         const shipping = await ask("qa-tester", "Can we ship on Friday?")
         await sendExampleMessage(

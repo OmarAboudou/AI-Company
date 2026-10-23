@@ -8,8 +8,8 @@ const reviewTaskType = defineTaskType({
     paramsSchema: z.strictObject({ ticketNumber: z.int().min(1) }),
     resultSchema: z.strictObject({}),
     createSession: async () => ({
-        kind: "done",
-        summary: "Reviewed.",
+        userMessage: "Review the ticket.",
+        toolNames: [],
         result: {},
     }),
 })

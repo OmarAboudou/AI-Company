@@ -573,16 +573,11 @@
                     "type": "boolean",
                     "description": "Whether the session ended at an act that passed the hand on its ticket, rather than when its worker stopped without passing it."
                 },
-                "summary": {
-                    "description": "What was done, as whoever did it sums it up, when they marked the task as done.",
-                    "type": "string",
-                    "minLength": 1
-                },
                 "runId": {
-                    "description": "Id of the run in which the task was marked as done. Absent when it was done outside a run, as when a listener marks it as done.",
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the run whose session ended."
                 },
                 "usage": {
                     "type": "object",
@@ -630,6 +625,7 @@
                 "depth",
                 "taskId",
                 "hasPassedHand",
+                "runId",
                 "result"
             ],
             "additionalProperties": false,

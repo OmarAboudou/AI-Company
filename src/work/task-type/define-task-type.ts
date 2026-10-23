@@ -21,15 +21,12 @@ export type BoundToolInputs = {
     >
 }
 
-export type TaskSession<Result extends TaskResult = TaskResult> =
-    | {
-          kind: "run"
-          userMessage: string
-          toolNames: BuiltInToolName[]
-          boundToolInputs?: BoundToolInputs
-          result: Result
-      }
-    | { kind: "done"; summary: string; result: Result }
+export type TaskSession<Result extends TaskResult = TaskResult> = {
+    userMessage: string
+    toolNames: BuiltInToolName[]
+    boundToolInputs?: BoundToolInputs
+    result: Result
+}
 
 export type TaskRun<Result extends TaskResult = TaskResult> = {
     runId: string

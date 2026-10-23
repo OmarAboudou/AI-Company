@@ -17,17 +17,10 @@ import type { WorkCatalog } from "./work-catalog.ts"
 // a test stop it before it starts or between two steps.
 export const exampleTaskType = defineTaskType({
     type: "example",
-    paramsSchema: z.strictObject({
-        ticketNumber: TicketNumberSchema,
-        doneSummary: z.string().optional(),
-    }),
+    paramsSchema: z.strictObject({ ticketNumber: TicketNumberSchema }),
     resultSchema: z.strictObject({ runId: IdSchema.optional() }),
-    async createSession({ ticketNumber, doneSummary }) {
-        if (doneSummary !== undefined) {
-            return { kind: "done", summary: doneSummary, result: {} }
-        }
+    async createSession({ ticketNumber }) {
         return {
-            kind: "run",
             userMessage: `Answer the last message of ticket #${ticketNumber}.`,
             toolNames: ["message_send", "ticket_show"],
             boundToolInputs: {

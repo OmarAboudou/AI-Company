@@ -105,7 +105,7 @@ async function loadCancellationReason(task: Task) {
 async function createUserMessage(taskType: TicketTaskType, positionId: string) {
     const task = await createTicketTask(taskType, positionId)
     const session = await createSession(taskType, task)
-    return session.kind === "run" ? session.userMessage : ""
+    return session.userMessage
 }
 
 describe("a ticket's task", () => {
@@ -133,7 +133,6 @@ describe("a ticket's task", () => {
         const session = await createSession(validateTaskType, task)
 
         expect(session).toMatchObject({
-            kind: "run",
             toolNames: [
                 "ticket_validate",
                 "ticket_refuse",

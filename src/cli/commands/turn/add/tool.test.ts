@@ -41,13 +41,13 @@ describe("aico turn add tool", () => {
 
     test("reads the input from a file", async () => {
         const inputPath = getProjectPath("input.json")
-        await Bun.write(inputPath, '{"summary": "Answered."}')
+        await Bun.write(inputPath, '{"body": "Which build?"}')
 
-        addToolCall("task_mark-as-done", "-F", "input.json")
+        addToolCall("ticket_ask", "-F", "input.json")
 
         const blocks = await loadTurnBlocks()
         expect(blocks).toMatchObject([
-            { name: "task_mark-as-done", input: { summary: "Answered." } },
+            { name: "ticket_ask", input: { body: "Which build?" } },
         ])
     })
 

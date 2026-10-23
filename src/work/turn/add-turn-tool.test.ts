@@ -58,7 +58,7 @@ describe("addTurnTool", () => {
         const adding = addToolCall("ticket_create", "{}")
 
         await expect(adding).rejects.toThrow(
-            "There is no tool named ticket_create. The tools you can call are: message_send, ticket_show, task_mark-as-done, task_mark-as-failed.",
+            "There is no tool named ticket_create. The tools you can call are: message_send, ticket_show.",
         )
     })
 
