@@ -1,6 +1,5 @@
 import { Command } from "@commander-js/extra-typings"
 import { registerCompanyCommands } from "./commands/company/company.ts"
-import { registerCurrentHumanCommands } from "./commands/current-human/current-human.ts"
 import { registerCurrentPositionCommands } from "./commands/current-position/current-position.ts"
 import { registerEmployeeCommands } from "./commands/employee/employee.ts"
 import { registerInitCommand } from "./commands/init.ts"
@@ -30,7 +29,6 @@ export function createProgram(): Command {
     registerRunCommand(program)
     registerTaskCommands(program)
     registerTurnCommands(program)
-    registerCurrentHumanCommands(program)
     registerCurrentPositionCommands(program)
     registerShellCommands(program)
     return program

@@ -14,7 +14,7 @@ export async function saveShellInitLine(shell: Shell): Promise<string> {
     }
     await appendFile(
         rcFilePath,
-        `\n# AICo's shell function, which current-human and current-position need\neval "$(aico shell init ${shell})"\n`,
+        `\n# AICo's shell function, which current-position needs\neval "$(aico shell init ${shell})"\n`,
     )
     return rcFilePath
 }

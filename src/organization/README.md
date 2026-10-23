@@ -1,8 +1,8 @@
 # Organization
 
-How the company is organized: the company itself, the positions it opens, the employees who fill them, and the people at the keyboard, who act as directors or as fictitious human employees.
+How the company is organized: the company itself, the positions it opens, the employees who fill them, and the people at the keyboard, who act as directors.
 
-Management writes it through the command line or by hand, and git versions it. Two things stay out of git: a position's temporary assignment, kept on the machine that made it, and who is at the keyboard, kept in each shell.
+Management writes it through the command line or by hand, and git versions it. Two things stay out of git: a position's temporary assignment, kept on the machine that made it, and the position selected in each shell.
 
 ## Invariants
 

@@ -1,7 +1,6 @@
 import { loadJournal } from "../../journal/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
-import { getPositionsWorkedBy } from "../../organization/human/get-positions-worked-by.ts"
-import { readCurrentHuman } from "../../organization/human/read-current-human.ts"
+import { getPositionsWorkedByDirectors } from "../../organization/human/get-positions-worked-by-directors.ts"
 import { readCurrentPositionId } from "../../organization/human/read-current-position-id.ts"
 import { requirePositionsToWork } from "../../organization/human/require-positions-to-work.ts"
 import { listPositionAssignments } from "../../organization/position/list-position-assignments.ts"
@@ -39,14 +38,12 @@ export async function openNextTask(
     catalog: WorkCatalog = builtInWorkCatalog,
 ): Promise<OpenNextTaskResult> {
     await requireCompany(projectRoot)
-    const [human, assignments, journal] = await Promise.all([
-        readCurrentHuman(projectRoot, environment),
+    const [assignments, journal] = await Promise.all([
         listPositionAssignments(projectRoot),
         loadJournal(projectRoot),
     ])
     const positionsToWork = requirePositionsToWork(
-        human,
-        getPositionsWorkedBy(assignments, human).map(
+        getPositionsWorkedByDirectors(assignments).map(
             ({ position }) => position,
         ),
         readCurrentPositionId(environment),
@@ -77,7 +74,7 @@ export async function openNextTask(
         if (position === undefined) {
             continue
         }
-        const resumableRun = await loadResumableRun(journal, task, human)
+        const resumableRun = await loadResumableRun(journal, task)
         if (resumableRun !== undefined) {
             const openedTask = {
                 task,
@@ -98,12 +95,7 @@ export async function openNextTask(
             continue
         }
         const { session } = beginning
-        const run = await startHumanRun(journal, {
-            task,
-            position,
-            human,
-            session,
-        })
+        const run = await startHumanRun(journal, { task, position, session })
         const openedTask = {
             task,
             position,

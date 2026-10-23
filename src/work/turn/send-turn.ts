@@ -22,7 +22,7 @@ export async function sendTurn(
     catalog: WorkCatalog = builtInWorkCatalog,
 ): Promise<SendTurnResult> {
     const journal = await loadJournal(projectRoot)
-    const { human, task, position, run } = await requireRunInProgress(
+    const { task, position, run } = await requireRunInProgress(
         journal,
         environment,
     )
@@ -34,10 +34,7 @@ export async function sendTurn(
     }
     const tools = requireRunTools(run.session)
     const { depth } = requireJournalEvent(journal, task.causeEventId)
-    const worker: RunWorker =
-        human.kind === "employee"
-            ? { kind: "employee", employee: human.employee }
-            : { kind: "directors" }
+    const worker: RunWorker = { kind: "directors" }
     const sentTurn: AssistantTurn = { role: "assistant", blocks }
     // Emptied before its tools run: a crash among them must not let the
     // person send the same turn, and its messages, a second time.

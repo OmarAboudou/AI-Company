@@ -16,7 +16,7 @@ const promptRegistrations: Record<Shell, string[]> = {
 
 export function buildShellFunction(shell: Shell): string {
     return [
-        `# AICo's shell function, which current-human and current-position set and clear need, and the prompt's label: add eval "$(aico shell init ${shell})" to ~/${rcFileNames[shell]}`,
+        `# AICo's shell function, which current-position set and clear need, and the prompt's label: add eval "$(aico shell init ${shell})" to ~/${rcFileNames[shell]}`,
         "aico() {",
         '    case "${1-} ${2-}" in',
         `    ${shellCodeCommands.map((command) => `"${command}"`).join(" | ")})`,
@@ -31,7 +31,7 @@ export function buildShellFunction(shell: Shell): string {
         "}",
         "_aico_prompt_label() {",
         "    [ -d .aico ] || return 0",
-        '    local label="${AICO_CURRENT_HUMAN_ID:-director}"',
+        '    local label="director"',
         '    if [ -n "${AICO_CURRENT_POSITION_ID-}" ]; then',
         '        label="$label @$AICO_CURRENT_POSITION_ID"',
         "    fi",

@@ -1,18 +1,12 @@
 import { readGitCommitter } from "../../git/read-git-committer.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
-import type { Employee } from "../../organization/employee/schema.ts"
-import { getPositionsWorkedBy } from "../../organization/human/get-positions-worked-by.ts"
-import {
-    type CurrentHuman,
-    readCurrentHuman,
-} from "../../organization/human/read-current-human.ts"
+import { getPositionsWorkedByDirectors } from "../../organization/human/get-positions-worked-by-directors.ts"
 import { readCurrentPositionId } from "../../organization/human/read-current-position-id.ts"
 import { requireSelectedPosition } from "../../organization/human/require-selected-position.ts"
 import { requireWorkedPosition } from "../../organization/human/require-worked-position.ts"
 import { listPositionAssignments } from "../../organization/position/list-position-assignments.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { loadPosition } from "../../organization/position/storage.ts"
-import { UserError } from "../../user-error.ts"
 import { getMemberIds } from "../thread/get-member-ids.ts"
 import type { Archive } from "../thread/list-archives.ts"
 import type { Author } from "./schema.ts"
@@ -21,27 +15,7 @@ function getOnlyItem<Item>(items: Item[]): Item | undefined {
     return items.length === 1 ? items[0] : undefined
 }
 
-function requireOnlyPosition(
-    employee: Employee,
-    workedPositions: Position[],
-): Position {
-    const position = getOnlyItem(workedPositions)
-    if (position !== undefined) {
-        return position
-    }
-    const employeeDescription = `${employee.name} (${employee.id})`
-    if (workedPositions.length === 0) {
-        throw new UserError(
-            `${employeeDescription} works no position to write from. A director can assign one temporarily: \`aico position assign-temporarily employee <position-id> ${employee.id}\`.`,
-        )
-    }
-    throw new UserError(
-        `${employeeDescription} works several positions, ${workedPositions.map(({ id }) => id).join(", ")}: AICo can't tell which one to write from. Choose one with --as-position.`,
-    )
-}
-
 type PositionChoice = {
-    human: CurrentHuman
     workedPositions: Position[]
     currentPositionId: string | undefined
     threadMemberIds: string[]
@@ -51,7 +25,6 @@ type PositionChoice = {
 async function loadPositionToWriteFrom(
     projectRoot: string,
     {
-        human,
         workedPositions,
         currentPositionId,
         threadMemberIds,
@@ -60,12 +33,7 @@ async function loadPositionToWriteFrom(
     asPositionId: string | undefined,
 ): Promise<Position> {
     if (asPositionId !== undefined) {
-        return requireWorkedPosition(
-            projectRoot,
-            human,
-            workedPositions,
-            asPositionId,
-        )
+        return requireWorkedPosition(projectRoot, workedPositions, asPositionId)
     }
     if (currentPositionId !== undefined) {
         return requireSelectedPosition(workedPositions, currentPositionId)
@@ -76,9 +44,7 @@ async function loadPositionToWriteFrom(
     if (positionInThread !== undefined) {
         return positionInThread
     }
-    return human.kind === "director"
-        ? loadPosition(projectRoot, directorPositionId)
-        : requireOnlyPosition(human.employee, workedPositions)
+    return loadPosition(projectRoot, directorPositionId)
 }
 
 export async function readCurrentAuthor(
@@ -92,15 +58,13 @@ export async function readCurrentAuthor(
         asPositionId?: string
     } = {},
 ): Promise<Author> {
-    const [human, assignments, { directorPositionId }] = await Promise.all([
-        readCurrentHuman(projectRoot, environment),
+    const [assignments, { directorPositionId }] = await Promise.all([
         listPositionAssignments(projectRoot),
         loadCompany(projectRoot),
     ])
     const positions = assignments.map(({ position }) => position)
-    const workedAssignments = getPositionsWorkedBy(assignments, human)
+    const workedAssignments = getPositionsWorkedByDirectors(assignments)
     const positionChoice = {
-        human,
         workedPositions: workedAssignments.map(({ position }) => position),
         currentPositionId: readCurrentPositionId(environment),
         threadMemberIds:
@@ -116,9 +80,6 @@ export async function readCurrentAuthor(
     )
     return {
         position: { id: position.id, title: position.title },
-        ...(human.kind === "employee" && {
-            employee: { id: human.employee.id, name: human.employee.name },
-        }),
         committer: readGitCommitter(projectRoot),
     }
 }

@@ -19,11 +19,6 @@ beforeEach(async () => {
     projectRoot = await createTemporaryCompany()
     createGitRepository(projectRoot, committer)
     await Promise.all([
-        saveEmployee(projectRoot, {
-            id: "julie",
-            name: "Julie",
-            kind: "human",
-        }),
         saveEmployee(projectRoot, { id: "bob", name: "Bob", kind: "human" }),
         ...["graphics", "support"].map((id) =>
             savePosition(projectRoot, { id, title: id, description: "" }),
@@ -77,19 +72,6 @@ describe("readCurrentAuthor", () => {
         })
     })
 
-    test("is a human employee at their only position", async () => {
-        await assignPosition(projectRoot, "graphics", "julie")
-        environment.AICO_CURRENT_HUMAN_ID = "julie"
-
-        const author = await readCurrentAuthor(projectRoot, environment)
-
-        expect(author).toEqual({
-            position: { id: "graphics", title: "graphics" },
-            employee: { id: "julie", name: "Julie" },
-            committer,
-        })
-    })
-
     test("picks a director's only position in the thread", async () => {
         await assignPositionTemporarily(projectRoot, "support", {
             kind: "directors",
@@ -107,46 +89,6 @@ describe("readCurrentAuthor", () => {
 
         expect(await readPositionId({ archive })).toBe("director")
     })
-
-    test("picks a human employee's only position in the thread", async () => {
-        await assignPosition(projectRoot, "graphics", "julie")
-        await assignPositionTemporarily(projectRoot, "support", {
-            kind: "employee",
-            rawEmployeeId: "julie",
-        })
-        environment.AICO_CURRENT_HUMAN_ID = "julie"
-        const archive = createArchive("director", ["support"])
-
-        expect(await readPositionId({ archive })).toBe("support")
-    })
-
-    test("refuses to choose among several positions of a human employee", async () => {
-        await assignPosition(projectRoot, "graphics", "julie")
-        await assignPositionTemporarily(projectRoot, "support", {
-            kind: "employee",
-            rawEmployeeId: "julie",
-        })
-        environment.AICO_CURRENT_HUMAN_ID = "julie"
-        const refusalMessage =
-            "Julie (julie) works several positions, graphics, support:"
-
-        const reading = readCurrentAuthor(projectRoot, environment, {
-            archive: createArchive("director", []),
-        })
-
-        await expect(reading).rejects.toThrow(UserError)
-        await expect(reading).rejects.toThrow(refusalMessage)
-    })
-
-    test("refuses a human employee working no position", async () => {
-        environment.AICO_CURRENT_HUMAN_ID = "julie"
-        const assignmentCommand =
-            "`aico position assign-temporarily employee <position-id> julie`"
-
-        const reading = readCurrentAuthor(projectRoot, environment)
-
-        await expect(reading).rejects.toThrow(assignmentCommand)
-    })
 })
 
 describe("readCurrentAuthor with a position chosen", () => {
@@ -154,19 +96,6 @@ describe("readCurrentAuthor with a position chosen", () => {
         await assignPositionTemporarily(projectRoot, "support", {
             kind: "directors",
         })
-
-        const positionId = await readPositionId({ asPositionId: "support" })
-
-        expect(positionId).toBe("support")
-    })
-
-    test("lets a human employee working several positions choose one", async () => {
-        await assignPosition(projectRoot, "graphics", "julie")
-        await assignPositionTemporarily(projectRoot, "support", {
-            kind: "employee",
-            rawEmployeeId: "julie",
-        })
-        environment.AICO_CURRENT_HUMAN_ID = "julie"
 
         const positionId = await readPositionId({ asPositionId: "support" })
 
@@ -191,37 +120,22 @@ describe("readCurrentAuthor with a position chosen", () => {
     })
 
     test("refuses a vacant position, giving the command to work it", async () => {
-        environment.AICO_CURRENT_HUMAN_ID = "julie"
         const refusalMessage =
-            "it is vacant. A director can assign it to julie temporarily: `aico position assign-temporarily employee support julie`."
+            "it is vacant. Assign it to the directors temporarily first: `aico position assign-temporarily directors support`."
 
         const reading = readPositionId({ asPositionId: "support" })
 
         await expect(reading).rejects.toThrow(refusalMessage)
     })
 
-    test("refuses an employee's position worked temporarily by another", async () => {
-        await assignPosition(projectRoot, "graphics", "julie")
-        await assignPositionTemporarily(projectRoot, "graphics", {
-            kind: "employee",
-            rawEmployeeId: "bob",
-        })
-        environment.AICO_CURRENT_HUMAN_ID = "julie"
+    test("refuses a position a human employee works", async () => {
+        await assignPosition(projectRoot, "graphics", "bob")
         const refusalMessage =
-            "Bob, a human employee, works it. A director can give it back to julie: `aico position unassign-temporarily graphics`."
+            "Bob, a human employee, works it. Assign it to the directors temporarily first: `aico position assign-temporarily directors graphics`."
 
         const reading = readPositionId({ asPositionId: "graphics" })
 
         await expect(reading).rejects.toThrow(refusalMessage)
-    })
-
-    test("refuses the director's position to a human employee", async () => {
-        await assignPosition(projectRoot, "graphics", "julie")
-        environment.AICO_CURRENT_HUMAN_ID = "julie"
-
-        const reading = readPositionId({ asPositionId: "director" })
-
-        await expect(reading).rejects.toThrow("Only directors write from")
     })
 
     test("refuses an unknown position", async () => {
@@ -233,12 +147,11 @@ describe("readCurrentAuthor with a position chosen", () => {
 
 describe("readCurrentAuthor with a position selected in the shell", () => {
     beforeEach(async () => {
-        await assignPosition(projectRoot, "graphics", "julie")
-        await assignPositionTemporarily(projectRoot, "support", {
-            kind: "employee",
-            rawEmployeeId: "julie",
-        })
-        environment.AICO_CURRENT_HUMAN_ID = "julie"
+        for (const positionId of ["graphics", "support"]) {
+            await assignPositionTemporarily(projectRoot, positionId, {
+                kind: "directors",
+            })
+        }
     })
 
     test("writes from the selected position", async () => {
@@ -258,7 +171,12 @@ describe("readCurrentAuthor with a position selected in the shell", () => {
     })
 
     test("refuses a selected position the person doesn't work now", async () => {
-        environment.AICO_CURRENT_POSITION_ID = "director"
+        await savePosition(projectRoot, {
+            id: "sales",
+            title: "Sales",
+            description: "",
+        })
+        environment.AICO_CURRENT_POSITION_ID = "sales"
 
         const reading = readPositionId()
 
