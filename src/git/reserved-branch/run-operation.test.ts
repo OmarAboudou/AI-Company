@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import { mkdir, mkdtemp, rm } from "node:fs/promises"
+import { chmod, mkdir, mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { saveState } from "../../files/save-state.ts"
@@ -40,6 +40,12 @@ function readCommitSubjects(): string[] {
 function readCommittedFiles(revision: string): string[] {
     const showArgs = ["show", "--format=", "--name-only", revision]
     return (runGitInData(...showArgs) ?? "").split("\n")
+}
+
+async function writeHook(name: string, script: string) {
+    const hookPath = join(projectRoot, ".git", "hooks", name)
+    await Bun.write(hookPath, `#!/bin/sh\n${script}\n`)
+    await chmod(hookPath, 0o755)
 }
 
 function writeNote(fileName: string) {
@@ -109,6 +115,30 @@ describe("runOperation", () => {
         )
 
         await expect(operating).rejects.toThrow("The note is too long.")
+        expect(readCommitSubjects()).toEqual(["aico note write"])
+    })
+
+    test("commits new files where git hides the files it doesn't track", async () => {
+        runGit(projectRoot, ["config", "status.showUntrackedFiles", "no"])
+
+        await runOperation(projectRoot, "aico note write", () =>
+            writeNote("note.md"),
+        )
+
+        expect(readCommitSubjects()).toEqual(["aico note write"])
+    })
+
+    test("commits without the project's hooks, which could refuse or rename it", async () => {
+        await writeHook("pre-commit", "exit 1")
+        await writeHook(
+            "prepare-commit-msg",
+            'echo "JIRA-1 $(cat "$1")" > "$1"',
+        )
+
+        await runOperation(projectRoot, "aico note write", () =>
+            writeNote("note.md"),
+        )
+
         expect(readCommitSubjects()).toEqual(["aico note write"])
     })
 

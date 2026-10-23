@@ -9,7 +9,7 @@ The reserved branch, `aico/data`, holds the company: AICo keeps its data there, 
 - The branch is checked out once: a command run from another working copy of the repository is told where the company is, and a branch found on several remotes waits for the person to choose one.
 - `.aico/` is the company's folder only as the worktree of `aico/data`: `aico init` refuses to take over any other `.aico/` folder, no command replaces one, and no operation commits in one.
 - Each operation ends with one commit, named after it, which holds its changes only: operations never overlap, each waiting until the one before releases the lock, and what an operation changed is committed even when it fails. Changes found before an operation, made by hand or left by an interrupted one, get a commit of their own.
-- AICo commits as the person git names, without the project's hooks, which check its code, and leaves its local state, the lock included, out of every commit.
+- AICo commits as the person git names, without the project's hooks, which are about its code, whatever its git settings hide, and leaves its local state, the lock included, out of every commit.
 - AICo never pushes the branch: publishing the company, which a public repository would make public, is the person's choice.
 
 ## Decisions
