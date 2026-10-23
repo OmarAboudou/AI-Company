@@ -5,11 +5,8 @@ import {
 } from "./build-system-prompt.ts"
 
 const context: SystemPromptContext = {
-    company: {
-        name: "Acme",
-        directorPositionId: "director",
-        description: "We build things.\n",
-    },
+    company: { name: "Acme", directorPositionId: "director" },
+    project: { description: "We build things.\n" },
     position: {
         id: "backend-developer",
         title: "Backend Developer",
@@ -27,15 +24,15 @@ describe("buildSystemPrompt", () => {
         expect(prompt.split("\n")[0]).toBe(identityLine)
     })
 
-    test("gives the company's and the position's descriptions", () => {
+    test("gives the project's and the position's descriptions", () => {
         const prompt = buildSystemPrompt(context)
 
-        const companyLines = [
-            "# Acme",
+        const projectLines = [
+            "# The project",
             "",
-            "<company_description>",
+            "<project_description>",
             "We build things.",
-            "</company_description>",
+            "</project_description>",
         ]
         const positionLines = [
             "# Your position: Backend Developer",
@@ -45,7 +42,7 @@ describe("buildSystemPrompt", () => {
             "</position_description>",
         ]
 
-        expect(prompt).toContain(`${companyLines.join("\n")}\n\n`)
+        expect(prompt).toContain(`${projectLines.join("\n")}\n\n`)
         expect(prompt).toContain(`${positionLines.join("\n")}\n\n`)
     })
 
@@ -61,11 +58,11 @@ describe("buildSystemPrompt", () => {
     })
 
     test("leaves out a section whose description is empty", () => {
-        const company = { ...context.company, description: "  \n" }
+        const project = { description: "  \n" }
 
-        const prompt = buildSystemPrompt({ ...context, company })
+        const prompt = buildSystemPrompt({ ...context, project })
 
-        expect(prompt).not.toContain("# Acme")
+        expect(prompt).not.toContain("# The project")
         expect(prompt).toContain("# Your position: Backend Developer")
     })
 

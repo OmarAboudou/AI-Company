@@ -11,7 +11,11 @@ export function registerInitCommand(program: Command): void {
             "Create a company in the current git repository, with its director's position.",
         )
         .requiredOption("-n, --name <name>", "company name")
-        .option("-d, --description <text>", "company description", "")
+        .option(
+            "-d, --description <text>",
+            "description of the project the company carries out",
+            "",
+        )
         .addOption(createDescriptionFileOption())
         .action(async (options) => {
             const description = await readTextOrFile(

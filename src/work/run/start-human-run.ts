@@ -5,6 +5,7 @@ import { requireJournalEvent } from "../../journal/require-journal-event.ts"
 import type { Journal } from "../../journal/schema.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
 import type { Position } from "../../organization/position/schema.ts"
+import { loadProject } from "../../organization/project/storage.ts"
 import { readMonotonicTime } from "../../read-monotonic-time.ts"
 import { type Task, taskStartedEventType } from "../task/schema.ts"
 import type { TaskSession } from "../task-type/define-task-type.ts"
@@ -25,7 +26,10 @@ export async function startHumanRun(
     { task, position, session }: HumanRunStart,
 ): Promise<Run> {
     const { projectRoot } = journal
-    const company = await loadCompany(projectRoot)
+    const [company, project] = await Promise.all([
+        loadCompany(projectRoot),
+        loadProject(projectRoot),
+    ])
     const runId = createTimeOrderedId(readMonotonicTime())
     const causeEvent = requireJournalEvent(journal, task.causeEventId)
     await recordEvent(journal, taskStartedEventType, {
@@ -40,6 +44,7 @@ export async function startHumanRun(
         id: runId,
         systemPrompt: buildSystemPrompt({
             company,
+            project,
             position,
             workerName: readGitCommitter(projectRoot).name,
         }),

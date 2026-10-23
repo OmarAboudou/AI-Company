@@ -8,6 +8,7 @@ import { isReservedBranchWorktree } from "../../git/reserved-branch/is-reserved-
 import { runGit } from "../../git/run-git.ts"
 import { UserError } from "../../user-error.ts"
 import { loadPosition } from "../position/storage.ts"
+import { loadProject } from "../project/storage.ts"
 import { createClonedCompany } from "./create-cloned-company.testing.ts"
 import { createCompany } from "./create-company.ts"
 import { loadCompany } from "./storage.ts"
@@ -33,8 +34,18 @@ describe("createCompany", () => {
         const createdCompany = await createCompany(projectRoot, acme)
 
         const company = await loadCompany(projectRoot)
-        expect(company).toEqual({ ...acme, directorPositionId: "director" })
+        expect(company).toEqual({
+            name: "Acme",
+            directorPositionId: "director",
+        })
         expect(createdCompany).toEqual(company)
+    })
+
+    test("describes the project the company carries out", async () => {
+        await createCompany(projectRoot, acme)
+
+        const project = await loadProject(projectRoot)
+        expect(project).toEqual({ description: "We build things." })
     })
 
     test("creates the director's position, held by no employee", async () => {

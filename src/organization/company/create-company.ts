@@ -6,6 +6,7 @@ import { runOperation } from "../../git/reserved-branch/run-operation.ts"
 import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
 import { savePosition } from "../position/storage.ts"
+import { saveProject } from "../project/storage.ts"
 import { type Company, CompanyConfigSchema } from "./schema.ts"
 import { hasCompany, saveCompany } from "./storage.ts"
 
@@ -20,7 +21,7 @@ export async function createCompany(
     if (await hasCompany(projectRoot)) {
         throw new UserError("A company already exists in this directory.")
     }
-    const companyConfig = parseConfig(CompanyConfigSchema, {
+    const company = parseConfig(CompanyConfigSchema, {
         name,
         directorPositionId,
     })
@@ -30,15 +31,17 @@ export async function createCompany(
     // Other commands run as operations of the command line; init runs its
     // own once the branch exists, whose worktree keeps the operations' lock.
     return runOperation(projectRoot, "aico init", async () => {
-        await savePosition(projectRoot, {
-            id: directorPositionId,
-            title: "Director",
-            createdAt: new Date().toISOString(),
-            description: "",
-        })
+        await Promise.all([
+            savePosition(projectRoot, {
+                id: directorPositionId,
+                title: "Director",
+                createdAt: new Date().toISOString(),
+                description: "",
+            }),
+            saveProject(projectRoot, { description }),
+        ])
         // The company comes last: until its config.json exists, AICo
         // sees no company, so an interrupted init can be run again.
-        const company = { ...companyConfig, description }
         await saveCompany(projectRoot, company)
         return company
     })

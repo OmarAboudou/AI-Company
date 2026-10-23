@@ -5,6 +5,7 @@ import { createGitRepository } from "../../git/create-git-repository.testing.ts"
 import { createReservedBranch } from "../../git/reserved-branch/create-reserved-branch.ts"
 import { runOperation } from "../../git/reserved-branch/run-operation.ts"
 import { savePosition } from "../position/storage.ts"
+import { saveProject } from "../project/storage.ts"
 import { saveCompany } from "./storage.ts"
 
 export async function createTemporaryCompany(): Promise<string> {
@@ -17,11 +18,8 @@ export async function createTemporaryCompany(): Promise<string> {
     const directorPositionId = "director"
     await runOperation(projectRoot, "aico init", async () => {
         await Promise.all([
-            saveCompany(projectRoot, {
-                name: "Acme",
-                directorPositionId,
-                description: "",
-            }),
+            saveCompany(projectRoot, { name: "Acme", directorPositionId }),
+            saveProject(projectRoot, { description: "" }),
             savePosition(projectRoot, {
                 id: directorPositionId,
                 title: "Director",

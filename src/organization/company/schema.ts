@@ -16,11 +16,7 @@ export const CompanyConfigSchema = z
     .meta({
         title: "AICo company",
         description:
-            "Configuration of the company, in .aico/company/config.json. Its description lives next to it, in description.md.",
+            "Configuration of the company, in .aico/company/config.json.",
     })
 
-export type CompanyConfig = z.infer<typeof CompanyConfigSchema>
-
-export type Company = CompanyConfig & {
-    description: string
-}
+export type Company = z.infer<typeof CompanyConfigSchema>

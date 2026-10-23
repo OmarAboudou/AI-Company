@@ -27,7 +27,7 @@ describe("requireCompany", () => {
 
     test("accepts a directory with a company", async () => {
         const acme = { name: "Acme", directorPositionId: "director" }
-        await saveCompany(projectRoot, { ...acme, description: "" })
+        await saveCompany(projectRoot, acme)
 
         await expect(requireCompany(projectRoot)).resolves.toBeUndefined()
     })

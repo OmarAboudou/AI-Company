@@ -7,6 +7,7 @@ import type { TokenUsage } from "../../llm/conversation/schema.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
 import type { Employee } from "../../organization/employee/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
+import { loadProject } from "../../organization/project/storage.ts"
 import { readMonotonicTime } from "../../read-monotonic-time.ts"
 import { type Task, taskStartedEventType } from "../task/schema.ts"
 import type { TaskType } from "../task-type/define-task-type.ts"
@@ -52,10 +53,11 @@ export async function runTask(
         return { taskEnding: { state: "done", summary: beginning.summary } }
     }
     const { taskDepth, session } = beginning
-    const [{ provider, model, connection, apiKey }, company] =
+    const [{ provider, model, connection, apiKey }, company, project] =
         await Promise.all([
             loadAnthropicMessagesModel(projectRoot, environment, employee),
             loadCompany(projectRoot),
+            loadProject(projectRoot),
         ])
     const runId = createTimeOrderedId(readMonotonicTime())
     await runOperation(projectRoot, operationName, () =>
@@ -74,6 +76,7 @@ export async function runTask(
         apiId: model.apiId,
         systemPrompt: buildSystemPrompt({
             company,
+            project,
             position,
             workerName: employee.name,
         }),
