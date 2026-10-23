@@ -9,6 +9,7 @@ No listener is built in yet: no event gives a task.
 - A listener never writes anything itself: its effects are plain values, which AICo applies.
 - Applying an effect again changes nothing: a task is recognized by what it is, so dispatching an event again, after a crash or on another machine, creates no task twice, and cancelling a task no longer queued does nothing.
 - A listener cancels only queued tasks: a running task is left to its run, which ends what it runs.
+- Listeners see the tickets as the whole journal leaves them, and the tasks as the dispatching leaves them so far.
 - The journal records each dispatching, with the events it gave: a clone or another machine gives the listeners only the events recorded since. These records are no events to give.
 
 ## Decisions

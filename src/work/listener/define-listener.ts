@@ -1,5 +1,6 @@
 import type { IdHistory } from "../../ids/id-history-schema.ts"
 import type { EventOfType, EventType } from "../../journal/schema.ts"
+import type { TicketState } from "../../messaging/ticket/get-ticket-states.ts"
 import type { TaskState } from "../task/get-task-states.ts"
 import type { Task, UncreatedTask } from "../task/schema.ts"
 
@@ -17,6 +18,7 @@ export type ListenerContext = {
     tasks: readonly Task[]
     taskStates: ReadonlyMap<string, TaskState>
     positions: readonly IdHistory[]
+    ticketStates: ReadonlyMap<number, TicketState>
 }
 
 export type Listener<Type extends EventType = EventType> = {
