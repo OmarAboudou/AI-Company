@@ -12,7 +12,7 @@ describe("aico model update-id", () => {
 
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" })
         await createLlmConnection(
             projectRoot,

@@ -7,7 +7,7 @@ const { startCliWithEnv, getProjectPath } = useTemporaryProject()
 const sessionTimeoutMs = 30_000
 
 beforeEach(async () => {
-    await createCompany(getProjectPath(), { name: "Acme", description: "" })
+    await createCompany(getProjectPath(), { name: "Acme" })
 })
 
 function startSession() {

@@ -7,7 +7,7 @@ const { runCli, runCliWithStdin, getProjectPath } = useTemporaryProject()
 describe("aico position", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
     })
 
     test("create then show displays the title and description", () => {

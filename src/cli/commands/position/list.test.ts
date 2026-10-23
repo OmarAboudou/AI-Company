@@ -17,7 +17,7 @@ const interimDirectors = ["position", "interim", "directors"]
 describe("aico position", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
     })
 
     test("list aligns titles and employees after the ids, sorted by id", () => {
@@ -35,7 +35,7 @@ describe("aico position", () => {
 describe("aico position assign and unassign", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await Promise.all([
             createPosition(projectRoot, "developer", {
                 title: "Developer",
@@ -88,7 +88,7 @@ describe("aico position assign and unassign", () => {
 describe("aico position assign-temporarily and unassign-temporarily", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await saveExampleLlmModel(projectRoot)
         await Promise.all([
             createPosition(projectRoot, "developer", {

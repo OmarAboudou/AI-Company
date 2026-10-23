@@ -27,7 +27,7 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const acme = { name: "Acme", description: "We build things." }
+const acme = { name: "Acme", projectDescription: "We build things." }
 
 describe("createCompany", () => {
     test("saves the company, naming its director's position", async () => {

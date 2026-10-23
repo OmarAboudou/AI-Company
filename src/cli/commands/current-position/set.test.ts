@@ -7,7 +7,7 @@ const { runCli, getProjectPath } = useTemporaryProject()
 
 beforeEach(async () => {
     const projectRoot = getProjectPath()
-    await createCompany(projectRoot, { name: "Acme", description: "" })
+    await createCompany(projectRoot, { name: "Acme" })
     await createPosition(projectRoot, "graphics", {
         title: "Graphics",
         description: "",

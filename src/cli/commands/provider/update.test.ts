@@ -8,7 +8,7 @@ const { runCli, getProjectPath } = useTemporaryProject()
 describe("aico provider API key", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
     })
 
     test("update -e replaces a file with an environment variable", () => {
@@ -27,7 +27,7 @@ describe("aico provider API key", () => {
 describe("aico provider update", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" })
     })
 

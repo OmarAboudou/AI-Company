@@ -6,7 +6,7 @@ const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("aico task next", () => {
     beforeEach(async () => {
-        await createCompany(getProjectPath(), { name: "Acme", description: "" })
+        await createCompany(getProjectPath(), { name: "Acme" })
     })
 
     test("says when no task waits", () => {

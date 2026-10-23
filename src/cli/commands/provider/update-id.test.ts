@@ -10,7 +10,7 @@ const { runCli, getProjectPath } = useTemporaryProject()
 describe("aico provider update-id", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
+        await createCompany(projectRoot, { name: "Acme" })
         await Promise.all([
             createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" }),
             createLlmProvider(projectRoot, "ollama", { name: "Ollama" }),
