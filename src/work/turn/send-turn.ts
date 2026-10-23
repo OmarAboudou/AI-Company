@@ -18,11 +18,19 @@ export type SendTurnResult = {
     taskEnding?: TaskEnding
 }
 
+export type TurnSending = {
+    catalog?: WorkCatalog
+    shouldEndSession?: boolean
+}
+
 export async function sendTurn(
     projectRoot: string,
     environment: NodeJS.ProcessEnv,
     operationName: string,
-    catalog: WorkCatalog = builtInWorkCatalog,
+    {
+        catalog = builtInWorkCatalog,
+        shouldEndSession = false,
+    }: TurnSending = {},
 ): Promise<SendTurnResult> {
     const journal = await loadJournal(projectRoot)
     const { task, position, run } = await requireRunInProgress(
@@ -30,9 +38,14 @@ export async function sendTurn(
         environment,
     )
     const { blocks } = await loadStagedTurn(projectRoot, run.id)
-    if (blocks.length === 0) {
+    if (blocks.length === 0 && !shouldEndSession) {
         throw new UserError(
             "Your turn is empty: add to it with `aico turn add text` or `aico turn add tool`.",
+        )
+    }
+    if (shouldEndSession && blocks.some(({ type }) => type === "tool-call")) {
+        throw new UserError(
+            "Your turn calls tools: send it first, or clear it, to end your session.",
         )
     }
     const tools = requireRunTools(run.session)

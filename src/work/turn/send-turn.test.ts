@@ -37,13 +37,11 @@ async function addToolCall(toolName: string, input: object) {
     await addTurnTool(projectRoot, {}, { toolName, rawInput })
 }
 
-async function sendPersonTurn() {
-    return sendTurn(
-        projectRoot,
-        {},
-        "aico turn send",
-        createExampleWorkCatalog(),
-    )
+async function sendPersonTurn(shouldEndSession = false) {
+    return sendTurn(projectRoot, {}, "aico turn send", {
+        catalog: createExampleWorkCatalog(),
+        shouldEndSession,
+    })
 }
 
 async function findLastEvent<Content extends Omit<JournalEvent, "id">>(
@@ -241,6 +239,22 @@ describe("sendTurn", () => {
             runId: openedTask.run.id,
             reason,
         })
+    })
+
+    test("ends the session on demand, even with an empty turn", async () => {
+        const { taskEnding } = await sendPersonTurn(true)
+
+        expect(taskEnding).toEqual({ state: "done", hasPassedHand: false })
+    })
+
+    test("refuses to end the session on a turn that calls tools", async () => {
+        await addToolCall("message_send", { body: "Friday." })
+
+        const ending = sendPersonTurn(true)
+
+        await expect(ending).rejects.toThrow("Your turn calls tools")
+        const { blocks } = await loadStagedTurn(projectRoot, openedTask.run.id)
+        expect(blocks).toHaveLength(1)
     })
 
     test("refuses an empty turn", async () => {

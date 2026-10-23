@@ -22,7 +22,7 @@ export type TaskSession = {
     context: PromptContext
 }
 
-type TurnAction = "tool" | "text" | "show" | "clear" | "send"
+type TurnAction = "tool" | "text" | "show" | "clear" | "send" | "end"
 
 const turnActionChoices: {
     name: string
@@ -38,6 +38,12 @@ const turnActionChoices: {
     { name: "Show the turn", value: "show" },
     { name: "Clear the turn", value: "clear" },
     { name: "Send the turn", value: "send" },
+    {
+        name: "End the session",
+        value: "end",
+        description:
+            "Send your texts, if any, as your last turn, passing the hand to no one.",
+    },
 ]
 
 const emptyTurnMessage = "Your turn is empty: call a tool or write a text."
@@ -152,6 +158,19 @@ export async function workTask(
                     }
                     turnNumber++
                     break
+                }
+                case "end": {
+                    const { sentTurn, taskEnding } = await sendTurn(
+                        projectRoot,
+                        environment,
+                        operationName,
+                        { shouldEndSession: true },
+                    )
+                    console.log(formatTurn(sentTurn.blocks))
+                    if (taskEnding !== undefined) {
+                        console.log(`\n${formatTaskEnding(taskEnding)}`)
+                    }
+                    return
                 }
             }
         } catch (error) {
