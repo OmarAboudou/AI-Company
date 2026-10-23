@@ -5,6 +5,7 @@ import { LlmModelConfigSchema } from "../src/llm/model/schema.ts"
 import { LlmProviderConfigSchema } from "../src/llm/provider/schema.ts"
 import { MessageConfigSchema } from "../src/messaging/message/schema.ts"
 import { ThreadConfigSchema } from "../src/messaging/thread/schema.ts"
+import { TicketConfigSchema } from "../src/messaging/ticket/schema.ts"
 import { CompanyConfigSchema } from "../src/organization/company/schema.ts"
 import { EmployeeConfigSchema } from "../src/organization/employee/schema.ts"
 import {
@@ -33,6 +34,7 @@ const zodSchemas = {
     employee: EmployeeConfigSchema,
     "llm-provider": LlmProviderConfigSchema,
     "llm-model": LlmModelConfigSchema,
+    ticket: TicketConfigSchema,
     thread: ThreadConfigSchema,
     message: MessageConfigSchema,
     event: BuiltInEventSchema,

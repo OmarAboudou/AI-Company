@@ -1,0 +1,74 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/OmarAboudou/AI-Company/main/schemas/ticket.json",
+    "type": "object",
+    "properties": {
+        "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What the ticket asks for, in a few words, e.g. Choose the API framework."
+        },
+        "requester": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                },
+                "title": { "type": "string", "minLength": 1 }
+            },
+            "required": ["id", "title"],
+            "additionalProperties": false,
+            "description": "The position that asks: the ticket's requester."
+        },
+        "assignee": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                },
+                "title": { "type": "string", "minLength": 1 }
+            },
+            "required": ["id", "title"],
+            "additionalProperties": false,
+            "description": "The position asked when the ticket was created: its first assignee."
+        },
+        "employee": {
+            "description": "The employee who created the ticket, working the requester's position. Absent when a person created it, whom the committer names.",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                },
+                "name": { "type": "string", "minLength": 1 }
+            },
+            "required": ["id", "name"],
+            "additionalProperties": false
+        },
+        "committer": {
+            "type": "object",
+            "properties": {
+                "name": { "type": "string", "minLength": 1 },
+                "email": { "type": "string", "minLength": 1 }
+            },
+            "required": ["name", "email"],
+            "additionalProperties": false,
+            "description": "The person at the keyboard according to git config user.name and user.email, as in a commit."
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "When the ticket was created, in UTC."
+        }
+    },
+    "required": ["title", "requester", "assignee", "committer", "createdAt"],
+    "additionalProperties": false,
+    "title": "AICo ticket",
+    "description": "A ticket, a request from one position to another, in .aico/tickets/<ticket-number>/ticket.json. Its request lives next to it, in request.md. Never modified once written."
+}
