@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { saveExampleLlmModel } from "../../../llm/model/save-example-llm-model.testing.ts"
 import { saveMessage } from "../../../messaging/message/storage.ts"
 import { saveThread } from "../../../messaging/thread/storage.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
@@ -26,14 +27,19 @@ describe("aico employee update-id", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })
+        await saveExampleLlmModel(projectRoot)
         await Promise.all([
             createEmployee(projectRoot, "omar", {
                 name: "Omar",
-                kind: "human",
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
             }),
             createEmployee(projectRoot, "alice", {
                 name: "Alice",
-                kind: "human",
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
             }),
             createPosition(projectRoot, "developer", {
                 title: "Developer",
@@ -51,7 +57,7 @@ describe("aico employee update-id", () => {
         const show = runCli("employee", "show", "omar-a").stdout
 
         expect(update.stdout).toBe('Employee "omar" is now "omar-a".\n')
-        expect(show).toStartWith("# Omar\n\nkind: human\n")
+        expect(show).toStartWith("# Omar\n\nkind: llm\n")
         expect(runCli("employee", "show", "omar").exitCode).toBe(1)
     })
 
@@ -100,6 +106,7 @@ describe("--reuse-id", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })
+        await saveExampleLlmModel(projectRoot)
     })
 
     async function archiveMessageBy(employeeId: string, sentAt: string) {
@@ -127,7 +134,18 @@ describe("--reuse-id", () => {
 
     test("update-id refuses an id an earlier employee wrote under", async () => {
         await archiveMessageBy("claude", earlierSentAt)
-        runCli("employee", "create", "human", "claudia", "-n", "Claudia")
+        runCli(
+            "employee",
+            "create",
+            "llm",
+            "claudia",
+            "-n",
+            "Claudia",
+            "-p",
+            "anthropic",
+            "-m",
+            "opus",
+        )
 
         const rename = ["employee", "update-id", "claudia", "claude"]
 

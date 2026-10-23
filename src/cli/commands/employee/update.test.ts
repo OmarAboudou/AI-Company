@@ -31,10 +31,6 @@ describe("aico employee update", () => {
         await Promise.all([
             createProvider("anthropic", "https://api.anthropic.com"),
             createProvider("ollama", "http://localhost:11434"),
-            createEmployee(projectRoot, "omar", {
-                name: "Omar",
-                kind: "human",
-            }),
         ])
         await Promise.all([
             createModel("anthropic", "claude-opus-5-5"),

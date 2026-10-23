@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { saveExampleLlmModel } from "../../../llm/model/save-example-llm-model.testing.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
 import { createEmployee } from "../../../organization/employee/create-employee.ts"
 import { assignPosition } from "../../../organization/position/assign-position.ts"
@@ -25,14 +26,19 @@ describe("aico employee replace", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })
+        await saveExampleLlmModel(projectRoot)
         await Promise.all([
             createEmployee(projectRoot, "omar", {
                 name: "Omar",
-                kind: "human",
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
             }),
             createEmployee(projectRoot, "alice", {
                 name: "Alice",
-                kind: "human",
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
             }),
             ...["developer", "qa-tester", "designer"].map((id) =>
                 createPosition(projectRoot, id, { title: id, description: "" }),
@@ -63,7 +69,18 @@ describe("aico employee replace", () => {
     })
 
     test("replace says so when the employee fills no position", () => {
-        runCli("employee", "create", "human", "bob", "-n", "Bob")
+        runCli(
+            "employee",
+            "create",
+            "llm",
+            "bob",
+            "-n",
+            "Bob",
+            "-p",
+            "anthropic",
+            "-m",
+            "opus",
+        )
 
         const handover = runCli("employee", "replace", "bob", "alice")
 

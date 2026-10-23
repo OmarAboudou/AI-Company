@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { createLlmConnection } from "../../../llm/connection/create-llm-connection.ts"
 import { createLlmModel } from "../../../llm/model/create-llm-model.ts"
+import { saveExampleLlmModel } from "../../../llm/model/save-example-llm-model.testing.ts"
 import { createLlmProvider } from "../../../llm/provider/create-llm-provider.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
 import { createEmployee } from "../../../organization/employee/create-employee.ts"
@@ -32,10 +33,6 @@ describe("aico position assign and unassign", () => {
                 title: "QA Tester",
                 description: "",
             }),
-            createEmployee(projectRoot, "omar", {
-                name: "Omar",
-                kind: "human",
-            }),
             createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" }),
         ])
         await createLlmConnection(
@@ -50,6 +47,12 @@ describe("aico position assign and unassign", () => {
         })
         await createEmployee(projectRoot, "claude-senior", {
             name: "Claude Senior",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "claude-opus-5-5",
+        })
+        await createEmployee(projectRoot, "omar", {
+            name: "Omar",
             kind: "llm",
             providerId: "anthropic",
             modelId: "claude-opus-5-5",
@@ -132,6 +135,7 @@ describe("a temporary assignment through the position's lifecycle", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })
+        await saveExampleLlmModel(projectRoot)
         await Promise.all([
             createPosition(projectRoot, "developer", {
                 title: "Developer",
@@ -139,7 +143,9 @@ describe("a temporary assignment through the position's lifecycle", () => {
             }),
             createEmployee(projectRoot, "julie", {
                 name: "Julie",
-                kind: "human",
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
             }),
         ])
         await assignPositionTemporarily(projectRoot, "developer", {
@@ -163,7 +169,18 @@ describe("a temporary assignment through the position's lifecycle", () => {
     })
 
     test("assign and unassign of another employee keep the temporary assignment", async () => {
-        runCli("employee", "create", "human", "bob", "-n", "Bob")
+        runCli(
+            "employee",
+            "create",
+            "llm",
+            "bob",
+            "-n",
+            "Bob",
+            "-p",
+            "anthropic",
+            "-m",
+            "opus",
+        )
 
         const assignment = runCli("position", "assign", "developer", "bob")
         const unassignment = runCli("position", "unassign", "developer")

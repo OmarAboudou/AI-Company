@@ -28,7 +28,12 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const omar = { name: "Omar", kind: "human" } as const
+const omar = {
+    name: "Omar",
+    kind: "llm",
+    providerId: "anthropic",
+    modelId: "opus",
+} as const
 const claude = {
     name: "Claude",
     kind: "llm",
@@ -58,7 +63,7 @@ async function archiveMessageBy(employeeId: string) {
 }
 
 describe("createEmployee", () => {
-    test("saves a human employee with the date it was created", async () => {
+    test("saves the employee with the date it was created", async () => {
         const before = Date.now()
         await createEmployee(projectRoot, "omar", omar)
         const after = Date.now()

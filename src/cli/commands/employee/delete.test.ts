@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { saveExampleLlmModel } from "../../../llm/model/save-example-llm-model.testing.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
 import { createEmployee } from "../../../organization/employee/create-employee.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
@@ -24,10 +25,13 @@ describe("aico employee delete", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })
+        await saveExampleLlmModel(projectRoot)
         await Promise.all([
             createEmployee(projectRoot, "omar", {
                 name: "Omar",
-                kind: "human",
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
             }),
             createPosition(projectRoot, "developer", {
                 title: "Developer",

@@ -26,7 +26,6 @@ beforeEach(async () => {
             protocol: "anthropic-messages",
         }),
         saveEmployee(projectRoot, claude),
-        saveEmployee(projectRoot, { id: "omar", name: "Omar", kind: "human" }),
     ])
 })
 

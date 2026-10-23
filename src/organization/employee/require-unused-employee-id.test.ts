@@ -60,7 +60,13 @@ describe("requireUnusedEmployeeId", () => {
 
     test("refuses another employee's former id", async () => {
         const formerIds = [{ id: "omar", until: "2026-10-19T09:00:00.000Z" }]
-        const omar = { id: "omar-a", name: "Omar", kind: "human" } as const
+        const omar = {
+            id: "omar-a",
+            name: "Omar",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        } as const
         await saveEmployee(projectRoot, { ...omar, formerIds })
 
         const checking = requireUnusedEmployeeId(projectRoot, "omar")
@@ -84,7 +90,13 @@ describe("requireUnusedEmployeeId", () => {
     test("gives an employee back its own former id", async () => {
         await archiveMessageBy("omar", "2026-10-18T14:01:00.000Z")
         const formerIds = [{ id: "omar", until: "2026-10-19T09:00:00.000Z" }]
-        const omar = { id: "omar-a", name: "Omar", kind: "human" } as const
+        const omar = {
+            id: "omar-a",
+            name: "Omar",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        } as const
         const renamedEmployee = { ...omar, formerIds }
         await saveEmployee(projectRoot, renamedEmployee)
 

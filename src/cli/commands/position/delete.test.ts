@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { saveExampleLlmModel } from "../../../llm/model/save-example-llm-model.testing.ts"
 import { sendMessage } from "../../../messaging/message/send-message.ts"
 import { createThread } from "../../../messaging/thread/create-thread.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
@@ -29,6 +30,7 @@ describe("aico position delete", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })
+        await saveExampleLlmModel(projectRoot)
         await createPosition(projectRoot, "developer", {
             title: "Developer",
             description: "",
@@ -49,7 +51,18 @@ describe("aico position delete", () => {
     })
 
     test("delete keeps the default employee hired", () => {
-        runCli("employee", "create", "human", "omar", "-n", "Omar")
+        runCli(
+            "employee",
+            "create",
+            "llm",
+            "omar",
+            "-n",
+            "Omar",
+            "-p",
+            "anthropic",
+            "-m",
+            "opus",
+        )
         runCli("position", "assign", "developer", "omar")
 
         const deletion = runCli("position", "delete", "developer")
