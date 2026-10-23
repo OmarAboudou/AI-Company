@@ -9,7 +9,11 @@ import { createExampleTicket } from "../../../messaging/ticket/create-example-ti
 import { createTemporaryCompany } from "../../../organization/company/create-temporary-company.testing.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
 import { getTaskStates } from "../../task/get-task-states.ts"
-import { type Task, taskStartedEventType } from "../../task/schema.ts"
+import {
+    type Task,
+    taskDoneEventType,
+    taskStartedEventType,
+} from "../../task/schema.ts"
 import { listTasks } from "../../task/storage.ts"
 import { builtInWorkCatalog } from "../../work-catalog.ts"
 import { dispatchEvents } from "../dispatch-events.ts"
@@ -40,6 +44,32 @@ afterEach(async () => {
 
 async function dispatch() {
     return dispatchEvents(await loadJournal(projectRoot), builtInWorkCatalog)
+}
+
+async function findTaskOf(positionId: string, state: string) {
+    const [tasks, journal] = await Promise.all([
+        listTasks(projectRoot),
+        loadJournal(projectRoot),
+    ])
+    const taskStates = getTaskStates(tasks, journal.events)
+    return tasks.find(
+        (task) =>
+            task.positionId === positionId && taskStates.get(task.id) === state,
+    )
+}
+
+// The position's session ends in its running task, as the run would end it.
+async function endSessionOf(positionId: string, hasPassedHand = false) {
+    await startQueuedTaskOf(positionId)
+    const runningTask = await findTaskOf(positionId, "running")
+    await recordEvent(await loadJournal(projectRoot), taskDoneEventType, {
+        depth: 1,
+        taskId: runningTask?.id ?? "",
+        runId: "20261023-150000-000-9e8d",
+        hasPassedHand,
+        result: {},
+    })
+    return dispatch()
 }
 
 async function startQueuedTaskOf(positionId: string) {
@@ -116,6 +146,32 @@ describe("AICo's listeners", () => {
         expect(getTaskSummaries(refusing.createdTasks)).toEqual([
             "resume @developer",
         ])
+    })
+
+    test("give the assignee Resume once its session ends without passing the hand", async () => {
+        await createDeveloperTicket()
+
+        const { createdTasks } = await endSessionOf("developer")
+
+        expect(getTaskSummaries(createdTasks)).toEqual(["resume @developer"])
+    })
+
+    test("give the requester its task again once its session ends without acting", async () => {
+        await createDeveloperTicket()
+        await act("ask", developer)
+
+        const { createdTasks } = await endSessionOf("director")
+
+        expect(getTaskSummaries(createdTasks)).toEqual(["answer @director"])
+    })
+
+    test("give nothing more once a session ended passing the hand", async () => {
+        await createDeveloperTicket()
+        await act("ask", developer)
+
+        const { createdTasks } = await endSessionOf("developer", true)
+
+        expect(createdTasks).toEqual([])
     })
 
     test("cancel a closed ticket's queued tasks", async () => {

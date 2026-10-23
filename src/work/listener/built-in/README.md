@@ -1,6 +1,6 @@
 # Built-in listeners
 
-The listeners AICo ships with: those of the tickets' lifecycle. Each act on a ticket gives a task to the position that now has the hand: its creation gives its assignee Handle, a question gives its requester Answer, an answer or a refused delivery gives its assignee Resume, and a delivery gives its requester Validate. Closing a ticket cancels the tasks queued for it.
+The listeners AICo ships with: those of the tickets' lifecycle. Each act on a ticket gives a task to the position that now has the hand: its creation gives its assignee Handle, a question gives its requester Answer, an answer or a refused delivery gives its assignee Resume, and a delivery gives its requester Validate. A session that ends without passing the hand gives the position that still has it its task again: Resume for the assignee, Answer or Validate for the requester. Closing a ticket cancels the tasks queued for it.
 
 ## Invariants
 
