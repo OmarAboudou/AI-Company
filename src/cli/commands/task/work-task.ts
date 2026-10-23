@@ -33,7 +33,7 @@ const turnActionChoices: {
     {
         name: "Write a text",
         value: "text",
-        description: "A text reaches no one: only your tools act.",
+        description: "A text joins the discussion of your task's ticket.",
     },
     { name: "Show the turn", value: "show" },
     { name: "Clear the turn", value: "clear" },

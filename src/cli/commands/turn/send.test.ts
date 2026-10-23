@@ -45,7 +45,7 @@ describe("aico turn send", () => {
         const sending = sendPersonTurn()
 
         expect(sending.stdout).toStartWith(
-            "Let me think.\nReminder: You ended your turn without calling a tool,",
+            "Let me think.\nReminder: You ended your turn without calling a tool.",
         )
     })
 

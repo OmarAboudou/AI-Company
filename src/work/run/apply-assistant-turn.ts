@@ -10,10 +10,11 @@ import type {
 import type { TaskEnding, Tool, ToolContext } from "../tool/define-tool.ts"
 import { runToolCall } from "../tool/run-tool-call.ts"
 import type { Run, RunProgress } from "./schema.ts"
+import { sendSessionText } from "./send-session-text.ts"
 import { appendRunTranscriptLine } from "./storage.ts"
 
 export const reminderText =
-    "You ended your turn without calling a tool, and only tools act: what you write outside them reaches no one. Call task_mark-as-done with a summary if your task is done, or task_mark-as-failed with the reason if you can't do it."
+    "You ended your turn without calling a tool. Call task_mark-as-done with a summary if your task is done, or task_mark-as-failed with the reason if you can't do it."
 
 // Settings (#35) will let management choose it.
 export const maxToolCallsPerRun = 50
@@ -87,17 +88,24 @@ function createUnrunResult(
     }
 }
 
-async function runToolCalls(
-    toolCalls: ToolCallBlock[],
+// Texts join the ticket's discussion and calls run in the turn's order,
+// so that a text written before an act is read before it.
+async function applyBlocks(
+    { blocks }: AssistantTurn,
     { tools, ctx, onProgress, loadCancellationReason }: TurnApplication,
 ) {
     const toolResults: ToolResultBlock[] = []
     let taskEnding: TaskEnding | undefined
-    for (const [index, toolCall] of toolCalls.entries()) {
+    for (const [index, block] of blocks.entries()) {
+        if (block.type === "text") {
+            await sendSessionText(block.text, ctx)
+            continue
+        }
         const cancellationReason = await loadCancellationReason?.()
         if (cancellationReason !== undefined) {
-            const unrunResults = toolCalls
+            const unrunResults = blocks
                 .slice(index)
+                .filter((unrunBlock) => unrunBlock.type === "tool-call")
                 .map((unrunCall) =>
                     createUnrunResult(unrunCall, cancellationReason),
                 )
@@ -105,7 +113,7 @@ async function runToolCalls(
             taskEnding ??= { state: "cancelled", reason: cancellationReason }
             break
         }
-        const { id, name, input } = toolCall
+        const { id, name, input } = block
         onProgress?.({ kind: "tool-call", name, input })
         const operationName = `${name} in task ${ctx.task.id}`
         const { text, isError, ...result } = await runOperation(
@@ -129,16 +137,12 @@ async function answerTurn(
     if (failureReason !== undefined) {
         return { taskEnding: { state: "failed", reason: failureReason } }
     }
-    const toolCalls = getToolCalls(turn)
-    if (toolCalls.length === 0) {
+    const { toolResults, taskEnding } = await applyBlocks(turn, application)
+    if (getToolCalls(turn).length === 0) {
         application.onProgress?.({ kind: "reminder", text: reminderText })
         const blocks = [{ type: "text" as const, text: reminderText }]
         return { answeringTurn: { role: "user", blocks } }
     }
-    const { toolResults, taskEnding } = await runToolCalls(
-        toolCalls,
-        application,
-    )
     return { answeringTurn: { role: "user", blocks: toolResults }, taskEnding }
 }
 

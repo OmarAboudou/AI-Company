@@ -155,6 +155,25 @@ describe("sendTurn", () => {
         ])
     })
 
+    test("writes the turn's texts in the ticket's discussion, each in its place", async () => {
+        await addTurnText(projectRoot, {}, "Checked the plan.")
+        await addToolCall("message_send", { body: "Friday." })
+
+        await sendPersonTurn()
+
+        const messages = await listMessages(projectRoot, ticketNumber)
+        const textSubject = `text in task ${openedTask.task.id}`
+        expect(messages.map(({ body }) => body)).toEqual([
+            "Can we ship on Friday?",
+            "Checked the plan.",
+            "Friday.",
+        ])
+        expect(readLastCommits(2)[1]).toEqual({
+            subject: textSubject,
+            messageFileCount: 1,
+        })
+    })
+
     test("commits the task's end as the command that sends the turn", async () => {
         await addToolCall("task_mark-as-done", { summary: "Answered." })
 

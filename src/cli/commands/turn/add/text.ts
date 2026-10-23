@@ -8,7 +8,7 @@ export function registerTurnAddTextCommand(turnAddCommand: Command): void {
     turnAddCommand
         .command("text")
         .description(
-            "Add a text to your next turn. As a model's, it reaches no one: only tool calls act, such as message_send's.",
+            "Add a text to your next turn. As a model's, it joins the discussion of your task's ticket once the turn is sent, passing the hand to no one.",
         )
         .addOption(new Option("-t, --text <text>", "the text, in Markdown"))
         .addOption(

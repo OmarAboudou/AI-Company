@@ -1,6 +1,6 @@
 # Turn
 
-A person's turn in a run, prepared as git's index prepares a commit: texts and tool calls are added one by one, shown or cleared, then sent together. Sending applies the turn as a model's: its calls run in order, their results come back as a model gets them, and a tool that ends the task ends it.
+A person's turn in a run, prepared as git's index prepares a commit: texts and tool calls are added one by one, shown or cleared, then sent together. Sending applies the turn as a model's: its texts join the discussion of the task's ticket and its calls run, in their order, their results come back as a model gets them, and a tool that ends the task ends it.
 
 ## Invariants
 
