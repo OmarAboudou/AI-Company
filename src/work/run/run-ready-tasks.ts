@@ -56,8 +56,9 @@ export async function runReadyTasks(
         }
         const { task, position, employee } = readyTask
         onProgress({ kind: "task-started", task, position, employee })
+        let result: RunTaskResult
         try {
-            const result = await runTask(journal, environment, {
+            result = await runTask(journal, environment, {
                 task,
                 position,
                 employee,
@@ -65,13 +66,18 @@ export async function runReadyTasks(
                 operationName,
                 onProgress,
             })
-            onProgress({ kind: "task-ended", task, result })
         } catch (error) {
             if (!(error instanceof UserError)) {
                 throw error
             }
             throw new UserError(
                 `${error.message}\nTask "${task.id}" stays pending: run \`aico run\` again to take it up.`,
+            )
+        }
+        onProgress({ kind: "task-ended", task, result })
+        if (result.taskEnding.state === "failed") {
+            throw new UserError(
+                `aico run stops at the failure of task "${task.id}", so that the next tasks don't fail for the same reason. Once its cause is fixed, run \`aico run\` again for them: a failed task doesn't run again.`,
             )
         }
     }

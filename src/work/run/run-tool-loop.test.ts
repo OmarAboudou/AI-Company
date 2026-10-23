@@ -125,6 +125,21 @@ describe("runToolLoop", () => {
         expect(taskEnding).toEqual({ state: "done", hasPassedHand: false })
     })
 
+    test("fails at an error of the model's API, with the tokens used before it", async () => {
+        fakeServer.respondWith(
+            { toolCalls: [{ name: "note_write", input: { text: "first" } }] },
+            { status: 401, error: "invalid x-api-key" },
+        )
+
+        const { taskEnding, usage } = await runFakeLoop()
+
+        expect(taskEnding).toEqual({
+            state: "failed",
+            reason: expect.stringContaining("invalid x-api-key"),
+        })
+        expect(usage.inputTokens).toBe(10)
+    })
+
     test("sums the tokens of the run's requests", async () => {
         fakeServer.respondWith(
             { toolCalls: [{ name: "note_write", input: { text: "first" } }] },

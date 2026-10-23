@@ -96,7 +96,7 @@ export function registerRunCommand(program: Command): void {
     program
         .command("run")
         .description(
-            "Run the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then list the tasks left waiting.",
+            "Run the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then list the tasks left waiting. A task that fails stops it.",
         )
         .action(async (_options, command) => {
             const { waitingTasks } = await runReadyTasks(

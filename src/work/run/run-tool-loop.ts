@@ -2,7 +2,8 @@ import {
     type AnthropicMessagesCall,
     callAnthropicMessages,
 } from "../../llm/anthropic-messages/call-anthropic-messages.ts"
-import type { TokenUsage } from "../../llm/conversation/schema.ts"
+import type { ModelTurn, TokenUsage } from "../../llm/conversation/schema.ts"
+import { UserError } from "../../user-error.ts"
 import type { TaskEnding } from "../tool/define-tool.ts"
 import {
     applyAssistantTurn,
@@ -49,13 +50,25 @@ export async function runToolLoop(loop: ToolLoop): Promise<RunToolLoopResult> {
             }
             return { taskEnding, usage }
         }
-        const modelTurn = await callAnthropicMessages({
-            connection,
-            apiKey,
-            apiId,
-            conversation: run.conversation,
-            onText: (text) => onProgress?.({ kind: "text", text }),
-        })
+        let modelTurn: ModelTurn
+        try {
+            modelTurn = await callAnthropicMessages({
+                connection,
+                apiKey,
+                apiId,
+                conversation: run.conversation,
+                onText: (text) => onProgress?.({ kind: "text", text }),
+            })
+        } catch (error) {
+            if (!(error instanceof UserError)) {
+                throw error
+            }
+            const taskEnding: TaskEnding = {
+                state: "failed",
+                reason: error.message,
+            }
+            return { taskEnding, usage }
+        }
         usage = addUsage(usage, modelTurn.modelResponse.usage)
         const application = await applyAssistantTurn(run, modelTurn, loop)
         if (application.taskEnding !== undefined) {

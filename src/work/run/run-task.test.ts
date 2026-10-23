@@ -8,7 +8,6 @@ import type { Employee } from "../../organization/employee/schema.ts"
 import { loadEmployee } from "../../organization/employee/storage.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { loadPosition } from "../../organization/position/storage.ts"
-import { UserError } from "../../user-error.ts"
 import { createCompanyWithLlmEmployee } from "../create-company-with-llm-employee.testing.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
 import { sendExampleMessage } from "../send-example-message.testing.ts"
@@ -208,15 +207,14 @@ describe("runTask", () => {
         })
     })
 
-    test("leaves the task running when the provider's API fails", async () => {
+    test("records the task failed when the provider's API fails", async () => {
         fakeServer.respondWith({ status: 401, error: "invalid x-api-key" })
 
-        const running = runFakeTask()
+        const { taskEnding } = await runFakeTask()
 
-        await expect(running).rejects.toThrow(UserError)
-        const events = await listEvents(projectRoot)
-        expect(events.at(-1)?.type).toBe("task-started")
-        expect(getTaskStates([task], events).get(task.id)).toBe("running")
+        const reason = expect.stringContaining("invalid x-api-key")
+        expect(taskEnding).toEqual({ state: "failed", reason })
+        expect(await findEvent(taskFailedEventType)).toMatchObject({ reason })
     })
 
     test("starts nothing without the provider's key", async () => {

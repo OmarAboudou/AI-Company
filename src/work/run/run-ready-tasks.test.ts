@@ -5,6 +5,7 @@ import { runGit } from "../../git/run-git.ts"
 import { listEvents } from "../../journal/storage.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
 import { listMessages } from "../../messaging/message/storage.ts"
+import { assignPosition } from "../../organization/position/assign-position.ts"
 import { UserError } from "../../user-error.ts"
 import { createCompanyWithLlmEmployee } from "../create-company-with-llm-employee.testing.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
@@ -136,19 +137,49 @@ describe("runReadyTasks", () => {
         ])
     })
 
-    test("stops at an API error, then takes the task up again", async () => {
-        await sendQuestion("Hono or Express?")
-        fakeServer.respondWith(
-            { status: 401, error: "invalid x-api-key" },
-            { text: "Hono." },
-        )
+    test("stops at a task that failed, before the next one", async () => {
+        await assignPosition(projectRoot, "qa-tester", "julie")
+        const catalog = createExampleWorkCatalog([
+            "backend-developer",
+            "qa-tester",
+        ])
+        await sendQuestion("Hono or Express?", catalog)
+        fakeServer.respondWith({ status: 401, error: "invalid x-api-key" })
 
-        const failedRun = runFakeTasks()
+        const failedRun = runFakeTasks(catalog)
 
         await expect(failedRun).rejects.toThrow(UserError)
+        await expect(failedRun).rejects.toThrow(
+            "aico run stops at the failure of task",
+        )
+        expect(await listTaskStates()).toEqual(["failed", "queued"])
+    })
+
+    test("doesn't run a failed task again", async () => {
+        await sendQuestion("Hono or Express?")
+        fakeServer.respondWith({ status: 401, error: "invalid x-api-key" })
+        await runFakeTasks().catch(() => {})
+
+        const { waitingTasks } = await runFakeTasks()
+
+        expect(waitingTasks).toEqual([])
+        expect(fakeServer.requests).toHaveLength(1)
+        expect(await listTaskStates()).toEqual(["failed"])
+    })
+
+    test("stops at a task that can't start, which stays pending", async () => {
+        await sendQuestion("Hono or Express?")
+
+        const failedRun = runReadyTasks(
+            projectRoot,
+            {},
+            "aico run",
+            (progress) => progresses.push(progress),
+            developerCatalog,
+        )
+
+        await expect(failedRun).rejects.toThrow("which isn't set")
         await expect(failedRun).rejects.toThrow("stays pending")
-        expect(await listTaskStates()).toEqual(["running"])
-        await runFakeTasks()
-        expect(await listTaskStates()).toEqual(["done"])
+        expect(await listTaskStates()).toEqual(["queued"])
     })
 })
