@@ -25,7 +25,7 @@ function addJulieToolCall(toolName: string, ...options: string[]) {
 
 describe("aico turn add tool", () => {
     test("adds a call to one of the task's tools", async () => {
-        const input = '{"body": "@director Friday."}'
+        const input = '{"body": "Friday."}'
 
         const adding = addJulieToolCall("message_send", "-i", input)
 
@@ -38,7 +38,7 @@ describe("aico turn add tool", () => {
             {
                 type: "tool-call",
                 name: "message_send",
-                input: { body: "@director Friday." },
+                input: { body: "Friday." },
             },
         ])
     })

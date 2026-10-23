@@ -35,25 +35,29 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-function createArchive(creatorPositionId: string, mentions: string[]): Archive {
+function createArchive(
+    creatorPositionId: string,
+    writerPositionIds: string[],
+): Archive {
     const createdAt = "2026-10-18T14:00:00.000Z"
-    const position = { id: creatorPositionId, title: creatorPositionId }
     const thread = {
         id: "2026-10-18-logo",
         subject: "Logo",
         createdAt,
-        createdBy: { position, committer },
+        createdBy: {
+            position: { id: creatorPositionId, title: creatorPositionId },
+            committer,
+        },
     }
-    const question = {
+    const messages = writerPositionIds.map((id, index) => ({
         threadId: thread.id,
-        id: "20261018-140000-000-0000",
-        position,
+        id: `20261018-14000${index}-000-0000`,
+        position: { id, title: id },
         committer,
-        mentions,
         sentAt: createdAt,
-        body: mentions.map((id) => `@${id}`).join(" "),
-    }
-    return { thread, messages: [question] }
+        body: "Hello.",
+    }))
+    return { thread, messages }
 }
 
 async function readPositionId(

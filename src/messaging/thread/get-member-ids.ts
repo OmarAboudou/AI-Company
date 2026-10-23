@@ -1,7 +1,6 @@
 import { getCurrentId } from "../../ids/get-current-id.ts"
 import type { IdHistory } from "../../ids/id-history-schema.ts"
 import type { Message } from "../message/schema.ts"
-import { getExchanges } from "./get-exchanges.ts"
 import type { Thread } from "./schema.ts"
 
 function getCreatorId(thread: Thread, positions: IdHistory[]): string {
@@ -15,11 +14,10 @@ export function getMemberIds(
     positions: IdHistory[],
 ): string[] {
     const memberIds = [getCreatorId(thread, positions)]
-    for (const { authorId, mentionIds } of getExchanges(messages, positions)) {
-        for (const id of [authorId, ...mentionIds]) {
-            if (!memberIds.includes(id)) {
-                memberIds.push(id)
-            }
+    for (const { position, sentAt } of messages) {
+        const authorId = getCurrentId(positions, position.id, sentAt)
+        if (!memberIds.includes(authorId)) {
+            memberIds.push(authorId)
         }
     }
     return memberIds

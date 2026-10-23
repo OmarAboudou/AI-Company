@@ -211,7 +211,6 @@ describe("runTask", () => {
             threadId,
             messageId: "20261018-140322-123-3f9a",
             positionId: "director",
-            mentions: [],
         })
         const summary = "Already answered."
         const answeredTask = await createTask(

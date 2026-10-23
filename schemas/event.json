@@ -36,15 +36,6 @@
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
                     "description": "Id of the position the message was written from, as its message.json records it."
                 },
-                "mentions": {
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-                        "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
-                    },
-                    "description": "Ids of the positions the message mentions, as its message.json records them."
-                },
                 "runId": {
                     "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a person's message.",
                     "type": "string",
@@ -58,8 +49,7 @@
                 "depth",
                 "threadId",
                 "messageId",
-                "positionId",
-                "mentions"
+                "positionId"
             ],
             "additionalProperties": false,
             "description": "A message was added to a thread."

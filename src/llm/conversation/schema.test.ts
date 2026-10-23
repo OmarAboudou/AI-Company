@@ -9,7 +9,7 @@ const sendingCall: ToolCallBlock = {
     type: "tool-call",
     id: "toolu_01",
     name: "message_send",
-    input: { body: "@director Hono, for Bun." },
+    input: { body: "Hono, for Bun." },
 }
 
 const personTurn: AssistantTurn = {

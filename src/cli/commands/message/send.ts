@@ -8,7 +8,6 @@ import {
     createBodyOption,
 } from "../../options.ts"
 import { printCreatedTasks } from "../../print-created-tasks.ts"
-import { printUnknownMentions } from "../../print-unknown-mentions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { readBody } from "../../read-body.ts"
 
@@ -35,12 +34,12 @@ export function registerMessageSendCommand(messageCommand: Command): void {
                     "Give the message with -b, --body or -F, --body-file.",
                 )
             }
-            const { message, unknownMentionIds, createdTasks } =
-                await sendMessage(projectRoot, process.env, rawThreadId, {
-                    body,
-                    asPositionId: options.asPosition,
-                })
-            printUnknownMentions(unknownMentionIds)
+            const { message, createdTasks } = await sendMessage(
+                projectRoot,
+                process.env,
+                rawThreadId,
+                { body, asPositionId: options.asPosition },
+            )
             console.error(
                 `Sent message "${message.id}" in thread "${message.threadId}".`,
             )

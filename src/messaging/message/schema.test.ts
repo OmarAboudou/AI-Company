@@ -4,7 +4,6 @@ import { MessageConfigSchema, messageSentEventType } from "./schema.ts"
 const question = {
     position: { id: "director", title: "Director" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
-    mentions: ["backend-developer"],
     sentAt: "2026-10-18T14:03:22.123Z",
 }
 
@@ -13,7 +12,7 @@ function accepts(config: unknown): boolean {
 }
 
 describe("MessageConfigSchema", () => {
-    test("accepts a position, committer, mentions and date", () => {
+    test("accepts a position, committer and date", () => {
         expect(MessageConfigSchema.parse(question)).toEqual(question)
     })
 
@@ -27,12 +26,6 @@ describe("MessageConfigSchema", () => {
         const committer = { name: "Omar Aboudou" }
 
         expect(accepts({ ...question, committer })).toBe(false)
-    })
-
-    test("rejects a mention that isn't a position id", () => {
-        const mentions = ["Backend Developer"]
-
-        expect(accepts({ ...question, mentions })).toBe(false)
     })
 
     test("rejects a position id that isn't kebab-case", () => {
@@ -54,14 +47,13 @@ describe("messageSentEventType", () => {
         threadId: "2026-10-18-choice-of-framework",
         messageId: "20261018-140322-123-3f9a",
         positionId: "director",
-        mentions: ["backend-developer"],
     }
 
     function isAccepted(event: unknown): boolean {
         return messageSentEventType.recordingSchema.safeParse(event).success
     }
 
-    test("accepts a message sent, with its thread, id, author and mentions", () => {
+    test("accepts a message sent, with its thread, id and author", () => {
         expect(isAccepted(messageSentEvent)).toBe(true)
     })
 

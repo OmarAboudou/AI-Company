@@ -52,7 +52,7 @@ async function findLastEvent<Content extends Omit<JournalEvent, "id">>(
 
 describe("sendTurn", () => {
     test("runs the turn's calls as the person's position and employee", async () => {
-        await addJulieToolCall("message_send", { body: "@director Friday." })
+        await addJulieToolCall("message_send", { body: "Friday." })
 
         await sendJulieTurn()
 
@@ -60,7 +60,7 @@ describe("sendTurn", () => {
         expect(answer).toMatchObject({
             position: { id: "qa-tester", title: "QA" },
             employee: { id: "julie", name: "Julie" },
-            body: "@director Friday.",
+            body: "Friday.",
         })
     })
 
@@ -97,7 +97,7 @@ describe("sendTurn", () => {
     })
 
     test("records what the run causes at the depth of the task's cause", async () => {
-        await addJulieToolCall("message_send", { body: "@designer Logo?" })
+        await addJulieToolCall("message_send", { body: "Logo?" })
 
         await sendJulieTurn()
 

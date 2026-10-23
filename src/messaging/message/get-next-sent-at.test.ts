@@ -7,9 +7,8 @@ const question: Message = {
     id: "20261018-140322-123-3f9a",
     position: { id: "director", title: "Director" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
-    mentions: ["backend-developer"],
     sentAt: "2026-10-18T14:03:22.123Z",
-    body: "@backend-developer Hono or Express?",
+    body: "Hono or Express?",
 }
 
 describe("getNextSentAt", () => {

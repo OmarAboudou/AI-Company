@@ -2,7 +2,7 @@
 
 A thread is a conversation between positions, as a post in a Discord forum is: a subject, its creator, and the entries written in it, messages for now, in the order they were written. It concerns several positions and outlives each of them, so it is stored once, apart from them.
 
-Its members are derived: its creator, every position that wrote in it, and every position mentioned in it.
+Its members are derived: its creator, and every position that wrote in it.
 
 ## Invariants
 

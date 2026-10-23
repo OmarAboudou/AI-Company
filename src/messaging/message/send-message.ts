@@ -15,7 +15,6 @@ import { listMessages } from "./storage.ts"
 
 export type SendMessageResult = {
     message: Message
-    unknownMentionIds: string[]
     createdTasks: Task[]
 }
 
@@ -33,17 +32,11 @@ export async function sendMessage(
         archive: { thread, messages: threadMessages },
         asPositionId,
     })
-    const [unsentMessage, journal] = await Promise.all([
-        createUnsentMessage(projectRoot, author, body),
-        loadJournal(projectRoot),
-    ])
+    const unsentMessage = createUnsentMessage(author, body)
+    const journal = await loadJournal(projectRoot)
     const message = await sendUnsentMessage(journal, thread.id, unsentMessage, {
         depth: 0,
     })
     const { createdTasks } = await dispatchEvents(journal, catalog)
-    return {
-        message,
-        unknownMentionIds: unsentMessage.unknownMentionIds,
-        createdTasks,
-    }
+    return { message, createdTasks }
 }

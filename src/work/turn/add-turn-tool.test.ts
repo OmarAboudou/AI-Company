@@ -27,7 +27,7 @@ describe("addTurnTool", () => {
     test("adds a call with an id of its own, its input as given", async () => {
         const stagedTurn = await addJulieToolCall(
             "message_send",
-            '{"body": "@director Yes."}',
+            '{"body": "Yes."}',
         )
 
         expect(stagedTurn).toEqual({
@@ -36,7 +36,7 @@ describe("addTurnTool", () => {
                     type: "tool-call",
                     id: expect.stringMatching(/^call_[0-9a-f]{12}$/),
                     name: "message_send",
-                    input: { body: "@director Yes." },
+                    input: { body: "Yes." },
                 },
             ],
         })

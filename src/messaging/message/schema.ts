@@ -17,10 +17,6 @@ export const MessageConfigSchema = z
                 "The employee who wrote the message, working that position. Absent when a director wrote it: a person working on the repository, whom the committer names.",
         }),
         committer: CommitterSchema,
-        mentions: z.array(IdSchema).meta({
-            description:
-                "Ids of the positions the message mentions with @<position-id>, asked to act: whoever works them answers. Read from the body when the message is written.",
-        }),
         sentAt: z.iso.datetime().meta({
             description: "When the message was written, in UTC.",
         }),
@@ -35,11 +31,7 @@ export type MessageConfig = z.infer<typeof MessageConfigSchema>
 
 export type Author = Pick<MessageConfig, "position" | "employee" | "committer">
 
-export type UnsentMessage = Author & {
-    body: string
-    mentions: string[]
-    unknownMentionIds: string[]
-}
+export type UnsentMessage = Author & { body: string }
 
 export type Message = MessageConfig & {
     threadId: string
@@ -62,10 +54,6 @@ export const messageSentEventType = defineEventType({
         positionId: IdSchema.meta({
             description:
                 "Id of the position the message was written from, as its message.json records it.",
-        }),
-        mentions: z.array(IdSchema).meta({
-            description:
-                "Ids of the positions the message mentions, as its message.json records them.",
         }),
         runId: IdSchema.optional().meta({
             description:

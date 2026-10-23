@@ -1,6 +1,6 @@
 # Ids
 
-How AICo names what it stores, so that names stay readable in files, in mentions and on the command line: ids in kebab-case, ids ordered by time for what is only ever added, and the history of the ids a position or an employee had.
+How AICo names what it stores, so that names stay readable in files and on the command line: ids in kebab-case, ids ordered by time for what is only ever added, and the history of the ids a position or an employee had.
 
 ## Invariants
 

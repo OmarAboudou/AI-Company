@@ -43,7 +43,7 @@ describe("getAssistantTurn", () => {
                     id: "toolu_01",
                     caller: { type: "direct" },
                     name: "message_send",
-                    input: { body: "@director Hono." },
+                    input: { body: "Hono." },
                 },
             ],
             stop_reason: "tool_use",
@@ -57,7 +57,7 @@ describe("getAssistantTurn", () => {
                 type: "tool-call",
                 id: "toolu_01",
                 name: "message_send",
-                input: { body: "@director Hono." },
+                input: { body: "Hono." },
             },
         ])
         expect(turn.modelResponse.protocol).toBe("anthropic-messages")
