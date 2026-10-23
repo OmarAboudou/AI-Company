@@ -11,4 +11,4 @@ Who is at the keyboard in this shell: a director by default, or a fictitious hum
 
 ## Decisions
 
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): the human at the keyboard, and `current-human` replacing `switch-human`.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the human at the keyboard, and `current-human` replacing `switch-human`.

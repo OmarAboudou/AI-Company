@@ -10,4 +10,4 @@ A conversation is what a run exchanges with whoever works its task, in AICo's ow
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): runs as fresh conversations, kept in AICo's own blocks, each model turn with its raw response.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): runs as fresh conversations, kept in AICo's own blocks, each model turn with its raw response.

@@ -16,4 +16,4 @@ A task's state is derived from the journal: waiting once created, running once a
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): tasks, their states derived from the journal, and their ids derived from what they are.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): tasks, their states derived from the journal, and their ids derived from what they are.

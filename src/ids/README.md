@@ -11,6 +11,6 @@ How AICo names what it stores, so that names stay readable in files, in mentions
 
 ## Decisions
 
-- [#7](https://github.com/OmarAboudou/LLM-Company/issues/7): an entity's id is its folder's name, never repeated inside its configuration.
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): the dated history of renamed ids, and ids ordered by time for messages.
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): ids ordered by time for events.
+- [#7](https://github.com/OmarAboudou/AI-Company/issues/7): an entity's id is its folder's name, never repeated inside its configuration.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the dated history of renamed ids, and ids ordered by time for messages.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): ids ordered by time for events.

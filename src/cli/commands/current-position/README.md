@@ -8,4 +8,4 @@ The position you write from in this shell, as an e-mail's From line: `thread cre
 
 ## Decisions
 
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): the selected position.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the selected position.

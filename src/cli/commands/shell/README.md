@@ -9,4 +9,4 @@ AICo's shell function, for bash and zsh, through which `current-human` and `curr
 
 ## Decisions
 
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): the shell function and the prompt.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the shell function and the prompt.

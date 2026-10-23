@@ -9,4 +9,4 @@ Working your tasks as LLM employees do: the same system prompt, message and tool
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): people work their tasks as LLM employees do, by commands or in an interactive session.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): people work their tasks as LLM employees do, by commands or in an interactive session.

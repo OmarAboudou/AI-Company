@@ -13,5 +13,5 @@ They act from the positions they work: a director, the director's position and t
 
 ## Decisions
 
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): directors and fictitious human employees, the current human and the selected position.
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): people work their positions' tasks as LLM employees do.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): directors and fictitious human employees, the current human and the selected position.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): people work their positions' tasks as LLM employees do.

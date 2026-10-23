@@ -13,4 +13,4 @@ Unlike listeners and task types, a tool acts: it is given its run's task, positi
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): tools, named after the command line, and the inputs task types fix.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): tools, named after the command line, and the inputs task types fix.

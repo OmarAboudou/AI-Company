@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/message.json",
+    "$id": "https://raw.githubusercontent.com/OmarAboudou/AI-Company/main/schemas/message.json",
     "type": "object",
     "properties": {
         "position": {

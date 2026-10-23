@@ -4,5 +4,5 @@ Writing in threads: `aico message send` adds a message to a thread, from the pos
 
 ## Decisions
 
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): messages, and the position they are written from.
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): sending a message never runs a task.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): messages, and the position they are written from.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): sending a message never runs a task.

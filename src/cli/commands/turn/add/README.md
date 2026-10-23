@@ -4,4 +4,4 @@ Adding a block to your next turn: `turn add text`, a text, which reaches no one,
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): a person's turns, made of the same blocks as a model's.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): a person's turns, made of the same blocks as a model's.

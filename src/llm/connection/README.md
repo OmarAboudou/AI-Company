@@ -11,4 +11,4 @@ A connection is how a provider is reached through one API protocol: `anthropic-m
 
 ## Decisions
 
-- [#55](https://github.com/OmarAboudou/LLM-Company/issues/55): one connection per API protocol.
+- [#55](https://github.com/OmarAboudou/AI-Company/issues/55): one connection per API protocol.

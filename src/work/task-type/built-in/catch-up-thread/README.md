@@ -13,4 +13,4 @@ A position's read marker in a thread is the last entry its catch-ups there have 
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): catching up on a thread, and the read marker kept in the journal.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): catching up on a thread, and the read marker kept in the journal.

@@ -14,6 +14,6 @@ The company is what AICo runs, one per project: its name and description, its di
 
 ## Decisions
 
-- [#41](https://github.com/OmarAboudou/LLM-Company/issues/41): the company can be updated, not deleted.
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): the company names its director's position, and lives in a git repository.
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): the maximum depth of a chain of tasks.
+- [#41](https://github.com/OmarAboudou/AI-Company/issues/41): the company can be updated, not deleted.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the company names its director's position, and lives in a git repository.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): the maximum depth of a chain of tasks.

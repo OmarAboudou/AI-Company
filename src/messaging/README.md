@@ -6,5 +6,5 @@ Threads are the company's archives: versioned in git, never modified once writte
 
 ## Decisions
 
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): positions talk to each other through threads of immutable messages.
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): a mention gives the position a task to catch up on the thread.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): positions talk to each other through threads of immutable messages.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): a mention gives the position a task to catch up on the thread.

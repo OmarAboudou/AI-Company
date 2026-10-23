@@ -127,23 +127,23 @@ Every `config.json` under `.aico/` has a JSON Schema in [`schemas/`](schemas/), 
     "json.schemas": [
         {
             "fileMatch": ["**/.aico/company/config.json"],
-            "url": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/company.json"
+            "url": "https://raw.githubusercontent.com/OmarAboudou/AI-Company/main/schemas/company.json"
         },
         {
             "fileMatch": ["**/.aico/positions/*/config.json"],
-            "url": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/position.json"
+            "url": "https://raw.githubusercontent.com/OmarAboudou/AI-Company/main/schemas/position.json"
         },
         {
             "fileMatch": ["**/.aico/employees/*/config.json"],
-            "url": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/employee.json"
+            "url": "https://raw.githubusercontent.com/OmarAboudou/AI-Company/main/schemas/employee.json"
         },
         {
             "fileMatch": ["**/.aico/llm-providers/*/config.json"],
-            "url": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/llm-provider.json"
+            "url": "https://raw.githubusercontent.com/OmarAboudou/AI-Company/main/schemas/llm-provider.json"
         },
         {
             "fileMatch": ["**/.aico/llm-providers/*/models/*/config.json"],
-            "url": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/llm-model.json"
+            "url": "https://raw.githubusercontent.com/OmarAboudou/AI-Company/main/schemas/llm-model.json"
         }
     ]
 }

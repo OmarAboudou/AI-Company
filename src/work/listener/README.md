@@ -13,4 +13,4 @@ The built-in listener answers each message: it gives every position the message 
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): listeners returning effects, and the dispatched events remembered on each machine.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): listeners returning effects, and the dispatched events remembered on each machine.

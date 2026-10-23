@@ -10,6 +10,6 @@ A model is a profile in its provider's catalog, declared inside the provider tha
 
 ## Decisions
 
-- [#35](https://github.com/OmarAboudou/LLM-Company/issues/35): models are declared inside their provider.
-- [#41](https://github.com/OmarAboudou/LLM-Company/issues/41): updating, renaming and deleting a model.
-- [#55](https://github.com/OmarAboudou/LLM-Company/issues/55): a model names the protocol it is called with.
+- [#35](https://github.com/OmarAboudou/AI-Company/issues/35): models are declared inside their provider.
+- [#41](https://github.com/OmarAboudou/AI-Company/issues/41): updating, renaming and deleting a model.
+- [#55](https://github.com/OmarAboudou/AI-Company/issues/55): a model names the protocol it is called with.

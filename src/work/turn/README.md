@@ -12,4 +12,4 @@ A person's turn in a run, prepared as git's index prepares a commit: texts and t
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): people work tasks as LLM employees do, their turns built like git's index.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): people work tasks as LLM employees do, their turns built like git's index.

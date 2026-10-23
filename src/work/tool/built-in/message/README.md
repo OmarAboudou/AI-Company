@@ -8,4 +8,4 @@ The tools that write in threads, as `aico message send` does: `message_send` sen
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): a message is posted through a tool, never taken from a run's final text.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): a message is posted through a tool, never taken from a run's final text.

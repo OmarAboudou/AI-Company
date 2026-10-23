@@ -4,6 +4,6 @@ Declaring the LLM providers the models come from, and where their API key is rea
 
 ## Decisions
 
-- [#35](https://github.com/OmarAboudou/LLM-Company/issues/35): providers, and the models declared inside them.
-- [#41](https://github.com/OmarAboudou/LLM-Company/issues/41): `update`, `update-id`, and `delete`, with `--force` for its models.
-- [#55](https://github.com/OmarAboudou/LLM-Company/issues/55): API keys read from the environment or a file, and connections.
+- [#35](https://github.com/OmarAboudou/AI-Company/issues/35): providers, and the models declared inside them.
+- [#41](https://github.com/OmarAboudou/AI-Company/issues/41): `update`, `update-id`, and `delete`, with `--force` for its models.
+- [#55](https://github.com/OmarAboudou/AI-Company/issues/55): API keys read from the environment or a file, and connections.

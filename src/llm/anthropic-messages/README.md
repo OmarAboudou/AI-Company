@@ -13,5 +13,5 @@ The adapter of `anthropic-messages`, Anthropic's Messages API: it turns a run's 
 
 ## Decisions
 
-- [#55](https://github.com/OmarAboudou/LLM-Company/issues/55): an adapter per protocol, the official SDK, streaming, and the maximum of output tokens.
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): the prompt cache, and a run's conversation translated by its protocol's adapter.
+- [#55](https://github.com/OmarAboudou/AI-Company/issues/55): an adapter per protocol, the official SDK, streaming, and the maximum of output tokens.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): the prompt cache, and a run's conversation translated by its protocol's adapter.

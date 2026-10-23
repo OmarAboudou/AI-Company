@@ -13,4 +13,4 @@ Each concept defines its own types of events, with their fields. The journal its
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): events and the journal, types of events defined by each concept, and depth.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): events and the journal, types of events defined by each concept, and depth.

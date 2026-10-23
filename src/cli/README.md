@@ -11,6 +11,6 @@ The command line is AICo's interface, for people and scripts alike, and later fo
 
 ## Decisions
 
-- [#41](https://github.com/OmarAboudou/LLM-Company/issues/41): refusals saying what `--force` would do, rather than confirmations.
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): the commands that write the configuration are reserved to directors.
-- [#86](https://github.com/OmarAboudou/LLM-Company/issues/86): a command calls an operation of the core, which refuses in the command line's words.
+- [#41](https://github.com/OmarAboudou/AI-Company/issues/41): refusals saying what `--force` would do, rather than confirmations.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the commands that write the configuration are reserved to directors.
+- [#86](https://github.com/OmarAboudou/AI-Company/issues/86): a command calls an operation of the core, which refuses in the command line's words.
