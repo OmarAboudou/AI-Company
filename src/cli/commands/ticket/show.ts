@@ -1,5 +1,6 @@
 import type { Command } from "@commander-js/extra-typings"
 import { formatDateTime } from "../../../format-date-time.ts"
+import { loadJournal } from "../../../journal/storage.ts"
 import { formatAuthorSignature } from "../../../messaging/message/format-author-signature.ts"
 import { formatPositionLabel } from "../../../messaging/message/format-position-label.ts"
 import { listMessages } from "../../../messaging/message/storage.ts"
@@ -25,8 +26,9 @@ export function registerTicketShowCommand(ticketCommand: Command): void {
                 projectRoot,
                 parseTicketNumber(rawNumber),
             )
-            const [messages, positions] = await Promise.all([
+            const [messages, journal, positions] = await Promise.all([
                 listMessages(projectRoot, ticket.number),
+                loadJournal(projectRoot),
                 listPositions(projectRoot),
             ])
             if (shouldPrintJson) {
@@ -35,9 +37,11 @@ export function registerTicketShowCommand(ticketCommand: Command): void {
                 }
                 return
             }
-            const state = getTicketStates([ticket], positions).get(
-                ticket.number,
-            )
+            const state = getTicketStates(
+                [ticket],
+                journal.events,
+                positions,
+            ).get(ticket.number)
             const requesterSignature = formatAuthorSignature({
                 ...ticket,
                 position: ticket.requester,

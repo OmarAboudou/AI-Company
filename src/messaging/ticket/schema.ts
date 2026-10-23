@@ -67,6 +67,10 @@ export const TicketConfigSchema = z
 
 export type TicketConfig = z.infer<typeof TicketConfigSchema>
 
+export type TicketStatus = "open" | "waiting" | "to-validate" | "closed"
+
+export type TicketOutcome = "done" | "cancelled"
+
 export type Ticket = TicketConfig & {
     number: number
     request: string

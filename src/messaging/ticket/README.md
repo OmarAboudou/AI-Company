@@ -2,7 +2,7 @@
 
 A ticket is a request from one position, its requester, to another, its assignee: a title and the request itself, in Markdown. A position that works for itself addresses a ticket to itself, being then both its requester and its assignee.
 
-A ticket's state is derived from the journal, as a task's is. Once created, a ticket is open: its assignee has the hand.
+A ticket's state is derived from the journal, as a task's is, from the acts of its two positions. Once created, a ticket is open: its assignee has the hand.
 
 ## Invariants
 

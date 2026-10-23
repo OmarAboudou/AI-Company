@@ -14,7 +14,7 @@ const frameworkTicket: Ticket = {
 
 describe("getTicketStates", () => {
     test("opens each ticket, its assignee having the hand", () => {
-        const ticketStates = getTicketStates([frameworkTicket], [])
+        const ticketStates = getTicketStates([frameworkTicket], [], [])
 
         expect(ticketStates).toEqual(
             new Map([
@@ -30,6 +30,28 @@ describe("getTicketStates", () => {
         )
     })
 
+    test("follows each ticket's own acts, as the journal records them", () => {
+        const otherTicket = { ...frameworkTicket, number: 2 }
+        const questionAsked = {
+            id: "20261023-141000-000-0a01",
+            type: "ticket-question-asked",
+            occurredAt: "2026-10-23T14:10:00.000Z",
+            depth: 1,
+            ticketNumber: 2,
+            messageId: "20261023-141000-000-3f9a",
+            positionId: "developer",
+        }
+
+        const ticketStates = getTicketStates(
+            [frameworkTicket, otherTicket],
+            [questionAsked],
+            [],
+        )
+
+        expect(ticketStates.get(1)?.status).toBe("open")
+        expect(ticketStates.get(2)?.status).toBe("waiting")
+    })
+
     test("names its positions as they are called now", () => {
         const renamedDeveloper = {
             id: "backend-developer",
@@ -38,6 +60,7 @@ describe("getTicketStates", () => {
 
         const ticketStates = getTicketStates(
             [frameworkTicket],
+            [],
             [renamedDeveloper],
         )
 

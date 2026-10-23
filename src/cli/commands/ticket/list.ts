@@ -1,4 +1,5 @@
 import type { Command } from "@commander-js/extra-typings"
+import { loadJournal } from "../../../journal/storage.ts"
 import { getTicketStates } from "../../../messaging/ticket/get-ticket-states.ts"
 import { listTickets } from "../../../messaging/ticket/storage.ts"
 import { requireCompany } from "../../../organization/company/require-company.ts"
@@ -14,15 +15,20 @@ export function registerTicketListCommand(ticketCommand: Command): void {
         )
         .action(async () => {
             await requireCompany(projectRoot)
-            const [tickets, positions] = await Promise.all([
+            const [tickets, journal, positions] = await Promise.all([
                 listTickets(projectRoot),
+                loadJournal(projectRoot),
                 listPositions(projectRoot),
             ])
             if (tickets.length === 0) {
                 console.log("No tickets yet.")
                 return
             }
-            const ticketStates = getTicketStates(tickets, positions)
+            const ticketStates = getTicketStates(
+                tickets,
+                journal.events,
+                positions,
+            )
             printColumns(
                 tickets.flatMap((ticket) => {
                     const state = ticketStates.get(ticket.number)
