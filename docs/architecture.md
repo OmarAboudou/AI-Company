@@ -15,6 +15,7 @@ The rules that decide where code and documentation go, and how big they grow. Th
 
 - A command reads its arguments, calls the operation of the core named after it, and prints what the operation returns: `aico position delete` calls `deletePosition`.
 - The operation applies every rule, and throws each refusal with its message. The message says what to do in the command line's words, since the command line is AICo's interface for people and LLM employees alike.
+- A command that changes the company calls its operation through `runCommandOperation`, which commits it on the reserved branch, named after the command: only the operation runs within, not what the command reads first. The task engine runs each tool call, and each step of a command that goes on, as an operation of its own.
 - A command that only reads uses the core's reading functions, and formats their result.
 
 ## The core is grouped by domain, then by concept
