@@ -6,11 +6,15 @@ import { listEvents, loadJournal, saveEvent } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { savePosition } from "../../organization/position/storage.ts"
+import {
+    createExampleWorkCatalog,
+    exampleTaskType,
+} from "../create-example-work-catalog.testing.ts"
 import { createTask } from "../task/create-task.ts"
 import { getTaskPositionId } from "../task/get-task-position-id.ts"
 import type { UncreatedTask } from "../task/schema.ts"
 import { listTasks } from "../task/storage.ts"
-import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
+import { createUncreatedTask } from "../task-type/create-uncreated-task.ts"
 import { createTaskOnce } from "./create-task-once.ts"
 import { loadDispatching } from "./load-dispatching.ts"
 
@@ -32,12 +36,15 @@ async function recordQuestionSent(depth = 0) {
         threadId,
         messageId: "20261018-140322-123-3f9a",
         positionId: "director",
-        mentions: ["qa-tester"],
+        mentions: [],
     })
 }
 
-function createCatchUp(positionId = "qa-tester"): UncreatedTask {
-    return { type: "catch-up-thread", positionId, params: { threadId } }
+function createExampleRequest(positionId = "qa-tester"): UncreatedTask {
+    return createUncreatedTask(exampleTaskType, {
+        positionId,
+        params: { threadId },
+    })
 }
 
 async function createInNewDispatching(
@@ -46,7 +53,7 @@ async function createInNewDispatching(
 ) {
     const dispatching = await loadDispatching(
         await loadJournal(projectRoot),
-        builtInTaskTypes,
+        createExampleWorkCatalog().taskTypes,
     )
     await createTaskOnce(uncreatedTask, causeEvent, dispatching)
     return dispatching
@@ -64,13 +71,13 @@ describe("createTaskOnce", () => {
         const questionSent = await recordQuestionSent()
 
         const { createdTasks } = await createInNewDispatching(
-            createCatchUp(),
+            createExampleRequest(),
             questionSent,
         )
 
         expect(createdTasks).toMatchObject([
             {
-                type: "catch-up-thread",
+                type: "example",
                 params: { threadId },
                 positionId: "qa-tester",
                 causeEventId: questionSent.id,
@@ -84,15 +91,15 @@ describe("createTaskOnce", () => {
         const questionSent = await recordQuestionSent()
         const dispatching = await loadDispatching(
             await loadJournal(projectRoot),
-            builtInTaskTypes,
+            createExampleWorkCatalog().taskTypes,
         )
         await createTask(
             await loadJournal(projectRoot),
-            createCatchUp(),
+            createExampleRequest(),
             questionSent,
         )
 
-        await createTaskOnce(createCatchUp(), questionSent, dispatching)
+        await createTaskOnce(createExampleRequest(), questionSent, dispatching)
 
         expect(dispatching.createdTasks).toEqual([])
         expect(await listTaskCreatedDepths()).toEqual([1])
@@ -100,10 +107,10 @@ describe("createTaskOnce", () => {
 
     test("never creates a task twice, even asked again for it", async () => {
         const questionSent = await recordQuestionSent()
-        await createInNewDispatching(createCatchUp(), questionSent)
+        await createInNewDispatching(createExampleRequest(), questionSent)
 
         const { createdTasks } = await createInNewDispatching(
-            createCatchUp(),
+            createExampleRequest(),
             questionSent,
         )
 
@@ -121,7 +128,7 @@ describe("createTaskOnce through the positions' id history", () => {
         threadId,
         messageId: "20261018-140322-123-3f9a",
         positionId: "director",
-        mentions: ["backend-developer"],
+        mentions: [],
     }
 
     beforeEach(async () => {
@@ -143,7 +150,7 @@ describe("createTaskOnce through the positions' id history", () => {
 
     test("creates the task of a position renamed since, read under its new id", async () => {
         const { createdTasks, positions } = await createInNewDispatching(
-            createCatchUp("backend-developer"),
+            createExampleRequest("backend-developer"),
             questionSent,
         )
 
@@ -153,7 +160,7 @@ describe("createTaskOnce through the positions' id history", () => {
     })
 
     test("recognizes the task asked before the position was renamed", async () => {
-        const askedTask = createCatchUp("backend-developer")
+        const askedTask = createExampleRequest("backend-developer")
         await createTask(
             await loadJournal(projectRoot),
             askedTask,

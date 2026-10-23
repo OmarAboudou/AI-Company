@@ -7,9 +7,8 @@ import { defineEventType } from "../../journal/schema.ts"
 import { loadJournal, saveEvent } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
+import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
 import { listTasks } from "../task/storage.ts"
-import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
-import { catchUpListener } from "./catch-up-listener.ts"
 import { defineListener, type Listener } from "./define-listener.ts"
 import { dispatchEvents } from "./dispatch-events.ts"
 import { loadDispatchedEventIds } from "./storage.ts"
@@ -25,14 +24,15 @@ afterEach(async () => {
 })
 
 const threadId = "2026-10-18-choice-of-framework"
+const exampleCatalog = createExampleWorkCatalog(["backend-developer"])
 
-async function createMessageSentEvent(mentions: string[], depth = 0) {
+async function createMessageSentEvent(positionId = "director", depth = 0) {
     return recordEvent(await loadJournal(projectRoot), messageSentEventType, {
         depth,
         threadId,
         messageId: "20261018-140322-123-3f9a",
-        positionId: "director",
-        mentions,
+        positionId,
+        mentions: [],
     })
 }
 
@@ -75,24 +75,24 @@ const notingListener = defineListener({
 
 async function dispatchToListeners(listeners: Listener[]) {
     return dispatchEvents(await loadJournal(projectRoot), {
-        taskTypes: builtInTaskTypes,
+        taskTypes: exampleCatalog.taskTypes,
         listeners,
     })
 }
 
-async function dispatchToCatchUpListener() {
-    return dispatchToListeners([catchUpListener])
+async function dispatchToExampleListener() {
+    return dispatchEvents(await loadJournal(projectRoot), exampleCatalog)
 }
 
 describe("dispatchEvents", () => {
     test("applies the effects that listeners return", async () => {
-        const questionSent = await createMessageSentEvent(["backend-developer"])
+        const questionSent = await createMessageSentEvent()
 
-        const { createdTasks } = await dispatchToCatchUpListener()
+        const { createdTasks } = await dispatchToExampleListener()
 
         expect(createdTasks).toMatchObject([
             {
-                type: "catch-up-thread",
+                type: "example",
                 positionId: "backend-developer",
                 causeEventId: questionSent.id,
             },
@@ -101,59 +101,59 @@ describe("dispatchEvents", () => {
     })
 
     test("gives each event to every listener subscribed to it", async () => {
-        await createMessageSentEvent(["backend-developer"])
-        const listeners = [catchUpListener, reviewListener]
+        await createMessageSentEvent()
+        const listeners = [...exampleCatalog.listeners, reviewListener]
 
         const { createdTasks } = await dispatchToListeners(listeners)
 
         const taskTypes = createdTasks.map(({ type }) => type)
-        expect(taskTypes).toEqual(["catch-up-thread", "review-thread"])
+        expect(taskTypes).toEqual(["example", "review-thread"])
     })
 
     test("remembers the events it gave, even those that ask nothing", async () => {
-        const questionSent = await createMessageSentEvent(["backend-developer"])
-        const noteSent = await createMessageSentEvent([])
+        const questionSent = await createMessageSentEvent()
+        const answerSent = await createMessageSentEvent("backend-developer")
 
-        await dispatchToCatchUpListener()
+        await dispatchToExampleListener()
 
         const dispatchedEventIds = await loadDispatchedEventIds(projectRoot)
-        const eventIds = new Set([questionSent.id, noteSent.id])
+        const eventIds = new Set([questionSent.id, answerSent.id])
         expect(dispatchedEventIds).toEqual(eventIds)
     })
 
     test("gives an event only once", async () => {
-        await createMessageSentEvent(["backend-developer"])
-        await dispatchToCatchUpListener()
-        const answerSent = await createMessageSentEvent(["director"], 1)
+        await createMessageSentEvent()
+        await dispatchToExampleListener()
+        const followUpSent = await createMessageSentEvent("qa-tester", 1)
 
-        const { createdTasks } = await dispatchToCatchUpListener()
+        const { createdTasks } = await dispatchToExampleListener()
 
-        expect(createdTasks).toMatchObject([{ causeEventId: answerSent.id }])
+        expect(createdTasks).toMatchObject([{ causeEventId: followUpSent.id }])
         expect(await listTasks(projectRoot)).toHaveLength(2)
     })
 
     test("creates nothing twice, even on a machine giving events again", async () => {
-        await createMessageSentEvent(["backend-developer"])
-        await dispatchToCatchUpListener()
+        await createMessageSentEvent()
+        await dispatchToExampleListener()
         await rm(join(projectRoot, ".aico", ".state"), { recursive: true })
 
-        const { createdTasks } = await dispatchToCatchUpListener()
+        const { createdTasks } = await dispatchToExampleListener()
 
         expect(createdTasks).toEqual([])
         expect(await listTasks(projectRoot)).toHaveLength(1)
     })
 
     test("shows listeners the tasks that earlier events created", async () => {
-        await createMessageSentEvent(["qa-tester"])
+        await createMessageSentEvent()
         await recordEvent(
             await loadJournal(projectRoot),
             positionNotedEventType,
             {
                 depth: 0,
-                positionId: "qa-tester",
+                positionId: "backend-developer",
             },
         )
-        const listeners = [catchUpListener, notingListener]
+        const listeners = [...exampleCatalog.listeners, notingListener]
 
         const { createdTasks, doneTasks } = await dispatchToListeners(listeners)
 
@@ -171,7 +171,7 @@ describe("dispatchEvents", () => {
         }
         await saveEvent(projectRoot, threadClosed)
 
-        const { createdTasks } = await dispatchToCatchUpListener()
+        const { createdTasks } = await dispatchToExampleListener()
 
         const dispatchedEventIds = await loadDispatchedEventIds(projectRoot)
         expect(createdTasks).toEqual([])
