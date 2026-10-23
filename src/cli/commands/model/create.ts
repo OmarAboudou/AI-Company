@@ -2,7 +2,6 @@ import type { Command } from "@commander-js/extra-typings"
 import { createLlmModel } from "../../../llm/model/create-llm-model.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
-import { requireDirector } from "../../require-director.ts"
 import { createApiIdOption } from "./create-api-id-option.ts"
 import { createProtocolOption } from "./create-protocol-option.ts"
 
@@ -21,7 +20,6 @@ export function registerModelCreateCommand(modelCommand: Command): void {
         .requiredOption("-n, --name <name>", "model name")
         .addOption(createApiIdOption().makeOptionMandatory())
         .addOption(createProtocolOption())
-        .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, options) => {
             const model = await createLlmModel(
                 projectRoot,

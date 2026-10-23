@@ -5,7 +5,6 @@ import {
     formatNewIdArgumentDescription,
 } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
-import { requireDirector } from "../../require-director.ts"
 
 export function registerPositionUpdateIdCommand(
     positionCommand: Command,
@@ -23,7 +22,6 @@ export function registerPositionUpdateIdCommand(
             "<new-position-id>",
             formatNewIdArgumentDescription("position", "api-developer"),
         )
-        .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId) => {
             const { position, renamedPosition } = await updatePositionId(
                 projectRoot,

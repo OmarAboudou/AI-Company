@@ -3,7 +3,6 @@ import { createCompany } from "../../organization/company/create-company.ts"
 import { createDescriptionFileOption } from "../options.ts"
 import { projectRoot } from "../project-root.ts"
 import { readTextOrFile } from "../read-text-or-file.ts"
-import { requireDirector } from "../require-director.ts"
 
 export function registerInitCommand(program: Command): void {
     program
@@ -14,7 +13,6 @@ export function registerInitCommand(program: Command): void {
         .requiredOption("-n, --name <name>", "company name")
         .option("-d, --description <text>", "company description", "")
         .addOption(createDescriptionFileOption())
-        .hook("preAction", requireDirector)
         .action(async (options) => {
             const description = await readTextOrFile(
                 options.description,

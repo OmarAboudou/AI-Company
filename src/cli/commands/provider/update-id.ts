@@ -5,7 +5,6 @@ import {
     formatNewIdArgumentDescription,
 } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
-import { requireDirector } from "../../require-director.ts"
 
 export function registerProviderUpdateIdCommand(
     providerCommand: Command,
@@ -23,7 +22,6 @@ export function registerProviderUpdateIdCommand(
             "<new-provider-id>",
             formatNewIdArgumentDescription("provider", "anthropic-api"),
         )
-        .hook("preAction", requireDirector)
         .action(async (rawId, rawNewId) => {
             const { provider, renamedProvider, updatedEmployeeIds } =
                 await updateLlmProviderId(projectRoot, rawId, rawNewId)

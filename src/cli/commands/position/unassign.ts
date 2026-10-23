@@ -5,7 +5,6 @@ import {
 } from "../../../organization/position/unassign-position.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
-import { requireDirector } from "../../require-director.ts"
 import { formatStillTemporaryMessage } from "./format-still-temporary-message.ts"
 
 function formatUnassignedMessage({
@@ -31,7 +30,6 @@ export function registerPositionUnassignCommand(
             "<position-id>",
             formatIdArgumentDescription("position", "backend-developer"),
         )
-        .hook("preAction", requireDirector)
         .action(async (rawId) => {
             const unassignment = await unassignPosition(projectRoot, rawId)
             console.log(formatUnassignedMessage(unassignment))

@@ -5,7 +5,6 @@ import {
     formatNewIdArgumentDescription,
 } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
-import { requireDirector } from "../../require-director.ts"
 
 export function registerModelUpdateIdCommand(modelCommand: Command): void {
     modelCommand
@@ -25,7 +24,6 @@ export function registerModelUpdateIdCommand(modelCommand: Command): void {
             "<new-model-id>",
             formatNewIdArgumentDescription("model", "opus"),
         )
-        .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, rawNewId) => {
             const { model, renamedModel, updatedEmployeeIds } =
                 await updateLlmModelId(

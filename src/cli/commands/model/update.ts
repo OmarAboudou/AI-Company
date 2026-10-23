@@ -3,7 +3,6 @@ import { updateLlmModel } from "../../../llm/model/update-llm-model.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { requireAtLeastOneOption } from "../../require-at-least-one-option.ts"
-import { requireDirector } from "../../require-director.ts"
 import { createApiIdOption } from "./create-api-id-option.ts"
 import { createProtocolOption } from "./create-protocol-option.ts"
 
@@ -22,7 +21,6 @@ export function registerModelUpdateCommand(modelCommand: Command): void {
         .option("-n, --name <name>", "model name")
         .addOption(createApiIdOption())
         .addOption(createProtocolOption())
-        .hook("preAction", requireDirector)
         .action(async (rawProviderId, rawModelId, options) => {
             requireAtLeastOneOption(options)
             const model = await updateLlmModel(

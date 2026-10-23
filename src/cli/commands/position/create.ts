@@ -4,7 +4,6 @@ import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { createDescriptionFileOption } from "../../options.ts"
 import { projectRoot } from "../../project-root.ts"
 import { readTextOrFile } from "../../read-text-or-file.ts"
-import { requireDirector } from "../../require-director.ts"
 
 export function registerPositionCreateCommand(positionCommand: Command): void {
     positionCommand
@@ -22,7 +21,6 @@ export function registerPositionCreateCommand(positionCommand: Command): void {
             "",
         )
         .addOption(createDescriptionFileOption())
-        .hook("preAction", requireDirector)
         .action(async (rawId, options) => {
             const description = await readTextOrFile(
                 options.description,
