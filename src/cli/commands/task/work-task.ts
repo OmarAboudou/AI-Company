@@ -18,6 +18,7 @@ import { formatOpenedTask } from "./format-opened-task.ts"
 export type TaskSession = {
     projectRoot: string
     environment: NodeJS.ProcessEnv
+    operationName: string
     context: PromptContext
 }
 
@@ -94,7 +95,7 @@ export async function workTask(
             AICO_CURRENT_POSITION_ID: openedTask.position.id,
         },
     }
-    const { projectRoot, environment, context } = taskSession
+    const { projectRoot, environment, operationName, context } = taskSession
     const sentTurns = openedTask.run.conversation.turns.filter(
         ({ role }) => role === "assistant",
     )
@@ -149,7 +150,7 @@ export async function workTask(
                         break
                     }
                     const { sentTurn, answeringTurn, taskEnding } =
-                        await sendTurn(projectRoot, environment)
+                        await sendTurn(projectRoot, environment, operationName)
                     console.log(formatTurn(sentTurn.blocks, answeringTurn))
                     if (taskEnding !== undefined) {
                         console.log(`\n${formatTaskEnding(taskEnding)}`)

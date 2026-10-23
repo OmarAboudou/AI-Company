@@ -1,3 +1,4 @@
+import { runOperation } from "../../git/reserved-branch/run-operation.ts"
 import { createTimeOrderedId } from "../../ids/create-time-ordered-id.ts"
 import { recordEvent } from "../../journal/record-event.ts"
 import type { Journal } from "../../journal/schema.ts"
@@ -32,17 +33,21 @@ export async function runTask(
         position,
         employee,
         taskTypes,
+        operationName,
         onProgress,
     }: {
         task: Task
         position: Position
         employee: Employee
         taskTypes: Record<string, TaskType>
+        operationName: string
         onProgress: (progress: RunProgress) => void
     },
 ): Promise<RunTaskResult> {
     const { projectRoot } = journal
-    const beginning = await beginTask(journal, { task, position, taskTypes })
+    const beginning = await runOperation(projectRoot, operationName, () =>
+        beginTask(journal, { task, position, taskTypes }),
+    )
     if (beginning.kind === "done") {
         return { taskEnding: { state: "done", summary: beginning.summary } }
     }
@@ -53,13 +58,15 @@ export async function runTask(
             loadCompany(projectRoot),
         ])
     const runId = createTimeOrderedId(readMonotonicTime())
-    await recordEvent(journal, taskStartedEventType, {
-        depth: taskDepth,
-        taskId: task.id,
-        runId,
-        worker: { kind: "employee", employeeId: employee.id },
-        model: { providerId: provider.id, modelId: model.id },
-    })
+    await runOperation(projectRoot, operationName, () =>
+        recordEvent(journal, taskStartedEventType, {
+            depth: taskDepth,
+            taskId: task.id,
+            runId,
+            worker: { kind: "employee", employeeId: employee.id },
+            model: { providerId: provider.id, modelId: model.id },
+        }),
+    )
     const { toolNames, boundToolInputs, result: sessionResult } = session
     const tools = getRunTools(toolNames, boundToolInputs)
     const run = await startRun(projectRoot, {
@@ -91,18 +98,20 @@ export async function runTask(
         tools,
         onProgress,
     })
-    await endTask(
-        journal,
-        {
-            task,
-            position,
-            runId,
-            depth: taskDepth,
-            sessionResult,
-            usage,
-            taskTypes,
-        },
-        taskEnding,
+    await runOperation(projectRoot, operationName, () =>
+        endTask(
+            journal,
+            {
+                task,
+                position,
+                runId,
+                depth: taskDepth,
+                sessionResult,
+                usage,
+                taskTypes,
+            },
+            taskEnding,
+        ),
     )
     return { taskEnding, run: { runId, usage } }
 }

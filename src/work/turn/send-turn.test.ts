@@ -39,7 +39,12 @@ async function addToolCall(toolName: string, input: object) {
 }
 
 async function sendPersonTurn() {
-    return sendTurn(projectRoot, {}, createExampleWorkCatalog())
+    return sendTurn(
+        projectRoot,
+        {},
+        "aico turn send",
+        createExampleWorkCatalog(),
+    )
 }
 
 async function findLastEvent<Content extends Omit<JournalEvent, "id">>(
@@ -144,6 +149,16 @@ describe("sendTurn", () => {
             { subject, messageFileCount: 1 },
             { subject, messageFileCount: 1 },
         ])
+    })
+
+    test("commits the task's end as the command that sends the turn", async () => {
+        await addToolCall("task_mark-as-done", { summary: "Answered." })
+
+        await sendPersonTurn()
+
+        const [lastCommit] = listLastCommits(1)
+        expect(lastCommit?.subject).toBe("aico turn send")
+        expect(await findLastEvent(taskDoneEventType)).toBeDefined()
     })
 
     test("goes on from the turns sent before, in a later call", async () => {
