@@ -6,6 +6,7 @@ import { listEvents } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { listMessages } from "../../messaging/message/storage.ts"
 import { julieEnvironment } from "../create-company-with-human-employee.testing.ts"
+import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
 import { reminderText } from "../run/apply-assistant-turn.ts"
 import { loadRun } from "../run/storage.ts"
 import type { OpenedTask } from "../task/open-next-task.ts"
@@ -37,7 +38,7 @@ async function addJulieToolCall(toolName: string, input: object) {
 }
 
 async function sendJulieTurn() {
-    return sendTurn(projectRoot, julieEnvironment)
+    return sendTurn(projectRoot, julieEnvironment, createExampleWorkCatalog())
 }
 
 async function findLastEvent<Content extends Omit<JournalEvent, "id">>(
@@ -132,7 +133,6 @@ describe("sendTurn", () => {
 
         await sendJulieTurn()
 
-        const [, answer] = await listMessages(projectRoot, threadId)
         expect(await findLastEvent(taskDoneEventType)).toEqual({
             id: expect.any(String),
             type: "task-done",
@@ -141,7 +141,7 @@ describe("sendTurn", () => {
             taskId: openedTask.task.id,
             runId: openedTask.run.id,
             summary: "Answered.",
-            result: { lastReadEntryId: answer?.id },
+            result: { runId: openedTask.run.id },
         })
     })
 

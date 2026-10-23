@@ -6,6 +6,7 @@ import {
     createCompanyWithHumanEmployee,
     julieEnvironment,
 } from "../create-company-with-human-employee.testing.ts"
+import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
 import { openNextTask } from "../task/open-next-task.ts"
 import { requireRunInProgress } from "./require-run-in-progress.ts"
 
@@ -23,12 +24,22 @@ afterEach(async () => {
 })
 
 async function askAndOpen(body: string, positionId: string) {
-    await sendMessage(projectRoot, {}, threadId, { body })
+    await sendMessage(
+        projectRoot,
+        {},
+        threadId,
+        { body },
+        createExampleWorkCatalog([positionId]),
+    )
     const environment = {
         ...julieEnvironment,
         AICO_CURRENT_POSITION_ID: positionId,
     }
-    const { openedTask } = await openNextTask(projectRoot, environment)
+    const { openedTask } = await openNextTask(
+        projectRoot,
+        environment,
+        createExampleWorkCatalog(),
+    )
     if (openedTask === undefined) {
         throw new Error(`"${body}" opened no task`)
     }
@@ -41,7 +52,7 @@ async function requireJulieRun(environment = julieEnvironment) {
 
 describe("requireRunInProgress", () => {
     test("finds the run of the person's task in progress", async () => {
-        const openedTask = await askAndOpen("@qa-tester Ship?", "qa-tester")
+        const openedTask = await askAndOpen("Ship?", "qa-tester")
 
         const { task, position, run } = await requireJulieRun()
 
@@ -59,8 +70,8 @@ describe("requireRunInProgress", () => {
     })
 
     test("asks for a position when tasks are in progress as several", async () => {
-        await askAndOpen("@qa-tester Ship?", "qa-tester")
-        await askAndOpen("@designer Logo?", "designer")
+        await askAndOpen("Ship?", "qa-tester")
+        await askAndOpen("Logo?", "designer")
 
         const requiring = requireJulieRun()
 
@@ -70,8 +81,8 @@ describe("requireRunInProgress", () => {
     })
 
     test("finds the selected position's run among several", async () => {
-        await askAndOpen("@qa-tester Ship?", "qa-tester")
-        const logoTask = await askAndOpen("@designer Logo?", "designer")
+        await askAndOpen("Ship?", "qa-tester")
+        const logoTask = await askAndOpen("Logo?", "designer")
         const environment = {
             ...julieEnvironment,
             AICO_CURRENT_POSITION_ID: "designer",
