@@ -6,6 +6,7 @@ import { registerInitCommand } from "./commands/init.ts"
 import { registerMessageCommands } from "./commands/message/message.ts"
 import { registerModelCommands } from "./commands/model/model.ts"
 import { registerPositionCommands } from "./commands/position/position.ts"
+import { registerProjectCommands } from "./commands/project/project.ts"
 import { registerProviderCommands } from "./commands/provider/provider.ts"
 import { registerRunCommand } from "./commands/run.ts"
 import { registerShellCommands } from "./commands/shell/shell.ts"
@@ -20,6 +21,7 @@ export function createProgram(): Command {
         .showHelpAfterError()
     registerInitCommand(program)
     registerCompanyCommands(program)
+    registerProjectCommands(program)
     registerPositionCommands(program)
     registerEmployeeCommands(program)
     registerProviderCommands(program)

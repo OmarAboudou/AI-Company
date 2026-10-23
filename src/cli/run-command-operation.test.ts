@@ -40,6 +40,7 @@ describe("a command that changes the company", () => {
             runCli("init", "-n", "Acme")
             const commandCommits = [
                 runCommittedCli("company", "update", "-n", "Globex"),
+                runCommittedCli("project", "update", "-d", "A to-do app."),
                 runCommittedCli("position", "create", "qa", "-t", "QA"),
                 runCommittedCli("position", "update", "qa", "-t", "Tester"),
                 runCommittedCli("provider", "create", "anthropic", "-n", "A"),
@@ -118,6 +119,7 @@ describe("a command that changes the company", () => {
 
             const lastCommitSubjects = [
                 "company update",
+                "project update",
                 "position create qa",
                 "position update qa",
                 "provider create anthropic",
