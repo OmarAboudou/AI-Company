@@ -8,7 +8,7 @@ export function readGitCommitter(projectRoot: string): GitCommitter {
     const email = readGitConfig(projectRoot, "user.email")
     if (name === undefined || email === undefined) {
         throw new UserError(
-            "Messages record who typed them, as commits do: set `git config user.name` and `git config user.email`.",
+            "AICo records who does what, as git does in commits: set `git config user.name` and `git config user.email`.",
         )
     }
     return { name, email }
