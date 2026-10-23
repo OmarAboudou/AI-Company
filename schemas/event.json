@@ -89,7 +89,7 @@
                     "description": "Id of the position the message was written from, as its message.json records it."
                 },
                 "runId": {
-                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a person's message.",
+                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a message written outside a run.",
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"

@@ -4,6 +4,7 @@ import type { Journal } from "../../journal/schema.ts"
 import { getNextSentAt } from "./get-next-sent-at.ts"
 import {
     type Message,
+    type MessageEventType,
     messageSentEventType,
     type UnsentMessage,
 } from "./schema.ts"
@@ -13,7 +14,11 @@ export async function sendUnsentMessage(
     journal: Journal,
     ticketNumber: number,
     unsentMessage: UnsentMessage,
-    { depth, runId }: { depth: number; runId?: string },
+    {
+        depth,
+        runId,
+        eventType = messageSentEventType,
+    }: { depth: number; runId?: string; eventType?: MessageEventType },
 ): Promise<Message> {
     const { projectRoot } = journal
     const ticketMessages = await listMessages(projectRoot, ticketNumber)
@@ -27,7 +32,7 @@ export async function sendUnsentMessage(
     // The event comes first: should the sending stop between the two, an
     // event naming no message asks for nothing new, whereas a message
     // without its event would never reach the listeners.
-    await recordEvent(journal, messageSentEventType, {
+    await recordEvent(journal, eventType, {
         depth,
         ticketNumber,
         messageId: message.id,

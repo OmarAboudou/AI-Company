@@ -40,22 +40,35 @@ export type Message = MessageConfig & {
     body: string
 }
 
-export const messageSentEventType = defineEventType({
+const messageEventFields = {
+    ticketNumber: TicketNumberSchema,
+    messageId: IdSchema.meta({
+        description:
+            "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message.",
+    }),
+    positionId: IdSchema.meta({
+        description:
+            "Id of the position the message was written from, as its message.json records it.",
+    }),
+    runId: IdSchema.optional().meta({
+        description:
+            "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a message written outside a run.",
+    }),
+}
+
+export function defineMessageEventType<Type extends string>({
+    type,
+    description,
+}: {
+    type: Type
+    description: string
+}) {
+    return defineEventType({ type, description, fields: messageEventFields })
+}
+
+export type MessageEventType = ReturnType<typeof defineMessageEventType<string>>
+
+export const messageSentEventType = defineMessageEventType({
     type: "message-sent",
     description: "A message was added to a ticket's discussion.",
-    fields: {
-        ticketNumber: TicketNumberSchema,
-        messageId: IdSchema.meta({
-            description:
-                "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message.",
-        }),
-        positionId: IdSchema.meta({
-            description:
-                "Id of the position the message was written from, as its message.json records it.",
-        }),
-        runId: IdSchema.optional().meta({
-            description:
-                "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a person's message.",
-        }),
-    },
 })
