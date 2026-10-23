@@ -18,7 +18,7 @@ afterEach(async () => {
 })
 
 const developerNewTask = {
-    type: "catch-up-thread",
+    type: "example",
     params: { threadId: "2026-10-18-choice-of-framework" },
     positionId: "backend-developer",
 }
