@@ -7,7 +7,7 @@ Whoever works a position is its default employee, unless it is assigned temporar
 ## Invariants
 
 - A position has at most one default employee, who exists: deleting the employee leaves the position vacant, and renaming the employee rewrites the position.
-- A temporary assignment stays on the machine that made it, out of git, and never names the default employee: assigning a position temporarily to its default employee writes nothing, and making the temporary assignee the default employee ends the temporary assignment.
+- A temporary assignment is versioned in the position's state, and never names the default employee: assigning a position temporarily to its default employee writes nothing, and making the temporary assignee the default employee ends the temporary assignment.
 - The director's position is never assigned, by default or temporarily, nor deleted.
 - Renaming a position records its former id and when it changed, so that what was written under the former id, messages, tasks and events, still designates it. An interrupted renaming leaves the position twice at worst, never a reference to a missing one.
 - A position's id can be reused: a reopened position is the same role, though it starts vacant.
@@ -19,3 +19,4 @@ Whoever works a position is its default employee, unless it is assigned temporar
 - [#24](https://github.com/OmarAboudou/AI-Company/issues/24): a position names its default employee.
 - [#41](https://github.com/OmarAboudou/AI-Company/issues/41): updating, renaming and deleting a position.
 - [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the director's position, temporary assignments and the id history.
+- [#136](https://github.com/OmarAboudou/AI-Company/issues/136): temporary assignments versioned with the position.

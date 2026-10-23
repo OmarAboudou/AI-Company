@@ -14,4 +14,4 @@ The reserved branch, `aico/data`, holds the company: AICo keeps its data there, 
 
 ## Decisions
 
-- [#136](https://github.com/OmarAboudou/AI-Company/issues/136): the reserved branch and its worktree.
+- [#136](https://github.com/OmarAboudou/AI-Company/issues/136): the reserved branch, its worktree, and a commit for each operation.
