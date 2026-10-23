@@ -7,3 +7,4 @@ Threads are the company's archives: versioned in git, never modified once writte
 ## Decisions
 
 - [#56](https://github.com/OmarAboudou/AI-Company/issues/56): positions talk to each other through threads of immutable messages.
+- [#135](https://github.com/OmarAboudou/AI-Company/issues/135): messages mention no position, and ask nothing of anyone for now.

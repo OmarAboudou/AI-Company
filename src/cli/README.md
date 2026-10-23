@@ -12,3 +12,4 @@ The command line is AICo's interface, for people and scripts alike, and later fo
 
 - [#41](https://github.com/OmarAboudou/AI-Company/issues/41): refusals saying what `--force` would do, rather than confirmations.
 - [#86](https://github.com/OmarAboudou/AI-Company/issues/86): a command calls an operation of the core, which refuses in the command line's words.
+- [#135](https://github.com/OmarAboudou/AI-Company/issues/135): no command reserved to directors, nobody else being at the keyboard.

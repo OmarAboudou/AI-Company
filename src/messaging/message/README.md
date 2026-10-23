@@ -13,3 +13,4 @@ A message is what a position writes in a thread: a body in Markdown, the positio
 
 - [#56](https://github.com/OmarAboudou/AI-Company/issues/56): immutable messages, authors and committers.
 - [#123](https://github.com/OmarAboudou/AI-Company/issues/123): the `message-sent` event.
+- [#135](https://github.com/OmarAboudou/AI-Company/issues/135): messages mention no position.

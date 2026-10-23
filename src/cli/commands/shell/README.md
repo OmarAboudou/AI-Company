@@ -10,3 +10,4 @@ AICo's shell function, for bash and zsh, through which `current-position` change
 ## Decisions
 
 - [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the shell function and the prompt.
+- [#135](https://github.com/OmarAboudou/AI-Company/issues/135): a prompt that names the selected position only, the person at the keyboard being always a director.

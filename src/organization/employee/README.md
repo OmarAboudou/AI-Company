@@ -18,3 +18,4 @@ The people working on the repository are no employees: they are the directors, w
 - [#35](https://github.com/OmarAboudou/AI-Company/issues/35): an LLM employee runs on a model declared inside its provider.
 - [#41](https://github.com/OmarAboudou/AI-Company/issues/41): updating, renaming, handing over and deleting an employee.
 - [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the id history and `--reuse-id`.
+- [#135](https://github.com/OmarAboudou/AI-Company/issues/135): employees are LLMs, the people working on the repository being the directors.
