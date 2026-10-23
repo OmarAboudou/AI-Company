@@ -12,7 +12,7 @@ import {
 } from "../create-example-work-catalog.testing.ts"
 import { createTask } from "../task/create-task.ts"
 import { getTaskPositionId } from "../task/get-task-position-id.ts"
-import type { UncreatedTask } from "../task/schema.ts"
+import { taskStartedEventType, type UncreatedTask } from "../task/schema.ts"
 import { listTasks } from "../task/storage.ts"
 import { createUncreatedTask } from "../task-type/create-uncreated-task.ts"
 import { createTaskOnce } from "./create-task-once.ts"
@@ -115,6 +115,71 @@ describe("createTaskOnce", () => {
 
         expect(createdTasks).toEqual([])
         expect(await listTasks(projectRoot)).toHaveLength(1)
+    })
+})
+
+describe("createTaskOnce on a ticket", () => {
+    test("gives a position no second queued task on the same ticket", async () => {
+        const firstQuestionSent = await recordQuestionSent()
+        const secondQuestionSent = await recordQuestionSent()
+        await createInNewDispatching(createExampleRequest(), firstQuestionSent)
+
+        const { createdTasks } = await createInNewDispatching(
+            createExampleRequest(),
+            secondQuestionSent,
+        )
+
+        expect(createdTasks).toEqual([])
+        expect(await listTasks(projectRoot)).toHaveLength(1)
+    })
+
+    test("gives another position, or another ticket, a task of its own", async () => {
+        const firstQuestionSent = await recordQuestionSent()
+        const secondQuestionSent = await recordQuestionSent()
+        await createInNewDispatching(createExampleRequest(), firstQuestionSent)
+        const otherTicketRequest = createUncreatedTask(exampleTaskType, {
+            positionId: "qa-tester",
+            params: { ticketNumber: 2 },
+        })
+
+        const designerCreation = await createInNewDispatching(
+            createExampleRequest("designer"),
+            secondQuestionSent,
+        )
+        const otherTicketCreation = await createInNewDispatching(
+            otherTicketRequest,
+            secondQuestionSent,
+        )
+
+        expect(designerCreation.createdTasks).toHaveLength(1)
+        expect(otherTicketCreation.createdTasks).toHaveLength(1)
+    })
+
+    test("gives a new task once the queued one started", async () => {
+        const firstQuestionSent = await recordQuestionSent()
+        const secondQuestionSent = await recordQuestionSent()
+        const firstCreation = await createInNewDispatching(
+            createExampleRequest(),
+            firstQuestionSent,
+        )
+        const [firstTask] = firstCreation.createdTasks
+        await recordEvent(
+            await loadJournal(projectRoot),
+            taskStartedEventType,
+            {
+                depth: 1,
+                taskId: firstTask?.id ?? "",
+                runId: "20261018-150000-000-9e8d",
+                worker: { kind: "directors" },
+            },
+        )
+
+        const { createdTasks } = await createInNewDispatching(
+            createExampleRequest(),
+            secondQuestionSent,
+        )
+
+        expect(createdTasks).toHaveLength(1)
     })
 })
 

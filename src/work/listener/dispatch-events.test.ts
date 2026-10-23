@@ -27,10 +27,14 @@ afterEach(async () => {
 const ticketNumber = 1
 const exampleCatalog = createExampleWorkCatalog(["backend-developer"])
 
-async function createMessageSentEvent(positionId = "director", depth = 0) {
+async function createMessageSentEvent(
+    positionId = "director",
+    depth = 0,
+    eventTicketNumber = ticketNumber,
+) {
     return recordEvent(await loadJournal(projectRoot), messageSentEventType, {
         depth,
-        ticketNumber,
+        ticketNumber: eventTicketNumber,
         messageId: "20261018-140322-123-3f9a",
         positionId,
     })
@@ -132,7 +136,7 @@ describe("dispatchEvents", () => {
     test("gives an event only once", async () => {
         await createMessageSentEvent()
         await dispatchToExampleListener()
-        const followUpSent = await createMessageSentEvent("qa-tester", 1)
+        const followUpSent = await createMessageSentEvent("qa-tester", 1, 2)
 
         const { createdTasks } = await dispatchToExampleListener()
 
