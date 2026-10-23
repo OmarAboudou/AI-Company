@@ -1,6 +1,7 @@
 import { createTimeOrderedId } from "../../ids/create-time-ordered-id.ts"
 import { recordEvent } from "../../journal/record-event.ts"
 import type { Journal } from "../../journal/schema.ts"
+import { readMonotonicTime } from "../../read-monotonic-time.ts"
 import { getNextSentAt } from "./get-next-sent-at.ts"
 import {
     type Message,
@@ -22,7 +23,7 @@ export async function sendUnsentMessage(
 ): Promise<Message> {
     const { projectRoot } = journal
     const ticketMessages = await listMessages(projectRoot, ticketNumber)
-    const sentAt = getNextSentAt(ticketMessages, new Date())
+    const sentAt = getNextSentAt(ticketMessages, new Date(readMonotonicTime()))
     const message = {
         ticketNumber,
         id: createTimeOrderedId(sentAt),
