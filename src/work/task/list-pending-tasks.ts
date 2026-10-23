@@ -9,7 +9,7 @@ import type {
 import { UserError } from "../../user-error.ts"
 import type { TaskType } from "../task-type/define-task-type.ts"
 import { getTaskPositionId } from "./get-task-position-id.ts"
-import { getTaskStates } from "./get-task-states.ts"
+import { getTaskStates, type TaskState } from "./get-task-states.ts"
 import { isPendingTask } from "./is-pending-task.ts"
 import type { Task } from "./schema.ts"
 import { listTasks } from "./storage.ts"
@@ -19,6 +19,7 @@ export type WaitingReason =
     | "deleted-position"
     | "vacant-position"
     | "worked-by-directors"
+    | "running"
 
 export type PendingTask =
     | { kind: "ready"; task: Task; position: Position; employee: Employee }
@@ -26,6 +27,7 @@ export type PendingTask =
 
 function getPendingTask(
     task: Task,
+    taskState: TaskState | undefined,
     assignments: PositionAssignment[],
     employees: Employee[],
     taskTypes: Record<string, TaskType>,
@@ -49,6 +51,11 @@ function getPendingTask(
     if (currentWorker.kind === "directors") {
         return { ...waitingTask, reason: "worked-by-directors" }
     }
+    // A task serves once: a model's session cut short fails its task
+    // rather than leaving it to another.
+    if (taskState === "running") {
+        return { ...waitingTask, reason: "running" }
+    }
     const employee = employees.find(({ id }) => id === currentWorker.employeeId)
     if (employee === undefined) {
         throw new UserError(
@@ -71,5 +78,13 @@ export async function listPendingTasks(
     const taskStates = getTaskStates(tasks, journal.events)
     return tasks
         .filter((task) => isPendingTask(task, taskStates))
-        .map((task) => getPendingTask(task, assignments, employees, taskTypes))
+        .map((task) =>
+            getPendingTask(
+                task,
+                taskStates.get(task.id),
+                assignments,
+                employees,
+                taskTypes,
+            ),
+        )
 }

@@ -5,8 +5,9 @@ import { type Task, taskStartedEventType } from "../task/schema.ts"
 import type { Run } from "./schema.ts"
 import { hasRun, loadRun } from "./storage.ts"
 
-// A run the directors started, on this machine, can go on; any other, such
-// as an interrupted model's, is started afresh, as aico run would.
+// A run the directors started, on this machine, can go on; any other, a
+// model's left running when its position passed to the directors for one,
+// is started afresh.
 export async function loadResumableRun(
     journal: Journal,
     task: Task,

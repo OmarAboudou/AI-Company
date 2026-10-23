@@ -263,4 +263,16 @@ describe("runReadyTasks", () => {
         expect(progresses).toEqual([{ kind: "task-cut-short", task }])
         expect(await listTaskStates()).toEqual(["failed"])
     })
+
+    test("leaves a task that another process runs", async () => {
+        await startTaskElsewhere(process.ppid)
+
+        const result = await runFakeTasks()
+
+        expect(result).toMatchObject({
+            kind: "none-ready",
+            waitingTasks: [{ reason: "running" }],
+        })
+        expect(fakeServer.requests).toHaveLength(0)
+    })
 })

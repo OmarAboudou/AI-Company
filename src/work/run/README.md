@@ -11,7 +11,7 @@ A run is one attempt at a task: a fresh conversation in which whoever works the 
 - Each tool call is committed on its own, named after the tool and the task; starting and ending the task are committed under the name of the command that runs it, such as `aico run`.
 - A run whose task became pointless stops at its next step, checked before each tool call and each call of the model, and ends cancelled: the calls left in its turn don't run, and a person's run left in the middle ends rather than resumes.
 - `aico run` runs the ready tasks one at a time, oldest first, and stops at a task that fails, so that the next ones don't fail for the same reason. A failed task doesn't run again. Stopping `aico run` fails the task in progress, its model's call cut short.
-- A model's run cut short, by a crash or a second Ctrl+C, fails its task at the next `aico run` on its machine, which tells it from a run still going by the process its transcript names. A person resumes their own run on the machine that started it.
+- A task serves once: no new run takes up a task left running. A model's run cut short, by a crash or a second Ctrl+C, fails its task at the next `aico run` on its machine, which tells it from a run still going by the process its transcript names. A person resumes their own run on the machine that started it.
 - What a person's run causes keeps the depth of its task's cause: a person adds no link to a chain of tasks.
 
 ## Decisions

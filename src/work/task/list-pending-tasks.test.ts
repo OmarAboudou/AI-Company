@@ -150,7 +150,7 @@ describe("listPendingTasks", () => {
         ])
     })
 
-    test("lists a task left running, and not one that ended", async () => {
+    test("lists as waiting a task already running, and not one that ended", async () => {
         const runningTask = await askPosition("backend-developer")
         const doneTask = await askPosition("backend-developer")
         await Promise.all([startTask(runningTask), startTask(doneTask)])
@@ -167,6 +167,8 @@ describe("listPendingTasks", () => {
             taskTypes,
         )
 
-        expect(pendingTasks).toMatchObject([{ task: runningTask }])
+        expect(pendingTasks).toMatchObject([
+            { kind: "waiting", task: runningTask, reason: "running" },
+        ])
     })
 })

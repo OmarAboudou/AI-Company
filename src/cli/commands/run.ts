@@ -18,6 +18,7 @@ const waitingReasonTexts: Record<WaitingTask["reason"], string> = {
     "deleted-position": "for a deleted position",
     "vacant-position": "for a vacant position",
     "worked-by-directors": "for the directors",
+    running: "already running, in another process",
 }
 
 function formatUsage(usage: TokenUsage): string {
