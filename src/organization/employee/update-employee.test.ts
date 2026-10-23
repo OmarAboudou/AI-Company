@@ -48,7 +48,13 @@ const claude: Employee = {
     createdAt: "2026-10-18T14:00:00.000Z",
     formerIds: [{ id: "claude-a", until: "2026-10-19T09:00:00.000Z" }],
 }
-const omar = { id: "omar", name: "Omar", kind: "human" } as const
+const omar = {
+    id: "omar",
+    name: "Omar",
+    kind: "llm",
+    providerId: "anthropic",
+    modelId: "opus",
+} as const
 
 describe("updateEmployee", () => {
     test("renames an LLM employee and keeps its model and history", async () => {
@@ -88,22 +94,6 @@ describe("updateEmployee", () => {
         await expect(updating).rejects.toThrow('"ollama" has no model "opus"')
         const employee = await loadEmployee(projectRoot, "claude")
         expect(employee).toEqual(claude)
-    })
-
-    test("refuses a provider or a model for a human", async () => {
-        const updating = updateEmployee(projectRoot, "omar", {
-            modelId: "opus",
-        })
-
-        await expect(updating).rejects.toThrow(UserError)
-        await expect(updating).rejects.toThrow("is a human")
-    })
-
-    test("renames a human", async () => {
-        await updateEmployee(projectRoot, "omar", { name: "Omar Aboudou" })
-
-        const employee = await loadEmployee(projectRoot, "omar")
-        expect(employee).toEqual({ ...omar, name: "Omar Aboudou" })
     })
 
     test("refuses a blank name", async () => {

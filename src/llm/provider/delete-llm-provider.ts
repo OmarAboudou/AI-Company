@@ -23,10 +23,7 @@ export async function deleteLlmProvider(
         listEmployees(projectRoot),
     ])
     const providerEmployeeIds = employees
-        .filter(
-            (employee) =>
-                employee.kind === "llm" && employee.providerId === provider.id,
-        )
+        .filter((employee) => employee.providerId === provider.id)
         .map(({ id }) => id)
     if (providerEmployeeIds.length > 0) {
         throw new UserError(

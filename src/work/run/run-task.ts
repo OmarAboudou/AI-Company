@@ -4,7 +4,7 @@ import type { Journal } from "../../journal/schema.ts"
 import { loadAnthropicMessagesModel } from "../../llm/anthropic-messages/load-anthropic-messages-model.ts"
 import type { TokenUsage } from "../../llm/conversation/schema.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
-import type { LlmEmployee } from "../../organization/employee/schema.ts"
+import type { Employee } from "../../organization/employee/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { readMonotonicTime } from "../../read-monotonic-time.ts"
 import { type Task, taskStartedEventType } from "../task/schema.ts"
@@ -36,7 +36,7 @@ export async function runTask(
     }: {
         task: Task
         position: Position
-        employee: LlmEmployee
+        employee: Employee
         taskTypes: Record<string, TaskType>
         onProgress: (progress: RunProgress) => void
     },

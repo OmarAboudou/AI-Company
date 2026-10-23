@@ -1,56 +1,33 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/OmarAboudou/AI-Company/main/schemas/employee.json",
-    "oneOf": [
-        {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Display name of the employee, e.g. Claude Senior."
-                },
-                "kind": {
-                    "type": "string",
-                    "const": "llm",
-                    "description": "llm: run by an LLM, which needs a provider and a model."
-                },
-                "providerId": {
-                    "type": "string",
-                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the LLM provider, i.e. the name of its folder in .aico/llm-providers, e.g. anthropic."
-                },
-                "modelId": {
-                    "type": "string",
-                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of one of the provider's models in AICo, i.e. the name of its folder in .aico/llm-providers/<provider-id>/models, e.g. claude-opus-5-5. Not its apiId, the id the provider's API expects."
-                }
-            },
-            "required": ["name", "kind", "providerId", "modelId"],
-            "additionalProperties": false,
-            "description": "An employee run by an LLM."
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name of the employee, e.g. Claude Senior."
         },
-        {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Display name of the employee, e.g. Claude Senior."
-                },
-                "kind": {
-                    "type": "string",
-                    "const": "human",
-                    "description": "human: a person, e.g. taking over a position."
-                }
-            },
-            "required": ["name", "kind"],
-            "additionalProperties": false,
-            "description": "An employee who is a human."
+        "kind": {
+            "type": "string",
+            "const": "llm",
+            "description": "llm: run by an LLM, which needs a provider and a model."
+        },
+        "providerId": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+            "description": "Id of the LLM provider, i.e. the name of its folder in .aico/llm-providers, e.g. anthropic."
+        },
+        "modelId": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+            "description": "Id of one of the provider's models in AICo, i.e. the name of its folder in .aico/llm-providers/<provider-id>/models, e.g. claude-opus-5-5. Not its apiId, the id the provider's API expects."
         }
-    ],
+    },
+    "required": ["name", "kind", "providerId", "modelId"],
+    "additionalProperties": false,
     "title": "AICo employee",
-    "description": "Configuration of an employee, in .aico/employees/<employee-id>/config.json."
+    "description": "Configuration of an employee, run by an LLM, in .aico/employees/<employee-id>/config.json."
 }

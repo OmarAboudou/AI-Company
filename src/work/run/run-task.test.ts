@@ -7,7 +7,7 @@ import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { sendMessage } from "../../messaging/message/send-message.ts"
-import type { LlmEmployee } from "../../organization/employee/schema.ts"
+import type { Employee } from "../../organization/employee/schema.ts"
 import { loadEmployee } from "../../organization/employee/storage.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { loadPosition } from "../../organization/position/storage.ts"
@@ -35,7 +35,7 @@ let projectRoot: string
 let threadId: string
 let task: Task
 let position: Position
-let employee: LlmEmployee
+let employee: Employee
 
 async function askDeveloper(body: string) {
     const sending = await sendMessage(
@@ -60,11 +60,7 @@ beforeEach(async () => {
     threadId = companyWithLlmEmployee.threadId
     task = await askDeveloper("Hono or Express?")
     position = await loadPosition(projectRoot, "backend-developer")
-    const claude = await loadEmployee(projectRoot, "claude")
-    if (claude.kind !== "llm") {
-        throw new Error("Claude isn't an LLM employee")
-    }
-    employee = claude
+    employee = await loadEmployee(projectRoot, "claude")
 })
 
 afterEach(async () => {

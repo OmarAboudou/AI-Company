@@ -8,8 +8,6 @@ const llmEmployee = {
     modelId: "claude-opus-5-5",
 } as const
 
-const humanEmployee = { name: "Omar Aboudou", kind: "human" } as const
-
 function accepts(config: unknown): boolean {
     return EmployeeConfigSchema.safeParse(config).success
 }
@@ -19,32 +17,28 @@ describe("EmployeeConfigSchema", () => {
         expect(EmployeeConfigSchema.parse(llmEmployee)).toEqual(llmEmployee)
     })
 
-    test("accepts a human employee", () => {
-        expect(EmployeeConfigSchema.parse(humanEmployee)).toEqual(humanEmployee)
-    })
-
     test("rejects the id history, kept in history.json", () => {
         const createdAt = "2026-10-18T14:00:00.000Z"
 
-        expect(accepts({ ...humanEmployee, createdAt })).toBe(false)
+        expect(accepts({ ...llmEmployee, createdAt })).toBe(false)
     })
 
     test("trims whitespace around the name", () => {
         const config = EmployeeConfigSchema.parse({
-            ...humanEmployee,
-            name: " Omar ",
+            ...llmEmployee,
+            name: " Claude Senior ",
         })
 
-        expect(config.name).toBe("Omar")
+        expect(config.name).toBe("Claude Senior")
     })
 
     test("rejects an empty or whitespace-only name", () => {
-        expect(accepts({ ...humanEmployee, name: "" })).toBe(false)
-        expect(accepts({ ...humanEmployee, name: "   " })).toBe(false)
+        expect(accepts({ ...llmEmployee, name: "" })).toBe(false)
+        expect(accepts({ ...llmEmployee, name: "   " })).toBe(false)
     })
 
     test("rejects an unknown kind", () => {
-        expect(accepts({ ...humanEmployee, kind: "robot" })).toBe(false)
+        expect(accepts({ ...llmEmployee, kind: "human" })).toBe(false)
     })
 
     test("requires a provider and a model for an LLM employee", () => {
@@ -60,15 +54,7 @@ describe("EmployeeConfigSchema", () => {
         expect(accepts({ ...llmEmployee, modelId: "llama3.1:8b" })).toBe(false)
     })
 
-    test("rejects a provider or a model on a human employee", () => {
-        const withProvider = { ...humanEmployee, providerId: "anthropic" }
-        const withModel = { ...humanEmployee, modelId: "claude-opus-5-5" }
-
-        expect(accepts(withProvider)).toBe(false)
-        expect(accepts(withModel)).toBe(false)
-    })
-
     test("rejects an unknown key", () => {
-        expect(accepts({ ...humanEmployee, id: "omar" })).toBe(false)
+        expect(accepts({ ...llmEmployee, id: "omar" })).toBe(false)
     })
 })

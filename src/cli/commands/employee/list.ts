@@ -29,9 +29,7 @@ export function registerEmployeeListCommand(employeeCommand: Command): void {
                     const row = [
                         employee.id,
                         employee.name,
-                        employee.kind === "llm"
-                            ? `${employee.providerId}/${employee.modelId}`
-                            : "human",
+                        `${employee.providerId}/${employee.modelId}`,
                     ]
                     return shouldListPositions
                         ? [

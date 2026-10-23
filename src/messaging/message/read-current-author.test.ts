@@ -18,12 +18,11 @@ beforeEach(async () => {
     environment = {}
     projectRoot = await createTemporaryCompany()
     createGitRepository(projectRoot, committer)
-    await Promise.all([
-        saveEmployee(projectRoot, { id: "bob", name: "Bob", kind: "human" }),
-        ...["graphics", "support"].map((id) =>
+    await Promise.all(
+        ["graphics", "support"].map((id) =>
             savePosition(projectRoot, { id, title: id, description: "" }),
         ),
-    ])
+    )
 })
 
 afterEach(async () => {
@@ -124,16 +123,6 @@ describe("readCurrentAuthor with a position chosen", () => {
             "it is vacant. Assign it to the directors temporarily first: `aico position assign-temporarily directors support`."
 
         const reading = readPositionId({ asPositionId: "support" })
-
-        await expect(reading).rejects.toThrow(refusalMessage)
-    })
-
-    test("refuses a position a human employee works", async () => {
-        await assignPosition(projectRoot, "graphics", "bob")
-        const refusalMessage =
-            "Bob, a human employee, works it. Assign it to the directors temporarily first: `aico position assign-temporarily directors graphics`."
-
-        const reading = readPositionId({ asPositionId: "graphics" })
 
         await expect(reading).rejects.toThrow(refusalMessage)
     })

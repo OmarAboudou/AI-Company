@@ -1,8 +1,5 @@
 import type { Journal } from "../../journal/schema.ts"
-import type {
-    Employee,
-    LlmEmployee,
-} from "../../organization/employee/schema.ts"
+import type { Employee } from "../../organization/employee/schema.ts"
 import { listEmployees } from "../../organization/employee/storage.ts"
 import { listPositionAssignments } from "../../organization/position/list-position-assignments.ts"
 import type {
@@ -22,10 +19,9 @@ export type WaitingReason =
     | "deleted-position"
     | "vacant-position"
     | "worked-by-directors"
-    | "worked-by-human"
 
 export type PendingTask =
-    | { kind: "ready"; task: Task; position: Position; employee: LlmEmployee }
+    | { kind: "ready"; task: Task; position: Position; employee: Employee }
     | { kind: "waiting"; task: Task; positionId: string; reason: WaitingReason }
 
 function getPendingTask(
@@ -58,9 +54,6 @@ function getPendingTask(
         throw new UserError(
             `Position "${position.id}" names employee "${currentWorker.employeeId}", who doesn't exist. Run \`aico position show ${position.id}\`.`,
         )
-    }
-    if (employee.kind === "human") {
-        return { ...waitingTask, reason: "worked-by-human" }
     }
     return { kind: "ready", task, position, employee }
 }

@@ -34,9 +34,9 @@ export async function updateLlmProviderId(
     if (isTaken) {
         throw new UserError(`Provider "${newId}" already exists.`)
     }
-    const providerEmployees = employees
-        .filter((employee) => employee.kind === "llm")
-        .filter((employee) => employee.providerId === provider.id)
+    const providerEmployees = employees.filter(
+        (employee) => employee.providerId === provider.id,
+    )
     // Copy, repoint, then delete rather than move, as for employees:
     // an employee must never run on a missing provider.
     await copyLlmProviderFolder(projectRoot, provider.id, newId)

@@ -20,16 +20,15 @@ export function registerEmployeeShowCommand(employeeCommand: Command): void {
                 loadExistingEmployee(projectRoot, rawId),
                 listPositions(projectRoot),
             ])
-            const lines = [`# ${employee.name}`, "", `kind: ${employee.kind}`]
-            if (employee.kind === "llm") {
-                lines.push(
+            console.log(
+                [
+                    `# ${employee.name}`,
+                    "",
+                    `kind: ${employee.kind}`,
                     `provider: ${employee.providerId}`,
                     `model: ${employee.modelId}`,
-                )
-            }
-            lines.push(
-                `positions: ${formatPositionsFilledBy(positions, employee.id)}`,
+                    `positions: ${formatPositionsFilledBy(positions, employee.id)}`,
+                ].join("\n"),
             )
-            console.log(lines.join("\n"))
         })
 }

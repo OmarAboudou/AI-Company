@@ -1,6 +1,5 @@
 import { getDefinedValues } from "../../get-defined-values.ts"
 import { parseConfig } from "../../parse-config.ts"
-import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { loadExistingEmployee } from "./load-existing-employee.ts"
 import { requireEmployeeModel } from "./require-employee-model.ts"
@@ -17,14 +16,6 @@ export async function updateEmployee(
         projectRoot,
         rawId,
     )
-    const hasModelChanges = [changes.providerId, changes.modelId].some(
-        (change) => change !== undefined,
-    )
-    if (config.kind === "human" && hasModelChanges) {
-        throw new UserError(
-            `Employee "${id}" is a human: it has no provider or model.`,
-        )
-    }
     const updatedConfig = parseConfig(EmployeeConfigSchema, {
         ...config,
         ...getDefinedValues(changes),
