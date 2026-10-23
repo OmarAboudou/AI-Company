@@ -29,7 +29,7 @@ export const ToolCallBlockSchema = z.strictObject({
             "Id of the call, which its result names: the model's own, or the one AICo gives a person's call.",
     }),
     name: z.string().min(1).meta({
-        description: "Name of the tool called, e.g. message_send.",
+        description: "Name of the tool called, e.g. ticket_ask.",
     }),
     input: z.unknown().meta({
         description:

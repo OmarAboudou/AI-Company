@@ -10,7 +10,7 @@ import { getAnthropicTurns } from "./get-anthropic-turns.ts"
 const sendingCall: ToolCallBlock = {
     type: "tool-call",
     id: "toolu_01",
-    name: "message_send",
+    name: "ticket_ask",
     input: { body: "Hono." },
 }
 
@@ -42,7 +42,7 @@ describe("getAnthropicTurns", () => {
                 type: "tool_use",
                 id: "toolu_01",
                 caller: { type: "direct" },
-                name: "message_send",
+                name: "ticket_ask",
                 input: { body: "Hono." },
             },
         ]
@@ -65,7 +65,7 @@ describe("getAnthropicTurns", () => {
                 {
                     type: "tool_use",
                     id: "toolu_01",
-                    name: "message_send",
+                    name: "ticket_ask",
                     input: { body: "Hono." },
                 },
             ],
@@ -88,7 +88,7 @@ describe("getAnthropicTurns", () => {
                     {
                         type: "tool-result",
                         toolCallId: "toolu_01",
-                        text: "Sent as entry #2.",
+                        text: "Question asked, as message #2 of ticket #1.",
                         isError: false,
                     },
                     {
@@ -107,7 +107,7 @@ describe("getAnthropicTurns", () => {
                 {
                     type: "tool_result",
                     tool_use_id: "toolu_01",
-                    content: "Sent as entry #2.",
+                    content: "Question asked, as message #2 of ticket #1.",
                 },
                 {
                     type: "tool_result",

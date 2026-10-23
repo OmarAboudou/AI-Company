@@ -71,21 +71,21 @@ function readLastCommits(count: number) {
 
 describe("sendTurn", () => {
     test("runs the turn's calls from the person's position, as a director", async () => {
-        await addToolCall("message_send", { body: "Friday." })
+        await addToolCall("ticket_deliver", { body: "Ready for Friday." })
 
         await sendPersonTurn()
 
-        const [, answer] = await listMessages(projectRoot, ticketNumber)
-        expect(answer).toMatchObject({
+        const [, delivery] = await listMessages(projectRoot, ticketNumber)
+        expect(delivery).toMatchObject({
             position: { id: "qa-tester", title: "QA" },
             committer: { name: "Omar Aboudou", email: "omar@example.com" },
-            body: "Friday.",
+            body: "Ready for Friday.",
         })
-        expect(answer).not.toHaveProperty("employee")
+        expect(delivery).not.toHaveProperty("employee")
     })
 
     test("gives back the turn and its answer, as the run's transcript keeps them", async () => {
-        await addToolCall("message_send", { body: "Friday." })
+        await addToolCall("ticket_show", { from: 1 })
 
         const { sentTurn, answeringTurn } = await sendPersonTurn()
 
@@ -99,8 +99,8 @@ describe("sendTurn", () => {
                 {
                     type: "tool-call",
                     id: expect.stringMatching(/^call_/),
-                    name: "message_send",
-                    input: { body: "Friday." },
+                    name: "ticket_show",
+                    input: { from: 1 },
                 },
             ],
         })
@@ -109,7 +109,7 @@ describe("sendTurn", () => {
             blocks: [
                 {
                     type: "tool-result",
-                    text: `Sent as message #2 of ticket #${ticketNumber}.`,
+                    text: expect.stringMatching(/^Message #1 of ticket #/),
                     isError: false,
                 },
             ],
@@ -117,7 +117,7 @@ describe("sendTurn", () => {
     })
 
     test("records what the run causes at the depth of the task's cause", async () => {
-        await addToolCall("message_send", { body: "Logo?" })
+        await addTurnText(projectRoot, {}, "Logo?")
 
         await sendPersonTurn()
 
@@ -127,7 +127,7 @@ describe("sendTurn", () => {
     })
 
     test("empties the turn once it is sent", async () => {
-        await addToolCall("message_send", { body: "Friday." })
+        await addToolCall("ticket_show", { from: 1 })
 
         await sendPersonTurn()
 
@@ -136,21 +136,20 @@ describe("sendTurn", () => {
     })
 
     test("commits each tool call apart, named after it and its task", async () => {
-        await addToolCall("message_send", { body: "Friday." })
-        await addToolCall("message_send", { body: "Or Monday." })
+        await addToolCall("ticket_deliver", { body: "Ready for Friday." })
 
         await sendPersonTurn()
 
-        const subject = `message_send in task ${openedTask.task.id}`
-        expect(readLastCommits(2)).toEqual([
-            { subject, messageFileCount: 1 },
-            { subject, messageFileCount: 1 },
-        ])
+        const subject = `ticket_deliver in task ${openedTask.task.id}`
+        expect(readLastCommits(2)[1]).toEqual({
+            subject,
+            messageFileCount: 1,
+        })
     })
 
     test("writes the turn's texts in the ticket's discussion, each in its place", async () => {
         await addTurnText(projectRoot, {}, "Checked the plan.")
-        await addToolCall("message_send", { body: "Friday." })
+        await addToolCall("ticket_deliver", { body: "Ready for Friday." })
 
         await sendPersonTurn()
 
@@ -159,9 +158,9 @@ describe("sendTurn", () => {
         expect(messages.map(({ body }) => body)).toEqual([
             "Can we ship on Friday?",
             "Checked the plan.",
-            "Friday.",
+            "Ready for Friday.",
         ])
-        expect(readLastCommits(2)[1]).toEqual({
+        expect(readLastCommits(3)[2]).toEqual({
             subject: textSubject,
             messageFileCount: 1,
         })
@@ -178,7 +177,7 @@ describe("sendTurn", () => {
     })
 
     test("goes on from the turns sent before, in a later call", async () => {
-        await addToolCall("message_send", { body: "Friday." })
+        await addToolCall("ticket_show", { from: 1 })
         await sendPersonTurn()
         await addTurnText(projectRoot, {}, "Done for now.")
 
@@ -222,8 +221,8 @@ describe("sendTurn", () => {
     })
 
     test("stops the turn at its next call once the task became pointless", async () => {
-        await addToolCall("message_send", { body: "Stop." })
-        await addToolCall("message_send", { body: "Friday." })
+        await addTurnText(projectRoot, {}, "Stop.")
+        await addToolCall("ticket_deliver", { body: "Ready for Friday." })
 
         const { taskEnding } = await sendPersonTurn()
 
@@ -248,7 +247,7 @@ describe("sendTurn", () => {
     })
 
     test("refuses to end the session on a turn that calls tools", async () => {
-        await addToolCall("message_send", { body: "Friday." })
+        await addToolCall("ticket_show", { from: 1 })
 
         const ending = sendPersonTurn(true)
 

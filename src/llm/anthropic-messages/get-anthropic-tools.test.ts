@@ -9,13 +9,13 @@ describe("getAnthropicTools", () => {
             required: ["body"],
         }
         const tools = [
-            { name: "message_send", description: "Send.", inputSchema },
+            { name: "ticket_ask", description: "Send.", inputSchema },
             { name: "ticket_show", description: "Show.", inputSchema },
         ]
 
         expect(getAnthropicTools(tools)).toEqual([
             {
-                name: "message_send",
+                name: "ticket_ask",
                 description: "Send.",
                 input_schema: inputSchema,
             },

@@ -8,7 +8,7 @@ import {
 const sendingCall: ToolCallBlock = {
     type: "tool-call",
     id: "toolu_01",
-    name: "message_send",
+    name: "ticket_ask",
     input: { body: "Hono, for Bun." },
 }
 
@@ -49,7 +49,7 @@ describe("ConversationTurnSchema", () => {
                 {
                     type: "tool-result",
                     toolCallId: "toolu_01",
-                    text: "Sent as message #2 of ticket #3.",
+                    text: "Question asked, as message #2 of ticket #3.",
                     isError: false,
                 },
             ],

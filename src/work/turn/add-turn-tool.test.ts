@@ -24,14 +24,17 @@ async function addToolCall(toolName: string, rawInput: string) {
 
 describe("addTurnTool", () => {
     test("adds a call with an id of its own, its input as given", async () => {
-        const stagedTurn = await addToolCall("message_send", '{"body": "Yes."}')
+        const stagedTurn = await addToolCall(
+            "ticket_deliver",
+            '{"body": "Yes."}',
+        )
 
         expect(stagedTurn).toEqual({
             blocks: [
                 {
                     type: "tool-call",
                     id: expect.stringMatching(/^call_[0-9a-f]{12}$/),
-                    name: "message_send",
+                    name: "ticket_deliver",
                     input: { body: "Yes." },
                 },
             ],
@@ -41,13 +44,13 @@ describe("addTurnTool", () => {
     })
 
     test("refuses an input that isn't JSON", async () => {
-        const adding = addToolCall("message_send", "{body: Yes}")
+        const adding = addToolCall("ticket_deliver", "{body: Yes}")
 
         await expect(adding).rejects.toThrow("The input isn't JSON (")
     })
 
     test("refuses an input that isn't an object", async () => {
-        const adding = addToolCall("message_send", '"Yes."')
+        const adding = addToolCall("ticket_deliver", '"Yes."')
 
         await expect(adding).rejects.toThrow(
             `The input is "Yes.": give an object, e.g. '{"body": "Hello."}'.`,
@@ -58,20 +61,22 @@ describe("addTurnTool", () => {
         const adding = addToolCall("ticket_create", "{}")
 
         await expect(adding).rejects.toThrow(
-            "There is no tool named ticket_create. The tools you can call are: message_send, ticket_show.",
+            "There is no tool named ticket_create. The tools you can call are: ticket_deliver, ticket_show.",
         )
     })
 
     test("refuses an input its tool rejects", async () => {
-        const adding = addToolCall("message_send", '{"text": "Yes."}')
+        const adding = addToolCall("ticket_deliver", '{"text": "Yes."}')
 
-        await expect(adding).rejects.toThrow("Invalid input for message_send:")
+        await expect(adding).rejects.toThrow(
+            "Invalid input for ticket_deliver:",
+        )
     })
 
     test("refuses an input the task's type fixes", async () => {
         const rawInput = '{"ticketNumber": 2, "body": "Yes."}'
 
-        const adding = addToolCall("message_send", rawInput)
+        const adding = addToolCall("ticket_deliver", rawInput)
 
         await expect(adding).rejects.toThrow('Unrecognized key: "ticketNumber"')
     })

@@ -22,9 +22,9 @@ export const exampleTaskType = defineTaskType({
     async createSession({ ticketNumber }) {
         return {
             userMessage: `Answer the last message of ticket #${ticketNumber}.`,
-            toolNames: ["message_send", "ticket_show"],
+            toolNames: ["ticket_deliver", "ticket_show"],
             boundToolInputs: {
-                message_send: { ticketNumber },
+                ticket_deliver: { ticketNumber },
                 ticket_show: { ticketNumber },
             },
             result: {},

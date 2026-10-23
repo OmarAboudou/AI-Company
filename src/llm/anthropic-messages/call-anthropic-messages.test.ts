@@ -9,8 +9,8 @@ import { getAnthropicTools } from "./get-anthropic-tools.ts"
 import { useFakeAnthropicServer } from "./use-fake-anthropic-server.testing.ts"
 
 const sendingTool: ToolDefinition = {
-    name: "message_send",
-    description: "Send a message in a ticket's discussion.",
+    name: "ticket_ask",
+    description: "Ask the requester of a ticket a question.",
     inputSchema: {
         type: "object",
         properties: { body: { type: "string" } },
@@ -71,7 +71,7 @@ describe("callAnthropicMessages", () => {
     test("sends the tools, and returns the turn's tool calls in order", async () => {
         const toolCalls = [
             { name: "ticket_show", input: { ticketNumber: 2 } },
-            { name: "message_send", input: { body: "Hono." } },
+            { name: "ticket_ask", input: { body: "Hono." } },
         ]
         fakeServer.respondWith({ toolCalls })
 

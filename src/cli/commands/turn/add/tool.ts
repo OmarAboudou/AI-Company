@@ -9,7 +9,7 @@ export function registerTurnAddToolCommand(turnAddCommand: Command): void {
         .description(
             "Add a call to one of your task's tools to your next turn: task next shows them, with their inputs.",
         )
-        .argument("<tool-name>", "name of the tool, e.g. message_send")
+        .argument("<tool-name>", "name of the tool, e.g. ticket_ask")
         .addOption(
             new Option(
                 "-i, --input <json>",

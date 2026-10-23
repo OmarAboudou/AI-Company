@@ -28,7 +28,7 @@
                             "name": {
                                 "type": "string",
                                 "minLength": 1,
-                                "description": "Name of the tool called, e.g. message_send."
+                                "description": "Name of the tool called, e.g. ticket_ask."
                             },
                             "input": {
                                 "description": "The call's input, as it was written: the tool checks it against its schema when the call runs."

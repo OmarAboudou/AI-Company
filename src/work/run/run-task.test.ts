@@ -123,7 +123,7 @@ describe("runTask", () => {
 
         const tools = fakeServer.requests[0]?.body.tools ?? []
         expect(tools.map(({ name }) => name)).toEqual([
-            "message_send",
+            "ticket_deliver",
             "ticket_show",
         ])
     })
@@ -134,14 +134,15 @@ describe("runTask", () => {
         await runFakeTask()
 
         const tools = fakeServer.requests[0]?.body.tools ?? []
-        const sendingTool = tools.find(({ name }) => name === "message_send")
-        expect(sendingTool?.description).toStartWith(
-            "Send a message in this ticket's discussion,",
+        const deliveringTool = tools.find(
+            ({ name }) => name === "ticket_deliver",
         )
-        expect(sendingTool?.input_schema.properties).toEqual({
+        expect(deliveringTool?.description).toStartWith("Deliver this ticket")
+        expect(deliveringTool?.input_schema.properties).toEqual({
             body: {
                 type: "string",
-                description: "The message, in Markdown.",
+                description:
+                    "What you did and how to check it, in Markdown: the requester reads it, without the rest of your work.",
                 contentMediaType: "text/markdown",
             },
         })

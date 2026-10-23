@@ -42,7 +42,7 @@ describe("getAssistantTurn", () => {
                     type: "tool_use",
                     id: "toolu_01",
                     caller: { type: "direct" },
-                    name: "message_send",
+                    name: "ticket_ask",
                     input: { body: "Hono." },
                 },
             ],
@@ -56,7 +56,7 @@ describe("getAssistantTurn", () => {
             {
                 type: "tool-call",
                 id: "toolu_01",
-                name: "message_send",
+                name: "ticket_ask",
                 input: { body: "Hono." },
             },
         ])

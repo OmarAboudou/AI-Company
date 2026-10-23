@@ -4,18 +4,18 @@ import { requireRunTools } from "./require-run-tools.ts"
 describe("requireRunTools", () => {
     test("rebuilds the tools a run was given, with their bound inputs", () => {
         const tools = requireRunTools({
-            toolNames: ["message_send"],
+            toolNames: ["ticket_deliver"],
             boundToolInputs: {
-                message_send: { ticketNumber: 1 },
+                ticket_deliver: { ticketNumber: 1 },
             },
             result: {},
         })
 
-        expect(Object.keys(tools)).toEqual(["message_send"])
-        const messageSendInputNames = Object.keys(
-            tools.message_send?.inputSchema.shape ?? {},
+        expect(Object.keys(tools)).toEqual(["ticket_deliver"])
+        const deliveryInputNames = Object.keys(
+            tools.ticket_deliver?.inputSchema.shape ?? {},
         )
-        expect(messageSendInputNames).toEqual(["body"])
+        expect(deliveryInputNames).toEqual(["body"])
     })
 
     test("refuses a tool this version of AICo doesn't know", () => {

@@ -11,8 +11,8 @@ import {
 const ticketNumber = 1
 
 const toolDefinitions = getToolDefinitions(
-    getRunTools(["message_send", "ticket_create", "ticket_show"], {
-        message_send: { ticketNumber },
+    getRunTools(["ticket_deliver", "ticket_create", "ticket_show"], {
+        ticket_deliver: { ticketNumber },
         ticket_show: { ticketNumber },
     }),
 )
@@ -61,11 +61,11 @@ function createPrompts({
 }
 
 describe("askToolInput", () => {
-    test("asks for a Markdown text in the editor, as message_send's body", async () => {
+    test("asks for a Markdown text in the editor, as a delivery's body", async () => {
         const { prompts, questions } = createPrompts({ texts: ["Yes."] })
 
         const input = await askToolInput(
-            getToolDefinition("message_send"),
+            getToolDefinition("ticket_deliver"),
             prompts,
         )
 
@@ -73,7 +73,8 @@ describe("askToolInput", () => {
         expect(questions).toEqual([
             {
                 kind: "text",
-                message: "body: The message, in Markdown.",
+                message:
+                    "body: What you did and how to check it, in Markdown: the requester reads it, without the rest of your work.",
                 isRequired: true,
             },
         ])

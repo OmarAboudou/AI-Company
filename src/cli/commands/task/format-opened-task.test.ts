@@ -46,9 +46,11 @@ describe("formatOpenedTask", () => {
             `── Message ──\nAnswer the last message of ticket #${ticketNumber}.`,
         )
         expect(text).toContain(
-            "── Tools ──\nmessage_send: Send a message in this ticket's discussion,",
+            "── Tools ──\nticket_deliver: Deliver this ticket once its request is met",
         )
-        expect(text).toContain("  body (string): The message, in Markdown.")
+        expect(text).toContain(
+            "  body (string): What you did and how to check it, in Markdown",
+        )
     })
 
     test("shows a resumed task's turns, then the one being prepared", async () => {
@@ -57,8 +59,8 @@ describe("formatOpenedTask", () => {
             projectRoot,
             {},
             {
-                toolName: "message_send",
-                rawInput: '{"body": "Friday."}',
+                toolName: "ticket_show",
+                rawInput: '{"from": 1}',
             },
         )
         await sendTurn(projectRoot, {}, "aico turn send", {
@@ -70,7 +72,7 @@ describe("formatOpenedTask", () => {
 
         expect(text).toStartWith('Resumed task "')
         expect(text).toContain(
-            `\n\n── Your turns so far ──\n→ message_send\n  body: "Friday."\n← Sent as message #2 of ticket #${ticketNumber}.\n\n`,
+            `\n\n── Your turns so far ──\n→ ticket_show\n  from: 1\n← Message #1 of ticket #${ticketNumber}, "Release", which has 1:`,
         )
         expect(text).toContain(
             "\n\n── Your next turn, not sent yet ──\nChecking the notes.",

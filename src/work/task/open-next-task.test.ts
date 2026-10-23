@@ -99,14 +99,14 @@ describe("openNextTask", () => {
         const { openedTask } = await openNextExampleTask()
 
         const tools = openedTask?.run.conversation.tools ?? []
-        const sendingTool = tools.find(({ name }) => name === "message_send")
+        const deliveringTool = tools.find(
+            ({ name }) => name === "ticket_deliver",
+        )
         expect(tools.map(({ name }) => name)).toEqual([
-            "message_send",
+            "ticket_deliver",
             "ticket_show",
         ])
-        expect(sendingTool?.description).toStartWith(
-            "Send a message in this ticket's discussion,",
-        )
+        expect(deliveringTool?.description).toStartWith("Deliver this ticket")
     })
 
     test("starts the person's run at its cause's depth, adding no link", async () => {
