@@ -7,6 +7,7 @@ import { createTemporaryCompany } from "../../organization/company/create-tempor
 import { saveEmployee } from "../../organization/employee/storage.ts"
 import { savePosition } from "../../organization/position/storage.ts"
 import { UserError } from "../../user-error.ts"
+import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
 import { createTask } from "./create-task.ts"
 import { listPendingTasks } from "./list-pending-tasks.ts"
 import { type Task, taskDoneEventType, taskStartedEventType } from "./schema.ts"
@@ -83,6 +84,7 @@ describe("listPendingTasks", () => {
 
         const pendingTasks = await listPendingTasks(
             await loadJournal(projectRoot),
+            builtInTaskTypes,
         )
 
         expect(pendingTasks).toMatchObject([
@@ -102,6 +104,7 @@ describe("listPendingTasks", () => {
 
         const pendingTasks = await listPendingTasks(
             await loadJournal(projectRoot),
+            builtInTaskTypes,
         )
 
         const reasons = pendingTasks.map((pendingTask) =>
@@ -126,7 +129,10 @@ describe("listPendingTasks", () => {
         const refusalMessage =
             'Position "designer" names employee "bob", who doesn\'t exist.'
 
-        const listing = listPendingTasks(await loadJournal(projectRoot))
+        const listing = listPendingTasks(
+            await loadJournal(projectRoot),
+            builtInTaskTypes,
+        )
 
         await expect(listing).rejects.toThrow(UserError)
         await expect(listing).rejects.toThrow(refusalMessage)
@@ -137,6 +143,7 @@ describe("listPendingTasks", () => {
 
         const pendingTasks = await listPendingTasks(
             await loadJournal(projectRoot),
+            builtInTaskTypes,
         )
 
         expect(pendingTasks).toMatchObject([
@@ -157,6 +164,7 @@ describe("listPendingTasks", () => {
 
         const pendingTasks = await listPendingTasks(
             await loadJournal(projectRoot),
+            builtInTaskTypes,
         )
 
         expect(pendingTasks).toMatchObject([{ task: runningTask }])

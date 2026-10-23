@@ -1,7 +1,7 @@
 import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import type { Journal } from "../../journal/schema.ts"
+import type { WorkCatalog } from "../work-catalog.ts"
 import { applyListenerEffect } from "./apply-listener-effect.ts"
-import type { Listener } from "./define-listener.ts"
 import { type Dispatching, loadDispatching } from "./load-dispatching.ts"
 import { loadDispatchedEventIds, saveDispatchedEventIds } from "./storage.ts"
 
@@ -12,12 +12,12 @@ export type DispatchEventsResult = Pick<
 
 export async function dispatchEvents(
     journal: Journal,
-    listeners: Listener[],
+    { taskTypes, listeners }: WorkCatalog,
 ): Promise<DispatchEventsResult> {
     const { projectRoot } = journal
     const [dispatchedEventIds, dispatching] = await Promise.all([
         loadDispatchedEventIds(projectRoot),
-        loadDispatching(journal),
+        loadDispatching(journal, taskTypes),
     ])
     const newEvents = journal.events.filter(
         ({ id }) => !dispatchedEventIds.has(id),

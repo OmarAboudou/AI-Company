@@ -20,6 +20,7 @@ import {
     taskFailedEventType,
     taskStartedEventType,
 } from "../task/schema.ts"
+import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
 import { runTask } from "./run-task.ts"
 
 const fakeServer = useFakeAnthropicServer()
@@ -72,6 +73,7 @@ async function runFakeTask(
         task: taskToRun,
         position,
         employee,
+        taskTypes: builtInTaskTypes,
         onProgress,
     })
 }

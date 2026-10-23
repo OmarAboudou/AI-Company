@@ -7,6 +7,7 @@ import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { createTask } from "../task/create-task.ts"
 import { type Task, taskFailedEventType } from "../task/schema.ts"
+import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
 import type { MarkTaskAsDoneEffect } from "./define-listener.ts"
 import { loadDispatching } from "./load-dispatching.ts"
 import { markTaskAsDoneOnce } from "./mark-task-as-done-once.ts"
@@ -57,7 +58,10 @@ function createMarking(
 }
 
 async function markInNewDispatching(marking = createMarking()) {
-    const dispatching = await loadDispatching(await loadJournal(projectRoot))
+    const dispatching = await loadDispatching(
+        await loadJournal(projectRoot),
+        builtInTaskTypes,
+    )
     await markTaskAsDoneOnce(marking, dispatching)
     return dispatching
 }

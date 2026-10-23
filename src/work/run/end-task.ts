@@ -9,6 +9,7 @@ import {
     taskDoneEventType,
     taskFailedEventType,
 } from "../task/schema.ts"
+import type { TaskType } from "../task-type/define-task-type.ts"
 import { parseTaskParams } from "../task-type/parse-task-params.ts"
 import { requireTaskType } from "../task-type/require-task-type.ts"
 import type { TaskEnding } from "../tool/define-tool.ts"
@@ -20,11 +21,20 @@ export type TaskRunEnd = {
     depth: number
     sessionResult: TaskResult
     usage?: TokenUsage
+    taskTypes: Record<string, TaskType>
 }
 
 export async function endTask(
     journal: Journal,
-    { task, position, runId, depth, sessionResult, usage }: TaskRunEnd,
+    {
+        task,
+        position,
+        runId,
+        depth,
+        sessionResult,
+        usage,
+        taskTypes,
+    }: TaskRunEnd,
     taskEnding: TaskEnding,
 ): Promise<void> {
     const causeEvent = requireJournalEvent(journal, task.causeEventId)
@@ -41,7 +51,7 @@ export async function endTask(
         })
         return
     }
-    const taskType = requireTaskType(task)
+    const taskType = requireTaskType(task, taskTypes)
     const params = parseTaskParams(task, taskType)
     const { projectRoot } = journal
     const ctx = { projectRoot, journal, task, position, causeEvent }

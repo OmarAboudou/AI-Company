@@ -6,15 +6,14 @@ import { readCurrentPositionId } from "../../organization/human/read-current-pos
 import { requirePositionsToWork } from "../../organization/human/require-positions-to-work.ts"
 import { listPositionAssignments } from "../../organization/position/list-position-assignments.ts"
 import type { Position } from "../../organization/position/schema.ts"
-import { builtInListeners } from "../listener/built-in-listeners.ts"
 import { dispatchEvents } from "../listener/dispatch-events.ts"
 import { beginTask } from "../run/begin-task.ts"
 import { loadResumableRun } from "../run/load-resumable-run.ts"
 import type { Run } from "../run/schema.ts"
 import { startHumanRun } from "../run/start-human-run.ts"
-import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
 import type { StagedTurn } from "../turn/schema.ts"
 import { loadStagedTurn } from "../turn/storage.ts"
+import { builtInWorkCatalog, type WorkCatalog } from "../work-catalog.ts"
 import { getTaskPositionId } from "./get-task-position-id.ts"
 import { getTaskStates } from "./get-task-states.ts"
 import { isPendingTask } from "./is-pending-task.ts"
@@ -37,6 +36,7 @@ export type OpenNextTaskResult = {
 export async function openNextTask(
     projectRoot: string,
     environment: NodeJS.ProcessEnv,
+    catalog: WorkCatalog = builtInWorkCatalog,
 ): Promise<OpenNextTaskResult> {
     await requireCompany(projectRoot)
     const [human, assignments, journal] = await Promise.all([
@@ -51,7 +51,7 @@ export async function openNextTask(
         ),
         readCurrentPositionId(environment),
     )
-    await dispatchEvents(journal, builtInListeners)
+    await dispatchEvents(journal, catalog)
     const tasks = await listTasks(projectRoot)
     const taskStates = getTaskStates(tasks, journal.events)
     const positions = assignments.map(({ position }) => position)
@@ -59,7 +59,7 @@ export async function openNextTask(
         .filter(
             (task) =>
                 isPendingTask(task, taskStates) &&
-                builtInTaskTypes[task.type] !== undefined,
+                catalog.taskTypes[task.type] !== undefined,
         )
         .map((task) => ({
             task,
@@ -88,7 +88,11 @@ export async function openNextTask(
             }
             return { openedTask, doneTasks }
         }
-        const beginning = await beginTask(journal, { task, position })
+        const beginning = await beginTask(journal, {
+            task,
+            position,
+            taskTypes: catalog.taskTypes,
+        })
         if (beginning.kind === "done") {
             doneTasks.push({ task, summary: beginning.summary })
             continue

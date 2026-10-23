@@ -10,6 +10,7 @@ import { createTask } from "../task/create-task.ts"
 import { getTaskPositionId } from "../task/get-task-position-id.ts"
 import type { UncreatedTask } from "../task/schema.ts"
 import { listTasks } from "../task/storage.ts"
+import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
 import { createTaskOnce } from "./create-task-once.ts"
 import { loadDispatching } from "./load-dispatching.ts"
 
@@ -43,7 +44,10 @@ async function createInNewDispatching(
     uncreatedTask: UncreatedTask,
     causeEvent: JournalEvent,
 ) {
-    const dispatching = await loadDispatching(await loadJournal(projectRoot))
+    const dispatching = await loadDispatching(
+        await loadJournal(projectRoot),
+        builtInTaskTypes,
+    )
     await createTaskOnce(uncreatedTask, causeEvent, dispatching)
     return dispatching
 }
@@ -80,6 +84,7 @@ describe("createTaskOnce", () => {
         const questionSent = await recordQuestionSent()
         const dispatching = await loadDispatching(
             await loadJournal(projectRoot),
+            builtInTaskTypes,
         )
         await createTask(
             await loadJournal(projectRoot),

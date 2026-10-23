@@ -3,13 +3,13 @@ import { requireCompany } from "../../organization/company/require-company.ts"
 import type { LlmEmployee } from "../../organization/employee/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { UserError } from "../../user-error.ts"
-import { builtInListeners } from "../listener/built-in-listeners.ts"
 import { dispatchEvents } from "../listener/dispatch-events.ts"
 import {
     listPendingTasks,
     type PendingTask,
 } from "../task/list-pending-tasks.ts"
 import type { Task } from "../task/schema.ts"
+import { builtInWorkCatalog, type WorkCatalog } from "../work-catalog.ts"
 import { type RunTaskResult, runTask } from "./run-task.ts"
 import type { RunProgress } from "./schema.ts"
 
@@ -31,6 +31,7 @@ export async function runReadyTasks(
     projectRoot: string,
     environment: NodeJS.ProcessEnv,
     onProgress: (progress: RunReadyTasksProgress) => void,
+    catalog: WorkCatalog = builtInWorkCatalog,
 ): Promise<RunReadyTasksResult> {
     await requireCompany(projectRoot)
     const journal = await loadJournal(projectRoot)
@@ -38,8 +39,8 @@ export async function runReadyTasks(
         // Another process, a person's terminal for one, may have written
         // events since the last turn.
         await refreshJournal(journal)
-        await dispatchEvents(journal, builtInListeners)
-        const pendingTasks = await listPendingTasks(journal)
+        await dispatchEvents(journal, catalog)
+        const pendingTasks = await listPendingTasks(journal, catalog.taskTypes)
         const readyTask = pendingTasks.find(
             (pendingTask) => pendingTask.kind === "ready",
         )
@@ -56,6 +57,7 @@ export async function runReadyTasks(
                 task,
                 position,
                 employee,
+                taskTypes: catalog.taskTypes,
                 onProgress,
             })
             onProgress({ kind: "task-ended", task, result })

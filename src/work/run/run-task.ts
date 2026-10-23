@@ -8,6 +8,7 @@ import type { LlmEmployee } from "../../organization/employee/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { readMonotonicTime } from "../../read-monotonic-time.ts"
 import { type Task, taskStartedEventType } from "../task/schema.ts"
+import type { TaskType } from "../task-type/define-task-type.ts"
 import type { TaskEnding } from "../tool/define-tool.ts"
 import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
 import { beginTask } from "./begin-task.ts"
@@ -30,16 +31,18 @@ export async function runTask(
         task,
         position,
         employee,
+        taskTypes,
         onProgress,
     }: {
         task: Task
         position: Position
         employee: LlmEmployee
+        taskTypes: Record<string, TaskType>
         onProgress: (progress: RunProgress) => void
     },
 ): Promise<RunTaskResult> {
     const { projectRoot } = journal
-    const beginning = await beginTask(journal, { task, position })
+    const beginning = await beginTask(journal, { task, position, taskTypes })
     if (beginning.kind === "done") {
         return { taskEnding: { state: "done", summary: beginning.summary } }
     }
@@ -90,7 +93,15 @@ export async function runTask(
     })
     await endTask(
         journal,
-        { task, position, runId, depth: taskDepth, sessionResult, usage },
+        {
+            task,
+            position,
+            runId,
+            depth: taskDepth,
+            sessionResult,
+            usage,
+            taskTypes,
+        },
         taskEnding,
     )
     return { taskEnding, run: { runId, usage } }
