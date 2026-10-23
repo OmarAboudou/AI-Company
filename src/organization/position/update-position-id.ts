@@ -8,10 +8,8 @@ import type { Position } from "./schema.ts"
 import {
     copyPositionFolder,
     deletePositionFolder,
-    deletePositionState,
     hasPosition,
     savePosition,
-    savePositionState,
 } from "./storage.ts"
 
 export type UpdatePositionIdResult = {
@@ -26,11 +24,10 @@ export async function updatePositionId(
 ): Promise<UpdatePositionIdResult> {
     await requireCompany(projectRoot)
     const newId = parseId("position", rawNewId)
-    const [{ position, isDirectorPosition, state }, isTaken] =
-        await Promise.all([
-            loadExistingPositionAssignment(projectRoot, rawId),
-            hasPosition(projectRoot, newId),
-        ])
+    const [{ position, isDirectorPosition }, isTaken] = await Promise.all([
+        loadExistingPositionAssignment(projectRoot, rawId),
+        hasPosition(projectRoot, newId),
+    ])
     if (isTaken) {
         throw new UserError(`Position "${newId}" already exists.`)
     }
@@ -42,10 +39,7 @@ export async function updatePositionId(
     // Copy, repoint, then delete rather than move, as for employees:
     // the company must never name a missing director's position.
     await copyPositionFolder(projectRoot, position.id, newId)
-    await Promise.all([
-        savePosition(projectRoot, renamedPosition),
-        savePositionState(projectRoot, newId, state),
-    ])
+    await savePosition(projectRoot, renamedPosition)
     if (isDirectorPosition) {
         const company = await loadCompany(projectRoot)
         await saveCompany(projectRoot, {
@@ -53,9 +47,6 @@ export async function updatePositionId(
             directorPositionId: newId,
         })
     }
-    await Promise.all([
-        deletePositionFolder(projectRoot, position.id),
-        deletePositionState(projectRoot, position.id),
-    ])
+    await deletePositionFolder(projectRoot, position.id)
     return { position, renamedPosition }
 }

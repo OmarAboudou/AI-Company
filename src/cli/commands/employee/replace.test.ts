@@ -11,7 +11,7 @@ const { runCli, getProjectPath } = useTemporaryProject()
 const interimEmployee = ["position", "interim", "employee"]
 
 async function loadTemporaryAssignee(positionId: string): Promise<unknown> {
-    const pathSegments = [".aico", ".state", "positions", `${positionId}.json`]
+    const pathSegments = [".aico", "positions", positionId, "state.json"]
     const stateFile = Bun.file(getProjectPath(...pathSegments))
     return (await stateFile.exists())
         ? (await stateFile.json()).temporaryAssignment

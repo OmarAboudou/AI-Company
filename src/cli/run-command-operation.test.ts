@@ -116,8 +116,6 @@ describe("a command that changes the company", () => {
                 runCommittedCli("provider", "delete", "anthr"),
             ]
 
-            // A temporary assignment stays on the machine for now: assigning
-            // or unassigning one commits nothing.
             const lastCommitSubjects = [
                 "company update",
                 "position create qa",
@@ -131,10 +129,10 @@ describe("a command that changes the company", () => {
                 "employee create llm claude",
                 "employee update claude",
                 "position assign qa claude",
-                "position assign qa claude",
-                "position assign qa claude",
+                "position assign-temporarily directors qa",
+                "position unassign-temporarily qa",
                 "employee create llm julie",
-                "employee create llm julie",
+                "position assign-temporarily employee qa julie",
                 "employee update-id julie julia",
                 "employee replace claude julia",
                 "position unassign qa",

@@ -3,7 +3,7 @@ import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { type Position, PositionConfigSchema } from "./schema.ts"
-import { deletePositionState, hasPosition, savePosition } from "./storage.ts"
+import { hasPosition, savePosition } from "./storage.ts"
 
 export async function createPosition(
     projectRoot: string,
@@ -22,9 +22,6 @@ export async function createPosition(
         createdAt: new Date().toISOString(),
         description,
     }
-    await Promise.all([
-        savePosition(projectRoot, position),
-        deletePositionState(projectRoot, id),
-    ])
+    await savePosition(projectRoot, position)
     return position
 }

@@ -12,7 +12,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 const { runCli, getProjectPath } = useTemporaryProject()
 
 function getPositionStatePath(id: string): string {
-    return getProjectPath(".aico", ".state", "positions", `${id}.json`)
+    return getProjectPath(".aico", "positions", id, "state.json")
 }
 
 async function loadPositionStateFile(id: string): Promise<unknown> {
