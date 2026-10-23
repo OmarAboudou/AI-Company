@@ -2,11 +2,11 @@
 
 Run a virtual company staffed by LLM agents, from the command line.
 
-A company lives in a `.aico/` folder, in the directory you run AICo from, which must be inside a git repository: the company itself, its positions (job descriptions), its employees, run by LLMs, the LLM providers whose models they run on, the threads of messages its positions exchange, their tasks, and the journal of what happens. Everything is a plain file, to edit through the CLI or by hand.
+A company lives in its project's git repository, on a branch of its own, `aico/data`: the company itself, the project it carries out, its positions (job descriptions), its employees, run by LLMs, the LLM providers whose models they run on, the threads of messages its positions exchange, their tasks, and the journal of what happens. Everything is a plain file, to edit through the CLI or by hand, and every change is a commit.
 
 `aico init` also creates the director's position, the company's management.
 
-AICo is being rebuilt from llmco, as decided in [#135](https://github.com/OmarAboudou/AI-Company/issues/135): its first series renamed it and removed what the vision drops, such as mentions and fictitious human employees; tickets, deliverables in git, memory and decisions come next, one series at a time. Until the tickets bring their task types, nothing gives a position a task: AICo ships none yet, so the commands that run and work tasks have nothing to do.
+AICo is being rebuilt from llmco, as decided in [#135](https://github.com/OmarAboudou/AI-Company/issues/135): its first series renamed it and removed what the vision drops, such as mentions and fictitious human employees; the second moved its data to the reserved branch, as decided in [#136](https://github.com/OmarAboudou/AI-Company/issues/136); tickets, deliverables in git, memory and decisions come next, one series at a time. Until the tickets bring their task types, nothing gives a position a task: AICo ships none yet, so the commands that run and work tasks have nothing to do.
 
 ## Getting started
 
@@ -20,7 +20,7 @@ bun link
 Then, from any project under git:
 
 ```bash
-aico init -n "Acme" -d "We build things."
+aico init -n "Acme" -d "A to-do app for small teams."
 aico position create backend-developer -t "Backend Developer" -d "You build the API."
 aico provider create anthropic -n "Anthropic" -e ANTHROPIC_API_KEY
 aico provider connection create anthropic anthropic-messages -u https://api.anthropic.com
@@ -30,7 +30,25 @@ aico position assign backend-developer claude-senior
 aico thread create -s "Choice of framework" -b "Hono or Express for our API?"
 ```
 
-`thread create` prints the new thread's id. `aico --help` lists every command.
+`init`'s description is the project's, which every LLM employee is given; `aico project update` changes it. `thread create` prints the new thread's id. `aico --help` lists every command; each works from any folder of the repository, as git's do.
+
+## Where the company lives
+
+The company lives on its own branch, `aico/data`, which AICo creates without any history in common with your code: your branches carry only your project. AICo checks it out in `.aico/`, at the top of your working copy, and lists `.aico/` in `.git/info/exclude`, so that `git status` stays clean.
+
+Each command that changes the company, and each tool call of a task, is a commit of its own on `aico/data`, named after it:
+
+```bash
+git -C .aico log --oneline
+# 2c3d4e5 aico message send 2026-10-23-choice-of-framework
+# 9b8c7d6 aico thread create
+# 1e2f3a4 aico position create backend-developer
+# 5a6b7c8 aico init
+```
+
+AICo commits as you, as git names you (`user.name` and `user.email`), and never pushes `aico/data`: publishing the company is yours to decide, since its threads and its journal would become as public as your repository. Once you push it, with `git push origin aico/data`, a clone finds the company again: AICo checks the branch out at its first command. A file you edit by hand in `.aico/` is committed by the next command that changes the company, in a commit of its own.
+
+What stays on your machine lives in `.aico/.state/`, which git ignores: each run's whole conversation, the turn you prepare, and the lock that keeps two commands from changing the company at once.
 
 ## Writing in threads
 
@@ -44,7 +62,7 @@ aico thread show <thread-id>                          # in Markdown
 aico thread show <thread-id> --json | jq -r .body     # one message per line
 ```
 
-Whoever works a position is its default employee, unless the position is assigned temporarily: to another employee, or to the directors, the people working on the repository, so that no LLM does its tasks meanwhile. The temporary assignment stays on your machine, in `.aico/.state/`, which git ignores.
+Whoever works a position is its default employee, unless the position is assigned temporarily: to another employee, or to the directors, the people working on the repository, so that no LLM does its tasks meanwhile.
 
 ```bash
 aico position interim employee backend-developer claude-junior   # another employee works it
