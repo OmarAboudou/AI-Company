@@ -31,7 +31,13 @@ const claude: Employee = {
     modelId: "claude-opus-5-5",
 }
 
-const omar: Employee = { id: "omar", name: "Omar Aboudou", kind: "human" }
+const omar: Employee = {
+    id: "omar",
+    name: "Omar Aboudou",
+    kind: "llm",
+    providerId: "anthropic",
+    modelId: "opus",
+}
 
 describe("saveEmployee", () => {
     test("writes config.json in a folder named after the id", async () => {
@@ -51,7 +57,13 @@ describe("saveEmployee", () => {
     })
 
     test("writes the id history to history.json, out of config.json", async () => {
-        const omar = { id: "omar", name: "Omar", kind: "human" } as const
+        const omar = {
+            id: "omar",
+            name: "Omar",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        } as const
         const createdAt = "2026-10-18T14:00:00.000Z"
         const formerIds = [{ id: "dev", until: "2026-10-19T09:00:00.000Z" }]
 
@@ -67,7 +79,12 @@ describe("saveEmployee", () => {
             Bun.file(join(employeeFolderPath, "config.json")).json(),
             Bun.file(join(employeeFolderPath, "history.json")).json(),
         ])
-        expect(config).toEqual({ name: "Omar", kind: "human" })
+        expect(config).toEqual({
+            name: "Omar",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        })
         expect(history).toEqual({ createdAt, formerIds })
     })
 })

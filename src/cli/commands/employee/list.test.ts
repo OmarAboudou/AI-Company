@@ -42,12 +42,13 @@ describe("aico employee", () => {
     }
 
     test("list aligns names and models after the ids, sorted by id", () => {
-        runCli("employee", "create", "human", "omar", "-n", "Omar Aboudou")
+        const model = ["-p", "anthropic", "-m", "claude-opus-5-5"]
+        runCli("employee", "create", "llm", "omar", "-n", "Omar", ...model)
         createClaude()
 
         expect(runCli("employee", "list").stdout).toBe(
             "claude-senior  Claude Senior  anthropic/claude-opus-5-5\n" +
-                "omar           Omar Aboudou   human\n",
+                "omar           Omar           anthropic/claude-opus-5-5\n",
         )
     })
 
@@ -76,10 +77,6 @@ describe("aico position assign and unassign", () => {
                 title: "QA Tester",
                 description: "",
             }),
-            createEmployee(projectRoot, "omar", {
-                name: "Omar",
-                kind: "human",
-            }),
             createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" }),
         ])
         await createLlmConnection(
@@ -98,6 +95,12 @@ describe("aico position assign and unassign", () => {
             providerId: "anthropic",
             modelId: "claude-opus-5-5",
         })
+        await createEmployee(projectRoot, "omar", {
+            name: "Omar",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "claude-opus-5-5",
+        })
     })
 
     test.each(["--positions", "-p"])(
@@ -108,7 +111,7 @@ describe("aico position assign and unassign", () => {
 
             expect(runCli("employee", "list", flag).stdout).toBe(
                 "claude-senior  Claude Senior  anthropic/claude-opus-5-5  developer, qa-tester\n" +
-                    "omar           Omar           human                      (none)\n",
+                    "omar           Omar           anthropic/claude-opus-5-5  (none)\n",
             )
         },
     )

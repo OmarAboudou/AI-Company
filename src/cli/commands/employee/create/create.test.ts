@@ -25,11 +25,20 @@ describe("aico employee", () => {
     })
 
     test("hire is an alias of create", () => {
-        const hiring = runCli("employee", "hire", "human", "omar", "-n", "Omar")
+        const model = ["-p", "anthropic", "-m", "claude-opus-5-5"]
+        const hiring = runCli(
+            "employee",
+            "hire",
+            "llm",
+            "omar",
+            "-n",
+            "Omar",
+            ...model,
+        )
         expect(hiring.exitCode).toBe(0)
 
         expect(runCli("employee", "show", "omar").stdout).toBe(
-            "# Omar\n\nkind: human\npositions: (none)\n",
+            "# Omar\n\nkind: llm\nprovider: anthropic\nmodel: claude-opus-5-5\npositions: (none)\n",
         )
     })
 

@@ -22,10 +22,6 @@ describe("aico position assign and unassign", () => {
                 title: "QA Tester",
                 description: "",
             }),
-            createEmployee(projectRoot, "omar", {
-                name: "Omar",
-                kind: "human",
-            }),
             createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" }),
         ])
         await createLlmConnection(
@@ -40,6 +36,12 @@ describe("aico position assign and unassign", () => {
         })
         await createEmployee(projectRoot, "claude-senior", {
             name: "Claude Senior",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "claude-opus-5-5",
+        })
+        await createEmployee(projectRoot, "omar", {
+            name: "Omar",
             kind: "llm",
             providerId: "anthropic",
             modelId: "claude-opus-5-5",

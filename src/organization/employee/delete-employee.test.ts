@@ -17,7 +17,13 @@ let projectRoot: string
 beforeEach(async () => {
     projectRoot = await createTemporaryCompany()
     await Promise.all([
-        saveEmployee(projectRoot, { id: "omar", name: "Omar", kind: "human" }),
+        saveEmployee(projectRoot, {
+            id: "omar",
+            name: "Omar",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        }),
         savePosition(projectRoot, { id: "dev", title: "Dev", description: "" }),
         savePosition(projectRoot, { id: "qa", title: "QA", description: "" }),
     ])

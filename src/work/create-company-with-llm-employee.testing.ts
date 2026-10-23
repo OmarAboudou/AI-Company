@@ -44,7 +44,12 @@ export async function createCompanyWithLlmEmployee(
             createPosition(projectRoot, id, { title: id, description: "" }),
         ),
     ])
-    await createEmployee(projectRoot, "julie", { name: "Julie", kind: "human" })
+    await createEmployee(projectRoot, "julie", {
+        name: "Julie",
+        kind: "llm",
+        providerId: "anthropic",
+        modelId: "opus",
+    })
     await assignPosition(projectRoot, "backend-developer", "claude")
     const { thread } = await createThread(projectRoot, {}, { subject: "Stack" })
     return { projectRoot, threadId: thread.id }

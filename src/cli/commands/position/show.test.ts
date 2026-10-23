@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { saveExampleLlmModel } from "../../../llm/model/save-example-llm-model.testing.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
 import { createEmployee } from "../../../organization/employee/create-employee.ts"
 import { assignPosition } from "../../../organization/position/assign-position.ts"
@@ -14,6 +15,7 @@ describe("aico position", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })
+        await saveExampleLlmModel(projectRoot)
     })
 
     test("show fails for an unknown position", () => {
@@ -25,6 +27,7 @@ describe("aico position assign-temporarily and unassign-temporarily", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })
+        await saveExampleLlmModel(projectRoot)
         await Promise.all([
             createPosition(projectRoot, "developer", {
                 title: "Developer",
@@ -36,13 +39,22 @@ describe("aico position assign-temporarily and unassign-temporarily", () => {
             }),
             createEmployee(projectRoot, "omar", {
                 name: "Omar",
-                kind: "human",
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
             }),
             createEmployee(projectRoot, "julie", {
                 name: "Julie",
-                kind: "human",
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
             }),
-            createEmployee(projectRoot, "bob", { name: "Bob", kind: "human" }),
+            createEmployee(projectRoot, "bob", {
+                name: "Bob",
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
+            }),
         ])
         await assignPosition(projectRoot, "developer", "omar")
     })

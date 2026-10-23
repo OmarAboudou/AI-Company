@@ -20,7 +20,13 @@ beforeEach(async () => {
         savePosition(projectRoot, { id: "dev", title: "Dev", description: "" }),
         savePosition(projectRoot, { id: "qa", title: "QA", description: "" }),
         ...["omar", "julie", "bob"].map((id) =>
-            saveEmployee(projectRoot, { id, name: id, kind: "human" }),
+            saveEmployee(projectRoot, {
+                id,
+                name: id,
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
+            }),
         ),
     ])
 })

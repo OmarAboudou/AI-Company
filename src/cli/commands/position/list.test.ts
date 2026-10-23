@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { createLlmConnection } from "../../../llm/connection/create-llm-connection.ts"
 import { createLlmModel } from "../../../llm/model/create-llm-model.ts"
+import { saveExampleLlmModel } from "../../../llm/model/save-example-llm-model.testing.ts"
 import { createLlmProvider } from "../../../llm/provider/create-llm-provider.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
 import { createEmployee } from "../../../organization/employee/create-employee.ts"
@@ -44,10 +45,6 @@ describe("aico position assign and unassign", () => {
                 title: "QA Tester",
                 description: "",
             }),
-            createEmployee(projectRoot, "omar", {
-                name: "Omar",
-                kind: "human",
-            }),
             createLlmProvider(projectRoot, "anthropic", { name: "Anthropic" }),
         ])
         await createLlmConnection(
@@ -62,6 +59,12 @@ describe("aico position assign and unassign", () => {
         })
         await createEmployee(projectRoot, "claude-senior", {
             name: "Claude Senior",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "claude-opus-5-5",
+        })
+        await createEmployee(projectRoot, "omar", {
+            name: "Omar",
             kind: "llm",
             providerId: "anthropic",
             modelId: "claude-opus-5-5",
@@ -86,6 +89,7 @@ describe("aico position assign-temporarily and unassign-temporarily", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })
+        await saveExampleLlmModel(projectRoot)
         await Promise.all([
             createPosition(projectRoot, "developer", {
                 title: "Developer",
@@ -97,13 +101,22 @@ describe("aico position assign-temporarily and unassign-temporarily", () => {
             }),
             createEmployee(projectRoot, "omar", {
                 name: "Omar",
-                kind: "human",
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
             }),
             createEmployee(projectRoot, "julie", {
                 name: "Julie",
-                kind: "human",
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
             }),
-            createEmployee(projectRoot, "bob", { name: "Bob", kind: "human" }),
+            createEmployee(projectRoot, "bob", {
+                name: "Bob",
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
+            }),
         ])
         await assignPosition(projectRoot, "developer", "omar")
     })

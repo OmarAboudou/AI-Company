@@ -66,7 +66,13 @@ describe("deletePosition", () => {
     })
 
     test("keeps its default employee hired, and returns it", async () => {
-        const omar = { id: "omar", name: "Omar", kind: "human" } as const
+        const omar = {
+            id: "omar",
+            name: "Omar",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        } as const
         await saveEmployee(projectRoot, omar)
         const filledDeveloper = { ...developer, defaultEmployeeId: "omar" }
         await savePosition(projectRoot, filledDeveloper)

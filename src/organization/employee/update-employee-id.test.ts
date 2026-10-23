@@ -23,7 +23,9 @@ beforeEach(async () => {
         saveEmployee(projectRoot, {
             id: "julie",
             name: "Julie",
-            kind: "human",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
         }),
     ])
 })
@@ -35,7 +37,9 @@ afterEach(async () => {
 const omar = {
     id: "omar",
     name: "Omar",
-    kind: "human",
+    kind: "llm",
+    providerId: "anthropic",
+    modelId: "opus",
     createdAt: "2026-10-18T14:00:00.000Z",
 } as const
 

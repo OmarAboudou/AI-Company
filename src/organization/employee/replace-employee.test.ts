@@ -18,7 +18,13 @@ beforeEach(async () => {
     projectRoot = await createTemporaryCompany()
     await Promise.all([
         ...["omar", "alice", "bob"].map((id) =>
-            saveEmployee(projectRoot, { id, name: id, kind: "human" }),
+            saveEmployee(projectRoot, {
+                id,
+                name: id,
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
+            }),
         ),
         savePosition(projectRoot, createPosition("dev", "omar")),
         savePosition(projectRoot, createPosition("qa", "omar")),

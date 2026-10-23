@@ -18,7 +18,13 @@ afterEach(async () => {
 
 describe("loadExistingEmployee", () => {
     test("loads the employee the id names", async () => {
-        const omar = { id: "omar", name: "Omar", kind: "human" } as const
+        const omar = {
+            id: "omar",
+            name: "Omar",
+            kind: "llm",
+            providerId: "anthropic",
+            modelId: "opus",
+        } as const
         await saveEmployee(projectRoot, omar)
 
         const employee = await loadExistingEmployee(projectRoot, "omar")
