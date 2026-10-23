@@ -5,7 +5,7 @@ import { requireCompany } from "../company/require-company.ts"
 import { loadCompany } from "../company/storage.ts"
 import { loadExistingPosition } from "./load-existing-position.ts"
 import type { Position } from "./schema.ts"
-import { deletePositionFolder, deletePositionState } from "./storage.ts"
+import { deletePositionFolder } from "./storage.ts"
 
 export type DeletePositionResult = {
     position: Position
@@ -38,9 +38,6 @@ export async function deletePosition(
             `Position "${position.id}" has tasks pending in these threads: ${pendingThreadIds.join(", ")}. Add --force to delete it anyway; its tasks will wait for a position that no longer exists.`,
         )
     }
-    await Promise.all([
-        deletePositionFolder(projectRoot, position.id),
-        deletePositionState(projectRoot, position.id),
-    ])
+    await deletePositionFolder(projectRoot, position.id)
     return { position, pendingThreadIds }
 }

@@ -61,7 +61,7 @@ export const PositionStateSchema = z
     .meta({
         title: "AICo position state",
         description:
-            "What happens to a position while the company runs, in .aico/.state/positions/<position-id>.json. Written by AICo and ignored by git; absent while the position's default employee works it, or nobody if it is vacant.",
+            "What happens to a position while the company runs, in .aico/positions/<position-id>/state.json. Written by AICo; absent while the position's default employee works it, or nobody if it is vacant.",
     })
 
 export type PositionState = z.infer<typeof PositionStateSchema>

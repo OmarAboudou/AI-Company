@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { spawnGit } from "../../git/spawn-git.ts"
 import { UserError } from "../../user-error.ts"
 import {
     copyPositionFolder,
@@ -174,8 +173,8 @@ describe("copyPositionFolder", () => {
     })
 })
 
-function getStatePath(...segments: string[]): string {
-    return join(projectRoot, ".aico", ".state", ...segments)
+function getStateFilePath(positionId: string): string {
+    return join(projectRoot, ".aico", "positions", positionId, "state.json")
 }
 
 describe("savePositionState", () => {
@@ -183,39 +182,15 @@ describe("savePositionState", () => {
         temporaryAssignment: { kind: "employee", employeeId: "julie" },
     } as const
 
-    test("writes the state in .aico/.state/positions, named after the id", async () => {
+    test("writes the state in the position's folder, as state.json", async () => {
         await savePositionState(projectRoot, developer.id, interimState)
 
-        const stateFile = Bun.file(
-            getStatePath("positions", `${developer.id}.json`),
-        )
+        const stateFile = Bun.file(getStateFilePath(developer.id))
         expect(await stateFile.json()).toEqual(interimState)
     })
 
-    test("writes a .gitignore ignoring the whole state folder", async () => {
-        await savePositionState(projectRoot, developer.id, interimState)
-
-        const gitignoreContent = await Bun.file(
-            getStatePath(".gitignore"),
-        ).text()
-        expect(gitignoreContent.split("\n")).toContain("*")
-    })
-
-    test("leaves nothing for git to commit", async () => {
-        spawnGit(projectRoot, ["init", "-q"])
-
-        await savePositionState(projectRoot, developer.id, interimState)
-
-        const gitStatus = spawnGit(projectRoot, [
-            "status",
-            "--porcelain",
-            "--untracked-files=all",
-        ])
-        expect(gitStatus.stdout.toString()).toBe("")
-    })
-
     test("removes the file of an empty state", async () => {
-        const stateFilePath = getStatePath("positions", `${developer.id}.json`)
+        const stateFilePath = getStateFilePath(developer.id)
         await savePositionState(projectRoot, developer.id, interimState)
         const before = await Bun.file(stateFilePath).exists()
 
@@ -244,7 +219,7 @@ describe("loadPositionState", () => {
     })
 
     test("rejects an invalid state file", async () => {
-        const stateFilePath = getStatePath("positions", `${developer.id}.json`)
+        const stateFilePath = getStateFilePath(developer.id)
         await Bun.write(
             stateFilePath,
             JSON.stringify({ temporaryAssignment: {} }),

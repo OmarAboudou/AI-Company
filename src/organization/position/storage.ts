@@ -2,12 +2,10 @@ import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { copyFolder } from "../../files/copy-folder.ts"
 import { getAicoFolderPath } from "../../files/get-aico-folder-path.ts"
-import { getStateFolderPath } from "../../files/get-state-folder-path.ts"
 import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
 import { readTextFile } from "../../files/read-text-file.ts"
 import { saveJsonFile } from "../../files/save-json-file.ts"
-import { saveState } from "../../files/save-state.ts"
 import { loadIdHistory, saveIdHistory } from "../../ids/id-history-storage.ts"
 import {
     type Position,
@@ -30,11 +28,8 @@ function getPositionFilePaths(projectRoot: string, id: string) {
         config: join(positionFolderPath, "config.json"),
         description: join(positionFolderPath, "description.md"),
         history: join(positionFolderPath, "history.json"),
+        state: join(positionFolderPath, "state.json"),
     }
-}
-
-function getPositionStateFilePath(projectRoot: string, id: string): string {
-    return join(getStateFolderPath(projectRoot), "positions", `${id}.json`)
 }
 
 export async function hasPosition(
@@ -99,7 +94,7 @@ export async function loadPositionState(
     projectRoot: string,
     id: string,
 ): Promise<PositionState> {
-    const path = getPositionStateFilePath(projectRoot, id)
+    const path = getPositionFilePaths(projectRoot, id).state
     if (!(await Bun.file(path).exists())) {
         return {}
     }
@@ -111,20 +106,10 @@ export async function savePositionState(
     id: string,
     state: PositionState,
 ): Promise<void> {
+    const path = getPositionFilePaths(projectRoot, id).state
     if (Object.values(state).every((value) => value === undefined)) {
-        await deletePositionState(projectRoot, id)
+        await rm(path, { force: true })
         return
     }
-    await saveState(
-        projectRoot,
-        getPositionStateFilePath(projectRoot, id),
-        state,
-    )
-}
-
-export async function deletePositionState(
-    projectRoot: string,
-    id: string,
-): Promise<void> {
-    await rm(getPositionStateFilePath(projectRoot, id), { force: true })
+    await saveJsonFile(path, state)
 }

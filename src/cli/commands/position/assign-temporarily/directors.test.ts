@@ -12,7 +12,7 @@ const interimEmployee = ["position", "interim", "employee"]
 const interimDirectors = ["position", "interim", "directors"]
 
 function getPositionStatePath(id: string): string {
-    return getProjectPath(".aico", ".state", "positions", `${id}.json`)
+    return getProjectPath(".aico", "positions", id, "state.json")
 }
 
 async function loadPositionStateFile(id: string): Promise<unknown> {

@@ -4,11 +4,7 @@ import { join } from "node:path"
 import { UserError } from "../../user-error.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
 import { createPosition } from "./create-position.ts"
-import {
-    loadPosition,
-    loadPositionState,
-    savePositionState,
-} from "./storage.ts"
+import { loadPosition } from "./storage.ts"
 
 let projectRoot: string
 
@@ -75,19 +71,6 @@ describe("createPosition", () => {
         )
 
         await expect(creation).rejects.toThrow(UserError)
-    })
-
-    test("drops a state left behind by a former position of that id", async () => {
-        const directorsState = {
-            temporaryAssignment: { kind: "directors" },
-        } as const
-        await savePositionState(projectRoot, "developer", directorsState)
-        const before = await loadPositionState(projectRoot, "developer")
-
-        await createPosition(projectRoot, "developer", developer)
-
-        expect(before).toEqual(directorsState)
-        expect(await loadPositionState(projectRoot, "developer")).toEqual({})
     })
 
     test("refuses to run outside a company", async () => {
