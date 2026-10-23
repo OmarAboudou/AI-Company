@@ -8,7 +8,7 @@ The people working on the repository are no employees: they are the directors, w
 
 - An employee's model exists at its provider: deleting the model or the provider is refused while an employee runs on it.
 - An employee can fill several positions at once, as an LLM can work in several places at once: the positions name it, it names none.
-- An employee id once used, in a thread or as a former id, isn't given to another employee without `--reuse-id`: an employee is a person, and the archives would name two people the same way. The id `director` is reserved for the directors.
+- An employee id once used, in a thread or as a former id, isn't given to another employee without `--reuse-id`: an employee is a person, and the archives would name two people the same way.
 - Renaming an employee records its former id and when it changed, so that what it wrote under the former id still designates it, and rewrites the positions it works. An interrupted renaming leaves the employee twice at worst, never a position naming a missing one.
 - Deleting an employee that works positions needs `--force`, which leaves its positions vacant and ends its temporary assignments.
 
