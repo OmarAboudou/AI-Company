@@ -20,8 +20,8 @@ const runStart = {
     systemPrompt: "You are Julie.",
     tools: [
         {
-            name: "task_mark-as-done",
-            description: "Mark your task as done.",
+            name: "ticket_deliver",
+            description: "Deliver this ticket once its request is met.",
             inputSchema: { type: "object" },
         },
     ],
