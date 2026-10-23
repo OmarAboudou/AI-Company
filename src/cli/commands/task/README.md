@@ -1,6 +1,6 @@
 # `aico task`
 
-Working your tasks as LLM employees do: the same system prompt, message and tools, turn by turn. `aico task next` opens the next task of the positions you work, or shows the one in progress; `aico task work` is an interactive session over the same steps, which asks for each tool's inputs from its schema, long texts in your editor, and waits for your next task until Ctrl+C or Ctrl+D. Ending your session there, as a model does with a turn without any tool call, passes the hand to no one; leaving it in the middle, by Ctrl+C or Ctrl+D, keeps it running, to resume on the same machine.
+Working your tasks as LLM employees do: the same system prompt, message and tools, turn by turn. `aico task next` opens the next task of the positions you hold, or shows the one in progress; `aico task work` is an interactive session over the same steps, which asks for each tool's inputs from its schema, long texts in your editor, and waits for your next task until Ctrl+C or Ctrl+D. Ending your session there, as a model does with a turn without any tool call, passes the hand to no one; leaving it in the middle, by Ctrl+C or Ctrl+D, keeps it running, to resume on the same machine.
 
 ## Invariants
 
