@@ -4,6 +4,7 @@ import { recordEvent } from "../../../journal/record-event.ts"
 import { requireJournalEvent } from "../../../journal/require-journal-event.ts"
 import { loadJournal } from "../../../journal/storage.ts"
 import { actOnTicket } from "../../../messaging/ticket/act/act-on-ticket.ts"
+import { handOverTicket } from "../../../messaging/ticket/act/hand-over-ticket.ts"
 import type { MessageActName } from "../../../messaging/ticket/act/ticket-acts.ts"
 import { createExampleTicket } from "../../../messaging/ticket/create-example-ticket.testing.ts"
 import { createTemporaryCompany } from "../../../organization/company/create-temporary-company.testing.ts"
@@ -93,13 +94,33 @@ async function createSession(taskType: TicketTaskType, task: Task) {
     return taskType.createSession(taskType.paramsSchema.parse(task.params), ctx)
 }
 
-async function loadCancellationReason(task: Task) {
+async function loadCancellationReason(
+    task: Task,
+    taskType: TicketTaskType = handleTaskType,
+) {
     const journal = await loadJournal(projectRoot)
     const position = await loadPosition(projectRoot, task.positionId)
     const causeEvent = requireJournalEvent(journal, task.causeEventId)
     const ctx = { projectRoot, journal, task, position, causeEvent }
-    const params = handleTaskType.paramsSchema.parse(task.params)
-    return handleTaskType.getCancellationReason?.(params, ctx)
+    const params = taskType.paramsSchema.parse(task.params)
+    return taskType.getCancellationReason?.(params, ctx)
+}
+
+async function handOverToDesigner() {
+    await createPosition(projectRoot, "designer", {
+        title: "Designer",
+        description: "",
+    })
+    await handOverTicket(
+        await loadJournal(projectRoot),
+        authors.director,
+        {
+            ticketNumber,
+            body: "The designer knows.",
+            rawAssigneePositionId: "designer",
+        },
+        { depth: 0 },
+    )
 }
 
 async function createUserMessage(taskType: TicketTaskType, positionId: string) {
@@ -190,6 +211,27 @@ describe("a ticket's task", () => {
 
         expect(before).toBeUndefined()
         expect(after).toBe(`Ticket #${ticketNumber} was closed, cancelled.`)
+    })
+
+    test("becomes pointless once its ticket is handed over to another position", async () => {
+        const task = await createTicketTask(handleTaskType, "developer")
+
+        await handOverToDesigner()
+
+        expect(await loadCancellationReason(task)).toBe(
+            `Ticket #${ticketNumber} changed since: @designer has the hand.`,
+        )
+    })
+
+    test("becomes pointless once the hand left its position", async () => {
+        await act("ask", "Bun or Node?")
+        const answering = await createTicketTask(answerTaskType, "director")
+
+        await handOverToDesigner()
+
+        expect(await loadCancellationReason(answering, answerTaskType)).toBe(
+            `Ticket #${ticketNumber} changed since: @designer has the hand.`,
+        )
     })
 
     test("says when no message arrived since the position's last session", async () => {

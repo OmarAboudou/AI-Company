@@ -1,6 +1,10 @@
 import { z } from "zod"
+import { getHandPositionId } from "../../../messaging/ticket/get-hand-position-id.ts"
 import { getTicketStates } from "../../../messaging/ticket/get-ticket-states.ts"
-import { TicketNumberSchema } from "../../../messaging/ticket/schema.ts"
+import {
+    TicketNumberSchema,
+    type TicketStatus,
+} from "../../../messaging/ticket/schema.ts"
 import { loadTicket } from "../../../messaging/ticket/storage.ts"
 import { listPositions } from "../../../organization/position/storage.ts"
 import type { BuiltInToolName } from "../../tool/built-in/built-in.ts"
@@ -23,6 +27,7 @@ type TicketToolName = Extract<
 
 export type TicketTaskTypeDefinition = {
     type: string
+    status: Exclude<TicketStatus, "closed">
     toolNames: TicketToolName[]
     buildIntroduction(situation: TicketSituation): string
     instructions: string
@@ -30,6 +35,7 @@ export type TicketTaskTypeDefinition = {
 
 export function defineTicketTaskType({
     type,
+    status,
     toolNames,
     buildIntroduction,
     instructions,
@@ -58,7 +64,7 @@ export function defineTicketTaskType({
         },
         async getCancellationReason(
             { ticketNumber },
-            { projectRoot, journal },
+            { projectRoot, journal, position },
         ) {
             const [ticket, positions] = await Promise.all([
                 loadTicket(projectRoot, ticketNumber),
@@ -69,9 +75,13 @@ export function defineTicketTaskType({
                 journal.events,
                 positions,
             ).get(ticketNumber)
-            return state?.status === "closed"
-                ? `Ticket #${ticketNumber} was closed, ${state.outcome}.`
-                : undefined
+            if (state?.status === "closed") {
+                return `Ticket #${ticketNumber} was closed, ${state.outcome}.`
+            }
+            const handPositionId = state && getHandPositionId(state)
+            return state?.status === status && handPositionId === position.id
+                ? undefined
+                : `Ticket #${ticketNumber} changed since: @${handPositionId} has the hand.`
         },
     })
 }

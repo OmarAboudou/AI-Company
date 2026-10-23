@@ -3,6 +3,7 @@ import { defineTicketTaskType } from "../define-ticket-task-type.ts"
 
 export const answerTaskType = defineTicketTaskType({
     type: "answer",
+    status: "waiting",
     toolNames: ["ticket_answer", "ticket_cancel"],
     buildIntroduction: (situation) => {
         const { ticket, state } = situation
