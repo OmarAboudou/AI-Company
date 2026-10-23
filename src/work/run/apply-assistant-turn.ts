@@ -1,3 +1,4 @@
+import { runOperation } from "../../git/reserved-branch/run-operation.ts"
 import type {
     AssistantTurn,
     ConversationTurn,
@@ -81,10 +82,11 @@ async function runToolCalls(
     let taskEnding: TaskEnding | undefined
     for (const { id, name, input } of toolCalls) {
         onProgress?.({ kind: "tool-call", name, input })
-        const { text, isError, ...result } = await runToolCall(
-            tools,
-            { name, input },
-            ctx,
+        const operationName = `${name} in task ${ctx.task.id}`
+        const { text, isError, ...result } = await runOperation(
+            ctx.projectRoot,
+            operationName,
+            () => runToolCall(tools, { name, input }, ctx),
         )
         onProgress?.({ kind: "tool-result", name, text, isError })
         toolResults.push({ type: "tool-result", toolCallId: id, text, isError })

@@ -1,10 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { rm } from "node:fs/promises"
 import { z } from "zod"
 import { getAnthropicTools } from "../../llm/anthropic-messages/get-anthropic-tools.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
+import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { taskMarkAsDoneTool } from "../tool/built-in/task/mark-as-done.ts"
 import { taskMarkAsFailedTool } from "../tool/built-in/task/mark-as-failed.ts"
 import { defineTool } from "../tool/define-tool.ts"
@@ -21,7 +20,7 @@ let projectRoot: string
 let writtenNotes: string[]
 
 beforeEach(async () => {
-    projectRoot = await mkdtemp(join(tmpdir(), "aico-"))
+    projectRoot = await createTemporaryCompany()
     writtenNotes = []
 })
 
