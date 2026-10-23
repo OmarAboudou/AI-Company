@@ -15,18 +15,13 @@ const thread: Thread = {
     createdBy: { position: director, committer },
 }
 
-function createMessage(
-    positionId: string,
-    mentions: string[] = [],
-    sentAt = "2026-10-18T14:00:00.000Z",
-): Message {
+function createMessage(positionId: string): Message {
     return {
         threadId: thread.id,
         id: "20261018-140000-000-0000",
         position: { id: positionId, title: positionId },
         committer,
-        mentions,
-        sentAt,
+        sentAt: "2026-10-18T14:00:00.000Z",
         body: "",
     }
 }
@@ -40,18 +35,18 @@ describe("getMemberIds", () => {
         expect(getThreadMemberIds([])).toEqual(["director"])
     })
 
-    test("adds authors and mentioned positions, in order", () => {
+    test("adds the positions that wrote in it, in order", () => {
         const messages = [
-            createMessage("director", ["backend-developer"]),
+            createMessage("director"),
             createMessage("qa-tester"),
-            createMessage("backend-developer", ["director", "designer"]),
+            createMessage("backend-developer"),
+            createMessage("qa-tester"),
         ]
 
         expect(getThreadMemberIds(messages)).toEqual([
             "director",
-            "backend-developer",
             "qa-tester",
-            "designer",
+            "backend-developer",
         ])
     })
 })

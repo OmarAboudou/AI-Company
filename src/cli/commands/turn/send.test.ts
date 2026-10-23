@@ -26,13 +26,13 @@ function sendJulieTurn() {
 
 describe("aico turn send", () => {
     test("runs the turn's tool calls and shows their results", async () => {
-        await addJulieToolCall("message_send", '{"body": "@director Friday."}')
+        await addJulieToolCall("message_send", '{"body": "Friday."}')
 
         const sending = sendJulieTurn()
 
         expect(sending.exitCode).toBe(0)
         expect(sending.stdout).toBe(
-            `→ message_send\n  body: "@director Friday."\n← Sent as entry #2 of thread ${threadId}.\n\nPrepare your next turn with \`aico turn add\`, then send it.\n`,
+            `→ message_send\n  body: "Friday."\n← Sent as entry #2 of thread ${threadId}.\n\nPrepare your next turn with \`aico turn add\`, then send it.\n`,
         )
     })
 

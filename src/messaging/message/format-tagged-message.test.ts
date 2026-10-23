@@ -7,9 +7,8 @@ const question: Message = {
     id: "20261018-140322-123-3f9a",
     position: { id: "director", title: "Director" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
-    mentions: ["backend-developer"],
     sentAt: "2026-10-18T14:03:22.123Z",
-    body: "@backend-developer Hono or Express?\n",
+    body: "Hono or Express?\n",
 }
 
 describe("formatTaggedMessage", () => {
@@ -19,7 +18,7 @@ describe("formatTaggedMessage", () => {
         expect(taggedQuestion).toBe(
             [
                 '<message number="5" from="Omar Aboudou" position="Director (@director)" sent="2026-10-18 14:03 UTC">',
-                "@backend-developer Hono or Express?",
+                "Hono or Express?",
                 "</message>",
             ].join("\n"),
         )

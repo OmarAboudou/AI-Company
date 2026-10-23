@@ -68,7 +68,6 @@ describe("--reuse-id", () => {
             position: { id: "developer", title: "Developer" },
             employee: { id: employeeId, name: "Earlier" },
             committer,
-            mentions: [],
             sentAt,
             body: "Done.",
         })

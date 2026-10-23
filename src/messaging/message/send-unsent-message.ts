@@ -12,7 +12,7 @@ import { listMessages, saveMessage } from "./storage.ts"
 export async function sendUnsentMessage(
     journal: Journal,
     threadId: string,
-    { unknownMentionIds, ...messageContent }: UnsentMessage,
+    unsentMessage: UnsentMessage,
     { depth, runId }: { depth: number; runId?: string },
 ): Promise<Message> {
     const { projectRoot } = journal
@@ -21,7 +21,7 @@ export async function sendUnsentMessage(
     const message = {
         threadId,
         id: createTimeOrderedId(sentAt),
-        ...messageContent,
+        ...unsentMessage,
         sentAt,
     }
     // The event comes first: should the sending stop between the two, an
@@ -32,7 +32,6 @@ export async function sendUnsentMessage(
         threadId,
         messageId: message.id,
         positionId: message.position.id,
-        mentions: message.mentions,
         ...(runId !== undefined && { runId }),
     })
     await saveMessage(projectRoot, message)

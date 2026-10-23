@@ -1,6 +1,6 @@
 # Position
 
-A position is a job in the company: a title, and a job description that whoever works it is given with each of its tasks. It outlives the employees who hold it, as a job does when someone leaves, and it is what threads and tasks address: `@backend-developer` mentions a position, never a person.
+A position is a job in the company: a title, and a job description that whoever works it is given with each of its tasks. It outlives the employees who hold it, as a job does when someone leaves, and it is what threads and tasks address, never a person.
 
 Whoever works a position is its default employee, unless it is assigned temporarily, to another employee or to the directors, the people working on the repository; with neither, the position is vacant, and its tasks wait. The director's position, management's, is always worked by the directors.
 

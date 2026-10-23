@@ -94,55 +94,6 @@ describe("aico message send", () => {
     })
 })
 
-describe("mentions", () => {
-    let threadId = ""
-
-    beforeEach(async () => {
-        const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme", description: "" })
-        const { thread } = await createThread(
-            projectRoot,
-            {},
-            {
-                subject: "Budget",
-            },
-        )
-        threadId = thread.id
-    })
-
-    beforeEach(async () => {
-        const projectRoot = getProjectPath()
-        await Promise.all([
-            createPosition(projectRoot, "backend-developer", {
-                title: "Backend",
-                description: "",
-            }),
-            createPosition(projectRoot, "qa-tester", {
-                title: "QA Tester",
-                description: "",
-            }),
-        ])
-    })
-
-    function listMentions(): string[][] {
-        const lines = runCli("thread", "show", threadId, "--json").stdout
-        return lines
-            .trimEnd()
-            .split("\n")
-            .map((line) => JSON.parse(line).mentions)
-    }
-
-    test("a mention of no position is reported and ignored", () => {
-        const body = "@qa-testers, a test plan?"
-
-        const sending = runCli("message", "send", threadId, "-b", body)
-
-        expect(sending.exitCode).toBe(0)
-        expect(sending.stderr).toContain('"@qa-testers" names no position')
-        expect(listMentions()).toEqual([[]])
-    })
-})
-
 describe("--as-position", () => {
     const interimDirectors = ["position", "interim", "directors"]
 

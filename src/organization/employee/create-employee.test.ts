@@ -52,7 +52,6 @@ async function archiveMessageBy(employeeId: string) {
         position: director,
         employee: { id: employeeId, name: "Earlier" },
         committer,
-        mentions: [],
         sentAt,
         body: "Done.",
     })

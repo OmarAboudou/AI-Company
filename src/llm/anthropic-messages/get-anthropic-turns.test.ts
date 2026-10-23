@@ -11,7 +11,7 @@ const sendingCall: ToolCallBlock = {
     type: "tool-call",
     id: "toolu_01",
     name: "message_send",
-    input: { body: "@director Hono." },
+    input: { body: "Hono." },
 }
 
 const answeringTurn: AssistantTurn = {
@@ -43,7 +43,7 @@ describe("getAnthropicTurns", () => {
                 id: "toolu_01",
                 caller: { type: "direct" },
                 name: "message_send",
-                input: { body: "@director Hono." },
+                input: { body: "Hono." },
             },
         ]
         const modelResponse = createModelResponse("anthropic-messages", {
@@ -66,7 +66,7 @@ describe("getAnthropicTurns", () => {
                     type: "tool_use",
                     id: "toolu_01",
                     name: "message_send",
-                    input: { body: "@director Hono." },
+                    input: { body: "Hono." },
                 },
             ],
         })

@@ -31,7 +31,6 @@ beforeEach(async () => {
             threadId,
             messageId: "20261018-140322-123-3f9a",
             positionId: "director",
-            mentions: [],
         },
     )
     const uncreatedTask = createUncreatedTask(exampleTaskType, {

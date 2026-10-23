@@ -6,7 +6,6 @@ import {
     createBodyOption,
 } from "../../options.ts"
 import { printCreatedTasks } from "../../print-created-tasks.ts"
-import { printUnknownMentions } from "../../print-unknown-mentions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { readBody } from "../../read-body.ts"
 
@@ -22,14 +21,16 @@ export function registerThreadCreateCommand(threadCommand: Command): void {
         .addOption(createAsPositionOption())
         .action(async (options) => {
             const body = await readBody(options)
-            const { thread, unknownMentionIds, createdTasks } =
-                await createThread(projectRoot, process.env, {
+            const { thread, createdTasks } = await createThread(
+                projectRoot,
+                process.env,
+                {
                     subject: options.subject,
                     body,
                     asPositionId: options.asPosition,
-                })
+                },
+            )
             console.log(thread.id)
-            printUnknownMentions(unknownMentionIds)
             printCreatedTasks(createdTasks)
         })
 }

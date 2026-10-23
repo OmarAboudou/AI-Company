@@ -47,7 +47,7 @@ function callMessageSend(input: unknown) {
 
 describe("message_send", () => {
     test("sends the message as the run's position and employee", async () => {
-        const body = "@qa-tester Hono is in, can you test it?"
+        const body = "Hono is in, can you test it?"
 
         await callMessageSend({ threadId, body })
 
@@ -55,7 +55,6 @@ describe("message_send", () => {
         expect(message).toMatchObject({
             position: { id: "backend-developer", title: "backend-developer" },
             employee: { id: "claude", name: "Claude Senior" },
-            mentions: ["qa-tester"],
             body,
         })
     })
@@ -78,7 +77,7 @@ describe("message_send", () => {
     })
 
     test("records it at the task's depth, with the run that sent it", async () => {
-        await callMessageSend({ threadId, body: "@qa-tester Ready." })
+        await callMessageSend({ threadId, body: "Ready." })
 
         const [message] = await listMessages(projectRoot, threadId)
         expect(await listEvents(projectRoot)).toMatchObject([
@@ -100,14 +99,6 @@ describe("message_send", () => {
             text: `Sent as entry #2 of thread ${threadId}.`,
             isError: false,
         })
-    })
-
-    test("warns of a mention that names no position", async () => {
-        const body = "@qa Can you test it?"
-
-        const result = await callMessageSend({ threadId, body })
-
-        expect(result.text).toContain('"@qa" names no position')
     })
 
     test("refuses an unknown thread, and sends nothing", async () => {

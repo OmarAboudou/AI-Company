@@ -4,7 +4,6 @@ Working your tasks as LLM employees do: the same system prompt, message and tool
 
 ## Invariants
 
-- The session warns before adding a message that mentions nobody, since it asks no one to act.
 - What you prepared stays in your turn when the session stops.
 
 ## Decisions

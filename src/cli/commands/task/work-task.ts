@@ -1,5 +1,4 @@
-import { confirm, input, select } from "@inquirer/prompts"
-import { findMentions } from "../../../messaging/message/find-mentions.ts"
+import { input, select } from "@inquirer/prompts"
 import { UserError } from "../../../user-error.ts"
 import type { OpenedTask } from "../../../work/task/open-next-task.ts"
 import type { TaskEnding } from "../../../work/tool/define-tool.ts"
@@ -42,21 +41,10 @@ const turnActionChoices: {
 
 const emptyTurnMessage = "Your turn is empty: call a tool or write a text."
 
-function isMessageMentioningNobody(
-    toolName: string,
-    toolInput: Record<string, unknown>,
-): boolean {
-    return (
-        toolName === "message_send" &&
-        typeof toolInput.body === "string" &&
-        findMentions(toolInput.body).positionIds.length === 0
-    )
-}
-
 async function addToolCall(
     { run }: OpenedTask,
     { projectRoot, environment, context }: TaskSession,
-): Promise<string | undefined> {
+): Promise<string> {
     const { tools } = run.conversation
     const toolName = await select(
         {
@@ -74,19 +62,6 @@ async function addToolCall(
         throw new Error(`The run gives no tool named ${toolName}`)
     }
     const toolInput = await askToolInput(tool, createInquirerPrompts(context))
-    if (isMessageMentioningNobody(toolName, toolInput)) {
-        const isConfirmed = await confirm(
-            {
-                message:
-                    "This message mentions nobody, so it asks nobody to act. Add it anyway?",
-                default: false,
-            },
-            context,
-        )
-        if (!isConfirmed) {
-            return undefined
-        }
-    }
     const rawInput = JSON.stringify(toolInput)
     await addTurnTool(projectRoot, environment, { toolName, rawInput })
     return toolName
@@ -139,11 +114,9 @@ export async function workTask(
                         openedTask,
                         taskSession,
                     )
-                    if (addedToolName !== undefined) {
-                        console.log(
-                            `Added to turn ${turnNumber}: a call to ${addedToolName}.`,
-                        )
-                    }
+                    console.log(
+                        `Added to turn ${turnNumber}: a call to ${addedToolName}.`,
+                    )
                     break
                 }
                 case "text":

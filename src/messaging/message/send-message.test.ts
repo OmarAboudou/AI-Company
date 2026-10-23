@@ -61,7 +61,7 @@ describe("sendMessage", () => {
     test("records in the journal that a person sent it, at depth 0", async () => {
         const before = await listEvents(projectRoot)
 
-        const { message } = await sendInThread("@qa-tester, a test plan?")
+        const { message } = await sendInThread("A test plan?")
 
         const messageSentEvent = {
             type: "message-sent",
@@ -69,7 +69,6 @@ describe("sendMessage", () => {
             threadId,
             messageId: message.id,
             positionId: "director",
-            mentions: ["qa-tester"],
         }
         expect(before).toEqual([])
         expect((await listEvents(projectRoot)).at(0)).toMatchObject(
@@ -94,26 +93,14 @@ describe("sendMessage", () => {
         expect(await listTasks(projectRoot)).toEqual(createdTasks)
     })
 
-    test("records its author and the positions it mentions", async () => {
-        const body = "@qa-tester, a test plan?"
-
-        const { message } = await sendInThread(body)
+    test("records its author", async () => {
+        const { message } = await sendInThread("A test plan?")
 
         expect(message).toMatchObject({
             position: { id: "director", title: "Director" },
             committer,
-            mentions: ["qa-tester"],
         })
         expect(message.employee).toBeUndefined()
-    })
-
-    test("returns the mentions that name no position", async () => {
-        const body = "@qa-testers, a test plan?"
-
-        const sending = await sendInThread(body)
-
-        expect(sending.unknownMentionIds).toEqual(["qa-testers"])
-        expect(sending.message.mentions).toEqual([])
     })
 
     test("writes from the author's only position in the thread", async () => {
@@ -134,9 +121,13 @@ describe("sendMessage", () => {
         environment.AICO_CURRENT_HUMAN_ID = "julie"
         const { thread } = await createThread(projectRoot, environment, {
             subject: "Logo",
-            body: "@qa-tester, is the logo broken?",
+            body: "Is the logo broken?",
         })
         delete environment.AICO_CURRENT_HUMAN_ID
+        await sendMessage(projectRoot, environment, thread.id, {
+            body: "Checking.",
+            asPositionId: "qa-tester",
+        })
 
         const { message } = await sendMessage(
             projectRoot,
@@ -152,12 +143,10 @@ describe("sendMessage", () => {
     })
 
     test("refuses a message it can't send, and sends nothing", async () => {
-        const body = "@qa-tester:claude-senior, a review?"
-
-        const sending = sendInThread(body)
+        const sending = sendInThread("  \n")
 
         await expect(sending).rejects.toThrow(UserError)
-        await expect(sending).rejects.toThrow("Mentioning a specific employee")
+        await expect(sending).rejects.toThrow("The message's body is empty.")
         expect(await listBodies()).toEqual([])
         expect(await listEvents(projectRoot)).toEqual([])
     })

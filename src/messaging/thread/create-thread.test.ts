@@ -67,7 +67,7 @@ describe("createThread", () => {
     })
 
     test("sends the body as the thread's first message", async () => {
-        const body = "@qa-tester, a test plan?"
+        const body = "A test plan?"
 
         const creation = await createThread(projectRoot, environment, {
             subject: "Tests",
@@ -77,13 +77,13 @@ describe("createThread", () => {
         const messages = await listMessages(projectRoot, creation.thread.id)
         expect(messages).toHaveLength(1)
         expect(messages[0]).toEqual(creation.firstMessage)
-        expect(messages[0]).toMatchObject({ body, mentions: ["qa-tester"] })
+        expect(messages[0]).toMatchObject({ body })
     })
 
     test("records in the journal that a person sent the first message", async () => {
         const creation = await createThread(projectRoot, environment, {
             subject: "Tests",
-            body: "@qa-tester, a test plan?",
+            body: "A test plan?",
         })
 
         const messageSentEvent = {
@@ -91,7 +91,6 @@ describe("createThread", () => {
             depth: 0,
             threadId: creation.thread.id,
             messageId: creation.firstMessage?.id,
-            mentions: ["qa-tester"],
         }
         expect((await listEvents(projectRoot)).at(0)).toMatchObject(
             messageSentEvent,
@@ -113,17 +112,6 @@ describe("createThread", () => {
                 params: { threadId: thread.id },
             },
         ])
-    })
-
-    test("returns the mentions that name no position", async () => {
-        const body = "@qa-testers, a test plan?"
-
-        const creation = await createThread(projectRoot, environment, {
-            subject: "Tests",
-            body,
-        })
-
-        expect(creation.unknownMentionIds).toEqual(["qa-testers"])
     })
 
     test("writes from the position given, among those the person works", async () => {
@@ -150,14 +138,12 @@ describe("createThread", () => {
     })
 
     test("refuses a first message it can't send before creating the thread", async () => {
-        const body = "@qa-tester:claude-senior, a review?"
-
         const creation = createThread(projectRoot, environment, {
             subject: "Tests",
-            body,
+            body: "  \n",
         })
 
-        await expect(creation).rejects.toThrow("Mentioning a specific employee")
+        await expect(creation).rejects.toThrow("The message's body is empty.")
         expect(await listThreads(projectRoot)).toEqual([])
     })
 

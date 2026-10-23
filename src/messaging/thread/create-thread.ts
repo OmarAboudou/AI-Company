@@ -18,7 +18,6 @@ import { saveThread } from "./storage.ts"
 export type CreateThreadResult = {
     thread: Thread
     firstMessage: Message | undefined
-    unknownMentionIds: string[]
     createdTasks: Task[]
 }
 
@@ -37,9 +36,7 @@ export async function createThread(
         asPositionId,
     })
     const unsentFirstMessage =
-        body === undefined
-            ? undefined
-            : await createUnsentMessage(projectRoot, author, body)
+        body === undefined ? undefined : createUnsentMessage(author, body)
     const createdAt = new Date().toISOString()
     const config = parseConfig(ThreadConfigSchema, {
         subject,
@@ -52,12 +49,7 @@ export async function createThread(
     }
     await saveThread(projectRoot, thread)
     if (unsentFirstMessage === undefined) {
-        return {
-            thread,
-            firstMessage: undefined,
-            unknownMentionIds: [],
-            createdTasks: [],
-        }
+        return { thread, firstMessage: undefined, createdTasks: [] }
     }
     const journal = await loadJournal(projectRoot)
     const firstMessage = await sendUnsentMessage(
@@ -67,10 +59,5 @@ export async function createThread(
         { depth: 0 },
     )
     const { createdTasks } = await dispatchEvents(journal, catalog)
-    return {
-        thread,
-        firstMessage,
-        unknownMentionIds: unsentFirstMessage.unknownMentionIds,
-        createdTasks,
-    }
+    return { thread, firstMessage, createdTasks }
 }

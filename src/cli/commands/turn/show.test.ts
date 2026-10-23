@@ -17,14 +17,14 @@ describe("aico turn show", () => {
         await addTurnText(projectRoot, julieEnvironment, "Checking.\n")
         await addTurnTool(projectRoot, julieEnvironment, {
             toolName: "message_send",
-            rawInput: '{"body": "@director Friday."}',
+            rawInput: '{"body": "Friday."}',
         })
 
         const show = runCliWithEnv(julieEnvironment, "turn", "show")
 
         expect(show.exitCode).toBe(0)
         expect(show.stdout).toBe(
-            'Checking.\n→ message_send\n  body: "@director Friday."\n',
+            'Checking.\n→ message_send\n  body: "Friday."\n',
         )
     })
 

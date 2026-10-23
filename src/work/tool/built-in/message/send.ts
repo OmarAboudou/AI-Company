@@ -1,7 +1,6 @@
 import { z } from "zod"
 import { readGitCommitter } from "../../../../git/read-git-committer.ts"
 import { createUnsentMessage } from "../../../../messaging/message/create-unsent-message.ts"
-import { formatUnknownMentionMessage } from "../../../../messaging/message/format-unknown-mention-message.ts"
 import { sendUnsentMessage } from "../../../../messaging/message/send-unsent-message.ts"
 import { listMessages } from "../../../../messaging/message/storage.ts"
 import { loadExistingThread } from "../../../../messaging/thread/load-existing-thread.ts"
@@ -37,11 +36,7 @@ export const messageSendTool = defineTool({
             }),
             committer: readGitCommitter(projectRoot),
         }
-        const unsentMessage = await createUnsentMessage(
-            projectRoot,
-            author,
-            body,
-        )
+        const unsentMessage = createUnsentMessage(author, body)
         const message = await sendUnsentMessage(
             ctx.journal,
             thread.id,
@@ -51,13 +46,6 @@ export const messageSendTool = defineTool({
         const threadMessages = await listMessages(projectRoot, thread.id)
         const entryNumber =
             threadMessages.findIndex(({ id }) => id === message.id) + 1
-        return {
-            text: [
-                `Sent as entry #${entryNumber} of thread ${thread.id}.`,
-                ...unsentMessage.unknownMentionIds.map(
-                    formatUnknownMentionMessage,
-                ),
-            ].join("\n"),
-        }
+        return { text: `Sent as entry #${entryNumber} of thread ${thread.id}.` }
     },
 })
