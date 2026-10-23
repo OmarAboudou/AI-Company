@@ -1,6 +1,6 @@
 # Files
 
-How AICo reads and writes the files of the company's folder: JSON checked against a schema, Markdown texts, and listings in order. It tells apart what git versions, the company itself, from the local state, which stays on one machine.
+How AICo reads and writes the files of the company's folder: JSON checked against a schema, Markdown texts, and listings in order. It tells apart what git versions on the reserved branch, the company itself, from the local state, which stays on one machine: the runs' transcripts, the turns being prepared and the operations' lock.
 
 ## Invariants
 
@@ -13,3 +13,4 @@ How AICo reads and writes the files of the company's folder: JSON checked agains
 
 - [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the local state ignores itself, as pytest's cache does.
 - [#86](https://github.com/OmarAboudou/AI-Company/issues/86): what several domains use sits at the root of the code, named after what it does.
+- [#136](https://github.com/OmarAboudou/AI-Company/issues/136): what the local state keeps, and what it no longer does.
