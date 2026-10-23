@@ -21,7 +21,7 @@ describe("aico position update", () => {
 
         expect(update.stdout).toBe('Updated position "developer".\n')
         expect(show).toBe(
-            "# Lead\n\ncurrent employee: (vacant)\ndefault employee: (none)\n\nCode.\n",
+            "# Lead\n\nheld by: the directors, the repository's git users\n\nCode.\n",
         )
     })
 

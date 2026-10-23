@@ -50,9 +50,7 @@ describe("aico run", () => {
 
         expect(running.exitCode).toBe(0)
         expect(running.stdout).toContain("No task is ready. These wait:")
-        expect(running.stdout).toMatch(
-            /@qa-tester +handle +for a vacant position/,
-        )
+        expect(running.stdout).toMatch(/@qa-tester +handle +for the directors/)
     })
 
     test("lists as waiting a task of a type it doesn't know", async () => {

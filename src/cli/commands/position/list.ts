@@ -5,34 +5,15 @@ import type { PositionAssignment } from "../../../organization/position/schema.t
 import { printColumns } from "../../print-columns.ts"
 import { projectRoot } from "../../project-root.ts"
 
-function formatCurrentEmployee({
-    position,
-    state,
-    currentWorker,
-}: PositionAssignment): string {
-    if (currentWorker === undefined) {
-        return "(vacant)"
-    }
-    if (state.temporaryAssignment === undefined) {
-        return currentWorker.kind === "directors"
-            ? "(git users)"
-            : currentWorker.employeeId
-    }
-    const { defaultEmployeeId } = position
-    const temporaryNote =
-        defaultEmployeeId === undefined
-            ? "temporarily"
-            : `temporarily; default: ${defaultEmployeeId}`
-    return currentWorker.kind === "directors"
-        ? `(git users, ${temporaryNote})`
-        : `${currentWorker.employeeId} (${temporaryNote})`
+function formatHolder({ holder }: PositionAssignment): string {
+    return holder.kind === "employee" ? holder.employeeId : "(git users)"
 }
 
 export function registerPositionListCommand(positionCommand: Command): void {
     positionCommand
         .command("list")
         .description(
-            "List the positions and who works each now: its default employee, or whoever it is assigned to temporarily.",
+            "List the positions and who holds each: an LLM employee, or the directors, the repository's git users.",
         )
         .action(async () => {
             await requireCompany(projectRoot)
@@ -41,7 +22,7 @@ export function registerPositionListCommand(positionCommand: Command): void {
                 assignments.map((assignment) => [
                     assignment.position.id,
                     assignment.position.title,
-                    formatCurrentEmployee(assignment),
+                    formatHolder(assignment),
                 ]),
             )
         })

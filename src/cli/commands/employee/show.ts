@@ -4,7 +4,7 @@ import { loadExistingEmployee } from "../../../organization/employee/load-existi
 import { listPositions } from "../../../organization/position/storage.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
-import { formatPositionsFilledBy } from "./format-positions-filled-by.ts"
+import { formatPositionsHeldBy } from "./format-positions-held-by.ts"
 
 export function registerEmployeeShowCommand(employeeCommand: Command): void {
     employeeCommand
@@ -27,7 +27,7 @@ export function registerEmployeeShowCommand(employeeCommand: Command): void {
                     `kind: ${employee.kind}`,
                     `provider: ${employee.providerId}`,
                     `model: ${employee.modelId}`,
-                    `positions: ${formatPositionsFilledBy(positions, employee.id)}`,
+                    `positions: ${formatPositionsHeldBy(positions, employee.id)}`,
                 ].join("\n"),
             )
         })

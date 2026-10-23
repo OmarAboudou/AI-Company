@@ -1,26 +1,15 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { createLlmConnection } from "../../../llm/connection/create-llm-connection.ts"
 import { createLlmModel } from "../../../llm/model/create-llm-model.ts"
-import { saveExampleLlmModel } from "../../../llm/model/save-example-llm-model.testing.ts"
 import { createLlmProvider } from "../../../llm/provider/create-llm-provider.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
 import { createEmployee } from "../../../organization/employee/create-employee.ts"
-import { assignPositionTemporarily } from "../../../organization/position/assign-position-temporarily.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-function getPositionStatePath(id: string): string {
-    return getProjectPath(".aico", "positions", id, "state.json")
-}
-
-async function loadPositionStateFile(id: string): Promise<unknown> {
-    const file = Bun.file(getPositionStatePath(id))
-    return (await file.exists()) ? file.json() : undefined
-}
-
-describe("aico position assign and unassign", () => {
+describe("aico position assign", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme" })
@@ -64,37 +53,36 @@ describe("aico position assign and unassign", () => {
         return Bun.file(path).json()
     }
 
-    test("assign sets the default employee of a vacant position", async () => {
+    test("assign gives an employee the position the directors held", async () => {
         const assignment = runCli("position", "assign", "developer", "omar")
 
         expect(assignment.exitCode).toBe(0)
         expect(assignment.stdout).toBe(
-            '"omar" is now the default employee of position "developer".\n',
+            '"omar" now holds position "developer".\n',
         )
         expect(await loadPositionConfigFile("developer")).toEqual({
             title: "Developer",
-            defaultEmployeeId: "omar",
+            employeeId: "omar",
         })
     })
 
-    test("assign refuses to replace a default employee without --replace", async () => {
+    test("assign refuses to replace the employee holding it without --replace", async () => {
         runCli("position", "assign", "developer", "claude-senior")
 
         const assignment = runCli("position", "assign", "developer", "omar")
 
         expect(assignment.exitCode).toBe(1)
-        expect(assignment.stderr).toContain(
-            'already has "claude-senior" as default employee',
+        expect(assignment.stderr).toBe(
+            '"claude-senior" already holds position "developer". Add --replace to replace it.\n',
         )
-        expect(assignment.stderr).toContain("--replace")
         expect(await loadPositionConfigFile("developer")).toEqual({
             title: "Developer",
-            defaultEmployeeId: "claude-senior",
+            employeeId: "claude-senior",
         })
     })
 
     test.each(["--replace", "-r"])(
-        "assign %s replaces the default employee",
+        "assign %s replaces the employee holding it",
         async (flag) => {
             runCli("position", "assign", "developer", "claude-senior")
 
@@ -108,87 +96,23 @@ describe("aico position assign and unassign", () => {
 
             expect(assignment.exitCode).toBe(0)
             expect(assignment.stdout).toBe(
-                '"omar" replaces "claude-senior" as the default employee of position "developer".\n',
+                '"omar" replaces "claude-senior" in position "developer".\n',
             )
             expect(await loadPositionConfigFile("developer")).toEqual({
                 title: "Developer",
-                defaultEmployeeId: "omar",
+                employeeId: "omar",
             })
         },
     )
 
-    test("assign accepts the current default employee again", () => {
+    test("assign accepts the employee holding it again", () => {
         runCli("position", "assign", "developer", "omar")
 
         const reassignment = runCli("position", "assign", "developer", "omar")
 
         expect(reassignment.exitCode).toBe(0)
-        expect(reassignment.stdout).toContain("is already the default employee")
-    })
-})
-
-describe("a temporary assignment through the position's lifecycle", () => {
-    const julieState = {
-        temporaryAssignment: { kind: "employee", employeeId: "julie" },
-    }
-
-    beforeEach(async () => {
-        const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme" })
-        await saveExampleLlmModel(projectRoot)
-        await Promise.all([
-            createPosition(projectRoot, "developer", {
-                title: "Developer",
-                description: "",
-            }),
-            createEmployee(projectRoot, "julie", {
-                name: "Julie",
-                kind: "llm",
-                providerId: "anthropic",
-                modelId: "opus",
-            }),
-        ])
-        await assignPositionTemporarily(projectRoot, "developer", {
-            kind: "employee",
-            rawEmployeeId: "julie",
-        })
-    })
-
-    test("assign of the temporary assignee ends its temporary assignment", async () => {
-        const before = await loadPositionStateFile("developer")
-
-        const assignment = runCli("position", "assign", "developer", "julie")
-        const show = runCli("position", "show", "developer").stdout
-
-        expect(before).toEqual(julieState)
-        expect(assignment.stdout).toBe(
-            '"julie" is now the default employee of position "developer", which ends its temporary assignment.\n',
+        expect(reassignment.stdout).toBe(
+            '"omar" already holds position "developer".\n',
         )
-        expect(await loadPositionStateFile("developer")).toBeUndefined()
-        expect(show).toContain("default employee: julie\n\n")
-    })
-
-    test("assign and unassign of another employee keep the temporary assignment", async () => {
-        runCli(
-            "employee",
-            "create",
-            "llm",
-            "bob",
-            "-n",
-            "Bob",
-            "-p",
-            "anthropic",
-            "-m",
-            "opus",
-        )
-
-        const assignment = runCli("position", "assign", "developer", "bob")
-        const unassignment = runCli("position", "unassign", "developer")
-
-        const stillTemporaryMessage =
-            ' It stays assigned temporarily to "julie".\n'
-        expect(assignment.stdout).toEndWith(stillTemporaryMessage)
-        expect(unassignment.stdout).toEndWith(stillTemporaryMessage)
-        expect(await loadPositionStateFile("developer")).toEqual(julieState)
     })
 })

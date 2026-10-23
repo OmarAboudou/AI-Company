@@ -11,7 +11,7 @@ export function registerPositionUpdateCommand(positionCommand: Command): void {
     positionCommand
         .command("update")
         .description(
-            "Update a position: only the options given change. Its default employee changes with assign and unassign.",
+            "Update a position: only the options given change. Who holds it changes with assign and unassign.",
         )
         .argument(
             "<position-id>",

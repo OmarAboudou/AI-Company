@@ -8,22 +8,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-const interimEmployee = ["position", "interim", "employee"]
-const interimDirectors = ["position", "interim", "directors"]
-
-describe("aico position", () => {
-    beforeEach(async () => {
-        const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme" })
-        await saveExampleLlmModel(projectRoot)
-    })
-
-    test("show fails for an unknown position", () => {
-        expect(runCli("position", "show", "developer").exitCode).toBe(1)
-    })
-})
-
-describe("aico position assign-temporarily and unassign-temporarily", () => {
+describe("aico position show", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme" })
@@ -37,40 +22,27 @@ describe("aico position assign-temporarily and unassign-temporarily", () => {
                 title: "Designer",
                 description: "",
             }),
+            createEmployee(projectRoot, "omar", {
+                name: "Omar",
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
+            }),
         ])
-        await createEmployee(projectRoot, "omar", {
-            name: "Omar",
-            kind: "llm",
-            providerId: "anthropic",
-            modelId: "opus",
-        })
-        await createEmployee(projectRoot, "julie", {
-            name: "Julie",
-            kind: "llm",
-            providerId: "anthropic",
-            modelId: "opus",
-        })
-        await createEmployee(projectRoot, "bob", {
-            name: "Bob",
-            kind: "llm",
-            providerId: "anthropic",
-            modelId: "opus",
-        })
         await assignPosition(projectRoot, "developer", "omar")
     })
 
-    test("show says who works the position temporarily", () => {
-        runCli(...interimEmployee, "developer", "julie")
-        runCli(...interimDirectors, "designer")
-
+    test("says who holds the position: an employee, or the directors", () => {
         const developerShow = runCli("position", "show", "developer").stdout
         const designerShow = runCli("position", "show", "designer").stdout
 
-        expect(developerShow).toBe(
-            "# Developer\n\ncurrent employee: julie (temporarily)\ndefault employee: omar\n\n\n",
-        )
+        expect(developerShow).toBe("# Developer\n\nheld by: omar\n\n\n")
         expect(designerShow).toBe(
-            "# Designer\n\ncurrent employee: the repository's git users (temporarily)\ndefault employee: (none)\n\n\n",
+            "# Designer\n\nheld by: the directors, the repository's git users\n\n\n",
         )
+    })
+
+    test("fails for an unknown position", () => {
+        expect(runCli("position", "show", "tester").exitCode).toBe(1)
     })
 })

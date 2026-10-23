@@ -9,21 +9,11 @@ import { runCommandOperation } from "../../run-command-operation.ts"
 
 function formatDeletedMessage({
     employee,
-    vacatedPositionIds,
-    endedTemporaryPositionIds,
+    releasedPositionIds,
 }: DeleteEmployeeResult): string {
-    const changeMessages: string[] = []
-    if (vacatedPositionIds.length > 0) {
-        changeMessages.push(`now vacant: ${vacatedPositionIds.join(", ")}`)
-    }
-    if (endedTemporaryPositionIds.length > 0) {
-        changeMessages.push(
-            `temporary assignments ended: ${endedTemporaryPositionIds.join(", ")}`,
-        )
-    }
-    return changeMessages.length === 0
+    return releasedPositionIds.length === 0
         ? `Deleted employee "${employee.id}".`
-        : `Deleted employee "${employee.id}"; ${changeMessages.join("; ")}.`
+        : `Deleted employee "${employee.id}"; back to the directors: ${releasedPositionIds.join(", ")}.`
 }
 
 export function registerEmployeeDeleteCommand(employeeCommand: Command): void {
@@ -37,7 +27,7 @@ export function registerEmployeeDeleteCommand(employeeCommand: Command): void {
         )
         .option(
             "-f, --force",
-            "delete it even if it fills positions, leaving them vacant, or works them temporarily, ending these assignments",
+            "delete it even if it holds positions, giving them back to the directors",
         )
         .action(async (rawId, { force: shouldForce }, command) => {
             const deletion = await runCommandOperation(command, () =>

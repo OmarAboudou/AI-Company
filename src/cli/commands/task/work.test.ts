@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { createExampleTicket } from "../../../messaging/ticket/create-example-ticket.testing.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
-import { assignPositionTemporarily } from "../../../organization/position/assign-position-temporarily.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
@@ -17,9 +16,6 @@ beforeEach(async () => {
     await createPosition(projectRoot, "qa-tester", {
         title: "QA",
         description: "",
-    })
-    await assignPositionTemporarily(projectRoot, "qa-tester", {
-        kind: "directors",
     })
 })
 

@@ -7,10 +7,7 @@ import { MessageConfigSchema } from "../src/messaging/message/schema.ts"
 import { TicketConfigSchema } from "../src/messaging/ticket/schema.ts"
 import { CompanyConfigSchema } from "../src/organization/company/schema.ts"
 import { EmployeeConfigSchema } from "../src/organization/employee/schema.ts"
-import {
-    PositionConfigSchema,
-    PositionStateSchema,
-} from "../src/organization/position/schema.ts"
+import { PositionConfigSchema } from "../src/organization/position/schema.ts"
 import { builtInEventTypes } from "../src/work/built-in-event-types.ts"
 import { TaskSchema } from "../src/work/task/schema.ts"
 import { StagedTurnSchema } from "../src/work/turn/schema.ts"
@@ -38,7 +35,6 @@ const zodSchemas = {
     event: BuiltInEventSchema,
     task: TaskSchema,
     "id-history": IdHistorySchema,
-    "position-state": PositionStateSchema,
     "staged-turn": StagedTurnSchema,
 }
 

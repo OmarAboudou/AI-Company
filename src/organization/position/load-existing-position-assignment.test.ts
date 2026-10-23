@@ -3,21 +3,15 @@ import { rm } from "node:fs/promises"
 import { UserError } from "../../user-error.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
 import { loadExistingPositionAssignment } from "./load-existing-position-assignment.ts"
-import { savePosition, savePositionState } from "./storage.ts"
+import { savePosition } from "./storage.ts"
 
 let projectRoot: string
 
 const developer = { id: "developer", title: "Developer", description: "" }
-const directors = { kind: "directors" } as const
 
 beforeEach(async () => {
     projectRoot = await createTemporaryCompany()
-    await Promise.all([
-        savePosition(projectRoot, developer),
-        savePositionState(projectRoot, "developer", {
-            temporaryAssignment: directors,
-        }),
-    ])
+    await savePosition(projectRoot, developer)
 })
 
 afterEach(async () => {
@@ -25,7 +19,7 @@ afterEach(async () => {
 })
 
 describe("loadExistingPositionAssignment", () => {
-    test("loads the position the id names, its state and who works it now", async () => {
+    test("loads the position the id names, with who holds it", async () => {
         const assignment = await loadExistingPositionAssignment(
             projectRoot,
             "developer",
@@ -34,8 +28,7 @@ describe("loadExistingPositionAssignment", () => {
         expect(assignment).toEqual({
             position: developer,
             isDirectorPosition: false,
-            state: { temporaryAssignment: directors },
-            currentWorker: directors,
+            holder: { kind: "directors" },
         })
     })
 

@@ -1,7 +1,7 @@
 import { loadCompany } from "../company/storage.ts"
 import { getPositionAssignment } from "./get-position-assignment.ts"
 import type { PositionAssignment } from "./schema.ts"
-import { listPositions, loadPositionState } from "./storage.ts"
+import { listPositions } from "./storage.ts"
 
 export async function listPositionAssignments(
     projectRoot: string,
@@ -10,10 +10,7 @@ export async function listPositionAssignments(
         listPositions(projectRoot),
         loadCompany(projectRoot),
     ])
-    return Promise.all(
-        positions.map(async (position) => {
-            const state = await loadPositionState(projectRoot, position.id)
-            return getPositionAssignment(position, state, directorPositionId)
-        }),
+    return positions.map((position) =>
+        getPositionAssignment(position, directorPositionId),
     )
 }

@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, test } from "bun:test"
 import { chmod, mkdir } from "node:fs/promises"
 import { join } from "node:path"
 import { createCompany } from "../../../organization/company/create-company.ts"
-import { assignPositionTemporarily } from "../../../organization/position/assign-position-temporarily.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 import {
@@ -30,9 +29,6 @@ beforeEach(async () => {
     await createPosition(projectRoot, "graphics", {
         title: "Graphics",
         description: "",
-    })
-    await assignPositionTemporarily(projectRoot, "graphics", {
-        kind: "directors",
     })
     const aicoPath = getHomePath("bin", "aico")
     await Bun.write(

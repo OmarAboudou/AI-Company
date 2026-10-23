@@ -2,39 +2,28 @@ import { describe, expect, test } from "bun:test"
 import { getPositionAssignment } from "../position/get-position-assignment.ts"
 import { getPositionsWorkedByDirectors } from "./get-positions-worked-by-directors.ts"
 
-const directors = { kind: "directors" } as const
-const claudeWorker = { kind: "employee", employeeId: "claude" } as const
-
 const assignments = [
     getPositionAssignment(
         {
             id: "dev",
             title: "Developer",
             description: "",
-            defaultEmployeeId: "claude",
+            employeeId: "claude",
         },
-        {},
         "director",
     ),
     getPositionAssignment(
         { id: "director", title: "Director", description: "" },
-        {},
         "director",
     ),
     getPositionAssignment(
-        { id: "qa", title: "QA", description: "", defaultEmployeeId: "claude" },
-        { temporaryAssignment: directors },
-        "director",
-    ),
-    getPositionAssignment(
-        { id: "ux", title: "UX", description: "" },
-        { temporaryAssignment: claudeWorker },
+        { id: "qa", title: "QA", description: "" },
         "director",
     ),
 ]
 
 describe("getPositionsWorkedByDirectors", () => {
-    test("gives the director's position and what the directors cover", () => {
+    test("gives the positions no employee holds, the director's among them", () => {
         const positionIds = getPositionsWorkedByDirectors(assignments).map(
             ({ position }) => position.id,
         )

@@ -1,7 +1,6 @@
 import { createGitRepository } from "../git/create-git-repository.testing.ts"
 import { createExampleTicket } from "../messaging/ticket/create-example-ticket.testing.ts"
 import { createTemporaryCompany } from "../organization/company/create-temporary-company.testing.ts"
-import { assignPositionTemporarily } from "../organization/position/assign-position-temporarily.ts"
 import { createPosition } from "../organization/position/create-position.ts"
 
 export type CompanyWorkedByDirectors = {
@@ -20,7 +19,6 @@ export async function createCompanyWorkedByDirectors(): Promise<CompanyWorkedByD
         ["designer", "Designer"],
     ] as const) {
         await createPosition(projectRoot, id, { title, description: "" })
-        await assignPositionTemporarily(projectRoot, id, { kind: "directors" })
     }
     const ticket = await createExampleTicket(projectRoot, {
         title: "Release",

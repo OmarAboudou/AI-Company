@@ -23,9 +23,9 @@ export function registerPositionDeleteCommand(positionCommand: Command): void {
                     deletePosition(projectRoot, rawId, { shouldForce }),
                 )
             const deletedMessage =
-                position.defaultEmployeeId === undefined
+                position.employeeId === undefined
                     ? `Deleted position "${position.id}"`
-                    : `Deleted position "${position.id}"; its default employee "${position.defaultEmployeeId}" stays hired`
+                    : `Deleted position "${position.id}"; its employee "${position.employeeId}" stays hired`
             console.log(
                 pendingTicketNumbers.length === 0
                     ? `${deletedMessage}.`

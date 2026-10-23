@@ -31,7 +31,7 @@ beforeEach(async () => {
     await Promise.all([
         saveEmployee(projectRoot, claude),
         ...[
-            { id: "backend-developer", defaultEmployeeId: "claude" },
+            { id: "backend-developer", employeeId: "claude" },
             { id: "qa-tester" },
         ].map((position) =>
             savePosition(projectRoot, {
@@ -98,7 +98,7 @@ describe("listPendingTasks", () => {
         ])
     })
 
-    test("lists as waiting the tasks of positions no LLM works, saying why", async () => {
+    test("lists as waiting the tasks of positions no LLM holds, saying why", async () => {
         for (const positionId of ["director", "qa-tester", "ux"]) {
             await askPosition(positionId)
         }
@@ -113,7 +113,7 @@ describe("listPendingTasks", () => {
         )
         expect(reasons).toEqual([
             "worked-by-directors",
-            "vacant-position",
+            "worked-by-directors",
             "deleted-position",
         ])
     })
@@ -123,7 +123,7 @@ describe("listPendingTasks", () => {
             id: "designer",
             title: "Designer",
             description: "",
-            defaultEmployeeId: "bob",
+            employeeId: "bob",
         })
         await askPosition("designer")
         const refusalMessage =

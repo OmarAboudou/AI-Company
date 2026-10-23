@@ -13,5 +13,6 @@ Management writes it through the command line or by hand, and git versions it, o
 - [#7](https://github.com/OmarAboudou/AI-Company/issues/7): positions are separate from the employees who fill them.
 - [#24](https://github.com/OmarAboudou/AI-Company/issues/24): a position names the employee filling it.
 - [#41](https://github.com/OmarAboudou/AI-Company/issues/41): everything created can be updated and deleted.
-- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the director's position, the people at the keyboard, temporary assignments and the id history.
-- [#136](https://github.com/OmarAboudou/AI-Company/issues/136): the project's description, and temporary assignments versioned.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the director's position, the people at the keyboard and the id history.
+- [#136](https://github.com/OmarAboudou/AI-Company/issues/136): the project's description.
+- [#145](https://github.com/OmarAboudou/AI-Company/issues/145): a position's single holder, the user or an LLM employee.

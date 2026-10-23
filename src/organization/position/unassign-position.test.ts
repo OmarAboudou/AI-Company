@@ -3,12 +3,7 @@ import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { UserError } from "../../user-error.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
-import {
-    loadPosition,
-    loadPositionState,
-    savePosition,
-    savePositionState,
-} from "./storage.ts"
+import { loadPosition, savePosition } from "./storage.ts"
 import { unassignPosition } from "./unassign-position.ts"
 
 let projectRoot: string
@@ -25,42 +20,30 @@ const developer = {
     id: "developer",
     title: "Developer",
     description: "",
-    defaultEmployeeId: "omar",
+    employeeId: "omar",
 }
 
 describe("unassignPosition", () => {
-    test("makes the position vacant", async () => {
+    test("gives the position back to the directors", async () => {
         await savePosition(projectRoot, developer)
 
         const unassignment = await unassignPosition(projectRoot, "developer")
 
         const position = await loadPosition(projectRoot, "developer")
-        expect(position.defaultEmployeeId).toBeUndefined()
+        expect(position.employeeId).toBeUndefined()
         expect(unassignment.previousEmployeeId).toBe("omar")
     })
 
-    test("changes nothing for a vacant position", async () => {
-        const { defaultEmployeeId, ...vacantDeveloper } = developer
-        await savePosition(projectRoot, vacantDeveloper)
+    test("changes nothing for a position the directors hold", async () => {
+        const { employeeId, ...directorsDeveloper } = developer
+        await savePosition(projectRoot, directorsDeveloper)
 
         const unassignment = await unassignPosition(projectRoot, "developer")
 
         const savedPosition = await loadPosition(projectRoot, "developer")
 
-        expect(savedPosition).toEqual(vacantDeveloper)
+        expect(savedPosition).toEqual(directorsDeveloper)
         expect(unassignment.previousEmployeeId).toBeUndefined()
-    })
-
-    test("keeps the temporary assignment", async () => {
-        const julieWorker = { kind: "employee", employeeId: "julie" } as const
-        const state = { temporaryAssignment: julieWorker }
-        await savePosition(projectRoot, developer)
-        await savePositionState(projectRoot, "developer", state)
-
-        const unassignment = await unassignPosition(projectRoot, "developer")
-
-        expect(await loadPositionState(projectRoot, "developer")).toEqual(state)
-        expect(unassignment.temporaryAssignment).toEqual(julieWorker)
     })
 
     test("refuses an unknown position", async () => {

@@ -1,6 +1,6 @@
 # Task
 
-A task is a piece of work for a position: its type, its parameters, the position it is for, and the event that caused it, such as a message. Whoever works the position does it: an LLM employee in `aico run`, a person through the task commands; a vacant position's tasks wait until someone works it.
+A task is a piece of work for a position: its type, its parameters, the position it is for, and the event that caused it, such as a message. Whoever holds the position does it: an LLM employee in `aico run`, a person through the task commands.
 
 A task's state is derived from the journal: queued once created, running once a run of it starts, then done or failed; it is cancelled instead once it became pointless. Tasks form a flat list, in which a task of a tree names its parent, as GitHub's sub-issues are ordinary issues linked to a parent.
 

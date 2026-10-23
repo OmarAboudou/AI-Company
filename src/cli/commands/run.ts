@@ -17,7 +17,6 @@ import { projectRoot } from "../project-root.ts"
 const waitingReasonTexts: Record<WaitingTask["reason"], string> = {
     "unknown-type": "of a type this version of AICo doesn't know",
     "deleted-position": "for a deleted position",
-    "vacant-position": "for a vacant position",
     "worked-by-directors": "for the directors",
     running: "already running, in another process",
     paused: "until the company is relaunched",

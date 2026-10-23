@@ -4,7 +4,7 @@ import { listEmployees } from "../../../organization/employee/storage.ts"
 import { listPositions } from "../../../organization/position/storage.ts"
 import { printColumns } from "../../print-columns.ts"
 import { projectRoot } from "../../project-root.ts"
-import { formatPositionsFilledBy } from "./format-positions-filled-by.ts"
+import { formatPositionsHeldBy } from "./format-positions-held-by.ts"
 
 export function registerEmployeeListCommand(employeeCommand: Command): void {
     employeeCommand
@@ -34,7 +34,7 @@ export function registerEmployeeListCommand(employeeCommand: Command): void {
                     return shouldListPositions
                         ? [
                               ...row,
-                              formatPositionsFilledBy(positions, employee.id),
+                              formatPositionsHeldBy(positions, employee.id),
                           ]
                         : row
                 }),

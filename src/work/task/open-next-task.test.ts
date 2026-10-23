@@ -4,7 +4,7 @@ import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import { recordEvent } from "../../journal/record-event.ts"
 import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { createExampleTicket } from "../../messaging/ticket/create-example-ticket.testing.ts"
-import { createPosition } from "../../organization/position/create-position.ts"
+import { savePosition } from "../../organization/position/storage.ts"
 import { createCompanyWorkedByDirectors } from "../create-company-worked-by-directors.testing.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
 import { pauseCompany } from "../pause/pause-company.ts"
@@ -199,10 +199,12 @@ describe("openNextTask among the person's positions", () => {
         expect(openedTask?.task).toEqual(logo.task)
     })
 
-    test("refuses a selected position the person doesn't work", async () => {
-        await createPosition(projectRoot, "support", {
+    test("refuses a selected position the person doesn't hold", async () => {
+        await savePosition(projectRoot, {
+            id: "support",
             title: "Support",
             description: "",
+            employeeId: "claude",
         })
         const environment = { AICO_CURRENT_POSITION_ID: "support" }
 

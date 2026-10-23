@@ -18,7 +18,6 @@ import { listTasks } from "./storage.ts"
 export type WaitingReason =
     | "unknown-type"
     | "deleted-position"
-    | "vacant-position"
     | "worked-by-directors"
     | "running"
     | "paused"
@@ -47,11 +46,8 @@ function getPendingTask(
     if (assignment === undefined) {
         return { ...waitingTask, reason: "deleted-position" }
     }
-    const { position, currentWorker } = assignment
-    if (currentWorker === undefined) {
-        return { ...waitingTask, reason: "vacant-position" }
-    }
-    if (currentWorker.kind === "directors") {
+    const { position, holder } = assignment
+    if (holder.kind === "directors") {
         return { ...waitingTask, reason: "worked-by-directors" }
     }
     // A task serves once: a model's session cut short fails its task
@@ -62,10 +58,10 @@ function getPendingTask(
     if (isPaused) {
         return { ...waitingTask, reason: "paused" }
     }
-    const employee = employees.find(({ id }) => id === currentWorker.employeeId)
+    const employee = employees.find(({ id }) => id === holder.employeeId)
     if (employee === undefined) {
         throw new UserError(
-            `Position "${position.id}" names employee "${currentWorker.employeeId}", who doesn't exist. Run \`aico position show ${position.id}\`.`,
+            `Position "${position.id}" names employee "${holder.employeeId}", who doesn't exist. Run \`aico position show ${position.id}\`.`,
         )
     }
     return { kind: "ready", task, position, employee }

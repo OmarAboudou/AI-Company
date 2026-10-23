@@ -9,12 +9,7 @@ import { createTask } from "../../work/task/create-task.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
 import { hasEmployee, saveEmployee } from "../employee/storage.ts"
 import { deletePosition } from "./delete-position.ts"
-import {
-    hasPosition,
-    loadPositionState,
-    savePosition,
-    savePositionState,
-} from "./storage.ts"
+import { hasPosition, savePosition } from "./storage.ts"
 
 let projectRoot: string
 
@@ -54,22 +49,15 @@ async function askPosition(positionId: string): Promise<number> {
 }
 
 describe("deletePosition", () => {
-    test("deletes the position and its state", async () => {
-        const directors = {
-            temporaryAssignment: { kind: "directors" },
-        } as const
+    test("deletes the position", async () => {
         await savePosition(projectRoot, developer)
-        await savePositionState(projectRoot, "developer", directors)
-        const before = await loadPositionState(projectRoot, "developer")
 
         await deletePosition(projectRoot, "developer")
 
-        expect(before).toEqual(directors)
         expect(await hasPosition(projectRoot, "developer")).toBe(false)
-        expect(await loadPositionState(projectRoot, "developer")).toEqual({})
     })
 
-    test("keeps its default employee hired, and returns it", async () => {
+    test("keeps its employee hired, and returns it", async () => {
         const omar = {
             id: "omar",
             name: "Omar",
@@ -78,12 +66,12 @@ describe("deletePosition", () => {
             modelId: "opus",
         } as const
         await saveEmployee(projectRoot, omar)
-        const filledDeveloper = { ...developer, defaultEmployeeId: "omar" }
-        await savePosition(projectRoot, filledDeveloper)
+        const heldDeveloper = { ...developer, employeeId: "omar" }
+        await savePosition(projectRoot, heldDeveloper)
 
         const { position } = await deletePosition(projectRoot, "developer")
 
-        expect(position.defaultEmployeeId).toBe("omar")
+        expect(position.employeeId).toBe("omar")
         expect(await hasEmployee(projectRoot, "omar")).toBe(true)
     })
 

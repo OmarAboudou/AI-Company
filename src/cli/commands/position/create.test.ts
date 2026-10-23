@@ -25,7 +25,7 @@ describe("aico position", () => {
         const show = runCli("position", "show", "backend-developer")
         expect(show.exitCode).toBe(0)
         expect(show.stdout).toBe(
-            "# Backend Developer\n\ncurrent employee: (vacant)\ndefault employee: (none)\n\nYou build the API.\n",
+            "# Backend Developer\n\nheld by: the directors, the repository's git users\n\nYou build the API.\n",
         )
     })
 
@@ -80,7 +80,7 @@ describe("--description-file", () => {
 
         expect(creation.exitCode).toBe(0)
         expect(runCli("position", "show", "developer").stdout).toBe(
-            `# Developer\n\ncurrent employee: (vacant)\ndefault employee: (none)\n\n${description}\n`,
+            `# Developer\n\nheld by: the directors, the repository's git users\n\n${description}\n`,
         )
     })
 })
@@ -100,7 +100,7 @@ describe("short options", () => {
         )
 
         expect(runCli("position", "show", "developer").stdout).toBe(
-            "# Developer\n\ncurrent employee: (vacant)\ndefault employee: (none)\n\nYou build the API.\n",
+            "# Developer\n\nheld by: the directors, the repository's git users\n\nYou build the API.\n",
         )
     })
 })

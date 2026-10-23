@@ -4,7 +4,5 @@ import { isWorkedByDirectors } from "./is-worked-by-directors.ts"
 export function getPositionsWorkedByDirectors(
     assignments: PositionAssignment[],
 ): PositionAssignment[] {
-    return assignments.filter(({ currentWorker }) =>
-        isWorkedByDirectors(currentWorker),
-    )
+    return assignments.filter(({ holder }) => isWorkedByDirectors(holder))
 }

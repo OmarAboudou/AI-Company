@@ -1,18 +1,13 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { createLlmConnection } from "../../../llm/connection/create-llm-connection.ts"
 import { createLlmModel } from "../../../llm/model/create-llm-model.ts"
-import { saveExampleLlmModel } from "../../../llm/model/save-example-llm-model.testing.ts"
 import { createLlmProvider } from "../../../llm/provider/create-llm-provider.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
 import { createEmployee } from "../../../organization/employee/create-employee.ts"
-import { assignPosition } from "../../../organization/position/assign-position.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
-
-const interimEmployee = ["position", "interim", "employee"]
-const interimDirectors = ["position", "interim", "directors"]
 
 describe("aico position", () => {
     beforeEach(async () => {
@@ -20,19 +15,19 @@ describe("aico position", () => {
         await createCompany(projectRoot, { name: "Acme" })
     })
 
-    test("list aligns titles and employees after the ids, sorted by id", () => {
+    test("list aligns titles and holders after the ids, sorted by id", () => {
         runCli("position", "create", "qa-tester", "--title", "QA Tester")
         runCli("position", "create", "developer", "--title", "Developer")
 
         expect(runCli("position", "list").stdout).toBe(
-            "developer  Developer  (vacant)\n" +
+            "developer  Developer  (git users)\n" +
                 "director   Director   (git users)\n" +
-                "qa-tester  QA Tester  (vacant)\n",
+                "qa-tester  QA Tester  (git users)\n",
         )
     })
 })
 
-describe("aico position assign and unassign", () => {
+describe("aico position list and show", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme" })
@@ -71,64 +66,16 @@ describe("aico position assign and unassign", () => {
         })
     })
 
-    test("list and show display the default employee", () => {
+    test("list and show display the employee holding a position", () => {
         runCli("position", "assign", "qa-tester", "claude-senior")
 
         expect(runCli("position", "list").stdout).toBe(
-            "developer  Developer  (vacant)\n" +
+            "developer  Developer  (git users)\n" +
                 "director   Director   (git users)\n" +
                 "qa-tester  QA Tester  claude-senior\n",
         )
         expect(runCli("position", "show", "qa-tester").stdout).toBe(
-            "# QA Tester\n\ncurrent employee: claude-senior\ndefault employee: claude-senior\n\n\n",
-        )
-    })
-})
-
-describe("aico position assign-temporarily and unassign-temporarily", () => {
-    beforeEach(async () => {
-        const projectRoot = getProjectPath()
-        await createCompany(projectRoot, { name: "Acme" })
-        await saveExampleLlmModel(projectRoot)
-        await Promise.all([
-            createPosition(projectRoot, "developer", {
-                title: "Developer",
-                description: "",
-            }),
-            createPosition(projectRoot, "designer", {
-                title: "Designer",
-                description: "",
-            }),
-        ])
-        await createEmployee(projectRoot, "omar", {
-            name: "Omar",
-            kind: "llm",
-            providerId: "anthropic",
-            modelId: "opus",
-        })
-        await createEmployee(projectRoot, "julie", {
-            name: "Julie",
-            kind: "llm",
-            providerId: "anthropic",
-            modelId: "opus",
-        })
-        await createEmployee(projectRoot, "bob", {
-            name: "Bob",
-            kind: "llm",
-            providerId: "anthropic",
-            modelId: "opus",
-        })
-        await assignPosition(projectRoot, "developer", "omar")
-    })
-
-    test("list shows who works a position temporarily", () => {
-        runCli(...interimEmployee, "developer", "julie")
-        runCli(...interimDirectors, "designer")
-
-        expect(runCli("position", "list").stdout).toBe(
-            "designer   Designer   (git users, temporarily)\n" +
-                "developer  Developer  julie (temporarily; default: omar)\n" +
-                "director   Director   (git users)\n",
+            "# QA Tester\n\nheld by: claude-senior\n\n\n",
         )
     })
 })

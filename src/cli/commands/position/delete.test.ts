@@ -47,7 +47,7 @@ describe("aico position delete", () => {
         expect(runCli("position", "show", "developer").exitCode).toBe(1)
     })
 
-    test("delete keeps the default employee hired", () => {
+    test("delete keeps the employee holding it hired", () => {
         runCli(
             "employee",
             "create",
@@ -66,7 +66,7 @@ describe("aico position delete", () => {
         const show = runCli("employee", "show", "omar")
 
         expect(deletion.exitCode).toBe(0)
-        expect(deletion.stdout).toContain('default employee "omar" stays hired')
+        expect(deletion.stdout).toContain('its employee "omar" stays hired')
         expect(show.stdout).toContain("positions: (none)")
     })
 

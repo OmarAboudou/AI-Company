@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { PositionConfigSchema, PositionStateSchema } from "./schema.ts"
+import { PositionConfigSchema, WorkerSchema } from "./schema.ts"
 
 const developer = { title: "Developer" }
 
@@ -23,19 +23,16 @@ describe("PositionConfigSchema", () => {
         expect(accepts({ title: "   " })).toBe(false)
     })
 
-    test("accepts the id of the default employee", () => {
-        const filledDeveloper = {
-            ...developer,
-            defaultEmployeeId: "claude-senior",
-        }
+    test("accepts the id of the employee holding the position", () => {
+        const heldDeveloper = { ...developer, employeeId: "claude-senior" }
 
-        const config = PositionConfigSchema.parse(filledDeveloper)
+        const config = PositionConfigSchema.parse(heldDeveloper)
 
-        expect(config).toEqual(filledDeveloper)
+        expect(config).toEqual(heldDeveloper)
     })
 
-    test("rejects a default employee id that is not kebab-case", () => {
-        const config = { ...developer, defaultEmployeeId: "Claude Senior" }
+    test("rejects an employee id that is not kebab-case", () => {
+        const config = { ...developer, employeeId: "Claude Senior" }
 
         expect(accepts(config)).toBe(false)
     })
@@ -51,58 +48,28 @@ describe("PositionConfigSchema", () => {
     })
 })
 
-describe("PositionStateSchema", () => {
-    function acceptsState(state: unknown): boolean {
-        return PositionStateSchema.safeParse(state).success
+describe("WorkerSchema", () => {
+    function acceptsWorker(worker: unknown): boolean {
+        return WorkerSchema.safeParse(worker).success
     }
 
-    test("accepts a position temporarily assigned to an employee", () => {
-        const state = {
-            temporaryAssignment: { kind: "employee", employeeId: "julie" },
-        } as const
+    test("accepts an employee, or the directors", () => {
+        const julie = { kind: "employee", employeeId: "julie" } as const
+        const directors = { kind: "directors" } as const
 
-        expect(PositionStateSchema.parse(state)).toEqual(state)
-    })
-
-    test("accepts a position temporarily assigned to the directors", () => {
-        const state = { temporaryAssignment: { kind: "directors" } } as const
-
-        expect(PositionStateSchema.parse(state)).toEqual(state)
-    })
-
-    test("accepts an employee whose id is directors", () => {
-        const state = {
-            temporaryAssignment: { kind: "employee", employeeId: "directors" },
-        } as const
-
-        expect(PositionStateSchema.parse(state)).toEqual(state)
-    })
-
-    test("accepts a state without temporary assignment", () => {
-        expect(PositionStateSchema.parse({})).toEqual({})
+        expect(WorkerSchema.parse(julie)).toEqual(julie)
+        expect(WorkerSchema.parse(directors)).toEqual(directors)
     })
 
     test("requires an employee id for an employee only", () => {
-        const employeeWithoutId = { kind: "employee" }
-        const directorsWithEmployeeId = {
-            kind: "directors",
-            employeeId: "julie",
-        }
-
-        const employeeState = { temporaryAssignment: employeeWithoutId }
-        const directorsState = { temporaryAssignment: directorsWithEmployeeId }
-
-        expect(acceptsState(employeeState)).toBe(false)
-        expect(acceptsState(directorsState)).toBe(false)
+        expect(acceptsWorker({ kind: "employee" })).toBe(false)
+        expect(acceptsWorker({ kind: "directors", employeeId: "julie" })).toBe(
+            false,
+        )
     })
 
     test("rejects an unknown kind or key", () => {
-        const unknownKindState = { temporaryAssignment: { kind: "team" } }
-        const datedState = {
-            temporaryAssignment: { kind: "directors", since: "" },
-        }
-
-        expect(acceptsState(unknownKindState)).toBe(false)
-        expect(acceptsState(datedState)).toBe(false)
+        expect(acceptsWorker({ kind: "team" })).toBe(false)
+        expect(acceptsWorker({ kind: "directors", since: "" })).toBe(false)
     })
 })

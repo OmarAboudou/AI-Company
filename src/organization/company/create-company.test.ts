@@ -56,7 +56,7 @@ describe("createCompany", () => {
         expect(project).toEqual({ description: "We build things." })
     })
 
-    test("creates the director's position, held by no employee", async () => {
+    test("creates the director's position, which no employee holds", async () => {
         const before = Date.now()
         await createCompany(projectRoot, acme)
         const after = Date.now()
@@ -64,7 +64,7 @@ describe("createCompany", () => {
         const position = await loadPosition(projectRoot, "director")
         const createdTime = Date.parse(position.createdAt ?? "")
         expect(position).toMatchObject({ title: "Director", description: "" })
-        expect(position.defaultEmployeeId).toBeUndefined()
+        expect(position.employeeId).toBeUndefined()
         expect(createdTime).toBeGreaterThanOrEqual(before)
         expect(createdTime).toBeLessThanOrEqual(after)
     })

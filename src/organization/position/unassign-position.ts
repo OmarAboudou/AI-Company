@@ -1,12 +1,10 @@
 import { requireCompany } from "../company/require-company.ts"
 import { loadExistingPositionAssignment } from "./load-existing-position-assignment.ts"
-import type { Worker } from "./schema.ts"
 import { savePosition } from "./storage.ts"
 
 export type UnassignPositionResult = {
     positionId: string
     previousEmployeeId: string | undefined
-    temporaryAssignment: Worker | undefined
 }
 
 export async function unassignPosition(
@@ -14,17 +12,13 @@ export async function unassignPosition(
     rawId: string,
 ): Promise<UnassignPositionResult> {
     await requireCompany(projectRoot)
-    const { position, state } = await loadExistingPositionAssignment(
+    const { position } = await loadExistingPositionAssignment(
         projectRoot,
         rawId,
     )
-    const { defaultEmployeeId, ...vacantPosition } = position
-    if (defaultEmployeeId !== undefined) {
-        await savePosition(projectRoot, vacantPosition)
+    const { employeeId, ...positionHeldByDirectors } = position
+    if (employeeId !== undefined) {
+        await savePosition(projectRoot, positionHeldByDirectors)
     }
-    return {
-        positionId: vacantPosition.id,
-        previousEmployeeId: defaultEmployeeId,
-        temporaryAssignment: state.temporaryAssignment,
-    }
+    return { positionId: position.id, previousEmployeeId: employeeId }
 }

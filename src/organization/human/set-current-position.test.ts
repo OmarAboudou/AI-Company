@@ -3,7 +3,7 @@ import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { UserError } from "../../user-error.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
-import { assignPositionTemporarily } from "../position/assign-position-temporarily.ts"
+import { saveEmployee } from "../employee/storage.ts"
 import { savePosition } from "../position/storage.ts"
 import { setCurrentPosition } from "./set-current-position.ts"
 
@@ -29,21 +29,38 @@ describe("setCurrentPosition", () => {
         expect(position.id).toBe("director")
     })
 
-    test("selects a position assigned temporarily to the directors", async () => {
-        await assignPositionTemporarily(projectRoot, "graphics", {
-            kind: "directors",
-        })
-
+    test("selects a position no employee holds", async () => {
         const position = await setCurrentPosition(projectRoot, "graphics")
 
         expect(position.id).toBe("graphics")
     })
 
-    test("refuses a position the directors don't work, saying how to", async () => {
+    test("refuses a position an LLM employee holds, saying how to take it back", async () => {
+        await Promise.all([
+            saveEmployee(projectRoot, {
+                id: "claude",
+                name: "Claude Senior",
+                kind: "llm",
+                providerId: "anthropic",
+                modelId: "opus",
+            }),
+            savePosition(projectRoot, {
+                id: "graphics",
+                title: "Graphics",
+                description: "",
+                employeeId: "claude",
+            }),
+        ])
+
         const selection = setCurrentPosition(projectRoot, "graphics")
 
         await expect(selection).rejects.toThrow(UserError)
-        await expect(selection).rejects.toThrow("assign-temporarily directors")
+        await expect(selection).rejects.toThrow(
+            "Claude Senior, an LLM employee, holds it",
+        )
+        await expect(selection).rejects.toThrow(
+            "`aico position unassign graphics`",
+        )
     })
 
     test("refuses an unknown position", async () => {

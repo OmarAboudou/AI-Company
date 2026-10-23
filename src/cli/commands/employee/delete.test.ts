@@ -7,20 +7,6 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-const interimEmployee = ["position", "interim", "employee"]
-
-async function loadTemporaryAssignee(positionId: string): Promise<unknown> {
-    const pathSegments = [".aico", "positions", positionId, "state.json"]
-    const stateFile = Bun.file(getProjectPath(...pathSegments))
-    return (await stateFile.exists())
-        ? (await stateFile.json()).temporaryAssignment
-        : undefined
-}
-
-function createEmployeeWorker(employeeId: string) {
-    return { kind: "employee", employeeId }
-}
-
 describe("aico employee delete", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
@@ -44,7 +30,7 @@ describe("aico employee delete", () => {
         ])
     })
 
-    test("delete removes an employee who fills no position", () => {
+    test("delete removes an employee who holds no position", () => {
         const deletion = runCli("employee", "delete", "omar")
 
         expect(deletion.exitCode).toBe(0)
@@ -57,7 +43,7 @@ describe("aico employee delete", () => {
         expect(runCli("employee", "list").stdout).toContain("No employees")
     })
 
-    test("delete refuses an employee who fills positions", () => {
+    test("delete refuses an employee who holds positions", () => {
         runCli("position", "assign", "developer", "omar")
         runCli("position", "assign", "qa-tester", "omar")
 
@@ -65,14 +51,15 @@ describe("aico employee delete", () => {
         const list = runCli("position", "list").stdout
 
         expect(deletion.exitCode).toBe(1)
-        expect(deletion.stderr).toContain("default employee of developer, qa")
-        expect(deletion.stderr).toContain("--force")
+        expect(deletion.stderr).toBe(
+            'Employee "omar" holds developer, qa-tester. Add --force to delete it anyway and give developer, qa-tester back to the directors.\n',
+        )
         expect(list).toContain("developer  Developer  omar\n")
         expect(list).toContain("qa-tester  QA Tester  omar\n")
     })
 
     test.each(["--force", "-f"])(
-        "delete %s leaves the employee's positions vacant",
+        "delete %s gives the employee's positions back to the directors",
         (flag) => {
             runCli("position", "assign", "developer", "omar")
             runCli("position", "assign", "qa-tester", "omar")
@@ -81,24 +68,11 @@ describe("aico employee delete", () => {
             const list = runCli("position", "list").stdout
 
             expect(deletion.exitCode).toBe(0)
-            expect(deletion.stdout).toContain("vacant: developer, qa-tester")
-            expect(list).toContain("developer  Developer  (vacant)\n")
-            expect(list).toContain("qa-tester  QA Tester  (vacant)\n")
+            expect(deletion.stdout).toBe(
+                'Deleted employee "omar"; back to the directors: developer, qa-tester.\n',
+            )
+            expect(list).toContain("developer  Developer  (git users)\n")
+            expect(list).toContain("qa-tester  QA Tester  (git users)\n")
         },
     )
-
-    test("delete --force ends its temporary assignments", async () => {
-        runCli("position", "assign", "developer", "omar")
-        runCli(...interimEmployee, "qa-tester", "omar")
-        const before = await loadTemporaryAssignee("qa-tester")
-
-        const deletion = runCli("employee", "delete", "omar", "--force")
-        const after = await loadTemporaryAssignee("qa-tester")
-
-        expect(deletion.stdout).toBe(
-            'Deleted employee "omar"; now vacant: developer; temporary assignments ended: qa-tester.\n',
-        )
-        expect(before).toEqual(createEmployeeWorker("omar"))
-        expect(after).toBeUndefined()
-    })
 })
