@@ -37,11 +37,11 @@
             "type": "string",
             "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
             "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-            "description": "Id of the event the task was created for, i.e. the name of its file in .llmco/journal. The task's depth is that event's, plus one."
+            "description": "Id of the event the task was created for, i.e. the name of its file in .aico/journal. The task's depth is that event's, plus one."
         }
     },
     "required": ["askedAt", "type", "params", "positionId", "causeEventId"],
     "additionalProperties": false,
     "title": "llmco task",
-    "description": "A task for a position, in .llmco/tasks/<task-id>.json, the id being its cause event's followed by a hash of its type, position and parameters, so that two machines asking for the same task write the same file. Never modified: the task's state comes from the journal's events."
+    "description": "A task for a position, in .aico/tasks/<task-id>.json, the id being its cause event's followed by a hash of its type, position and parameters, so that two machines asking for the same task write the same file. Never modified: the task's state comes from the journal's events."
 }

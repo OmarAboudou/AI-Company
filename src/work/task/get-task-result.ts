@@ -9,7 +9,7 @@ export function getTaskResult<Result extends TaskResult>(
     const validation = resultReadingSchema.safeParse(taskDoneEvent.result)
     if (!validation.success) {
         throw new UserError(
-            `Invalid .llmco/journal/${taskDoneEvent.id}.json, its result:\n${z.prettifyError(validation.error)}`,
+            `Invalid .aico/journal/${taskDoneEvent.id}.json, its result:\n${z.prettifyError(validation.error)}`,
         )
     }
     return validation.data

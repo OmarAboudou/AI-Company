@@ -1,12 +1,12 @@
 import { join } from "node:path"
-import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
+import { getAicoFolderPath } from "../../files/get-aico-folder-path.ts"
 import { listJsonFileIds } from "../../files/list-json-file-ids.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
 import { saveNewJsonFile } from "../../files/save-new-json-file.ts"
 import { type Task, TaskSchema } from "./schema.ts"
 
 function getTasksFolderPath(projectRoot: string): string {
-    return join(getLlmcoFolderPath(projectRoot), "tasks")
+    return join(getAicoFolderPath(projectRoot), "tasks")
 }
 
 function getTaskFilePath(projectRoot: string, id: string): string {

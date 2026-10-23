@@ -1,9 +1,9 @@
 const entityFolderPaths = {
-    thread: ".llmco/threads",
-    position: ".llmco/positions",
-    employee: ".llmco/employees",
-    provider: ".llmco/llm-providers",
-    model: ".llmco/llm-providers/<provider-id>/models",
+    thread: ".aico/threads",
+    position: ".aico/positions",
+    employee: ".aico/employees",
+    provider: ".aico/llm-providers",
+    model: ".aico/llm-providers/<provider-id>/models",
 }
 
 export function formatIdArgumentDescription(

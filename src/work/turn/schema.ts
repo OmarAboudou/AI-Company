@@ -21,7 +21,7 @@ export const StagedTurnSchema = z
     .meta({
         title: "llmco staged turn",
         description:
-            "The turn a person prepares in a run, in .llmco/.state/runs/<run-id>.turn.json, until aico turn send sends it. Written by llmco and ignored by git.",
+            "The turn a person prepares in a run, in .aico/.state/runs/<run-id>.turn.json, until aico turn send sends it. Written by llmco and ignored by git.",
     })
 
 export type StagedTurn = z.infer<typeof StagedTurnSchema>

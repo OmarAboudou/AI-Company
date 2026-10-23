@@ -53,7 +53,7 @@ describe("saveLlmModel", () => {
 
         const configPath = join(
             projectRoot,
-            ".llmco",
+            ".aico",
             "llm-providers",
             "ollama",
             "models",
@@ -80,7 +80,7 @@ describe("loadLlmModel", () => {
     test("rejects an invalid config.json", async () => {
         const providerFolderPath = join(
             projectRoot,
-            ".llmco",
+            ".aico",
             "llm-providers",
             "ollama",
         )

@@ -31,7 +31,7 @@ const answerSent = {
 }
 
 async function readTaskFile(root: string, taskId: string): Promise<string> {
-    return Bun.file(join(root, ".llmco", "tasks", `${taskId}.json`)).text()
+    return Bun.file(join(root, ".aico", "tasks", `${taskId}.json`)).text()
 }
 
 describe("createTask", () => {

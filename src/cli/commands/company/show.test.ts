@@ -13,14 +13,14 @@ describe("corrupted files", () => {
     test("company show names the invalid file and field", async () => {
         runCli("init", "--name", "Acme")
         await Bun.write(
-            getProjectPath(".llmco", "company", "config.json"),
+            getProjectPath(".aico", "company", "config.json"),
             '{ "name": "" }',
         )
 
         const show = runCli("company", "show")
 
         expect(show.exitCode).toBe(1)
-        expect(show.stderr).toStartWith("Invalid .llmco/company/config.json:")
+        expect(show.stderr).toStartWith("Invalid .aico/company/config.json:")
         expect(show.stderr).toContain("at name")
     })
 })

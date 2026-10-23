@@ -18,7 +18,7 @@
                             "type": "string",
                             "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                             "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                            "description": "Id of the employee working the position, i.e. the name of its folder in .llmco/employees."
+                            "description": "Id of the employee working the position, i.e. the name of its folder in .aico/employees."
                         }
                     },
                     "required": ["kind", "employeeId"],
@@ -41,5 +41,5 @@
     },
     "additionalProperties": false,
     "title": "llmco position state",
-    "description": "What happens to a position while the company runs, in .llmco/.state/positions/<position-id>.json. Written by llmco and ignored by git; absent while the position's default employee works it, or nobody if it is vacant."
+    "description": "What happens to a position while the company runs, in .aico/.state/positions/<position-id>.json. Written by llmco and ignored by git; absent while the position's default employee works it, or nobody if it is vacant."
 }

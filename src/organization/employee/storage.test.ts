@@ -39,7 +39,7 @@ describe("saveEmployee", () => {
 
         const configPath = join(
             projectRoot,
-            ".llmco",
+            ".aico",
             "employees",
             "claude-senior",
             "config.json",
@@ -59,7 +59,7 @@ describe("saveEmployee", () => {
 
         const employeeFolderPath = join(
             projectRoot,
-            ".llmco",
+            ".aico",
             "employees",
             "omar",
         )
@@ -86,7 +86,7 @@ describe("loadEmployee", () => {
 
     test("rejects an invalid config.json", async () => {
         await Bun.write(
-            join(projectRoot, ".llmco", "employees", "omar", "config.json"),
+            join(projectRoot, ".aico", "employees", "omar", "config.json"),
             JSON.stringify({ name: "Omar", kind: "human", modelId: "x" }),
         )
 

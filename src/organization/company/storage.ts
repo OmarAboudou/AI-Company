@@ -1,12 +1,12 @@
 import { join } from "node:path"
-import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
+import { getAicoFolderPath } from "../../files/get-aico-folder-path.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
 import { readTextFile } from "../../files/read-text-file.ts"
 import { saveJsonFile } from "../../files/save-json-file.ts"
 import { type Company, CompanyConfigSchema } from "./schema.ts"
 
 function getCompanyFilePaths(projectRoot: string) {
-    const companyFolderPath = join(getLlmcoFolderPath(projectRoot), "company")
+    const companyFolderPath = join(getAicoFolderPath(projectRoot), "company")
     return {
         config: join(companyFolderPath, "config.json"),
         description: join(companyFolderPath, "description.md"),

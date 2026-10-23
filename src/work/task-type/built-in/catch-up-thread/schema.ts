@@ -7,7 +7,7 @@ export const catchUpThreadTypeName = "catch-up-thread"
 export const CatchUpThreadParamsSchema = z.strictObject({
     threadId: IdSchema.meta({
         description:
-            "Id of the thread to catch up on, i.e. the name of its folder in .llmco/threads.",
+            "Id of the thread to catch up on, i.e. the name of its folder in .aico/threads.",
     }),
 })
 

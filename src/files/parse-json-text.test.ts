@@ -4,7 +4,7 @@ import { UserError } from "../user-error.ts"
 import { parseJsonText } from "./parse-json-text.ts"
 
 const schema = z.strictObject({ title: z.string().min(1) })
-const location = ".llmco/.state/runs/20261018-140324-000-1b2c.jsonl, line 2"
+const location = ".aico/.state/runs/20261018-140324-000-1b2c.jsonl, line 2"
 
 function parseFakeLine(text: string) {
     return () => parseJsonText(text, schema, location)

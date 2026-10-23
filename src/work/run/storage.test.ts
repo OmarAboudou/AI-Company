@@ -41,7 +41,7 @@ const answeringTurn: AssistantTurn = {
 }
 
 function getTranscriptPath(): string {
-    return join(projectRoot, ".llmco", ".state", "runs", `${runId}.jsonl`)
+    return join(projectRoot, ".aico", ".state", "runs", `${runId}.jsonl`)
 }
 
 async function writeTranscript(lines: object[]): Promise<void> {
@@ -52,7 +52,7 @@ async function writeTranscript(lines: object[]): Promise<void> {
 const writtenAt = "2026-10-18T14:03:24.000Z"
 
 describe("appendRunTranscriptLine", () => {
-    test("writes a JSON object per line in .llmco/.state/runs/, with its time", async () => {
+    test("writes a JSON object per line in .aico/.state/runs/, with its time", async () => {
         const clockTime = Date.now()
 
         await appendRunTranscriptLine(projectRoot, runId, runStart)
@@ -104,7 +104,7 @@ describe("loadRun", () => {
 
         const loading = loadRun(projectRoot, runId)
 
-        const refusalMessage = `Invalid .llmco/.state/runs/${runId}.jsonl, line 2:`
+        const refusalMessage = `Invalid .aico/.state/runs/${runId}.jsonl, line 2:`
         await expect(loading).rejects.toThrow(UserError)
         await expect(loading).rejects.toThrow(refusalMessage)
     })

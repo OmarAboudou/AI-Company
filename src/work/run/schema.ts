@@ -9,7 +9,7 @@ import {
 
 export const RunIdSchema = IdSchema.meta({
     description:
-        "Id of the run, i.e. the name of its transcript in .llmco/.state/runs, kept on the machine that ran it.",
+        "Id of the run, i.e. the name of its transcript in .aico/.state/runs, kept on the machine that ran it.",
 })
 
 const WrittenAtSchema = z.iso.datetime().meta({
@@ -64,7 +64,7 @@ export const RunTranscriptLineSchema = z
     .discriminatedUnion("type", [RunStartLineSchema, RunTurnLineSchema])
     .meta({
         description:
-            "A line of a run's transcript, in .llmco/.state/runs/<run-id>.jsonl: first what the run was given, then each turn of its conversation, in order.",
+            "A line of a run's transcript, in .aico/.state/runs/<run-id>.jsonl: first what the run was given, then each turn of its conversation, in order.",
     })
 
 export type RunTranscriptLine = z.infer<typeof RunTranscriptLineSchema>

@@ -30,7 +30,7 @@ export function buildShellFunction(shell: Shell): string {
         "    esac",
         "}",
         "_aico_prompt_label() {",
-        "    [ -d .llmco ] || return 0",
+        "    [ -d .aico ] || return 0",
         '    local label="${LLMCO_CURRENT_HUMAN_ID:-director}"',
         '    if [ -n "${LLMCO_CURRENT_POSITION_ID-}" ]; then',
         '        label="$label @$LLMCO_CURRENT_POSITION_ID"',

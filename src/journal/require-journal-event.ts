@@ -7,7 +7,7 @@ export function requireJournalEvent(
 ): JournalEvent {
     const event = journal.events.find(({ id }) => id === eventId)
     if (event === undefined) {
-        throw new UserError(`Missing file: .llmco/journal/${eventId}.json`)
+        throw new UserError(`Missing file: .aico/journal/${eventId}.json`)
     }
     return event
 }

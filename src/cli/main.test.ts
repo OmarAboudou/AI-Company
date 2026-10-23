@@ -4,10 +4,10 @@ import { useTemporaryProject } from "./use-temporary-project.testing.ts"
 const { runCli } = useTemporaryProject()
 
 test.each([
-    ["position", "create", ".llmco/positions"],
-    ["employee", "show", ".llmco/employees"],
-    ["provider", "show", ".llmco/llm-providers"],
-    ["model", "show", ".llmco/llm-providers/<provider-id>/models"],
+    ["position", "create", ".aico/positions"],
+    ["employee", "show", ".aico/employees"],
+    ["provider", "show", ".aico/llm-providers"],
+    ["model", "show", ".aico/llm-providers/<provider-id>/models"],
 ])("%s %s --help says the id names a folder in %s", (group, verb, folder) => {
     const help = runCli(group, verb, "--help").stdout
     const unwrappedHelp = help.replace(/\s+/g, " ")

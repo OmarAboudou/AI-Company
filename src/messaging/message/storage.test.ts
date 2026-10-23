@@ -41,7 +41,7 @@ describe("saveMessage and listMessages", () => {
 
         const messageFolderPath = join(
             projectRoot,
-            ".llmco",
+            ".aico",
             "threads",
             question.threadId,
             "messages",

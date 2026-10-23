@@ -22,6 +22,6 @@ describe("requireJournalEvent", () => {
         const requiring = () => requireJournalEvent(journal, missingEventId)
 
         expect(requiring).toThrow(UserError)
-        expect(requiring).toThrow(`.llmco/journal/${missingEventId}.json`)
+        expect(requiring).toThrow(`.aico/journal/${missingEventId}.json`)
     })
 })

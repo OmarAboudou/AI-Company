@@ -56,7 +56,7 @@ export const LlmProviderConfigSchema = z
     .meta({
         title: "llmco LLM provider",
         description:
-            "Configuration of an LLM provider, in .llmco/llm-providers/<provider-id>/config.json. Its models live next to it, in models/<model-id>/config.json.",
+            "Configuration of an LLM provider, in .aico/llm-providers/<provider-id>/config.json. Its models live next to it, in models/<model-id>/config.json.",
     })
 
 export type LlmProviderConfig = z.infer<typeof LlmProviderConfigSchema>

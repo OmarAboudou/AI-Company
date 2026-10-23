@@ -60,7 +60,7 @@ describe("getEventOfType", () => {
     test("refuses an event of the type that its schema rejects", () => {
         const invalidEvent = { ...noteWritten, text: "" }
         const refusalMessage =
-            "Invalid .llmco/journal/20261018-140322-123-5d1e.json:"
+            "Invalid .aico/journal/20261018-140322-123-5d1e.json:"
 
         const getting = () => getEventOfType(invalidEvent, noteWrittenEventType)
 

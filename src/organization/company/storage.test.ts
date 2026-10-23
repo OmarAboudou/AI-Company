@@ -23,7 +23,7 @@ const acme: Company = {
 }
 
 async function writeCompanyFiles(config: unknown, description: string) {
-    const companyFolderPath = join(projectRoot, ".llmco", "company")
+    const companyFolderPath = join(projectRoot, ".aico", "company")
     await Bun.write(
         join(companyFolderPath, "config.json"),
         JSON.stringify(config),
@@ -57,7 +57,7 @@ describe("saveCompany", () => {
     test("writes config.json and description.md", async () => {
         await saveCompany(projectRoot, acme)
 
-        const companyFolderPath = join(projectRoot, ".llmco", "company")
+        const companyFolderPath = join(projectRoot, ".aico", "company")
         const [configText, descriptionText] = await Promise.all([
             Bun.file(join(companyFolderPath, "config.json")).text(),
             Bun.file(join(companyFolderPath, "description.md")).text(),

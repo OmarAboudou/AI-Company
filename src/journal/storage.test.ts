@@ -42,7 +42,7 @@ describe("saveEvent and listEvents", () => {
 
         const eventPath = join(
             projectRoot,
-            ".llmco",
+            ".aico",
             "journal",
             `${firstNoteWritten.id}.json`,
         )

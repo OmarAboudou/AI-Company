@@ -15,7 +15,7 @@ afterEach(async () => {
 })
 
 function getStatePath(...segments: string[]): string {
-    return join(projectRoot, ".llmco", ".state", ...segments)
+    return join(projectRoot, ".aico", ".state", ...segments)
 }
 
 describe("appendStateLine", () => {

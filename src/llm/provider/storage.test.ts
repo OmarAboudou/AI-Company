@@ -35,7 +35,7 @@ describe("saveLlmProvider", () => {
 
         const configPath = join(
             projectRoot,
-            ".llmco",
+            ".aico",
             "llm-providers",
             "anthropic",
             "config.json",
@@ -57,7 +57,7 @@ describe("loadLlmProvider", () => {
 
     test("rejects an invalid config.json", async () => {
         await Bun.write(
-            join(projectRoot, ".llmco", "llm-providers", "x", "config.json"),
+            join(projectRoot, ".aico", "llm-providers", "x", "config.json"),
             JSON.stringify({ name: "" }),
         )
 

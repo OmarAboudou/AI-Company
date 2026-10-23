@@ -1,7 +1,7 @@
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { copyFolder } from "../../files/copy-folder.ts"
-import { getLlmcoFolderPath } from "../../files/get-llmco-folder-path.ts"
+import { getAicoFolderPath } from "../../files/get-aico-folder-path.ts"
 import { listSubdirectories } from "../../files/list-subdirectories.ts"
 import { readJsonFile } from "../../files/read-json-file.ts"
 import { saveJsonFile } from "../../files/save-json-file.ts"
@@ -9,7 +9,7 @@ import { loadIdHistory, saveIdHistory } from "../../ids/id-history-storage.ts"
 import { type Employee, EmployeeConfigSchema } from "./schema.ts"
 
 function getEmployeesFolderPath(projectRoot: string): string {
-    return join(getLlmcoFolderPath(projectRoot), "employees")
+    return join(getAicoFolderPath(projectRoot), "employees")
 }
 
 function getEmployeeFolderPath(projectRoot: string, id: string): string {

@@ -49,7 +49,7 @@ export const JournalEventSchema = z
     .meta({
         title: "llmco event",
         description:
-            "An event of the company's journal, in .llmco/journal/<event-id>.json, the id being the time it happened followed by a random suffix. Written by llmco and never modified: the journal keeps, in git, what happened in the company. Every event has a type, the time it happened and a depth; its other fields are its type's.",
+            "An event of the company's journal, in .aico/journal/<event-id>.json, the id being the time it happened followed by a random suffix. Written by llmco and never modified: the journal keeps, in git, what happened in the company. Every event has a type, the time it happened and a depth; its other fields are its type's.",
     })
 
 type EventContent = { type: string; occurredAt: string; depth: number }

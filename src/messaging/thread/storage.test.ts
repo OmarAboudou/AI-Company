@@ -31,7 +31,7 @@ describe("saveThread and loadThread", () => {
 
         const threadFolderPath = join(
             projectRoot,
-            ".llmco",
+            ".aico",
             "threads",
             thread.id,
         )

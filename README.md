@@ -2,7 +2,7 @@
 
 Run a virtual company staffed by LLM agents, from the command line.
 
-A company lives in a `.llmco/` folder, in the directory you run llmco from, which must be inside a git repository: the company itself, its positions (job descriptions), its employees (an LLM or a human), the LLM providers whose models its LLM employees run on, the threads of messages its positions exchange, their tasks, and the journal of what happens. Everything is a plain file, to edit through the CLI or by hand.
+A company lives in a `.aico/` folder, in the directory you run llmco from, which must be inside a git repository: the company itself, its positions (job descriptions), its employees (an LLM or a human), the LLM providers whose models its LLM employees run on, the threads of messages its positions exchange, their tasks, and the journal of what happens. Everything is a plain file, to edit through the CLI or by hand.
 
 `aico init` also creates the director's position, the company's management.
 
@@ -45,7 +45,7 @@ aico thread show <thread-id> --json | jq -r .body     # one message per line
 
 Mentioning a position with `@<position-id>` gives it a task, to catch up on the thread; a message without mention asks nothing of anyone. Sending a message from a position marks its tasks in that thread as done.
 
-Whoever works a position is its default employee, unless the position is assigned temporarily: to another employee, or to the directors, the people working on the repository, so that no LLM does its tasks meanwhile. The temporary assignment stays on your machine, in `.llmco/.state/`, which git ignores.
+Whoever works a position is its default employee, unless the position is assigned temporarily: to another employee, or to the directors, the people working on the repository, so that no LLM does its tasks meanwhile. The temporary assignment stays on your machine, in `.aico/.state/`, which git ignores.
 
 ```bash
 aico position interim employee backend-developer claude-junior   # another employee works it
@@ -66,9 +66,9 @@ aico current-human clear               # (director)
 
 `aico run` runs the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then it lists the tasks left waiting, for a vacant position, a human or the directors, who work theirs themselves (see [Working your tasks](#working-your-tasks)). An error of a provider's API stops it, and the next `aico run` takes the task up again. Only `aico run` calls LLMs: sending a message never does.
 
-Each run is a fresh conversation with the employee's model: who it is, the task's situation, such as the thread's unread messages, and tools to read earlier messages, to answer and to mark the task as done or failed. Its messages give tasks in turn, which the same `aico run` runs. A chain of tasks, such as LLM employees mentioning each other, stops at the company's `maxTaskDepth`, 200 by default, set in `.llmco/company/config.json`.
+Each run is a fresh conversation with the employee's model: who it is, the task's situation, such as the thread's unread messages, and tools to read earlier messages, to answer and to mark the task as done or failed. Its messages give tasks in turn, which the same `aico run` runs. A chain of tasks, such as LLM employees mentioning each other, stops at the company's `maxTaskDepth`, 200 by default, set in `.aico/company/config.json`.
 
-Everything that happens is recorded in the journal, `.llmco/journal/`, one file per event; tasks live in `.llmco/tasks/`. Each run's whole conversation stays on your machine, in `.llmco/.state/runs/`, which git ignores.
+Everything that happens is recorded in the journal, `.aico/journal/`, one file per event; tasks live in `.aico/tasks/`. Each run's whole conversation stays on your machine, in `.aico/.state/runs/`, which git ignores.
 
 ```bash
 aico run                                              # runs what is ready, then lists what waits
@@ -85,7 +85,7 @@ aico current-human set julie
 aico task work
 ```
 
-The same steps are commands of their own, for a script or a turn prepared over time. Your next turn waits in `.llmco/.state/`, as git's index holds a commit before it is made:
+The same steps are commands of their own, for a script or a turn prepared over time. Your next turn waits in `.aico/.state/`, as git's index holds a commit before it is made:
 
 ```bash
 aico task next                                        # opens your next task, or the one in progress
@@ -103,7 +103,7 @@ A person's turns add no link to a chain of tasks: two people talking through the
 
 A provider is reached through one **connection** per API protocol it speaks: `anthropic-messages` for now, `openai-chat-completions` and `openai-responses` later. Each model names the protocol it is called with.
 
-Its API key is read from an environment variable (`-e, --api-key-env`) or a file (`-k, --api-key-file`), never written in `.llmco/`. Bun loads a `.env` file from the current directory, so a key in a git-ignored `.env` works; a key file inside the repository must be ignored by git.
+Its API key is read from an environment variable (`-e, --api-key-env`) or a file (`-k, --api-key-file`), never written in `.aico/`. Bun loads a `.env` file from the current directory, so a key in a git-ignored `.env` works; a key file inside the repository must be ignored by git.
 
 Ollama, LM Studio, llama.cpp and OpenRouter also speak Anthropic's Messages API:
 
@@ -118,7 +118,7 @@ aico provider connection create openrouter anthropic-messages -u https://openrou
 
 ## Editing config files by hand
 
-Every `config.json` under `.llmco/` has a JSON Schema in [`schemas/`](schemas/), which gives editors autocompletion, documentation on hover and validation as you type. The config files don't reference their schema: editors associate it by path.
+Every `config.json` under `.aico/` has a JSON Schema in [`schemas/`](schemas/), which gives editors autocompletion, documentation on hover and validation as you type. The config files don't reference their schema: editors associate it by path.
 
 **VS Code**: add this to the project's `.vscode/settings.json`.
 
@@ -126,23 +126,23 @@ Every `config.json` under `.llmco/` has a JSON Schema in [`schemas/`](schemas/),
 {
     "json.schemas": [
         {
-            "fileMatch": ["**/.llmco/company/config.json"],
+            "fileMatch": ["**/.aico/company/config.json"],
             "url": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/company.json"
         },
         {
-            "fileMatch": ["**/.llmco/positions/*/config.json"],
+            "fileMatch": ["**/.aico/positions/*/config.json"],
             "url": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/position.json"
         },
         {
-            "fileMatch": ["**/.llmco/employees/*/config.json"],
+            "fileMatch": ["**/.aico/employees/*/config.json"],
             "url": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/employee.json"
         },
         {
-            "fileMatch": ["**/.llmco/llm-providers/*/config.json"],
+            "fileMatch": ["**/.aico/llm-providers/*/config.json"],
             "url": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/llm-provider.json"
         },
         {
-            "fileMatch": ["**/.llmco/llm-providers/*/models/*/config.json"],
+            "fileMatch": ["**/.aico/llm-providers/*/models/*/config.json"],
             "url": "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas/llm-model.json"
         }
     ]

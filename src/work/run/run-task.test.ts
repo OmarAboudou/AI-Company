@@ -270,7 +270,7 @@ describe("runTask", () => {
         const running = runFakeTask(invalidTask)
 
         await expect(running).rejects.toThrow(
-            `Invalid .llmco/tasks/${task.id}.json`,
+            `Invalid .aico/tasks/${task.id}.json`,
         )
     })
 })
