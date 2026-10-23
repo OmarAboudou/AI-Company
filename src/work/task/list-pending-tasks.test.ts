@@ -7,11 +7,15 @@ import { createTemporaryCompany } from "../../organization/company/create-tempor
 import { saveEmployee } from "../../organization/employee/storage.ts"
 import { savePosition } from "../../organization/position/storage.ts"
 import { UserError } from "../../user-error.ts"
-import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
+import {
+    createExampleWorkCatalog,
+    exampleTaskType,
+} from "../create-example-work-catalog.testing.ts"
 import { createTask } from "./create-task.ts"
 import { listPendingTasks } from "./list-pending-tasks.ts"
 import { type Task, taskDoneEventType, taskStartedEventType } from "./schema.ts"
 
+const { taskTypes } = createExampleWorkCatalog()
 let projectRoot: string
 
 beforeEach(async () => {
@@ -47,7 +51,7 @@ afterEach(async () => {
 
 async function askPosition(
     positionId: string,
-    type = "catch-up-thread",
+    type = exampleTaskType.type,
 ): Promise<Task> {
     const threadId = "2026-10-18-choice-of-framework"
     const messageSentEvent = await recordEvent(
@@ -58,7 +62,7 @@ async function askPosition(
             threadId,
             messageId: "20261018-140322-123-3f9a",
             positionId: "director",
-            mentions: [positionId],
+            mentions: [],
         },
     )
     const uncreatedTask = { type, positionId, params: { threadId } }
@@ -84,7 +88,7 @@ describe("listPendingTasks", () => {
 
         const pendingTasks = await listPendingTasks(
             await loadJournal(projectRoot),
-            builtInTaskTypes,
+            taskTypes,
         )
 
         expect(pendingTasks).toMatchObject([
@@ -104,7 +108,7 @@ describe("listPendingTasks", () => {
 
         const pendingTasks = await listPendingTasks(
             await loadJournal(projectRoot),
-            builtInTaskTypes,
+            taskTypes,
         )
 
         const reasons = pendingTasks.map((pendingTask) =>
@@ -131,7 +135,7 @@ describe("listPendingTasks", () => {
 
         const listing = listPendingTasks(
             await loadJournal(projectRoot),
-            builtInTaskTypes,
+            taskTypes,
         )
 
         await expect(listing).rejects.toThrow(UserError)
@@ -143,7 +147,7 @@ describe("listPendingTasks", () => {
 
         const pendingTasks = await listPendingTasks(
             await loadJournal(projectRoot),
-            builtInTaskTypes,
+            taskTypes,
         )
 
         expect(pendingTasks).toMatchObject([
@@ -164,7 +168,7 @@ describe("listPendingTasks", () => {
 
         const pendingTasks = await listPendingTasks(
             await loadJournal(projectRoot),
-            builtInTaskTypes,
+            taskTypes,
         )
 
         expect(pendingTasks).toMatchObject([{ task: runningTask }])

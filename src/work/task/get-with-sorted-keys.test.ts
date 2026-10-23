@@ -16,6 +16,6 @@ describe("getWithSortedKeys", () => {
     })
 
     test("gives back what isn't an object as it is", () => {
-        expect(getWithSortedKeys("catch-up-thread")).toBe("catch-up-thread")
+        expect(getWithSortedKeys("example")).toBe("example")
     })
 })

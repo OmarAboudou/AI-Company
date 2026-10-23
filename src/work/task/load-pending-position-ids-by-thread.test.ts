@@ -29,11 +29,11 @@ async function askPosition(positionId: string, threadId: string) {
             threadId,
             messageId: "20261018-140322-123-3f9a",
             positionId: "director",
-            mentions: [positionId],
+            mentions: [],
         },
     )
     const uncreatedTask = {
-        type: "catch-up-thread",
+        type: "example",
         positionId,
         params: { threadId },
     }

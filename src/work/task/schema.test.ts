@@ -8,9 +8,9 @@ import {
     taskStartedEventType,
 } from "./schema.ts"
 
-const catchUpTask = {
+const exampleTask = {
     askedAt: "2026-10-18T14:03:23.000Z",
-    type: "catch-up-thread",
+    type: "example",
     params: { threadId: "2026-10-18-choice-of-framework" },
     positionId: "backend-developer",
     causeEventId: "20261018-140322-123-5d1e",
@@ -22,23 +22,23 @@ function accepts(task: unknown): boolean {
 
 describe("TaskSchema", () => {
     test("accepts a type, parameters, a position and a cause", () => {
-        expect(TaskSchema.parse(catchUpTask)).toEqual(catchUpTask)
+        expect(TaskSchema.parse(exampleTask)).toEqual(exampleTask)
     })
 
     test("accepts the task it is a part of", () => {
         const parentTaskId = "20261018-140323-000-77aa"
 
-        expect(accepts({ ...catchUpTask, parentTaskId })).toBe(true)
+        expect(accepts({ ...exampleTask, parentTaskId })).toBe(true)
     })
 
     test("rejects parameters that aren't an object", () => {
         const params = ["2026-10-18-choice-of-framework"]
 
-        expect(accepts({ ...catchUpTask, params })).toBe(false)
+        expect(accepts({ ...exampleTask, params })).toBe(false)
     })
 
     test("rejects an unknown key, such as a state", () => {
-        expect(accepts({ ...catchUpTask, state: "waiting" })).toBe(false)
+        expect(accepts({ ...exampleTask, state: "waiting" })).toBe(false)
     })
 })
 
