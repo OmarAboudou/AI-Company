@@ -9,12 +9,12 @@ export async function saveShellInitLine(shell: Shell): Promise<string> {
     const rcText = (await rcFile.exists()) ? await rcFile.text() : ""
     if (rcText.includes("aico shell init")) {
         throw new UserError(
-            `${rcFilePath} already evaluates llmco's shell function.`,
+            `${rcFilePath} already evaluates AICo's shell function.`,
         )
     }
     await appendFile(
         rcFilePath,
-        `\n# llmco's shell function, which current-human and current-position need\neval "$(aico shell init ${shell})"\n`,
+        `\n# AICo's shell function, which current-human and current-position need\neval "$(aico shell init ${shell})"\n`,
     )
     return rcFilePath
 }

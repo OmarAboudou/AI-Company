@@ -25,7 +25,7 @@ export async function createCompany(
         createdAt: new Date().toISOString(),
         description: "",
     })
-    // The company comes last: until its config.json exists, llmco
+    // The company comes last: until its config.json exists, AICo
     // sees no company, so an interrupted init can be run again.
     const company = { ...companyConfig, description }
     await saveCompany(projectRoot, company)

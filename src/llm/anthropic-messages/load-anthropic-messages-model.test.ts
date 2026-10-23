@@ -64,7 +64,7 @@ describe("loadAnthropicMessagesModel", () => {
         )
 
         await expect(loading).rejects.toThrow(UserError)
-        await expect(loading).rejects.toThrow("which llmco can't call yet")
+        await expect(loading).rejects.toThrow("which AICo can't call yet")
     })
 
     test("refuses without the provider's key", async () => {

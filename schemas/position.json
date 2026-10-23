@@ -17,6 +17,6 @@
     },
     "required": ["title"],
     "additionalProperties": false,
-    "title": "llmco position",
+    "title": "AICo position",
     "description": "Configuration of a position, in .aico/positions/<position-id>/config.json. Its job description lives next to it, in description.md."
 }

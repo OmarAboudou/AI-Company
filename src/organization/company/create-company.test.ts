@@ -11,7 +11,7 @@ import { loadCompany } from "./storage.ts"
 let projectRoot: string
 
 beforeEach(async () => {
-    projectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
+    projectRoot = await mkdtemp(join(tmpdir(), "aico-"))
     spawnGit(projectRoot, ["init", "-q"])
 })
 
@@ -60,7 +60,7 @@ describe("createCompany", () => {
     })
 
     test("refuses a directory outside any git repository", async () => {
-        const folderOutsideGit = await mkdtemp(join(tmpdir(), "llmco-"))
+        const folderOutsideGit = await mkdtemp(join(tmpdir(), "aico-"))
 
         const creation = createCompany(folderOutsideGit, acme)
 

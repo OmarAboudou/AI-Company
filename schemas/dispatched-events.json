@@ -10,11 +10,11 @@
                 "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                 "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
             },
-            "description": "Ids of the journal's events that this machine has given to llmco's listeners, oldest first."
+            "description": "Ids of the journal's events that this machine has given to AICo's listeners, oldest first."
         }
     },
     "required": ["eventIds"],
     "additionalProperties": false,
-    "title": "llmco dispatched events",
-    "description": "The journal's events that this machine has dispatched to the listeners, in .aico/.state/dispatched-events.json. Written by llmco and ignored by git: another machine dispatches them again, and finds the tasks they created."
+    "title": "AICo dispatched events",
+    "description": "The journal's events that this machine has dispatched to the listeners, in .aico/.state/dispatched-events.json. Written by AICo and ignored by git: another machine dispatches them again, and finds the tasks they created."
 }

@@ -12,7 +12,7 @@ export function registerCurrentPositionSetCommand(
     currentPositionCommand
         .command("set")
         .description(
-            "Write from this position in this shell, among those you work, until current-position clear; --as-position still chooses another for one message. Needs llmco's shell function: see aico shell init.",
+            "Write from this position in this shell, among those you work, until current-position clear; --as-position still chooses another for one message. Needs AICo's shell function: see aico shell init.",
         )
         .argument(
             "<position-id>",

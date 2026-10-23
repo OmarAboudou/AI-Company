@@ -8,7 +8,7 @@ import { spawnGit } from "./spawn-git.ts"
 let folderPath: string
 
 beforeEach(async () => {
-    folderPath = await mkdtemp(join(tmpdir(), "llmco-"))
+    folderPath = await mkdtemp(join(tmpdir(), "aico-"))
 })
 
 afterEach(async () => {
@@ -30,6 +30,6 @@ describe("readGitConfig", () => {
     test("is undefined for a key that isn't set", () => {
         runGitInFolder("init", "-q")
 
-        expect(readGitConfig(folderPath, "llmco.nothing")).toBeUndefined()
+        expect(readGitConfig(folderPath, "aico.nothing")).toBeUndefined()
     })
 })

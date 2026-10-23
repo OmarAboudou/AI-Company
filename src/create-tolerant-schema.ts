@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-// An event or a task's result written by a newer llmco may carry fields that
+// An event or a task's result written by a newer AICo may carry fields that
 // this one doesn't know: reading ignores them, at any depth, while recording
 // still refuses them.
 export function createTolerantSchema(schema: z.core.$ZodType): z.core.$ZodType {

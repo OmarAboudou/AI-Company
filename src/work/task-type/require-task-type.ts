@@ -7,7 +7,7 @@ export function requireTaskType(task: Task): TaskType {
     const taskType = builtInTaskTypes[task.type]
     if (taskType === undefined) {
         throw new UserError(
-            `Task "${task.id}" is of type "${task.type}", which this version of llmco doesn't know: a newer one created it. Update llmco.`,
+            `Task "${task.id}" is of type "${task.type}", which this version of AICo doesn't know: a newer one created it. Update AICo.`,
         )
     }
     return taskType

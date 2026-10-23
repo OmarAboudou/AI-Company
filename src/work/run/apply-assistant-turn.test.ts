@@ -44,7 +44,7 @@ let writtenNotes: string[]
 let startedRun: Run
 
 beforeEach(async () => {
-    projectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
+    projectRoot = await mkdtemp(join(tmpdir(), "aico-"))
     writtenNotes = []
     startedRun = await startRun(projectRoot, {
         id: runId,

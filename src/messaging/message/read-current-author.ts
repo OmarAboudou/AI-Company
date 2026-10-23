@@ -36,7 +36,7 @@ function requireOnlyPosition(
         )
     }
     throw new UserError(
-        `${employeeDescription} works several positions, ${workedPositions.map(({ id }) => id).join(", ")}: llmco can't tell which one to write from. Choose one with --as-position.`,
+        `${employeeDescription} works several positions, ${workedPositions.map(({ id }) => id).join(", ")}: AICo can't tell which one to write from. Choose one with --as-position.`,
     )
 }
 

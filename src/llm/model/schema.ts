@@ -16,7 +16,7 @@ export const LlmModelConfigSchema = z
         }),
     })
     .meta({
-        title: "llmco LLM model",
+        title: "AICo LLM model",
         description:
             "Configuration of a model served by an LLM provider, in .aico/llm-providers/<provider-id>/models/<model-id>/config.json.",
     })

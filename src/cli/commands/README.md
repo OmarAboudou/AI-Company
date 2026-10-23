@@ -1,6 +1,6 @@
 # Commands
 
-Every command of llmco, grouped by the concept it acts on: `aico <concept> <verb> <ids>`, as git groups its commands (`git remote set-branches origin main`). `aico init` and `aico run` act on no single concept, and stand alone.
+Every command of AICo, grouped by the concept it acts on: `aico <concept> <verb> <ids>`, as git groups its commands (`git remote set-branches origin main`). `aico init` and `aico run` act on no single concept, and stand alone.
 
 ## Invariants
 

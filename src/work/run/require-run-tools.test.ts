@@ -22,12 +22,12 @@ describe("requireRunTools", () => {
         expect(messageSendInputNames).toEqual(["body"])
     })
 
-    test("refuses a tool this version of llmco doesn't know", () => {
+    test("refuses a tool this version of AICo doesn't know", () => {
         const requiring = () =>
             requireRunTools({ toolNames: ["git_push"], result: {} })
 
         expect(requiring).toThrow(
-            "The run gives tools this version of llmco doesn't know: git_push. Update llmco to go on with it.",
+            "The run gives tools this version of AICo doesn't know: git_push. Update AICo to go on with it.",
         )
     })
 })

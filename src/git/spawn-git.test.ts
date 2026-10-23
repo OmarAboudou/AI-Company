@@ -10,8 +10,8 @@ let otherFolderPath: string
 
 beforeEach(async () => {
     ;[folderPath, otherFolderPath] = await Promise.all([
-        mkdtemp(join(tmpdir(), "llmco-")),
-        mkdtemp(join(tmpdir(), "llmco-other-")),
+        mkdtemp(join(tmpdir(), "aico-")),
+        mkdtemp(join(tmpdir(), "aico-other-")),
     ])
 })
 

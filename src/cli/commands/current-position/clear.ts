@@ -9,7 +9,7 @@ export function registerCurrentPositionClearCommand(
     currentPositionCommand
         .command("clear")
         .description(
-            "Let llmco pick the position to write from again in this shell, after current-position set. Needs llmco's shell function: see aico shell init.",
+            "Let AICo pick the position to write from again in this shell, after current-position set. Needs AICo's shell function: see aico shell init.",
         )
         .addOption(createShellCodeOption())
         .action(({ shellCode: shouldPrintShellCode }) => {

@@ -13,8 +13,8 @@ let outsideFolderPath: string
 
 beforeEach(async () => {
     ;[projectRoot, outsideFolderPath] = await Promise.all([
-        mkdtemp(join(tmpdir(), "llmco-")),
-        mkdtemp(join(tmpdir(), "llmco-keys-")),
+        mkdtemp(join(tmpdir(), "aico-")),
+        mkdtemp(join(tmpdir(), "aico-keys-")),
     ])
     spawnGit(projectRoot, ["init", "-q"])
 })

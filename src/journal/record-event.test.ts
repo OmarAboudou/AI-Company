@@ -11,7 +11,7 @@ let projectRoot: string
 let journal: Journal
 
 beforeEach(async () => {
-    projectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
+    projectRoot = await mkdtemp(join(tmpdir(), "aico-"))
     journal = await loadJournal(projectRoot)
 })
 

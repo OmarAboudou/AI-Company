@@ -67,7 +67,7 @@ describe("getLastReadEntryId", () => {
         expect(lastReadEntryId).toBe(questionId)
     })
 
-    test("reads a result that a newer llmco gave more fields", () => {
+    test("reads a result that a newer AICo gave more fields", () => {
         const doneEvent = createDoneEvent(firstCatchUp, questionId)
         const readAt = "2026-10-18T14:06:00.000Z"
         const extendedResult = { ...doneEvent.result, readAt }

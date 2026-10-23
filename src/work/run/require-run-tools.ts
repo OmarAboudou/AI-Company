@@ -20,7 +20,7 @@ export function requireRunTools({
     )
     if (unknownToolNames.length > 0) {
         throw new UserError(
-            `The run gives tools this version of llmco doesn't know: ${unknownToolNames.join(", ")}. Update llmco to go on with it.`,
+            `The run gives tools this version of AICo doesn't know: ${unknownToolNames.join(", ")}. Update AICo to go on with it.`,
         )
     }
     return getRunTools(toolNames.filter(isBuiltInToolName), boundToolInputs)

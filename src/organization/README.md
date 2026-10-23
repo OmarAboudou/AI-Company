@@ -6,7 +6,7 @@ Management writes it through the command line or by hand, and git versions it. T
 
 ## Invariants
 
-- llmco never leaves a reference to something that doesn't exist: an operation that would break one is refused, or rewrites it, as renaming an employee rewrites the positions it fills.
+- AICo never leaves a reference to something that doesn't exist: an operation that would break one is refused, or rewrites it, as renaming an employee rewrites the positions it fills.
 
 ## Decisions
 

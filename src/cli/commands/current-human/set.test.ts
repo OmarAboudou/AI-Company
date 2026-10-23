@@ -12,7 +12,7 @@ beforeEach(async () => {
 })
 
 describe("aico current-human set", () => {
-    test("says how to set up llmco's shell function, which it needs", () => {
+    test("says how to set up AICo's shell function, which it needs", () => {
         const switching = runCli("current-human", "set", "julie")
 
         expect(switching.exitCode).toBe(1)

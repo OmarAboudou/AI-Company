@@ -19,11 +19,11 @@ export const CompanyConfigSchema = z
             .min(1)
             .optional()
             .meta({
-                description: `How deep a chain of tasks may grow, each created from an event of the one before, such as LLM employees mentioning each other: beyond it, llmco creates no task and records chain-stopped in the journal. A person's message starts again from 0. ${defaultMaxTaskDepth} when absent.`,
+                description: `How deep a chain of tasks may grow, each created from an event of the one before, such as LLM employees mentioning each other: beyond it, AICo creates no task and records chain-stopped in the journal. A person's message starts again from 0. ${defaultMaxTaskDepth} when absent.`,
             }),
     })
     .meta({
-        title: "llmco company",
+        title: "AICo company",
         description:
             "Configuration of the company, in .aico/company/config.json. Its description lives next to it, in description.md.",
     })

@@ -1,13 +1,13 @@
 # Ids
 
-How llmco names what it stores, so that names stay readable in files, in mentions and on the command line: ids in kebab-case, ids ordered by time for what is only ever added, and the history of the ids a position or an employee had.
+How AICo names what it stores, so that names stay readable in files, in mentions and on the command line: ids in kebab-case, ids ordered by time for what is only ever added, and the history of the ids a position or an employee had.
 
 ## Invariants
 
 - An id is in kebab-case: lowercase letters and digits separated by single hyphens. An entity's id is the name of its folder or file, never repeated inside its configuration.
 - What is only ever added, messages, events and runs, gets an id made of its time and a random suffix: ids sort in the order things happened, and two machines never write the same one.
 - Renaming a position or an employee adds its former id to its history, with when it changed, and rewrites nothing written before: what names a former id at a given moment designates whoever held it then, as a call log from before a phone number was reassigned concerns its former subscriber.
-- A position or an employee created before llmco recorded its history counts as existing since always.
+- A position or an employee created before AICo recorded its history counts as existing since always.
 
 ## Decisions
 

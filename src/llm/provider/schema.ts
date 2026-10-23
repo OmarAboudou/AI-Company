@@ -46,7 +46,7 @@ export const LlmProviderConfigSchema = z
         }),
         apiKeySource: ApiKeySourceSchema.optional().meta({
             description:
-                "Where llmco reads the provider's API key, never the key itself. Absent for servers without authentication, such as a local Ollama.",
+                "Where AICo reads the provider's API key, never the key itself. Absent for servers without authentication, such as a local Ollama.",
         }),
         connections: ConnectionsSchema.optional().meta({
             description:
@@ -54,7 +54,7 @@ export const LlmProviderConfigSchema = z
         }),
     })
     .meta({
-        title: "llmco LLM provider",
+        title: "AICo LLM provider",
         description:
             "Configuration of an LLM provider, in .aico/llm-providers/<provider-id>/config.json. Its models live next to it, in models/<model-id>/config.json.",
     })

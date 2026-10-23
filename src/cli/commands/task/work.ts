@@ -5,7 +5,7 @@ export function registerTaskWorkCommand(taskCommand: Command): void {
     taskCommand
         .command("work")
         .description(
-            "Work the tasks of the positions you work, one after the other, as an LLM employee does: llmco asks what to do, which tool to call and its inputs. Once no task waits, it waits for the next one, until Ctrl+C or Ctrl+D.",
+            "Work the tasks of the positions you work, one after the other, as an LLM employee does: AICo asks what to do, which tool to call and its inputs. Once no task waits, it waits for the next one, until Ctrl+C or Ctrl+D.",
         )
         .action(async () => {
             // Only this command needs Inquirer: imported with the program,

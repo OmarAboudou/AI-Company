@@ -393,9 +393,9 @@
                 "stoppedTask"
             ],
             "additionalProperties": false,
-            "description": "llmco created no task for an event, whose chain of tasks had reached the company's maxTaskDepth."
+            "description": "AICo created no task for an event, whose chain of tasks had reached the company's maxTaskDepth."
         }
     ],
-    "title": "llmco event",
-    "description": "An event of the company's journal, in .aico/journal/<event-id>.json, the id being the time it happened followed by a random suffix. Written by llmco and never modified: the journal keeps, in git, what happened in the company. Every event has a type, the time it happened and a depth; its other fields are its type's."
+    "title": "AICo event",
+    "description": "An event of the company's journal, in .aico/journal/<event-id>.json, the id being the time it happened followed by a random suffix. Written by AICo and never modified: the journal keeps, in git, what happened in the company. Every event has a type, the time it happened and a depth; its other fields are its type's."
 }

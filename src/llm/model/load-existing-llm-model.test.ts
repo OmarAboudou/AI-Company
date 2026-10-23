@@ -10,7 +10,7 @@ import { saveLlmModel } from "./storage.ts"
 let projectRoot: string
 
 beforeEach(async () => {
-    projectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
+    projectRoot = await mkdtemp(join(tmpdir(), "aico-"))
     await saveLlmProvider(projectRoot, { id: "anthropic", name: "Anthropic" })
 })
 

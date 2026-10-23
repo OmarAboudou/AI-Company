@@ -4,7 +4,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 const { runCli } = useTemporaryProject()
 
 describe("aico current-human clear", () => {
-    test("says how to set up llmco's shell function, which it needs", () => {
+    test("says how to set up AICo's shell function, which it needs", () => {
         const switching = runCli("current-human", "clear")
 
         expect(switching.exitCode).toBe(1)

@@ -16,7 +16,7 @@ const promptRegistrations: Record<Shell, string[]> = {
 
 export function buildShellFunction(shell: Shell): string {
     return [
-        `# llmco's shell function, which current-human and current-position set and clear need, and the prompt's label: add eval "$(aico shell init ${shell})" to ~/${rcFileNames[shell]}`,
+        `# AICo's shell function, which current-human and current-position set and clear need, and the prompt's label: add eval "$(aico shell init ${shell})" to ~/${rcFileNames[shell]}`,
         "aico() {",
         '    case "${1-} ${2-}" in',
         `    ${shellCodeCommands.map((command) => `"${command}"`).join(" | ")})`,

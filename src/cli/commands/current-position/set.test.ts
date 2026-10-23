@@ -19,7 +19,7 @@ beforeEach(async () => {
 })
 
 describe("aico current-position set", () => {
-    test("says how to set up llmco's shell function, which it needs", () => {
+    test("says how to set up AICo's shell function, which it needs", () => {
         const selection = runCli("current-position", "set", "director")
 
         expect(selection.exitCode).toBe(1)

@@ -21,7 +21,7 @@ let projectRoot: string
 let writtenNotes: string[]
 
 beforeEach(async () => {
-    projectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
+    projectRoot = await mkdtemp(join(tmpdir(), "aico-"))
     writtenNotes = []
 })
 

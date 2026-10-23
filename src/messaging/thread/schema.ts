@@ -51,7 +51,7 @@ export const ThreadConfigSchema = z
             }),
     })
     .meta({
-        title: "llmco thread",
+        title: "AICo thread",
         description:
             "A thread of messages between positions, in .aico/threads/<thread-id>/thread.json. Its messages live next to it, in messages/<message-id>/. Never modified once written.",
     })

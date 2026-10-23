@@ -42,6 +42,6 @@
     },
     "required": ["askedAt", "type", "params", "positionId", "causeEventId"],
     "additionalProperties": false,
-    "title": "llmco task",
+    "title": "AICo task",
     "description": "A task for a position, in .aico/tasks/<task-id>.json, the id being its cause event's followed by a hash of its type, position and parameters, so that two machines asking for the same task write the same file. Never modified: the task's state comes from the journal's events."
 }

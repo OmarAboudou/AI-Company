@@ -18,7 +18,7 @@ export async function markTaskAsDoneOnce(
     const taskType = builtInTaskTypes[task.type]
     if (taskType === undefined) {
         throw new Error(
-            `A listener marked task "${task.id}" as done, of type "${task.type}", which llmco doesn't know.`,
+            `A listener marked task "${task.id}" as done, of type "${task.type}", which AICo doesn't know.`,
         )
     }
     const causeEvent = requireJournalEvent(journal, task.causeEventId)

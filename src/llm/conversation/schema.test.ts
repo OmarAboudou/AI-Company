@@ -42,7 +42,7 @@ describe("ConversationTurnSchema", () => {
         expect(accepts({ ...personTurn, modelResponse })).toBe(true)
     })
 
-    test("accepts the results of a turn's calls, given back by llmco", () => {
+    test("accepts the results of a turn's calls, given back by AICo", () => {
         const resultTurn = {
             role: "user",
             blocks: [
@@ -58,11 +58,11 @@ describe("ConversationTurnSchema", () => {
         expect(accepts(resultTurn)).toBe(true)
     })
 
-    test("rejects a tool call in a turn llmco gives", () => {
+    test("rejects a tool call in a turn AICo gives", () => {
         expect(accepts({ role: "user", blocks: [sendingCall] })).toBe(false)
     })
 
-    test("rejects a reason to stop that llmco doesn't know", () => {
+    test("rejects a reason to stop that AICo doesn't know", () => {
         const pausedResponse = { ...modelResponse, stop: { reason: "pause" } }
         const pausedTurn = { ...personTurn, modelResponse: pausedResponse }
 

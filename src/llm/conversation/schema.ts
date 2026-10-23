@@ -26,7 +26,7 @@ export const ToolCallBlockSchema = z.strictObject({
     type: z.literal("tool-call"),
     id: z.string().min(1).meta({
         description:
-            "Id of the call, which its result names: the model's own, or the one llmco gives a person's call.",
+            "Id of the call, which its result names: the model's own, or the one AICo gives a person's call.",
     }),
     name: z.string().min(1).meta({
         description: "Name of the tool called, e.g. message_send.",
@@ -67,7 +67,7 @@ export const UserTurnSchema = z
     })
     .meta({
         description:
-            "A turn llmco gives: the task's message, the results of the tool calls, or a reminder.",
+            "A turn AICo gives: the task's message, the results of the tool calls, or a reminder.",
     })
 
 export type UserTurn = z.infer<typeof UserTurnSchema>
