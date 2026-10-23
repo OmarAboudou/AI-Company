@@ -328,6 +328,37 @@
             "required": ["type", "occurredAt", "depth", "taskId", "reason"],
             "additionalProperties": false,
             "description": "The task was given up."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": { "type": "string", "const": "events-dispatched" },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                },
+                "eventIds": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                        "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                    },
+                    "description": "Ids of the events given to the listeners, oldest first."
+                }
+            },
+            "required": ["type", "occurredAt", "depth", "eventIds"],
+            "additionalProperties": false,
+            "description": "AICo gave these events of the journal to its listeners, which applied what they asked for, such as creating a task. A dispatching records it once done, so that no clone nor machine gives them again."
         }
     ],
     "title": "AICo event",

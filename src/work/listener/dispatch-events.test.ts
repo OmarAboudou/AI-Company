@@ -2,16 +2,17 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { IdSchema } from "../../ids/id-schema.ts"
+import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import { recordEvent } from "../../journal/record-event.ts"
 import { defineEventType } from "../../journal/schema.ts"
-import { loadJournal, saveEvent } from "../../journal/storage.ts"
+import { listEvents, loadJournal, saveEvent } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
 import { listTasks } from "../task/storage.ts"
 import { defineListener, type Listener } from "./define-listener.ts"
 import { dispatchEvents } from "./dispatch-events.ts"
-import { loadDispatchedEventIds } from "./storage.ts"
+import { eventsDispatchedEventType } from "./schema.ts"
 
 let projectRoot: string
 
@@ -83,6 +84,14 @@ async function dispatchToExampleListener() {
     return dispatchEvents(await loadJournal(projectRoot), exampleCatalog)
 }
 
+async function listDispatchings() {
+    const events = await listEvents(projectRoot)
+    return events.flatMap((event) => {
+        const dispatching = getEventOfType(event, eventsDispatchedEventType)
+        return dispatching === undefined ? [] : [dispatching]
+    })
+}
+
 describe("dispatchEvents", () => {
     test("applies the effects that listeners return", async () => {
         const questionSent = await createMessageSentEvent()
@@ -109,15 +118,16 @@ describe("dispatchEvents", () => {
         expect(taskTypes).toEqual(["example", "review-thread"])
     })
 
-    test("remembers the events it gave, even those that ask nothing", async () => {
+    test("records in the journal the events it gave, even those that ask nothing", async () => {
         const questionSent = await createMessageSentEvent()
         const answerSent = await createMessageSentEvent("backend-developer")
 
         await dispatchToExampleListener()
 
-        const dispatchedEventIds = await loadDispatchedEventIds(projectRoot)
-        const eventIds = new Set([questionSent.id, answerSent.id])
-        expect(dispatchedEventIds).toEqual(eventIds)
+        const dispatchings = await listDispatchings()
+        expect(dispatchings).toMatchObject([
+            { depth: 0, eventIds: [questionSent.id, answerSent.id] },
+        ])
     })
 
     test("gives an event only once", async () => {
@@ -131,10 +141,21 @@ describe("dispatchEvents", () => {
         expect(await listTasks(projectRoot)).toHaveLength(2)
     })
 
-    test("creates nothing twice, even on a machine giving events again", async () => {
+    test("records nothing more, its own records being no events to give", async () => {
+        await createMessageSentEvent("backend-developer")
+        await dispatchToExampleListener()
+
+        await dispatchToExampleListener()
+
+        expect(await listDispatchings()).toHaveLength(1)
+    })
+
+    test("creates nothing twice, even giving events again after a crash", async () => {
         await createMessageSentEvent()
         await dispatchToExampleListener()
-        await rm(join(projectRoot, ".aico", ".state"), { recursive: true })
+        const [dispatching] = await listDispatchings()
+        const journalFolderPath = join(projectRoot, ".aico", "journal")
+        await rm(join(journalFolderPath, `${dispatching?.id}.json`))
 
         const { createdTasks } = await dispatchToExampleListener()
 
@@ -172,8 +193,9 @@ describe("dispatchEvents", () => {
 
         const { createdTasks } = await dispatchToExampleListener()
 
-        const dispatchedEventIds = await loadDispatchedEventIds(projectRoot)
         expect(createdTasks).toEqual([])
-        expect(dispatchedEventIds).toEqual(new Set([threadClosed.id]))
+        expect(await listDispatchings()).toMatchObject([
+            { eventIds: [threadClosed.id] },
+        ])
     })
 })

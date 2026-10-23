@@ -1,26 +1,36 @@
 import { getEventOfType } from "../../journal/get-event-of-type.ts"
+import { recordEvent } from "../../journal/record-event.ts"
 import type { Journal } from "../../journal/schema.ts"
 import type { WorkCatalog } from "../work-catalog.ts"
 import { applyListenerEffect } from "./apply-listener-effect.ts"
 import { type Dispatching, loadDispatching } from "./load-dispatching.ts"
-import { loadDispatchedEventIds, saveDispatchedEventIds } from "./storage.ts"
+import { eventsDispatchedEventType } from "./schema.ts"
 
 export type DispatchEventsResult = Pick<
     Dispatching,
     "createdTasks" | "doneTasks"
 >
 
+function getDispatchedEventIds({ events }: Journal): Set<string> {
+    return new Set(
+        events.flatMap(
+            (event) =>
+                getEventOfType(event, eventsDispatchedEventType)?.eventIds ??
+                [],
+        ),
+    )
+}
+
 export async function dispatchEvents(
     journal: Journal,
     { taskTypes, listeners }: WorkCatalog,
 ): Promise<DispatchEventsResult> {
-    const { projectRoot } = journal
-    const [dispatchedEventIds, dispatching] = await Promise.all([
-        loadDispatchedEventIds(projectRoot),
-        loadDispatching(journal, taskTypes),
-    ])
+    const dispatching = await loadDispatching(journal, taskTypes)
+    const dispatchedEventIds = getDispatchedEventIds(journal)
     const newEvents = journal.events.filter(
-        ({ id }) => !dispatchedEventIds.has(id),
+        ({ id, type }) =>
+            type !== eventsDispatchedEventType.type &&
+            !dispatchedEventIds.has(id),
     )
     for (const event of newEvents) {
         for (const listener of listeners) {
@@ -33,10 +43,12 @@ export async function dispatchEvents(
                 await applyListenerEffect(effect, event, dispatching)
             }
         }
-        dispatchedEventIds.add(event.id)
     }
     if (newEvents.length > 0) {
-        await saveDispatchedEventIds(projectRoot, dispatchedEventIds)
+        await recordEvent(journal, eventsDispatchedEventType, {
+            depth: 0,
+            eventIds: newEvents.map(({ id }) => id),
+        })
     }
     const { createdTasks, doneTasks } = dispatching
     return { createdTasks, doneTasks }
