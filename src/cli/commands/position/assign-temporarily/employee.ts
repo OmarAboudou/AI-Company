@@ -17,7 +17,7 @@ export function registerPositionAssignTemporarilyEmployeeCommand(
         )
         .argument(
             "<employee-id>",
-            formatIdArgumentDescription("employee", "julie"),
+            formatIdArgumentDescription("employee", "claude-junior"),
         )
         .addOption(createReplaceTemporaryAssignmentOption())
         .action(async (rawPositionId, rawEmployeeId, options) => {
