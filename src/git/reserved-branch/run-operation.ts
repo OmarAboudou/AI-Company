@@ -11,15 +11,18 @@ const foundChangesMessage =
 
 let runningOperationName: string | undefined
 
+// The project's git settings and hooks are about its code: AICo's data is
+// committed whatever they hide, refuse or rewrite.
+const commitArgs = ["-c", "core.hooksPath=/dev/null", "commit", "-q"]
+
 function commitChanges(projectRoot: string, message: string): void {
     const aicoFolderPath = getAicoFolderPath(projectRoot)
-    if (runGitOrThrow(aicoFolderPath, ["status", "--porcelain"]) === "") {
+    const statusArgs = ["status", "--porcelain", "--untracked-files=all"]
+    if (runGitOrThrow(aicoFolderPath, statusArgs) === "") {
         return
     }
     runGitOrThrow(aicoFolderPath, ["add", "--all"])
-    // The project's hooks check its code, not AICo's data.
-    const commitArgs = ["commit", "-q", "--no-verify", "-m", message]
-    runGitOrThrow(aicoFolderPath, commitArgs)
+    runGitOrThrow(aicoFolderPath, [...commitArgs, "-m", message])
 }
 
 async function runLocked<Result>(
