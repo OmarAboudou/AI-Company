@@ -5,7 +5,6 @@ import { recordEvent } from "../../journal/record-event.ts"
 import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { sendMessage } from "../../messaging/message/send-message.ts"
-import { createEmployee } from "../../organization/employee/create-employee.ts"
 import { createPosition } from "../../organization/position/create-position.ts"
 import { createCompanyWorkedByDirectors } from "../create-company-worked-by-directors.testing.ts"
 import {
@@ -198,19 +197,6 @@ describe("openNextTask among the person's positions", () => {
         const opening = openNextExampleTask(environment)
 
         await expect(opening).rejects.toThrow("isn't one you work now")
-    })
-
-    test("refuses an employee who works no position", async () => {
-        await createEmployee(projectRoot, "julie", {
-            name: "Julie",
-            kind: "human",
-        })
-
-        const opening = openNextExampleTask({ AICO_CURRENT_HUMAN_ID: "julie" })
-
-        await expect(opening).rejects.toThrow(
-            "Julie (julie) works no position, so no task waits for them.",
-        )
     })
 
     test("lets the directors work the tasks of the director's position", async () => {

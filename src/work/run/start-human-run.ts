@@ -4,7 +4,6 @@ import { recordEvent } from "../../journal/record-event.ts"
 import { requireJournalEvent } from "../../journal/require-journal-event.ts"
 import type { Journal } from "../../journal/schema.ts"
 import { loadCompany } from "../../organization/company/storage.ts"
-import type { CurrentHuman } from "../../organization/human/read-current-human.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { readMonotonicTime } from "../../read-monotonic-time.ts"
 import { type Task, taskStartedEventType } from "../task/schema.ts"
@@ -18,19 +17,12 @@ import { startRun } from "./start-run.ts"
 export type HumanRunStart = {
     task: Task
     position: Position
-    human: CurrentHuman
     session: Extract<TaskSession, { kind: "run" }>
-}
-
-function readWorkerName(projectRoot: string, human: CurrentHuman): string {
-    return human.kind === "employee"
-        ? human.employee.name
-        : readGitCommitter(projectRoot).name
 }
 
 export async function startHumanRun(
     journal: Journal,
-    { task, position, human, session }: HumanRunStart,
+    { task, position, session }: HumanRunStart,
 ): Promise<Run> {
     const { projectRoot } = journal
     const company = await loadCompany(projectRoot)
@@ -40,10 +32,7 @@ export async function startHumanRun(
         depth: causeEvent.depth,
         taskId: task.id,
         runId,
-        worker:
-            human.kind === "employee"
-                ? { kind: "employee", employeeId: human.employee.id }
-                : { kind: "directors" },
+        worker: { kind: "directors" },
     })
     const { toolNames, boundToolInputs, result } = session
     const tools = getRunTools(toolNames, boundToolInputs)
@@ -52,7 +41,7 @@ export async function startHumanRun(
         systemPrompt: buildSystemPrompt({
             company,
             position,
-            workerName: readWorkerName(projectRoot, human),
+            workerName: readGitCommitter(projectRoot).name,
         }),
         tools: getToolDefinitions(tools),
         userMessage: session.userMessage,

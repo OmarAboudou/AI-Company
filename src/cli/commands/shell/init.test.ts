@@ -4,8 +4,7 @@ import { beforeEach, describe, expect, test } from "bun:test"
 import { chmod, mkdir } from "node:fs/promises"
 import { join } from "node:path"
 import { createCompany } from "../../../organization/company/create-company.ts"
-import { createEmployee } from "../../../organization/employee/create-employee.ts"
-import { assignPosition } from "../../../organization/position/assign-position.ts"
+import { assignPositionTemporarily } from "../../../organization/position/assign-position-temporarily.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 import {
@@ -19,7 +18,7 @@ const { runCli, runCliWithEnv, getProjectPath, getHomePath } =
     useTemporaryProject()
 const cliPath = join(import.meta.dir, "..", "..", "main.ts")
 const printShellState =
-    '_aico_update_prompt; printf "%s|%s" "${AICO_CURRENT_HUMAN_ID-unset}" "$PS1"'
+    '_aico_update_prompt; printf "%s|%s" "${AICO_CURRENT_POSITION_ID-unset}" "$PS1"'
 const printRegistrations: Record<(typeof shells)[number], string> = {
     bash: 'printf "%s" "$PROMPT_COMMAND"',
     zsh: 'printf "%s" "${precmd_functions[*]}"',
@@ -28,14 +27,13 @@ const printRegistrations: Record<(typeof shells)[number], string> = {
 beforeEach(async () => {
     const projectRoot = getProjectPath()
     await createCompany(projectRoot, { name: "Acme", description: "" })
-    await Promise.all([
-        createEmployee(projectRoot, "julie", { name: "Julie", kind: "human" }),
-        createPosition(projectRoot, "graphics", {
-            title: "Graphics",
-            description: "",
-        }),
-    ])
-    await assignPosition(projectRoot, "graphics", "julie")
+    await createPosition(projectRoot, "graphics", {
+        title: "Graphics",
+        description: "",
+    })
+    await assignPositionTemporarily(projectRoot, "graphics", {
+        kind: "directors",
+    })
     const aicoPath = getHomePath("bin", "aico")
     await Bun.write(
         aicoPath,
@@ -63,57 +61,33 @@ for (const shell of shells) {
                 })
             }
 
-            test("prints a function through which current-human set switches the shell", () => {
+            test("prints a function through which current-position set switches the shell", () => {
                 const shellRun = runFunction(
-                    "aico current-human set julie",
-                    printShellState,
-                )
-
-                expect(shellRun.stdout).toBe("julie|(julie) $ ")
-            })
-
-            test("lets current-human clear switch back", () => {
-                const shellRun = runFunction(
-                    "aico current-human set julie",
-                    "aico current-human clear",
-                    printShellState,
-                )
-
-                expect(shellRun.stdout).toBe("unset|(director) $ ")
-            })
-
-            test("leaves the shell as it was when current-human set refuses", () => {
-                const shellRun = runFunction(
-                    "aico current-human set eve",
-                    printShellState,
-                )
-
-                expect(shellRun.stderr).toContain('No employee "eve".')
-                expect(shellRun.stdout).toBe("unset|(director) $ ")
-            })
-
-            test("lets current-position set select a position, cleared by a new identity", () => {
-                const printPositionId =
-                    'printf "%s|" "${AICO_CURRENT_POSITION_ID-unset}"'
-
-                const shellRun = runFunction(
-                    "aico current-position set director",
-                    printPositionId,
-                    "aico current-human set julie",
-                    printPositionId,
-                )
-
-                expect(shellRun.stdout).toBe("director|unset|")
-            })
-
-            test("shows the selected position next to the identity", () => {
-                const shellRun = runFunction(
-                    "aico current-human set julie",
                     "aico current-position set graphics",
                     printShellState,
                 )
 
-                expect(shellRun.stdout).toBe("julie|(julie @graphics) $ ")
+                expect(shellRun.stdout).toBe("graphics|(director @graphics) $ ")
+            })
+
+            test("lets current-position clear switch back", () => {
+                const shellRun = runFunction(
+                    "aico current-position set graphics",
+                    "aico current-position clear",
+                    printShellState,
+                )
+
+                expect(shellRun.stdout).toBe("unset|(director) $ ")
+            })
+
+            test("leaves the shell as it was when current-position set refuses", () => {
+                const shellRun = runFunction(
+                    "aico current-position set support",
+                    printShellState,
+                )
+
+                expect(shellRun.stderr).toContain('No position "support".')
+                expect(shellRun.stdout).toBe("unset|(director) $ ")
             })
 
             test("shows no label outside an AICo project", () => {
@@ -144,11 +118,11 @@ for (const shell of shells) {
 
             test("passes the other commands to aico", () => {
                 const shellRun = runFunction(
-                    "aico current-human set julie",
-                    "aico whoami",
+                    "aico current-position set graphics",
+                    "aico current-position",
                 )
 
-                expect(shellRun.stdout).toStartWith("Julie (julie), a human")
+                expect(shellRun.stdout).toBe("graphics\n")
             })
         },
     )

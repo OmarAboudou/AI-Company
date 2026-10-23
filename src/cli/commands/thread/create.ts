@@ -13,7 +13,7 @@ export function registerThreadCreateCommand(threadCommand: Command): void {
     threadCommand
         .command("create")
         .description(
-            "Create a thread as the person at the keyboard (see current-human), and print its id.",
+            "Create a thread from a position you work (see current-position), and print its id.",
         )
         .requiredOption("-s, --subject <subject>", "subject of the thread")
         .addOption(createBodyOption("the thread's first message"))

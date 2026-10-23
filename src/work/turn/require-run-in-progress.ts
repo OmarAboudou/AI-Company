@@ -1,11 +1,7 @@
 import type { Journal } from "../../journal/schema.ts"
 import { formatPositionLabel } from "../../messaging/message/format-position-label.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
-import { getPositionsWorkedBy } from "../../organization/human/get-positions-worked-by.ts"
-import {
-    type CurrentHuman,
-    readCurrentHuman,
-} from "../../organization/human/read-current-human.ts"
+import { getPositionsWorkedByDirectors } from "../../organization/human/get-positions-worked-by-directors.ts"
 import { readCurrentPositionId } from "../../organization/human/read-current-position-id.ts"
 import { requirePositionsToWork } from "../../organization/human/require-positions-to-work.ts"
 import { listPositionAssignments } from "../../organization/position/list-position-assignments.ts"
@@ -19,7 +15,6 @@ import type { Task } from "../task/schema.ts"
 import { listTasks } from "../task/storage.ts"
 
 export type RunInProgress = {
-    human: CurrentHuman
     task: Task
     position: Position
     run: Run
@@ -38,14 +33,12 @@ export async function requireRunInProgress(
 ): Promise<RunInProgress> {
     const { projectRoot } = journal
     await requireCompany(projectRoot)
-    const [human, assignments, tasks] = await Promise.all([
-        readCurrentHuman(projectRoot, environment),
+    const [assignments, tasks] = await Promise.all([
         listPositionAssignments(projectRoot),
         listTasks(projectRoot),
     ])
     const positionsToWork = requirePositionsToWork(
-        human,
-        getPositionsWorkedBy(assignments, human).map(
+        getPositionsWorkedByDirectors(assignments).map(
             ({ position }) => position,
         ),
         readCurrentPositionId(environment),
@@ -59,9 +52,9 @@ export async function requireRunInProgress(
         if (taskStates.get(task.id) !== "running" || position === undefined) {
             continue
         }
-        const run = await loadResumableRun(journal, task, human)
+        const run = await loadResumableRun(journal, task)
         if (run !== undefined) {
-            runsInProgress.push({ human, task, position, run })
+            runsInProgress.push({ task, position, run })
         }
     }
     const [runInProgress, ...otherRunsInProgress] = runsInProgress
