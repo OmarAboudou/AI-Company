@@ -1,4 +1,4 @@
-# `llmco thread`
+# `aico thread`
 
 Creating, listing and reading threads. `thread create` prints the new thread's id alone, for a script to capture; `thread list` and `thread show` tell which positions have a task pending in each thread; `thread show --json` prints one message per line, for `jq` and `tail`.
 

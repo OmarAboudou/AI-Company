@@ -7,7 +7,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-describe("llmco model protocol", () => {
+describe("aico model protocol", () => {
     const opus = ["anthropic", "claude-opus-5-5", "-n", "Opus", "-a", "opus"]
     const openRouterUrl = "https://openrouter.ai/api"
 
@@ -44,7 +44,7 @@ describe("llmco model protocol", () => {
     })
 })
 
-describe("llmco model update", () => {
+describe("aico model update", () => {
     const opus = ["anthropic", "claude-opus-5-5"]
 
     beforeEach(async () => {

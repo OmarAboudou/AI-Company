@@ -30,7 +30,7 @@ export async function deleteLlmProvider(
         .map(({ id }) => id)
     if (providerEmployeeIds.length > 0) {
         throw new UserError(
-            `Provider "${provider.id}" is used by ${providerEmployeeIds.join(", ")}. Give these employees another model with \`llmco employee update\`, or delete them, first; --force doesn't change that.`,
+            `Provider "${provider.id}" is used by ${providerEmployeeIds.join(", ")}. Give these employees another model with \`aico employee update\`, or delete them, first; --force doesn't change that.`,
         )
     }
     const modelIds = models.map(({ id }) => id)

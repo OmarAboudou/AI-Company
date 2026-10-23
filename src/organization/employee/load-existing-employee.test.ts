@@ -27,7 +27,7 @@ describe("loadExistingEmployee", () => {
     })
 
     test("refuses an unknown employee, saying how to list them", async () => {
-        const refusalMessage = 'No employee "omar". Run `llmco employee list`.'
+        const refusalMessage = 'No employee "omar". Run `aico employee list`.'
 
         const loading = loadExistingEmployee(projectRoot, "omar")
 

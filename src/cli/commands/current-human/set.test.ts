@@ -11,12 +11,12 @@ beforeEach(async () => {
     await createEmployee(projectRoot, "julie", { name: "Julie", kind: "human" })
 })
 
-describe("llmco current-human set", () => {
+describe("aico current-human set", () => {
     test("says how to set up llmco's shell function, which it needs", () => {
         const switching = runCli("current-human", "set", "julie")
 
         expect(switching.exitCode).toBe(1)
-        expect(switching.stderr).toContain("llmco shell init bash --install")
+        expect(switching.stderr).toContain("aico shell init bash --install")
     })
 
     test("--shell-code prints the code switching to the employee", () => {

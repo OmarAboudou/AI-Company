@@ -5,7 +5,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, runCliWithStdin, getProjectPath } = useTemporaryProject()
 
-describe("llmco position update", () => {
+describe("aico position update", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })

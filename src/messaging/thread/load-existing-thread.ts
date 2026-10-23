@@ -9,7 +9,7 @@ export async function loadExistingThread(
 ): Promise<Thread> {
     const id = parseId("thread", rawId)
     if (!(await hasThread(projectRoot, id))) {
-        throw new UserError(`No thread "${id}". Run \`llmco thread list\`.`)
+        throw new UserError(`No thread "${id}". Run \`aico thread list\`.`)
     }
     return loadThread(projectRoot, id)
 }

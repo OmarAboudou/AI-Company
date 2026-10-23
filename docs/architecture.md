@@ -6,14 +6,14 @@ The rules that decide where code and documentation go, and how big they grow. Th
 
 ## The command line mirrors the commands
 
-- `llmco <group> <verb>` lives in `src/cli/commands/<group>/<verb>.ts`, named after the command's name, not its alias.
+- `aico <group> <verb>` lives in `src/cli/commands/<group>/<verb>.ts`, named after the command's name, not its alias.
 - A group is declared in `src/cli/commands/<group>/<group>.ts`, a nested group one folder down, and a command without group lives in `src/cli/commands/<verb>.ts`.
 - `src/cli/program.ts` registers the groups, and `src/cli/main.ts` runs the program.
 - What every command uses sits at the root of `src/cli/`.
 
 ## A command calls an operation of the core
 
-- A command reads its arguments, calls the operation of the core named after it, and prints what the operation returns: `llmco position delete` calls `deletePosition`.
+- A command reads its arguments, calls the operation of the core named after it, and prints what the operation returns: `aico position delete` calls `deletePosition`.
 - The operation applies every rule, and throws each refusal with its message. The message says what to do in the command line's words, since the command line is llmco's interface for people and LLM employees alike.
 - A command that only reads uses the core's reading functions, and formats their result.
 

@@ -1,6 +1,6 @@
-# `llmco message`
+# `aico message`
 
-Writing in threads: `llmco message send` adds a message to a thread, from the position you write from. It only writes: the tasks its mentions create run in `llmco run`, or wait for the people working those positions.
+Writing in threads: `aico message send` adds a message to a thread, from the position you write from. It only writes: the tasks its mentions create run in `aico run`, or wait for the people working those positions.
 
 ## Decisions
 

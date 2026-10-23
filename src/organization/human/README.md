@@ -1,8 +1,8 @@
 # The human at the keyboard
 
-The human at the keyboard is who acts in a shell: a director by default, one of the people working on the repository, whom git names; or a fictitious human employee, set with `llmco current-human set` and kept in the shell's environment until `clear`.
+The human at the keyboard is who acts in a shell: a director by default, one of the people working on the repository, whom git names; or a fictitious human employee, set with `aico current-human set` and kept in the shell's environment until `clear`.
 
-They act from the positions they work: a director, the director's position and those assigned temporarily to the directors; a human employee, those it works by default or temporarily. A position selected with `llmco current-position set` narrows them to one, as an e-mail's From line does.
+They act from the positions they work: a director, the director's position and those assigned temporarily to the directors; a human employee, those it works by default or temporarily. A position selected with `aico current-position set` narrows them to one, as an e-mail's From line does.
 
 ## Invariants
 

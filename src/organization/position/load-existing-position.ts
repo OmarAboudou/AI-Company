@@ -9,7 +9,7 @@ export async function loadExistingPosition(
 ): Promise<Position> {
     const id = parseId("position", rawId)
     if (!(await hasPosition(projectRoot, id))) {
-        throw new UserError(`No position "${id}". Run \`llmco position list\`.`)
+        throw new UserError(`No position "${id}". Run \`aico position list\`.`)
     }
     return loadPosition(projectRoot, id)
 }

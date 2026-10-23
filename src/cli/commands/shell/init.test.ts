@@ -19,7 +19,7 @@ const { runCli, runCliWithEnv, getProjectPath, getHomePath } =
     useTemporaryProject()
 const cliPath = join(import.meta.dir, "..", "..", "main.ts")
 const printShellState =
-    '_llmco_update_prompt; printf "%s|%s" "${LLMCO_CURRENT_HUMAN_ID-unset}" "$PS1"'
+    '_aico_update_prompt; printf "%s|%s" "${LLMCO_CURRENT_HUMAN_ID-unset}" "$PS1"'
 const printRegistrations: Record<(typeof shells)[number], string> = {
     bash: 'printf "%s" "$PROMPT_COMMAND"',
     zsh: 'printf "%s" "${precmd_functions[*]}"',
@@ -36,21 +36,21 @@ beforeEach(async () => {
         }),
     ])
     await assignPosition(projectRoot, "graphics", "julie")
-    const llmcoPath = getHomePath("bin", "llmco")
+    const aicoPath = getHomePath("bin", "aico")
     await Bun.write(
-        llmcoPath,
+        aicoPath,
         `#!/bin/sh\nexec "${process.execPath}" "${cliPath}" "$@"\n`,
     )
-    await chmod(llmcoPath, 0o755)
+    await chmod(aicoPath, 0o755)
 })
 
 for (const shell of shells) {
     describe.skipIf(!isShellInstalled(shell))(
-        `llmco shell init ${shell}`,
+        `aico shell init ${shell}`,
         () => {
             function runFunction(...commands: string[]): ShellRun {
                 const script = [
-                    `eval "$(llmco shell init ${shell})"`,
+                    `eval "$(aico shell init ${shell})"`,
                     'PS1="$ "',
                     ...commands,
                 ]
@@ -65,7 +65,7 @@ for (const shell of shells) {
 
             test("prints a function through which current-human set switches the shell", () => {
                 const shellRun = runFunction(
-                    "llmco current-human set julie",
+                    "aico current-human set julie",
                     printShellState,
                 )
 
@@ -74,8 +74,8 @@ for (const shell of shells) {
 
             test("lets current-human clear switch back", () => {
                 const shellRun = runFunction(
-                    "llmco current-human set julie",
-                    "llmco current-human clear",
+                    "aico current-human set julie",
+                    "aico current-human clear",
                     printShellState,
                 )
 
@@ -84,7 +84,7 @@ for (const shell of shells) {
 
             test("leaves the shell as it was when current-human set refuses", () => {
                 const shellRun = runFunction(
-                    "llmco current-human set eve",
+                    "aico current-human set eve",
                     printShellState,
                 )
 
@@ -97,9 +97,9 @@ for (const shell of shells) {
                     'printf "%s|" "${LLMCO_CURRENT_POSITION_ID-unset}"'
 
                 const shellRun = runFunction(
-                    "llmco current-position set director",
+                    "aico current-position set director",
                     printPositionId,
-                    "llmco current-human set julie",
+                    "aico current-human set julie",
                     printPositionId,
                 )
 
@@ -108,8 +108,8 @@ for (const shell of shells) {
 
             test("shows the selected position next to the identity", () => {
                 const shellRun = runFunction(
-                    "llmco current-human set julie",
-                    "llmco current-position set graphics",
+                    "aico current-human set julie",
+                    "aico current-position set graphics",
                     printShellState,
                 )
 
@@ -124,7 +124,7 @@ for (const shell of shells) {
 
             test("keeps one label across prompts, and none once disabled", () => {
                 const shellRun = runFunction(
-                    "_llmco_update_prompt",
+                    "_aico_update_prompt",
                     printShellState,
                     "LLMCO_DISABLE_PROMPT=1",
                     printShellState,
@@ -135,17 +135,17 @@ for (const shell of shells) {
 
             test("updates the label before each prompt, registered once", () => {
                 const shellRun = runFunction(
-                    `eval "$(llmco shell init ${shell})"`,
+                    `eval "$(aico shell init ${shell})"`,
                     printRegistrations[shell],
                 )
 
-                expect(shellRun.stdout).toBe("_llmco_update_prompt")
+                expect(shellRun.stdout).toBe("_aico_update_prompt")
             })
 
-            test("passes the other commands to llmco", () => {
+            test("passes the other commands to aico", () => {
                 const shellRun = runFunction(
-                    "llmco current-human set julie",
-                    "llmco whoami",
+                    "aico current-human set julie",
+                    "aico whoami",
                 )
 
                 expect(shellRun.stdout).toStartWith("Julie (julie), a human")
@@ -154,7 +154,7 @@ for (const shell of shells) {
     )
 }
 
-describe("llmco shell init", () => {
+describe("aico shell init", () => {
     test("refuses a shell it doesn't set up", () => {
         const init = runCli("shell", "init", "fish")
 
@@ -163,7 +163,7 @@ describe("llmco shell init", () => {
     })
 })
 
-describe("llmco shell init --install", () => {
+describe("aico shell init --install", () => {
     test("adds the line evaluating the function to ~/.bashrc", async () => {
         await Bun.write(getHomePath(".bashrc"), "alias ll='ls -l'\n")
 
@@ -172,7 +172,7 @@ describe("llmco shell init --install", () => {
         const rcText = await Bun.file(getHomePath(".bashrc")).text()
         expect(installation.exitCode).toBe(0)
         expect(rcText).toStartWith("alias ll='ls -l'\n")
-        expect(rcText).toEndWith('eval "$(llmco shell init bash)"\n')
+        expect(rcText).toEndWith('eval "$(aico shell init bash)"\n')
     })
 
     test("refuses a startup file that already evaluates it", () => {
@@ -191,6 +191,6 @@ describe("llmco shell init --install", () => {
         runCliWithEnv(zdotdirEnv, "shell", "init", "zsh", "-i")
 
         const rcText = await Bun.file(getHomePath("zsh", ".zshrc")).text()
-        expect(rcText).toContain('eval "$(llmco shell init zsh)"')
+        expect(rcText).toContain('eval "$(aico shell init zsh)"')
     })
 })

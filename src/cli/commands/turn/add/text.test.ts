@@ -22,14 +22,14 @@ function addJulieText(...options: string[]) {
     return runCliWithEnv(julieEnvironment, "turn", "add", "text", ...options)
 }
 
-describe("llmco turn add text", () => {
+describe("aico turn add text", () => {
     test("adds a text to the person's next turn", async () => {
         const adding = addJulieText("-t", "Checking.")
 
         const blocks = await loadJulieTurnBlocks()
         expect(adding.exitCode).toBe(0)
         expect(adding.stderr).toBe(
-            "Added a text to your turn. Send it with `llmco turn send`.\n",
+            "Added a text to your turn. Send it with `aico turn send`.\n",
         )
         expect(blocks).toEqual([{ type: "text", text: "Checking." }])
     })

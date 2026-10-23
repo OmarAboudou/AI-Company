@@ -17,7 +17,7 @@ export function registerModelListCommand(modelCommand: Command): void {
             )
             const models = modelsByProvider.flat()
             if (models.length === 0) {
-                console.log("No models yet. Run `llmco model create`.")
+                console.log("No models yet. Run `aico model create`.")
                 return
             }
             printColumns(

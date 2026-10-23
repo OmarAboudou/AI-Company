@@ -22,12 +22,12 @@ async function loadWorkerDescription(
 
 function formatHowToWorkIt(human: CurrentHuman, position: Position): string {
     if (human.kind === "director") {
-        return `Assign it to the directors temporarily first: \`llmco position assign-temporarily directors ${position.id}\`.`
+        return `Assign it to the directors temporarily first: \`aico position assign-temporarily directors ${position.id}\`.`
     }
     const { id } = human.employee
     return position.defaultEmployeeId === id
-        ? `A director can give it back to ${id}: \`llmco position unassign-temporarily ${position.id}\`.`
-        : `A director can assign it to ${id} temporarily: \`llmco position assign-temporarily employee ${position.id} ${id}\`.`
+        ? `A director can give it back to ${id}: \`aico position unassign-temporarily ${position.id}\`.`
+        : `A director can assign it to ${id} temporarily: \`aico position assign-temporarily employee ${position.id} ${id}\`.`
 }
 
 export async function requireWorkedPosition(
@@ -43,7 +43,7 @@ export async function requireWorkedPosition(
     }
     if (isDirectorPosition) {
         throw new UserError(
-            `Only directors write from the director's position "${position.id}": run \`llmco current-human clear\` to act as one.`,
+            `Only directors write from the director's position "${position.id}": run \`aico current-human clear\` to act as one.`,
         )
     }
     throw new UserError(

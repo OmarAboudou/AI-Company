@@ -52,6 +52,6 @@ describe("setCurrentHuman", () => {
 
         const switching = setCurrentHuman(folderWithoutCompany, "julie")
 
-        await expect(switching).rejects.toThrow("Run `llmco init` first.")
+        await expect(switching).rejects.toThrow("Run `aico init` first.")
     })
 })

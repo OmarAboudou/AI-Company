@@ -13,7 +13,7 @@ export async function loadExistingLlmModel(
     const modelId = parseId("model", rawModelId)
     if (!(await hasLlmModel(projectRoot, provider.id, modelId))) {
         throw new UserError(
-            `Provider "${provider.id}" has no model "${modelId}". Run \`llmco model list\`.`,
+            `Provider "${provider.id}" has no model "${modelId}". Run \`aico model list\`.`,
         )
     }
     return loadLlmModel(projectRoot, provider.id, modelId)

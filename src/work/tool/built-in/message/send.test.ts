@@ -117,7 +117,7 @@ describe("message_send", () => {
         })
 
         expect(result).toEqual({
-            text: 'No thread "2026-10-18-other". Run `llmco thread list`.',
+            text: 'No thread "2026-10-18-other". Run `aico thread list`.',
             isError: true,
         })
         expect(await listEvents(projectRoot)).toEqual([])

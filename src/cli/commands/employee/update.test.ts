@@ -8,7 +8,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-describe("llmco employee update", () => {
+describe("aico employee update", () => {
     async function createProvider(providerId: string, baseUrl: string) {
         const projectRoot = getProjectPath()
         await createLlmProvider(projectRoot, providerId, { name: providerId })

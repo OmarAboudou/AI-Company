@@ -5,6 +5,6 @@ export function printCreatedTasks(createdTasks: Task[]): void {
         console.error(`Created task "${id}" for @${positionId}: ${type}.`)
     }
     if (createdTasks.length > 0) {
-        console.error("Run `llmco run` to have LLM employees do their tasks.")
+        console.error("Run `aico run` to have LLM employees do their tasks.")
     }
 }

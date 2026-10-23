@@ -23,7 +23,7 @@ function addJulieToolCall(toolName: string, ...options: string[]) {
     return runCliWithEnv(julieEnvironment, ...args)
 }
 
-describe("llmco turn add tool", () => {
+describe("aico turn add tool", () => {
     test("adds a call to one of the task's tools", async () => {
         const input = '{"body": "@director Friday."}'
 
@@ -32,7 +32,7 @@ describe("llmco turn add tool", () => {
         const blocks = await loadJulieTurnBlocks()
         expect(adding.exitCode).toBe(0)
         expect(adding.stderr).toBe(
-            "Added a call to message_send to your turn. Send it with `llmco turn send`.\n",
+            "Added a call to message_send to your turn. Send it with `aico turn send`.\n",
         )
         expect(blocks).toMatchObject([
             {

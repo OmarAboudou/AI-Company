@@ -7,7 +7,7 @@ import type { Run } from "./schema.ts"
 import { hasRun, loadRun } from "./storage.ts"
 
 // A run this person started, on this machine, can go on; any other, such
-// as an interrupted model's, is started afresh, as llmco run would.
+// as an interrupted model's, is started afresh, as aico run would.
 export async function loadResumableRun(
     journal: Journal,
     task: Task,

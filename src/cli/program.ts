@@ -16,7 +16,7 @@ import { registerTurnCommands } from "./commands/turn/turn.ts"
 
 export function createProgram(): Command {
     const program = new Command()
-        .name("llmco")
+        .name("aico")
         .description("Run a virtual company staffed by LLM agents.")
         .showHelpAfterError()
     registerInitCommand(program)

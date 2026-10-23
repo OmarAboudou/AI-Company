@@ -12,7 +12,7 @@ export function registerCurrentHumanSetCommand(
     currentHumanCommand
         .command("set")
         .description(
-            "Act as a fictitious human employee in this shell, shown in the prompt, until current-human clear. Needs llmco's shell function: see llmco shell init.",
+            "Act as a fictitious human employee in this shell, shown in the prompt, until current-human clear. Needs llmco's shell function: see aico shell init.",
         )
         .argument(
             "<employee-id>",

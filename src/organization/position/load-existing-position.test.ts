@@ -32,7 +32,7 @@ describe("loadExistingPosition", () => {
 
     test("refuses an unknown position, saying how to list them", async () => {
         const refusalMessage =
-            'No position "developer". Run `llmco position list`.'
+            'No position "developer". Run `aico position list`.'
 
         const loading = loadExistingPosition(projectRoot, "developer")
 

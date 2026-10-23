@@ -1,4 +1,4 @@
-# `llmco employee`
+# `aico employee`
 
 Hiring employees, changing them and letting them go: `create`, alias `hire`; `update` and `update-id`; `replace`, alias `hand-over`, which gives all of an employee's positions to another one; and `delete`, alias `fire`.
 

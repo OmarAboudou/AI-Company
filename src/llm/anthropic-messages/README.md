@@ -8,7 +8,7 @@ The adapter of `anthropic-messages`, Anthropic's Messages API: it turns a run's 
 - Requests use the prompt cache, with two breakpoints: one after the tools and the system prompt, which every run of an employee in a position shares, and one at the end of the conversation, which each request of a tool loop extends.
 - Without a key from the provider, a request carries none: the SDK never looks for credentials on the machine.
 - A request allows at most 64,000 output tokens, which every current Claude model accepts, until settings give each model its own maximum.
-- An error of the API is reported with the connection's address, and stops `llmco run` with the task still pending.
+- An error of the API is reported with the connection's address, and stops `aico run` with the task still pending.
 - Tests never call a real API: a fake server speaking the protocol answers them.
 
 ## Decisions

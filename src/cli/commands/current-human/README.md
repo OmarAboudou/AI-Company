@@ -1,4 +1,4 @@
-# `llmco current-human`
+# `aico current-human`
 
 Who is at the keyboard in this shell: a director by default, or a fictitious human employee, from `set` until `clear`. Its alias, `whoami`, is the idiom, as `hire` is for `create`.
 

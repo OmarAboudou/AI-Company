@@ -14,7 +14,7 @@ export function requirePositionsToWork(
     if (workedPositions.length === 0 && human.kind === "employee") {
         const { id, name } = human.employee
         throw new UserError(
-            `${name} (${id}) works no position, so no task waits for them. A director can assign one temporarily: \`llmco position assign-temporarily employee <position-id> ${id}\`.`,
+            `${name} (${id}) works no position, so no task waits for them. A director can assign one temporarily: \`aico position assign-temporarily employee <position-id> ${id}\`.`,
         )
     }
     return workedPositions

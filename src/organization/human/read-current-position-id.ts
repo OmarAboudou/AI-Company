@@ -10,7 +10,7 @@ export function readCurrentPositionId(
     }
     if (!IdSchema.safeParse(rawId).success) {
         throw new UserError(
-            `LLMCO_CURRENT_POSITION_ID is "${rawId}", which isn't a position id. Run \`llmco current-position clear\`.`,
+            `LLMCO_CURRENT_POSITION_ID is "${rawId}", which isn't a position id. Run \`aico current-position clear\`.`,
         )
     }
     return rawId

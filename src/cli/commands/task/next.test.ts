@@ -14,7 +14,7 @@ const { runCliWithEnv, getProjectPath } = useTemporaryProject()
 
 const julieEnv = { LLMCO_CURRENT_HUMAN_ID: "julie" }
 
-describe("llmco task next", () => {
+describe("aico task next", () => {
     let threadId = ""
 
     beforeEach(async () => {
@@ -67,7 +67,7 @@ describe("llmco task next", () => {
         const next = runCliWithEnv(julieEnv, "task", "next")
 
         expect(next.stdout).toEndWith(
-            "\n\nPrepare your turn with `llmco turn add text` or `llmco turn add tool`, then send it with `llmco turn send`.\n",
+            "\n\nPrepare your turn with `aico turn add text` or `aico turn add tool`, then send it with `aico turn send`.\n",
         )
     })
 

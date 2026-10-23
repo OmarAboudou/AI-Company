@@ -138,6 +138,6 @@ describe("replaceEmployee", () => {
 
         const replacing = replaceEmployee(folderWithoutCompany, "omar", "alice")
 
-        await expect(replacing).rejects.toThrow("Run `llmco init` first.")
+        await expect(replacing).rejects.toThrow("Run `aico init` first.")
     })
 })

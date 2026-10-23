@@ -71,7 +71,7 @@ export async function runReadyTasks(
                 throw error
             }
             throw new UserError(
-                `${error.message}\nTask "${task.id}" stays pending: run \`llmco run\` again to take it up.`,
+                `${error.message}\nTask "${task.id}" stays pending: run \`aico run\` again to take it up.`,
             )
         }
     }

@@ -26,7 +26,7 @@ export function registerTurnAddTextCommand(turnAddCommand: Command): void {
             }
             await addTurnText(projectRoot, process.env, text)
             console.error(
-                "Added a text to your turn. Send it with `llmco turn send`.",
+                "Added a text to your turn. Send it with `aico turn send`.",
             )
         })
 }

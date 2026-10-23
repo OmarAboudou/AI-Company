@@ -1,4 +1,4 @@
-# `llmco provider`
+# `aico provider`
 
 Declaring the LLM providers the models come from, and where their API key is read: an environment variable, with `-e, --api-key-env`, or a file, with `-k, --api-key-file`, never the key itself. How a provider is reached is the group of its connections, nested in this one, since a connection is part of its provider's configuration.
 

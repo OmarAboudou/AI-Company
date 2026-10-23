@@ -137,7 +137,7 @@ describe("readCurrentAuthor", () => {
     test("refuses a human employee working no position", async () => {
         environment.LLMCO_CURRENT_HUMAN_ID = "julie"
         const assignmentCommand =
-            "`llmco position assign-temporarily employee <position-id> julie`"
+            "`aico position assign-temporarily employee <position-id> julie`"
 
         const reading = readCurrentAuthor(projectRoot, environment)
 
@@ -179,7 +179,7 @@ describe("readCurrentAuthor with a position chosen", () => {
         })
         await assignPosition(projectRoot, "support", "claude")
         const refusalMessage =
-            "You don't work position \"support\": Claude Senior, an LLM employee, works it, and nobody writes on an LLM's behalf. Assign it to the directors temporarily first: `llmco position assign-temporarily directors support`."
+            "You don't work position \"support\": Claude Senior, an LLM employee, works it, and nobody writes on an LLM's behalf. Assign it to the directors temporarily first: `aico position assign-temporarily directors support`."
 
         const reading = readPositionId({ asPositionId: "support" })
 
@@ -189,7 +189,7 @@ describe("readCurrentAuthor with a position chosen", () => {
     test("refuses a vacant position, giving the command to work it", async () => {
         environment.LLMCO_CURRENT_HUMAN_ID = "julie"
         const refusalMessage =
-            "it is vacant. A director can assign it to julie temporarily: `llmco position assign-temporarily employee support julie`."
+            "it is vacant. A director can assign it to julie temporarily: `aico position assign-temporarily employee support julie`."
 
         const reading = readPositionId({ asPositionId: "support" })
 
@@ -204,7 +204,7 @@ describe("readCurrentAuthor with a position chosen", () => {
         })
         environment.LLMCO_CURRENT_HUMAN_ID = "julie"
         const refusalMessage =
-            "Bob, a human employee, works it. A director can give it back to julie: `llmco position unassign-temporarily graphics`."
+            "Bob, a human employee, works it. A director can give it back to julie: `aico position unassign-temporarily graphics`."
 
         const reading = readPositionId({ asPositionId: "graphics" })
 

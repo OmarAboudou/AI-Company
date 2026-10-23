@@ -7,7 +7,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-describe("llmco model update-id", () => {
+describe("aico model update-id", () => {
     const opus = ["anthropic", "claude-opus-5-5"]
 
     beforeEach(async () => {

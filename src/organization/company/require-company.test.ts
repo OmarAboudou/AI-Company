@@ -21,7 +21,7 @@ describe("requireCompany", () => {
         const checking = requireCompany(projectRoot)
 
         await expect(checking).rejects.toThrow(UserError)
-        await expect(checking).rejects.toThrow("Run `llmco init` first.")
+        await expect(checking).rejects.toThrow("Run `aico init` first.")
     })
 
     test("accepts a directory with a company", async () => {

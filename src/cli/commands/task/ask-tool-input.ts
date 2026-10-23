@@ -66,7 +66,7 @@ async function askInputValue(
             return prompts.askYesNo(question)
         default:
             throw new UserError(
-                `${toolName} takes a ${name} that is neither a text, a number nor a yes or no, which llmco task work can't ask for: add the call with \`llmco turn add tool\`.`,
+                `${toolName} takes a ${name} that is neither a text, a number nor a yes or no, which aico task work can't ask for: add the call with \`aico turn add tool\`.`,
             )
     }
 }

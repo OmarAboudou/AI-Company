@@ -59,7 +59,7 @@ function startJulieSession(editorText = "@director Yes.") {
     return startCliWithEnv(env, "task", "work")
 }
 
-describe("llmco task work", () => {
+describe("aico task work", () => {
     test(
         "works a task as the person answers, then waits until Ctrl+C",
         async () => {

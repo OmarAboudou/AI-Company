@@ -7,14 +7,14 @@ export async function saveShellInitLine(shell: Shell): Promise<string> {
     const rcFilePath = readRcFilePath(shell)
     const rcFile = Bun.file(rcFilePath)
     const rcText = (await rcFile.exists()) ? await rcFile.text() : ""
-    if (rcText.includes("llmco shell init")) {
+    if (rcText.includes("aico shell init")) {
         throw new UserError(
             `${rcFilePath} already evaluates llmco's shell function.`,
         )
     }
     await appendFile(
         rcFilePath,
-        `\n# llmco's shell function, which current-human and current-position need\neval "$(llmco shell init ${shell})"\n`,
+        `\n# llmco's shell function, which current-human and current-position need\neval "$(aico shell init ${shell})"\n`,
     )
     return rcFilePath
 }

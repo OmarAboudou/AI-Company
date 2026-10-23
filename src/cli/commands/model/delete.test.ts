@@ -7,7 +7,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-describe("llmco model delete", () => {
+describe("aico model delete", () => {
     const opus = ["anthropic", "claude-opus-5-5"]
 
     beforeEach(async () => {
@@ -41,7 +41,7 @@ describe("llmco model delete", () => {
 
         expect(deletion.exitCode).toBe(1)
         expect(deletion.stderr).toContain("is used by claude.")
-        expect(deletion.stderr).toContain("llmco employee update")
+        expect(deletion.stderr).toContain("aico employee update")
         expect(runCli("model", "show", ...opus).exitCode).toBe(0)
     })
 

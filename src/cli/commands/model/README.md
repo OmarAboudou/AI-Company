@@ -1,6 +1,6 @@
-# `llmco model`
+# `aico model`
 
-Declaring the models the providers serve. A model is designated by its provider, then by its own id, as in `llmco model show anthropic claude-opus-5-5`, since it is declared inside its provider; `model` is still a group of its own, as employees designate models.
+Declaring the models the providers serve. A model is designated by its provider, then by its own id, as in `aico model show anthropic claude-opus-5-5`, since it is declared inside its provider; `model` is still a group of its own, as employees designate models.
 
 ## Invariants
 

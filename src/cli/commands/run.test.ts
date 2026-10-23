@@ -12,7 +12,7 @@ import { useTemporaryProject } from "../use-temporary-project.testing.ts"
 
 const { runCli, runCliAsync, getProjectPath } = useTemporaryProject()
 
-describe("llmco run", () => {
+describe("aico run", () => {
     const fakeServer = useFakeAnthropicServer()
 
     const apiKeyEnv = { TEST_ANTHROPIC_KEY: "sk-test" }

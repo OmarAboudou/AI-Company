@@ -11,7 +11,7 @@ beforeEach(async () => {
     await openJulieTask(getProjectPath())
 })
 
-describe("llmco turn clear", () => {
+describe("aico turn clear", () => {
     test("empties the person's next turn", async () => {
         const projectRoot = getProjectPath()
         await addTurnText(projectRoot, julieEnvironment, "Checking.")

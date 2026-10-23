@@ -1,6 +1,6 @@
-# `llmco shell`
+# `aico shell`
 
-llmco's shell function, for bash and zsh, through which `current-human` and `current-position` change the shell's environment, since a program can't do that for the shell that started it. It also shows who is at the keyboard in the prompt, as `(julie @graphics)`, inside an llmco project only, as git's `__git_ps1` shows the branch only inside a repository. `llmco shell init` prints it, for the shell's startup file to evaluate, as `pyenv init` does.
+llmco's shell function, for bash and zsh, through which `current-human` and `current-position` change the shell's environment, since a program can't do that for the shell that started it. It also shows who is at the keyboard in the prompt, as `(julie @graphics)`, inside an llmco project only, as git's `__git_ps1` shows the branch only inside a repository. `aico shell init` prints it, for the shell's startup file to evaluate, as `pyenv init` does.
 
 ## Invariants
 

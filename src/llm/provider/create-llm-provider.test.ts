@@ -83,6 +83,6 @@ describe("createLlmProvider", () => {
             anthropic,
         )
 
-        await expect(creation).rejects.toThrow("Run `llmco init` first.")
+        await expect(creation).rejects.toThrow("Run `aico init` first.")
     })
 })

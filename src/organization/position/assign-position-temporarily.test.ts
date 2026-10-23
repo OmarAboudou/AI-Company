@@ -156,6 +156,6 @@ describe("assignPositionTemporarily", () => {
             julieAssignee,
         )
 
-        await expect(assigning).rejects.toThrow("Run `llmco init` first.")
+        await expect(assigning).rejects.toThrow("Run `aico init` first.")
     })
 })

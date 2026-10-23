@@ -54,7 +54,7 @@ describe("requireRunInProgress", () => {
         const requiring = requireJulieRun()
 
         await expect(requiring).rejects.toThrow(
-            "No task of yours is in progress: run `llmco task next` to open one.",
+            "No task of yours is in progress: run `aico task next` to open one.",
         )
     })
 

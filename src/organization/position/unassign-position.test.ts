@@ -75,6 +75,6 @@ describe("unassignPosition", () => {
 
         const unassigning = unassignPosition(folderWithoutCompany, "developer")
 
-        await expect(unassigning).rejects.toThrow("Run `llmco init` first.")
+        await expect(unassigning).rejects.toThrow("Run `aico init` first.")
     })
 })

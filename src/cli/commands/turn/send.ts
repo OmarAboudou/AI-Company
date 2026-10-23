@@ -6,13 +6,13 @@ import { projectRoot } from "../../project-root.ts"
 
 function formatNextStep(taskEnding: TaskEnding | undefined): string {
     if (taskEnding === undefined) {
-        return "Prepare your next turn with `llmco turn add`, then send it."
+        return "Prepare your next turn with `aico turn add`, then send it."
     }
     const endLine =
         taskEnding.state === "done"
             ? `Task done: ${taskEnding.summary}`
             : `Task failed: ${taskEnding.reason}`
-    return `${endLine} Run \`llmco task next\` for your next task.`
+    return `${endLine} Run \`aico task next\` for your next task.`
 }
 
 export function registerTurnSendCommand(turnCommand: Command): void {

@@ -14,7 +14,7 @@ export function registerThreadCreateCommand(threadCommand: Command): void {
     threadCommand
         .command("create")
         .description(
-            "Create a thread as the person at the keyboard (see current-human), and print its id. Each position its first message mentions gets a task, which `llmco run` runs if an LLM employee works it.",
+            "Create a thread as the person at the keyboard (see current-human), and print its id. Each position its first message mentions gets a task, which `aico run` runs if an LLM employee works it.",
         )
         .requiredOption("-s, --subject <subject>", "subject of the thread")
         .addOption(createBodyOption("the thread's first message"))

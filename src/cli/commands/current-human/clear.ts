@@ -9,7 +9,7 @@ export function registerCurrentHumanClearCommand(
     currentHumanCommand
         .command("clear")
         .description(
-            "Act as a director again in this shell, after current-human set. Needs llmco's shell function: see llmco shell init.",
+            "Act as a director again in this shell, after current-human set. Needs llmco's shell function: see aico shell init.",
         )
         .addOption(createShellCodeOption())
         .action(({ shellCode: shouldPrintShellCode }) => {

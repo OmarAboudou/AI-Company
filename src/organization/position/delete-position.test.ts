@@ -129,6 +129,6 @@ describe("deletePosition", () => {
 
         const deletion = deletePosition(folderWithoutCompany, "developer")
 
-        await expect(deletion).rejects.toThrow("Run `llmco init` first.")
+        await expect(deletion).rejects.toThrow("Run `aico init` first.")
     })
 })

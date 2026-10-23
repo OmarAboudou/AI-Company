@@ -22,7 +22,7 @@ function chooseProtocol(
     const [onlyProtocol, ...otherProtocols] = connectedProtocols
     if (onlyProtocol === undefined) {
         throw new UserError(
-            `Provider "${provider.id}" has no connection yet. Run \`llmco provider connection create\` first.`,
+            `Provider "${provider.id}" has no connection yet. Run \`aico provider connection create\` first.`,
         )
     }
     if (otherProtocols.length > 0) {
