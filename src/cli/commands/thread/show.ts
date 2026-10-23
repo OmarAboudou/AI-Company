@@ -10,7 +10,7 @@ import { listPositions } from "../../../organization/position/storage.ts"
 import { loadPendingPositionIdsByThread } from "../../../work/task/load-pending-position-ids-by-thread.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
-import { formatMentions } from "./format-mentions.ts"
+import { formatPositionIds } from "./format-position-ids.ts"
 
 export function registerThreadShowCommand(threadCommand: Command): void {
     threadCommand
@@ -49,11 +49,11 @@ export function registerThreadShowCommand(threadCommand: Command): void {
                 `# ${thread.subject}`,
                 "",
                 `Created by ${formatAuthorSignature(thread.createdBy)}, ${formatDateTime(thread.createdAt)}.`,
-                `Members: ${formatMentions(getMemberIds(thread, messages, positions))}.`,
+                `Members: ${formatPositionIds(getMemberIds(thread, messages, positions))}.`,
             ]
             if (pendingPositionIds.length > 0) {
                 markdownLines.push(
-                    `Tasks pending for ${formatMentions(pendingPositionIds)}.`,
+                    `Tasks pending for ${formatPositionIds(pendingPositionIds)}.`,
                 )
             }
             for (const message of messages) {

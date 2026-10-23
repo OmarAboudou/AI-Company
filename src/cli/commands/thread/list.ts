@@ -5,7 +5,7 @@ import { requireCompany } from "../../../organization/company/require-company.ts
 import { loadPendingPositionIdsByThread } from "../../../work/task/load-pending-position-ids-by-thread.ts"
 import { printColumns } from "../../print-columns.ts"
 import { projectRoot } from "../../project-root.ts"
-import { formatMentions } from "./format-mentions.ts"
+import { formatPositionIds } from "./format-position-ids.ts"
 
 export function registerThreadListCommand(threadCommand: Command): void {
     threadCommand
@@ -31,7 +31,7 @@ export function registerThreadListCommand(threadCommand: Command): void {
                         thread.id,
                         thread.subject,
                         pendingPositionIds.length > 0
-                            ? `tasks pending for ${formatMentions(pendingPositionIds)}`
+                            ? `tasks pending for ${formatPositionIds(pendingPositionIds)}`
                             : "",
                     ]
                 }),
