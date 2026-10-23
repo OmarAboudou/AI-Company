@@ -1,15 +1,15 @@
 import { z } from "zod"
 import { IdSchema } from "../../ids/id-schema.ts"
+import { defineEventType } from "../../journal/schema.ts"
 
-export const DispatchedEventsSchema = z
-    .strictObject({
-        eventIds: z.array(IdSchema).meta({
+export const eventsDispatchedEventType = defineEventType({
+    type: "events-dispatched",
+    description:
+        "AICo gave these events of the journal to its listeners, which applied what they asked for, such as creating a task. A dispatching records it once done, so that no clone nor machine gives them again.",
+    fields: {
+        eventIds: z.array(IdSchema).min(1).meta({
             description:
-                "Ids of the journal's events that this machine has given to AICo's listeners, oldest first.",
+                "Ids of the events given to the listeners, oldest first.",
         }),
-    })
-    .meta({
-        title: "AICo dispatched events",
-        description:
-            "The journal's events that this machine has dispatched to the listeners, in .aico/.state/dispatched-events.json. Written by AICo and ignored by git: another machine dispatches them again, and finds the tasks they created.",
-    })
+    },
+})

@@ -12,7 +12,6 @@ import {
     PositionStateSchema,
 } from "../src/organization/position/schema.ts"
 import { builtInEventTypes } from "../src/work/built-in-event-types.ts"
-import { DispatchedEventsSchema } from "../src/work/listener/schema.ts"
 import { TaskSchema } from "../src/work/task/schema.ts"
 import { StagedTurnSchema } from "../src/work/turn/schema.ts"
 
@@ -40,7 +39,6 @@ const zodSchemas = {
     task: TaskSchema,
     "id-history": IdHistorySchema,
     "position-state": PositionStateSchema,
-    "dispatched-events": DispatchedEventsSchema,
     "staged-turn": StagedTurnSchema,
 }
 

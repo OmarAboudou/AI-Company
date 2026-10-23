@@ -96,11 +96,13 @@ describe("runReadyTasks", () => {
         await runFakeTasks()
 
         const [task] = await listTasks(projectRoot)
-        const logArgs = ["log", "-3", "--format=%s"]
+        const logArgs = ["log", "-5", "--format=%s"]
         const log = runGit(join(projectRoot, ".aico"), logArgs)
         expect(log?.split("\n")).toEqual([
             "aico run",
+            "aico run",
             `message_send in task ${task?.id}`,
+            "aico run",
             "aico run",
         ])
     })

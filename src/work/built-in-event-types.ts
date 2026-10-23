@@ -1,4 +1,5 @@
 import { messageSentEventType } from "../messaging/message/schema.ts"
+import { eventsDispatchedEventType } from "./listener/schema.ts"
 import {
     taskCreatedEventType,
     taskDoneEventType,
@@ -12,4 +13,5 @@ export const builtInEventTypes = [
     taskStartedEventType,
     taskDoneEventType,
     taskFailedEventType,
+    eventsDispatchedEventType,
 ] as const
