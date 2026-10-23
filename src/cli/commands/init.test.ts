@@ -1,7 +1,9 @@
 import { describe, expect, test } from "bun:test"
+import { runGit } from "../../git/run-git.ts"
 import { useTemporaryProject } from "../use-temporary-project.testing.ts"
 
-const { runCli, getProjectPath } = useTemporaryProject()
+const { runCli, runCliInFolder, getProjectPath, getHomePath } =
+    useTemporaryProject()
 
 describe("aico init", () => {
     test("creates a company that company show displays", () => {
@@ -17,6 +19,19 @@ describe("aico init", () => {
         const show = runCli("company", "show")
         expect(show.exitCode).toBe(0)
         expect(show.stdout).toBe("# Acme\n\nWe build things.\n")
+    })
+
+    test("commits the company on branch aico/data, which a clone opens", () => {
+        runCli("init", "--name", "Acme")
+        const clonePath = getHomePath("clone")
+        const cloneArgs = ["clone", "-q", getProjectPath(), clonePath]
+        runGit(getHomePath(), cloneArgs)
+
+        const show = runCliInFolder(clonePath, "company", "show")
+
+        const log = runGit(getProjectPath(".aico"), ["log", "--format=%s"])
+        expect(log).toBe("aico init")
+        expect(show.stdout).toStartWith("# Acme")
     })
 
     test("refuses to overwrite an existing company", () => {
