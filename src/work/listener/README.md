@@ -9,7 +9,6 @@ The built-in listener answers each message: it gives every position the message 
 - A listener never writes anything itself: its effects are plain values, which AICo applies.
 - Applying an effect again changes nothing: a task is recognized by what it is, so dispatching an event again, after a crash or on another machine, creates no task twice, and marking as done a task no longer pending does nothing.
 - Which events a machine has dispatched stays on that machine, out of git: another machine dispatches them again, and finds the tasks they created.
-- A task asked beyond the company's maximum depth isn't created: the journal records, once, that the chain stopped there.
 
 ## Decisions
 

@@ -9,7 +9,7 @@ import {
     listPendingTasks,
     type PendingTask,
 } from "../task/list-pending-tasks.ts"
-import type { ChainStoppedEvent, Task } from "../task/schema.ts"
+import type { Task } from "../task/schema.ts"
 import { type RunTaskResult, runTask } from "./run-task.ts"
 import type { RunProgress } from "./schema.ts"
 
@@ -17,7 +17,6 @@ export type WaitingTask = Extract<PendingTask, { kind: "waiting" }>
 
 export type RunReadyTasksProgress =
     | RunProgress
-    | { kind: "chain-stopped"; chainStoppedEvent: ChainStoppedEvent }
     | {
           kind: "task-started"
           task: Task
@@ -39,13 +38,7 @@ export async function runReadyTasks(
         // Another process, a person's terminal for one, may have written
         // events since the last turn.
         await refreshJournal(journal)
-        const { chainStoppedEvents } = await dispatchEvents(
-            journal,
-            builtInListeners,
-        )
-        for (const chainStoppedEvent of chainStoppedEvents) {
-            onProgress({ kind: "chain-stopped", chainStoppedEvent })
-        }
+        await dispatchEvents(journal, builtInListeners)
         const pendingTasks = await listPendingTasks(journal)
         const readyTask = pendingTasks.find(
             (pendingTask) => pendingTask.kind === "ready",

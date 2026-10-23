@@ -5,7 +5,6 @@ import type { JournalEvent } from "../../journal/schema.ts"
 import { listEvents, loadJournal, saveEvent } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
-import { loadCompany, saveCompany } from "../../organization/company/storage.ts"
 import { savePosition } from "../../organization/position/storage.ts"
 import { createTask } from "../task/create-task.ts"
 import { getTaskPositionId } from "../task/get-task-position-id.ts"
@@ -105,76 +104,6 @@ describe("createTaskOnce", () => {
 
         expect(createdTasks).toEqual([])
         expect(await listTasks(projectRoot)).toHaveLength(1)
-    })
-})
-
-describe("createTaskOnce at the end of a chain", () => {
-    async function setMaxTaskDepth(maxTaskDepth: number) {
-        const company = await loadCompany(projectRoot)
-        await saveCompany(projectRoot, { ...company, maxTaskDepth })
-    }
-
-    test("creates tasks up to the company's maximum depth", async () => {
-        await setMaxTaskDepth(2)
-        const answerSent = await recordQuestionSent(1)
-
-        const { createdTasks } = await createInNewDispatching(
-            createCatchUp(),
-            answerSent,
-        )
-
-        expect(createdTasks).toHaveLength(1)
-        expect(await listTaskCreatedDepths()).toEqual([2])
-    })
-
-    test("records a stopped chain instead of a deeper task", async () => {
-        await setMaxTaskDepth(2)
-        const answerSent = await recordQuestionSent(2)
-
-        const dispatching = await createInNewDispatching(
-            createCatchUp(),
-            answerSent,
-        )
-
-        const [chainStoppedEvent] = dispatching.chainStoppedEvents
-        const lastEvent = (await listEvents(projectRoot)).at(-1)
-        expect(dispatching.createdTasks).toEqual([])
-        expect(chainStoppedEvent).toMatchObject({
-            type: "chain-stopped",
-            depth: 2,
-            causeEventId: answerSent.id,
-            stoppedTask: createCatchUp(),
-        })
-        expect(lastEvent).toEqual(chainStoppedEvent)
-    })
-
-    test("stops chains beyond 200 tasks, unless management sets it", async () => {
-        const deepestAnswerSent = await recordQuestionSent(199)
-        const tooDeepAnswerSent = await recordQuestionSent(200)
-
-        const deepest = await createInNewDispatching(
-            createCatchUp(),
-            deepestAnswerSent,
-        )
-        const tooDeep = await createInNewDispatching(
-            createCatchUp(),
-            tooDeepAnswerSent,
-        )
-
-        expect(deepest.createdTasks).toHaveLength(1)
-        expect(tooDeep.chainStoppedEvents).toHaveLength(1)
-    })
-
-    test("records a stopped chain once, even asked again for the task", async () => {
-        const answerSent = await recordQuestionSent(200)
-        await createInNewDispatching(createCatchUp(), answerSent)
-
-        const { chainStoppedEvents } = await createInNewDispatching(
-            createCatchUp(),
-            answerSent,
-        )
-
-        expect(chainStoppedEvents).toEqual([])
     })
 })
 

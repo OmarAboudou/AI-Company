@@ -43,12 +43,6 @@ function formatProgress(
     progress: Exclude<RunReadyTasksProgress, { kind: "text" }>,
 ): string[] {
     switch (progress.kind) {
-        case "chain-stopped": {
-            const { type, positionId } = progress.chainStoppedEvent.stoppedTask
-            return [
-                `Chain stopped: no ${type} task for @${positionId}, which would go beyond the company's maxTaskDepth.`,
-            ]
-        }
         case "task-started": {
             const { task, position, employee } = progress
             return [

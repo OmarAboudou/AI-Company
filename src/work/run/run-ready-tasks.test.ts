@@ -4,7 +4,6 @@ import { listEvents } from "../../journal/storage.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
 import { sendMessage } from "../../messaging/message/send-message.ts"
 import { listMessages } from "../../messaging/message/storage.ts"
-import { loadCompany, saveCompany } from "../../organization/company/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { createCompanyWithLlmEmployee } from "../create-company-with-llm-employee.testing.ts"
 import { getTaskStates } from "../task/get-task-states.ts"
@@ -104,26 +103,6 @@ describe("runReadyTasks", () => {
         expect(waitingTasks).toMatchObject([
             { positionId: "qa-tester", reason: "vacant-position" },
         ])
-    })
-
-    test("reports a chain of tasks stopped at the company's maximum depth", async () => {
-        const company = await loadCompany(projectRoot)
-        await saveCompany(projectRoot, { ...company, maxTaskDepth: 1 })
-        await sendQuestion("@backend-developer Hono or Express?")
-        const testRequest = createAnswer("@qa-tester Can you test Hono?")
-        fakeServer.respondWith({ toolCalls: [testRequest, markAsDoneCall] })
-
-        const { waitingTasks } = await runFakeTasks()
-
-        expect(progresses).toContainEqual({
-            kind: "chain-stopped",
-            chainStoppedEvent: expect.objectContaining({
-                stoppedTask: expect.objectContaining({
-                    positionId: "qa-tester",
-                }),
-            }),
-        })
-        expect(waitingTasks).toEqual([])
     })
 
     test("stops at an API error, then takes the task up again", async () => {

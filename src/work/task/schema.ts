@@ -115,27 +115,3 @@ export const taskFailedEventType = defineEventType({
         usage: TokenUsageSchema.optional(),
     },
 })
-
-export const chainStoppedEventType = defineEventType({
-    type: "chain-stopped",
-    description:
-        "AICo created no task for an event, whose chain of tasks had reached the company's maxTaskDepth.",
-    fields: {
-        causeEventId: IdSchema.meta({
-            description:
-                "Id of the event the task would have been created for, i.e. the name of its file in .aico/journal.",
-        }),
-        stoppedTask: z
-            .strictObject({
-                type: IdSchema,
-                positionId: IdSchema,
-                params: z.record(z.string(), z.unknown()),
-            })
-            .meta({
-                description:
-                    "The task the chain stopped before, as a listener asked for it: its type, the position it was for and its parameters.",
-            }),
-    },
-})
-
-export type ChainStoppedEvent = EventOfType<typeof chainStoppedEventType>

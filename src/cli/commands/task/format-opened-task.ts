@@ -54,8 +54,6 @@ export function formatOpenedTask({
     position,
     run,
     stagedTurn,
-    taskDepth,
-    maxTaskDepth,
     isResumed,
 }: OpenedTask): string {
     const { systemPrompt, tools, turns } = run.conversation
@@ -65,7 +63,7 @@ export function formatOpenedTask({
         .join("\n")
     const opening = isResumed ? "Resumed task" : "Task"
     return [
-        `${opening} "${task.id}", ${task.type}, as ${formatPositionLabel(position)}: link ${taskDepth} of its chain, which stops beyond ${maxTaskDepth} links.`,
+        `${opening} "${task.id}", ${task.type}, as ${formatPositionLabel(position)}.`,
         formatSection("System prompt", systemPrompt),
         formatSection("Message", message),
         formatSection("Tools", tools.map(formatTool).join("\n\n")),

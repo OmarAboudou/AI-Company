@@ -35,12 +35,4 @@ describe("CompanyConfigSchema", () => {
     test("rejects an unknown key", () => {
         expect(accepts({ ...acme, nmae: "Acme" })).toBe(false)
     })
-
-    test("accepts how deep chains of tasks may grow", () => {
-        expect(accepts({ ...acme, maxTaskDepth: 50 })).toBe(true)
-    })
-
-    test.each([0, 2.5])("rejects a maximum depth of %d tasks", (depth) => {
-        expect(accepts({ ...acme, maxTaskDepth: depth })).toBe(false)
-    })
 })
