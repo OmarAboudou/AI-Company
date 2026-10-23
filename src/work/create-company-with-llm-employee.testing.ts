@@ -1,4 +1,3 @@
-import { createGitRepository } from "../git/create-git-repository.testing.ts"
 import { createLlmConnection } from "../llm/connection/create-llm-connection.ts"
 import { createLlmModel } from "../llm/model/create-llm-model.ts"
 import { createLlmProvider } from "../llm/provider/create-llm-provider.ts"
@@ -9,8 +8,6 @@ import { assignPosition } from "../organization/position/assign-position.ts"
 import { createPosition } from "../organization/position/create-position.ts"
 
 export type CompanyWithLlmEmployee = { projectRoot: string; threadId: string }
-
-const committer = { name: "Test User", email: "test@example.com" }
 
 async function createLlmEmployee(
     projectRoot: string,
@@ -37,7 +34,6 @@ export async function createCompanyWithLlmEmployee(
     baseUrl: string,
 ): Promise<CompanyWithLlmEmployee> {
     const projectRoot = await createTemporaryCompany()
-    createGitRepository(projectRoot, committer)
     await Promise.all([
         createLlmEmployee(projectRoot, baseUrl),
         ...["backend-developer", "qa-tester"].map((id) =>
