@@ -1,6 +1,7 @@
 import {
     deliveryValidatedEventType,
     ticketCancelledEventType,
+    ticketFailedEventType,
 } from "../../../messaging/ticket/act/schema.ts"
 import {
     defineListener,
@@ -11,6 +12,7 @@ import {
 export const ticketClosingListeners: Listener[] = [
     deliveryValidatedEventType,
     ticketCancelledEventType,
+    ticketFailedEventType,
 ].map((eventType) =>
     defineListener({
         eventType,

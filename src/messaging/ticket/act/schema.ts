@@ -30,6 +30,12 @@ export const deliveryRefusedEventType = defineMessageEventType({
         "The ticket's requester refused the delivery, saying why: the assignee has the hand again.",
 })
 
+export const ticketFailedEventType = defineMessageEventType({
+    type: "ticket-failed",
+    description:
+        "The director closed the ticket, failed, saying why: its request won't be met.",
+})
+
 export const ticketCancelledEventType = defineMessageEventType({
     type: "ticket-cancelled",
     description:

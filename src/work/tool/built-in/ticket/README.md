@@ -1,6 +1,6 @@
 # Ticket tools
 
-The tools that act on tickets, which no command does: `ticket_create`, the director's, asks a position for work; the acts pass the hand on a ticket, from its assignee, `ticket_ask` and `ticket_deliver`, or from its requester, `ticket_answer`, `ticket_validate`, `ticket_refuse` and `ticket_cancel`. `ticket_show` shows a ticket's discussion word for word, its messages by their numbers, 20 at most per call, so that a long discussion never floods a run.
+The tools that act on tickets, which no command does: `ticket_create`, the director's, asks a position for work; the acts pass the hand on a ticket, from its assignee, `ticket_ask` and `ticket_deliver`, or from its requester, `ticket_answer`, `ticket_validate`, `ticket_refuse` and `ticket_cancel`, or from the director, `ticket_close`. `ticket_show` shows a ticket's discussion word for word, its messages by their numbers, 20 at most per call, so that a long discussion never floods a run.
 
 ## Invariants
 

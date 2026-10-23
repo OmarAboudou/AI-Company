@@ -194,13 +194,18 @@ describe("AICo's listeners", () => {
         expect(createdTasks).toEqual([])
     })
 
-    test("cancel a closed ticket's queued tasks", async () => {
-        await createDeveloperTicket()
+    test.each(["cancel", "close"] as const)(
+        "cancel a closed ticket's queued tasks, at %p",
+        async (actName) => {
+            await createDeveloperTicket()
 
-        const { cancelledTasks } = await act("cancel", director)
+            const { cancelledTasks } = await act(actName, director)
 
-        expect(getTaskSummaries(cancelledTasks)).toEqual(["handle @developer"])
-    })
+            expect(getTaskSummaries(cancelledTasks)).toEqual([
+                "handle @developer",
+            ])
+        },
+    )
 
     test("give no task on a ticket already closed", async () => {
         await createExampleTicket(projectRoot, {

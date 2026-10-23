@@ -2,6 +2,7 @@ import type { Tool } from "../define-tool.ts"
 import { ticketAnswerTool } from "./ticket/answer.ts"
 import { ticketAskTool } from "./ticket/ask.ts"
 import { ticketCancelTool } from "./ticket/cancel.ts"
+import { ticketCloseTool } from "./ticket/close.ts"
 import { ticketCreateTool } from "./ticket/create.ts"
 import { ticketDeliverTool } from "./ticket/deliver.ts"
 import { ticketRefuseTool } from "./ticket/refuse.ts"
@@ -12,6 +13,7 @@ export const builtInTools = {
     ticket_answer: ticketAnswerTool,
     ticket_ask: ticketAskTool,
     ticket_cancel: ticketCancelTool,
+    ticket_close: ticketCloseTool,
     ticket_create: ticketCreateTool,
     ticket_deliver: ticketDeliverTool,
     ticket_refuse: ticketRefuseTool,

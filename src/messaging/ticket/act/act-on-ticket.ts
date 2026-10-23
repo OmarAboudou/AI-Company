@@ -1,4 +1,5 @@
 import type { Journal } from "../../../journal/schema.ts"
+import { loadCompany } from "../../../organization/company/storage.ts"
 import { listPositions } from "../../../organization/position/storage.ts"
 import { UserError } from "../../../user-error.ts"
 import { createUnsentMessage } from "../../message/create-unsent-message.ts"
@@ -15,6 +16,25 @@ import {
 export type TicketActing = {
     ticketNumber: number
     body: string
+}
+
+function getActorPositionId(
+    { actorRole }: TicketAct,
+    state: TicketState,
+    directorPositionId: string,
+): string {
+    switch (actorRole) {
+        case "requester":
+            return state.requesterPositionId
+        case "assignee":
+            return state.assigneePositionId
+        case "director":
+            return directorPositionId
+    }
+}
+
+function formatActorRole({ actorRole }: TicketAct): string {
+    return actorRole === "director" ? "the director" : `its ${actorRole}`
 }
 
 function formatStatusReason({
@@ -43,9 +63,10 @@ export async function actOnTicket(
 ): Promise<Message> {
     const { projectRoot } = journal
     const act: TicketAct = ticketActs[actName]
-    const [ticket, positions] = await Promise.all([
+    const [ticket, positions, { directorPositionId }] = await Promise.all([
         loadExistingTicket(projectRoot, ticketNumber),
         listPositions(projectRoot),
+        loadCompany(projectRoot),
     ])
     const state = getTicketStates([ticket], journal.events, positions).get(
         ticket.number,
@@ -53,13 +74,10 @@ export async function actOnTicket(
     if (state === undefined) {
         throw new Error(`Ticket #${ticket.number} got no state`)
     }
-    const actorPositionId =
-        act.actorRole === "requester"
-            ? state.requesterPositionId
-            : state.assigneePositionId
+    const actorPositionId = getActorPositionId(act, state, directorPositionId)
     if (author.position.id !== actorPositionId) {
         throw new UserError(
-            `You can't ${act.action} ticket #${ticket.number}: only its ${act.actorRole}, @${actorPositionId}, can.`,
+            `You can't ${act.action} ticket #${ticket.number}: only ${formatActorRole(act)}, @${actorPositionId}, can.`,
         )
     }
     if (!act.fromStatuses.includes(state.status)) {

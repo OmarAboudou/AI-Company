@@ -7,11 +7,12 @@ import {
     questionAskedEventType,
     ticketCancelledEventType,
     ticketDeliveredEventType,
+    ticketFailedEventType,
 } from "./schema.ts"
 
 export type TicketAct = {
     eventType: MessageEventType
-    actorRole: "requester" | "assignee"
+    actorRole: "requester" | "assignee" | "director"
     action: string
     fromStatuses: TicketStatus[]
     toStatus: TicketStatus
@@ -62,6 +63,14 @@ export const ticketActs = {
         fromStatuses: ["open", "waiting", "to-validate"],
         toStatus: "closed",
         outcome: "cancelled",
+    },
+    close: {
+        eventType: ticketFailedEventType,
+        actorRole: "director",
+        action: "close",
+        fromStatuses: ["open", "waiting", "to-validate"],
+        toStatus: "closed",
+        outcome: "failed",
     },
 } satisfies Record<string, TicketAct>
 

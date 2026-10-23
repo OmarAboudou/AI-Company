@@ -48,13 +48,17 @@ export const analyseFailureTaskType = defineTaskType({
         if (typeof ticketNumber === "number") {
             const ticket = await loadTicket(projectRoot, ticketNumber)
             lines.push(
-                `It worked on ticket #${ticket.number}, "${ticket.title}": ticket_show reads its discussion.`,
+                `It worked on ticket #${ticket.number}, "${ticket.title}": ticket_show reads its discussion, and ticket_close closes it as failed, should its request not be met.`,
             )
+            boundToolInputs.ticket_close = { ticketNumber }
             boundToolInputs.ticket_show = { ticketNumber }
         }
         return {
             userMessage: [...lines, "", instructions].join("\n"),
-            toolNames: typeof ticketNumber === "number" ? ["ticket_show"] : [],
+            toolNames:
+                typeof ticketNumber === "number"
+                    ? ["ticket_close", "ticket_show"]
+                    : [],
             boundToolInputs,
             result: {},
         }

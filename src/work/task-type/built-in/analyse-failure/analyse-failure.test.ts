@@ -78,14 +78,17 @@ describe("Analyse the failure", () => {
         expect(session.userMessage).toBe(
             [
                 `Task "${failedTask.id}", handle, of Developer (@developer), failed: ${failureReason}`,
-                'It worked on ticket #1, "Choose the API framework": ticket_show reads its discussion.',
+                'It worked on ticket #1, "Choose the API framework": ticket_show reads its discussion, and ticket_close closes it as failed, should its request not be met.',
                 "",
                 "The company is paused since. Find out what went wrong, and readjust what was missing with AICo's commands: the position's title or description, its employee, the model or the provider it runs on. Then relaunch the company with `aico company relaunch`: the position that has the ticket's hand gets its task again.",
             ].join("\n"),
         )
         expect(session).toMatchObject({
-            toolNames: ["ticket_show"],
-            boundToolInputs: { ticket_show: { ticketNumber: 1 } },
+            toolNames: ["ticket_close", "ticket_show"],
+            boundToolInputs: {
+                ticket_close: { ticketNumber: 1 },
+                ticket_show: { ticketNumber: 1 },
+            },
         })
     })
 

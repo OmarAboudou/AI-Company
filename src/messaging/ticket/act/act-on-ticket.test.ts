@@ -126,6 +126,25 @@ describe("actOnTicket", () => {
         },
     )
 
+    test("lets the director close the ticket, failed, whoever has the hand", async () => {
+        await act("ask", developer)
+
+        await act("close", director, "The API is dropped.")
+
+        expect(await loadTicketState()).toMatchObject({
+            status: "closed",
+            outcome: "failed",
+        })
+    })
+
+    test("lets only the director close a ticket as failed", async () => {
+        const closing = act("close", developer)
+
+        await expect(closing).rejects.toThrow(
+            `You can't close ticket #${ticketNumber}: only the director, @director, can.`,
+        )
+    })
+
     test("refuses an act from a position whose role it isn't", async () => {
         const delivering = act("deliver", director)
 
