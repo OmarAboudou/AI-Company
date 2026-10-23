@@ -8,7 +8,7 @@ const { runCli, startCliWithEnv, getProjectPath } = useTemporaryProject()
 
 const sessionTimeoutMs = 30_000
 
-// The QA position, held by the directors, is selected: the director's
+// The QA position, held by the user, is selected: the director's
 // What now?, which always waits, would never let a session wait.
 beforeEach(async () => {
     const projectRoot = getProjectPath()

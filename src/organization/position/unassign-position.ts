@@ -16,9 +16,9 @@ export async function unassignPosition(
         projectRoot,
         rawId,
     )
-    const { employeeId, ...positionHeldByDirectors } = position
+    const { employeeId, ...positionHeldByUser } = position
     if (employeeId !== undefined) {
-        await savePosition(projectRoot, positionHeldByDirectors)
+        await savePosition(projectRoot, positionHeldByUser)
     }
     return { positionId: position.id, previousEmployeeId: employeeId }
 }

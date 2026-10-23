@@ -179,9 +179,7 @@ describe("runReadyTasks", () => {
         expect(await listTaskStates()).toEqual(["done", "queued"])
         expect(result).toMatchObject({
             kind: "none-ready",
-            waitingTasks: [
-                { positionId: "director", reason: "worked-by-directors" },
-            ],
+            waitingTasks: [{ positionId: "director", reason: "held-by-user" }],
         })
     })
 

@@ -6,7 +6,7 @@ import type { Task } from "../task/schema.ts"
 
 export type RunWorker =
     | { kind: "employee"; employee: Employee }
-    | { kind: "directors" }
+    | { kind: "user" }
 
 export type ToolContext = {
     projectRoot: string

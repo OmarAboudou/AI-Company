@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, test } from "bun:test"
 import { loadCurrentStagedTurn } from "../../../../work/turn/load-current-staged-turn.ts"
 import { useTemporaryProject } from "../../../use-temporary-project.testing.ts"
-import { openDirectorsTask } from "../open-directors-task.testing.ts"
+import { openUserTask } from "../open-user-task.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
 beforeEach(async () => {
-    await openDirectorsTask(getProjectPath())
+    await openUserTask(getProjectPath())
 })
 
 async function loadTurnBlocks() {

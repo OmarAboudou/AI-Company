@@ -54,7 +54,7 @@ export const TaskIdSchema = IdSchema.meta({
 export const taskCreatedEventType = defineEventType({
     type: "task-created",
     description:
-        "A task was created for a position, and waits for whoever works it.",
+        "A task was created for a position, and waits for whoever holds it.",
     fields: { taskId: TaskIdSchema },
 })
 
@@ -66,7 +66,7 @@ export const taskStartedEventType = defineEventType({
         runId: RunIdSchema,
         worker: WorkerSchema.meta({
             description:
-                "Who does the run, working the task's position: an employee, or the directors themselves.",
+                "Who does the run, holding the task's position: an LLM employee, or the user.",
         }),
         model: z
             .strictObject({ providerId: IdSchema, modelId: IdSchema })

@@ -9,7 +9,7 @@
             "description": "Title of the position, e.g. Backend Developer."
         },
         "employeeId": {
-            "description": "Id of the LLM employee holding the position, i.e. the name of its folder in .aico/employees. Absent when the directors hold it, the people working on the repository, whom git names.",
+            "description": "Id of the LLM employee holding the position, i.e. the name of its folder in .aico/employees. Absent when the user holds it, the person git names.",
             "type": "string",
             "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
             "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"

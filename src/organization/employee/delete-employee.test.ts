@@ -51,12 +51,12 @@ describe("deleteEmployee", () => {
 
         await expect(deletion).rejects.toThrow(UserError)
         await expect(deletion).rejects.toThrow(
-            'Employee "omar" holds dev, qa. Add --force to delete it anyway and give dev, qa back to the directors.',
+            'Employee "omar" holds dev, qa. Add --force to delete it anyway and give dev, qa back to the user.',
         )
         expect(await hasEmployee(projectRoot, "omar")).toBe(true)
     })
 
-    test("gives the positions it holds back to the directors when forced", async () => {
+    test("gives the positions it holds back to the user when forced", async () => {
         await giveEmployee("dev", "omar")
 
         const deletion = await deleteEmployee(projectRoot, "omar", forceOptions)

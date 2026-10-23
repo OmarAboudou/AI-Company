@@ -9,7 +9,7 @@ export const PositionConfigSchema = z
         }),
         employeeId: IdSchema.optional().meta({
             description:
-                "Id of the LLM employee holding the position, i.e. the name of its folder in .aico/employees. Absent when the directors hold it, the people working on the repository, whom git names.",
+                "Id of the LLM employee holding the position, i.e. the name of its folder in .aico/employees. Absent when the user holds it, the person git names.",
         }),
     })
     .meta({
@@ -38,15 +38,14 @@ export const WorkerSchema = z
             }),
         }),
         z.strictObject({
-            kind: z.literal("directors").meta({
+            kind: z.literal("user").meta({
                 description:
-                    "directors: the people working on the repository, identified by git, work the position themselves, without an employee.",
+                    "user: the user, the person git names, holds the position and works its tasks.",
             }),
         }),
     ])
     .meta({
-        description:
-            "Who holds a position: an LLM employee, or the directors themselves.",
+        description: "Who holds a position: an LLM employee, or the user.",
     })
 
 export type Worker = z.infer<typeof WorkerSchema>

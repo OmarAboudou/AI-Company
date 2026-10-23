@@ -3,12 +3,12 @@ import { createExampleTicket } from "../messaging/ticket/create-example-ticket.t
 import { createTemporaryCompany } from "../organization/company/create-temporary-company.testing.ts"
 import { createPosition } from "../organization/position/create-position.ts"
 
-export type CompanyWorkedByDirectors = {
+export type CompanyHeldByUser = {
     projectRoot: string
     ticketNumber: number
 }
 
-export async function createCompanyWorkedByDirectors(): Promise<CompanyWorkedByDirectors> {
+export async function createCompanyHeldByUser(): Promise<CompanyHeldByUser> {
     const projectRoot = await createTemporaryCompany()
     createGitRepository(projectRoot, {
         name: "Omar Aboudou",

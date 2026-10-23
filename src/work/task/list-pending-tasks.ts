@@ -18,7 +18,7 @@ import { listTasks } from "./storage.ts"
 export type WaitingReason =
     | "unknown-type"
     | "deleted-position"
-    | "worked-by-directors"
+    | "held-by-user"
     | "running"
     | "paused"
 
@@ -47,8 +47,8 @@ function getPendingTask(
         return { ...waitingTask, reason: "deleted-position" }
     }
     const { position, holder } = assignment
-    if (holder.kind === "directors") {
-        return { ...waitingTask, reason: "worked-by-directors" }
+    if (holder.kind === "user") {
+        return { ...waitingTask, reason: "held-by-user" }
     }
     // A task serves once: a model's session cut short fails its task
     // rather than leaving it to another.

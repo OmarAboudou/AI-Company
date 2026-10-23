@@ -1,6 +1,6 @@
 # `aico position`
 
-Opening, giving and closing the company's positions: `create`, alias `open`, and `delete`, alias `close`; `assign`, which gives a position to an LLM employee, and `unassign`, which gives it back to the directors.
+Opening, giving and closing the company's positions: `create`, alias `open`, and `delete`, alias `close`; `assign`, which gives a position to an LLM employee, and `unassign`, which gives it back to the user.
 
 ## Invariants
 

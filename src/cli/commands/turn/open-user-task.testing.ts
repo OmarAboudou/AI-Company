@@ -3,14 +3,12 @@ import { createCompany } from "../../../organization/company/create-company.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
 import { openNextTask } from "../../../work/task/open-next-task.ts"
 
-export type DirectorsTask = { ticketNumber: number; taskId: string }
+export type UserTask = { ticketNumber: number; taskId: string }
 
-// The directors open the task that AICo's own listeners give: the
+// The user opens the task that AICo's own listeners give: the
 // command line, which knows only AICo's task types, can then end it. The
 // QA position is selected, the director's What now? coming first.
-export async function openDirectorsTask(
-    projectRoot: string,
-): Promise<DirectorsTask> {
+export async function openUserTask(projectRoot: string): Promise<UserTask> {
     await createCompany(projectRoot, { name: "Acme" })
     await createPosition(projectRoot, "qa-tester", {
         title: "QA",
@@ -25,7 +23,7 @@ export async function openDirectorsTask(
         AICO_CURRENT_POSITION_ID: "qa-tester",
     })
     if (openedTask === undefined) {
-        throw new Error("The directors have no task to open")
+        throw new Error("The user has no task to open")
     }
     return { ticketNumber: ticket.number, taskId: openedTask.task.id }
 }

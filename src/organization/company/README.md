@@ -2,7 +2,7 @@
 
 The company is what AICo runs, one per repository: its name and its director's position. The project it carries out has a description of its own.
 
-`aico init` creates it in a git repository, on the reserved branch, with the director's position, management's, held by no employee: every person working on the repository is a director, whom git names, and writes from it.
+`aico init` creates it in a git repository, on the reserved branch, with the director's position, management's, which the user, whom git names, always holds.
 
 ## Invariants
 

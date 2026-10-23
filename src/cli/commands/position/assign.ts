@@ -24,7 +24,7 @@ export function registerPositionAssignCommand(positionCommand: Command): void {
     positionCommand
         .command("assign")
         .description(
-            "Give a position, except the director's, to an LLM employee, which then holds it in place of the directors.",
+            "Give a position, except the director's, to an LLM employee, which then holds it in your place.",
         )
         .argument(
             "<position-id>",

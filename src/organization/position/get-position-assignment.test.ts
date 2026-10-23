@@ -7,7 +7,7 @@ const developer = {
     description: "",
     employeeId: "claude",
 }
-const directors = { kind: "directors" } as const
+const user = { kind: "user" } as const
 
 describe("getPositionAssignment", () => {
     test("has the position's employee hold it", () => {
@@ -20,15 +20,15 @@ describe("getPositionAssignment", () => {
         })
     })
 
-    test("has the directors hold a position no employee holds", () => {
-        const { employeeId, ...directorsDeveloper } = developer
+    test("has the user hold a position no employee holds", () => {
+        const { employeeId, ...userDeveloper } = developer
 
-        const assignment = getPositionAssignment(directorsDeveloper, "director")
+        const assignment = getPositionAssignment(userDeveloper, "director")
 
-        expect(assignment.holder).toEqual(directors)
+        expect(assignment.holder).toEqual(user)
     })
 
-    test("has the directors hold the director's position", () => {
+    test("has the user hold the director's position", () => {
         const directorPosition = {
             id: "director",
             title: "Director",
@@ -38,6 +38,6 @@ describe("getPositionAssignment", () => {
         const assignment = getPositionAssignment(directorPosition, "director")
 
         expect(assignment.isDirectorPosition).toBe(true)
-        expect(assignment.holder).toEqual(directors)
+        expect(assignment.holder).toEqual(user)
     })
 })

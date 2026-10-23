@@ -12,8 +12,8 @@ function formatUnassignedMessage({
     previousEmployeeId,
 }: UnassignPositionResult): string {
     return previousEmployeeId === undefined
-        ? `The directors already hold position "${positionId}".`
-        : `Position "${positionId}" is back to the directors: "${previousEmployeeId}" no longer holds it.`
+        ? `You already hold position "${positionId}".`
+        : `Position "${positionId}" is back to you: "${previousEmployeeId}" no longer holds it.`
 }
 
 export function registerPositionUnassignCommand(
@@ -22,7 +22,7 @@ export function registerPositionUnassignCommand(
     positionCommand
         .command("unassign")
         .description(
-            "Give a position back to the directors, from the LLM employee holding it.",
+            "Take a position back from the LLM employee holding it: you hold it again.",
         )
         .argument(
             "<position-id>",

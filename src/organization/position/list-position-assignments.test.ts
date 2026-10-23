@@ -39,7 +39,7 @@ describe("listPositionAssignments", () => {
                     description: "",
                 },
                 isDirectorPosition: true,
-                holder: { kind: "directors" },
+                holder: { kind: "user" },
             },
         ])
     })

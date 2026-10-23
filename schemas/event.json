@@ -688,7 +688,7 @@
             },
             "required": ["type", "occurredAt", "depth", "taskId"],
             "additionalProperties": false,
-            "description": "A task was created for a position, and waits for whoever works it."
+            "description": "A task was created for a position, and waits for whoever holds it."
         },
         {
             "type": "object",
@@ -743,15 +743,15 @@
                             "properties": {
                                 "kind": {
                                     "type": "string",
-                                    "const": "directors",
-                                    "description": "directors: the people working on the repository, identified by git, work the position themselves, without an employee."
+                                    "const": "user",
+                                    "description": "user: the user, the person git names, holds the position and works its tasks."
                                 }
                             },
                             "required": ["kind"],
                             "additionalProperties": false
                         }
                     ],
-                    "description": "Who does the run, working the task's position: an employee, or the directors themselves."
+                    "description": "Who does the run, holding the task's position: an LLM employee, or the user."
                 },
                 "model": {
                     "description": "The model an LLM employee does the run with: its provider's id and its own, in .aico/llm-providers.",

@@ -6,7 +6,7 @@ export function registerTaskCommands(program: Command): void {
     const taskCommand = program
         .command("task")
         .description(
-            "Work the tasks of the positions you work, as LLM employees do: the same message, the same tools, turn by turn.",
+            "Work the tasks of the positions you hold, as LLM employees do: the same message, the same tools, turn by turn.",
         )
     registerTaskNextCommand(taskCommand)
     registerTaskWorkCommand(taskCommand)

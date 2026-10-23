@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
-import { createCompanyWorkedByDirectors } from "../../../work/create-company-worked-by-directors.testing.ts"
+import { createCompanyHeldByUser } from "../../../work/create-company-held-by-user.testing.ts"
 import { createExampleWorkCatalog } from "../../../work/create-example-work-catalog.testing.ts"
 import { sendExampleMessage } from "../../../work/send-example-message.testing.ts"
 import { openNextTask } from "../../../work/task/open-next-task.ts"
@@ -14,7 +14,7 @@ let projectRoot: string
 let ticketNumber: number
 
 beforeEach(async () => {
-    ;({ projectRoot, ticketNumber } = await createCompanyWorkedByDirectors())
+    ;({ projectRoot, ticketNumber } = await createCompanyHeldByUser())
     await sendExampleMessage(
         projectRoot,
         ticketNumber,
@@ -27,17 +27,17 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-async function formatDirectorsTask(): Promise<string> {
+async function formatUserTask(): Promise<string> {
     const { openedTask } = await openNextTask(projectRoot, {}, exampleCatalog)
     if (openedTask === undefined) {
-        throw new Error("The directors have no task to open")
+        throw new Error("The user has no task to open")
     }
     return formatOpenedTask(openedTask)
 }
 
 describe("formatOpenedTask", () => {
     test("shows the task as a model would get it", async () => {
-        const text = await formatDirectorsTask()
+        const text = await formatUserTask()
 
         expect(text).toMatch(
             /^Task "[^"]+", example, as QA \(@qa-tester\)\.\n\n── System prompt ──\nYou are Omar Aboudou, QA \(@qa-tester\) at Acme\./,
@@ -54,7 +54,7 @@ describe("formatOpenedTask", () => {
     })
 
     test("shows a resumed task's turns, then the one being prepared", async () => {
-        await formatDirectorsTask()
+        await formatUserTask()
         await addTurnTool(
             projectRoot,
             {},
@@ -68,7 +68,7 @@ describe("formatOpenedTask", () => {
         })
         await addTurnText(projectRoot, {}, "Checking the notes.")
 
-        const text = await formatDirectorsTask()
+        const text = await formatUserTask()
 
         expect(text).toStartWith('Resumed task "')
         expect(text).toContain(

@@ -10,7 +10,7 @@ AICo's own task types and listeners are the tickets': each change of a ticket gi
 - Listeners and task types return what is to be done, as data that AICo applies, and never write anything themselves; only tools act.
 - A task has its cause's depth plus one, and a person's run adds nothing to it.
 - The engine's operations are given the task types and listeners they know, AICo's own unless told otherwise: its tests run tasks of an example type, whatever AICo's own do.
-- People, the directors, work their tasks as LLM employees do: the same system prompt, message and tools, and traces of the same form.
+- The user works their tasks as LLM employees do: the same system prompt, message and tools, and traces of the same form.
 
 ## Decisions
 

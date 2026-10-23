@@ -99,7 +99,7 @@ describe("cancelTaskOnce", () => {
                 depth: 1,
                 taskId: exampleTask.id,
                 runId: "20261018-150000-000-9e8d",
-                worker: { kind: "directors" },
+                worker: { kind: "user" },
             },
         )
 

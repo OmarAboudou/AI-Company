@@ -6,14 +6,14 @@ import { printColumns } from "../../print-columns.ts"
 import { projectRoot } from "../../project-root.ts"
 
 function formatHolder({ holder }: PositionAssignment): string {
-    return holder.kind === "employee" ? holder.employeeId : "(git users)"
+    return holder.kind === "employee" ? holder.employeeId : "(you)"
 }
 
 export function registerPositionListCommand(positionCommand: Command): void {
     positionCommand
         .command("list")
         .description(
-            "List the positions and who holds each: an LLM employee, or the directors, the repository's git users.",
+            "List the positions and who holds each: an LLM employee, or you.",
         )
         .action(async () => {
             await requireCompany(projectRoot)

@@ -23,7 +23,7 @@ beforeEach(async () => {
         projectRoot,
         journal: await loadJournal(projectRoot),
         position: { id: "director", title: "Director", description: "" },
-        worker: { kind: "directors" },
+        worker: { kind: "user" },
     }
 })
 

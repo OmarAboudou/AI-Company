@@ -23,7 +23,7 @@ export async function assignPosition(
     ])
     if (isDirectorPosition) {
         throw new UserError(
-            `Position "${position.id}" is the director's position: the people working on this repository hold it, identified by git, not an employee.`,
+            `Position "${position.id}" is the director's position: you always hold it, never an employee.`,
         )
     }
     const previousEmployeeId = position.employeeId

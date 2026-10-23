@@ -24,7 +24,7 @@ const developer = {
 }
 
 describe("unassignPosition", () => {
-    test("gives the position back to the directors", async () => {
+    test("gives the position back to the user", async () => {
         await savePosition(projectRoot, developer)
 
         const unassignment = await unassignPosition(projectRoot, "developer")
@@ -34,15 +34,15 @@ describe("unassignPosition", () => {
         expect(unassignment.previousEmployeeId).toBe("omar")
     })
 
-    test("changes nothing for a position the directors hold", async () => {
-        const { employeeId, ...directorsDeveloper } = developer
-        await savePosition(projectRoot, directorsDeveloper)
+    test("changes nothing for a position the user holds", async () => {
+        const { employeeId, ...userDeveloper } = developer
+        await savePosition(projectRoot, userDeveloper)
 
         const unassignment = await unassignPosition(projectRoot, "developer")
 
         const savedPosition = await loadPosition(projectRoot, "developer")
 
-        expect(savedPosition).toEqual(directorsDeveloper)
+        expect(savedPosition).toEqual(userDeveloper)
         expect(unassignment.previousEmployeeId).toBeUndefined()
     })
 

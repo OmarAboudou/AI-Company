@@ -1,6 +1,6 @@
 # Organization
 
-How the company is organized: the company itself and the project it carries out, the positions it opens, the employees who fill them, and the people at the keyboard, who act as directors.
+How the company is organized: the company itself and the project it carries out, the positions it opens, the employees who hold them, and the user at the keyboard, who holds the others.
 
 Management writes it through the command line or by hand, and git versions it, on the reserved branch. Only the position selected in each shell stays out of git.
 

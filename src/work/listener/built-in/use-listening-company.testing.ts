@@ -103,7 +103,7 @@ export function useListeningCompany() {
                 depth: 1,
                 taskId: queuedTask.id,
                 runId: "20261023-150000-000-9e8d",
-                worker: { kind: "directors" },
+                worker: { kind: "user" },
             })
         }
     }

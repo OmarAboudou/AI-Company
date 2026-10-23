@@ -11,11 +11,11 @@ export async function requireWorkedPosition(
         projectRoot,
         rawId,
     )
-    if (holder.kind === "directors") {
+    if (holder.kind === "user") {
         return position
     }
     const employee = await loadEmployee(projectRoot, holder.employeeId)
     throw new UserError(
-        `You don't hold position "${position.id}": ${employee.name}, an LLM employee, holds it, and nobody writes on an LLM's behalf. Give it back to the directors first: \`aico position unassign ${position.id}\`.`,
+        `You don't hold position "${position.id}": ${employee.name}, an LLM employee, holds it, and nobody writes on an LLM's behalf. Take it back first: \`aico position unassign ${position.id}\`.`,
     )
 }

@@ -5,7 +5,7 @@ import { recordEvent } from "../../journal/record-event.ts"
 import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { createExampleTicket } from "../../messaging/ticket/create-example-ticket.testing.ts"
 import { savePosition } from "../../organization/position/storage.ts"
-import { createCompanyWorkedByDirectors } from "../create-company-worked-by-directors.testing.ts"
+import { createCompanyHeldByUser } from "../create-company-held-by-user.testing.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
 import { pauseCompany } from "../pause/pause-company.ts"
 import { sendExampleMessage } from "../send-example-message.testing.ts"
@@ -18,7 +18,7 @@ let projectRoot: string
 let ticketNumber: number
 
 beforeEach(async () => {
-    const company = await createCompanyWorkedByDirectors()
+    const company = await createCompanyHeldByUser()
     projectRoot = company.projectRoot
     ticketNumber = company.ticketNumber
 })
@@ -80,7 +80,7 @@ describe("openNextTask", () => {
         ])
     })
 
-    test("starts the person's run, by the directors, without a model", async () => {
+    test("starts the person's run, by the user, without a model", async () => {
         const shipping = await ask("qa-tester", "Can we ship on Friday?")
 
         const { openedTask } = await openNextExampleTask()
@@ -89,7 +89,7 @@ describe("openNextTask", () => {
         expect(startedEvent).toMatchObject({
             taskId: shipping.task.id,
             runId: openedTask?.run.id,
-            worker: { kind: "directors" },
+            worker: { kind: "user" },
         })
         expect(startedEvent).not.toHaveProperty("model")
     })
@@ -210,10 +210,10 @@ describe("openNextTask among the person's positions", () => {
 
         const opening = openNextExampleTask(environment)
 
-        await expect(opening).rejects.toThrow("isn't one you work now")
+        await expect(opening).rejects.toThrow("isn't one you hold now")
     })
 
-    test("lets the directors work the tasks of the director's position", async () => {
+    test("lets the user work the tasks of the director's position", async () => {
         const question = await ask("director", "Ready?", "qa-tester")
 
         const { openedTask } = await openNextExampleTask({})
@@ -223,7 +223,7 @@ describe("openNextTask among the person's positions", () => {
         expect(openedTask?.run.conversation.systemPrompt).toStartWith(
             "You are Omar Aboudou, Director (@director) at Acme.",
         )
-        expect(startedEvent?.worker).toEqual({ kind: "directors" })
+        expect(startedEvent?.worker).toEqual({ kind: "user" })
     })
 })
 

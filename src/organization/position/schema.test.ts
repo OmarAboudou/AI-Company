@@ -53,23 +53,21 @@ describe("WorkerSchema", () => {
         return WorkerSchema.safeParse(worker).success
     }
 
-    test("accepts an employee, or the directors", () => {
+    test("accepts an employee, or the user", () => {
         const julie = { kind: "employee", employeeId: "julie" } as const
-        const directors = { kind: "directors" } as const
+        const user = { kind: "user" } as const
 
         expect(WorkerSchema.parse(julie)).toEqual(julie)
-        expect(WorkerSchema.parse(directors)).toEqual(directors)
+        expect(WorkerSchema.parse(user)).toEqual(user)
     })
 
     test("requires an employee id for an employee only", () => {
         expect(acceptsWorker({ kind: "employee" })).toBe(false)
-        expect(acceptsWorker({ kind: "directors", employeeId: "julie" })).toBe(
-            false,
-        )
+        expect(acceptsWorker({ kind: "user", employeeId: "julie" })).toBe(false)
     })
 
     test("rejects an unknown kind or key", () => {
         expect(acceptsWorker({ kind: "team" })).toBe(false)
-        expect(acceptsWorker({ kind: "directors", since: "" })).toBe(false)
+        expect(acceptsWorker({ kind: "user", since: "" })).toBe(false)
     })
 })

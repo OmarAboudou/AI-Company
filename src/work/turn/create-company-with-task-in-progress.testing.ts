@@ -1,4 +1,4 @@
-import { createCompanyWorkedByDirectors } from "../create-company-worked-by-directors.testing.ts"
+import { createCompanyHeldByUser } from "../create-company-held-by-user.testing.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
 import { sendExampleMessage } from "../send-example-message.testing.ts"
 import { type OpenedTask, openNextTask } from "../task/open-next-task.ts"
@@ -10,7 +10,7 @@ export type CompanyWithTaskInProgress = {
 }
 
 export async function createCompanyWithTaskInProgress(): Promise<CompanyWithTaskInProgress> {
-    const { projectRoot, ticketNumber } = await createCompanyWorkedByDirectors()
+    const { projectRoot, ticketNumber } = await createCompanyHeldByUser()
     await sendExampleMessage(
         projectRoot,
         ticketNumber,
@@ -23,7 +23,7 @@ export async function createCompanyWithTaskInProgress(): Promise<CompanyWithTask
         createExampleWorkCatalog(),
     )
     if (openedTask === undefined) {
-        throw new Error("The directors have no task to open")
+        throw new Error("The user has no task to open")
     }
     return { projectRoot, ticketNumber, openedTask }
 }

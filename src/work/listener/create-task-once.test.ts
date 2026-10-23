@@ -192,7 +192,7 @@ describe("createTaskOnce on a ticket", () => {
                 depth: 1,
                 taskId: firstTask?.id ?? "",
                 runId: "20261018-150000-000-9e8d",
-                worker: { kind: "directors" },
+                worker: { kind: "user" },
             },
         )
 

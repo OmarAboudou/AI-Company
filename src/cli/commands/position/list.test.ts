@@ -20,9 +20,9 @@ describe("aico position", () => {
         runCli("position", "create", "developer", "--title", "Developer")
 
         expect(runCli("position", "list").stdout).toBe(
-            "developer  Developer  (git users)\n" +
-                "director   Director   (git users)\n" +
-                "qa-tester  QA Tester  (git users)\n",
+            "developer  Developer  (you)\n" +
+                "director   Director   (you)\n" +
+                "qa-tester  QA Tester  (you)\n",
         )
     })
 })
@@ -70,8 +70,8 @@ describe("aico position list and show", () => {
         runCli("position", "assign", "qa-tester", "claude-senior")
 
         expect(runCli("position", "list").stdout).toBe(
-            "developer  Developer  (git users)\n" +
-                "director   Director   (git users)\n" +
+            "developer  Developer  (you)\n" +
+                "director   Director   (you)\n" +
                 "qa-tester  QA Tester  claude-senior\n",
         )
         expect(runCli("position", "show", "qa-tester").stdout).toBe(

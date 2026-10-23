@@ -37,13 +37,13 @@ const runId = "20261023-140324-000-1b2c"
 
 type TaskStart = {
     processId?: number
-    isWorkedByDirectors?: boolean
+    isHeldByUser?: boolean
     hasTranscript?: boolean
 }
 
 async function startTask({
     processId,
-    isWorkedByDirectors = false,
+    isHeldByUser = false,
     hasTranscript = true,
 }: TaskStart) {
     if (hasTranscript) {
@@ -60,8 +60,8 @@ async function startTask({
         depth: 1,
         taskId: task.id,
         runId,
-        worker: isWorkedByDirectors
-            ? { kind: "directors" }
+        worker: isHeldByUser
+            ? { kind: "user" }
             : { kind: "employee", employeeId: "claude" },
     })
 }
@@ -127,7 +127,7 @@ describe("failCutShortTasks", () => {
     })
 
     test("leaves a person's task, which they resume later", async () => {
-        await startTask({ isWorkedByDirectors: true })
+        await startTask({ isHeldByUser: true })
 
         const failedTasks = await failCutShortTasks(
             await loadJournal(projectRoot),

@@ -8,7 +8,7 @@ export function getPositionAssignment(
     const { employeeId } = position
     const holder: Worker =
         isDirectorPosition || employeeId === undefined
-            ? { kind: "directors" }
+            ? { kind: "user" }
             : { kind: "employee", employeeId }
     return { position, isDirectorPosition, holder }
 }

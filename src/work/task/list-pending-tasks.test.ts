@@ -112,8 +112,8 @@ describe("listPendingTasks", () => {
             pendingTask.kind === "waiting" ? pendingTask.reason : undefined,
         )
         expect(reasons).toEqual([
-            "worked-by-directors",
-            "worked-by-directors",
+            "held-by-user",
+            "held-by-user",
             "deleted-position",
         ])
     })
@@ -191,7 +191,7 @@ describe("listPendingTasks", () => {
             {
                 kind: "waiting",
                 task: directorTask,
-                reason: "worked-by-directors",
+                reason: "held-by-user",
             },
         ])
     })

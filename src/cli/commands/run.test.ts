@@ -31,12 +31,12 @@ describe("aico run", () => {
         })
     })
 
-    test("lists the director's What now? as waiting for the directors", () => {
+    test("lists the director's What now? as waiting for the user", () => {
         const running = runCli("run")
 
         expect(running.exitCode).toBe(0)
         expect(running.stdout).toMatch(
-            /^No task is ready\. These wait:\n\S+ +@director +what-now +for the directors\n$/,
+            /^No task is ready\. These wait:\n\S+ +@director +what-now +for you\n$/,
         )
     })
 
@@ -50,7 +50,7 @@ describe("aico run", () => {
 
         expect(running.exitCode).toBe(0)
         expect(running.stdout).toContain("No task is ready. These wait:")
-        expect(running.stdout).toMatch(/@qa-tester +handle +for the directors/)
+        expect(running.stdout).toMatch(/@qa-tester +handle +for you/)
     })
 
     test("lists as waiting a task of a type it doesn't know", async () => {
@@ -110,7 +110,7 @@ describe("aico run", () => {
             "Task failed: The anthropic-messages API",
         )
         expect(running.stdout).toMatch(
-            /@director +analyse-failure +for the directors\n\nThe company is paused since task "[^"]+" failed: the director analyses the failure in `aico task work`, then relaunches it with `aico company relaunch`\.\n$/,
+            /@director +analyse-failure +for you\n\nThe company is paused since task "[^"]+" failed: the director analyses the failure in `aico task work`, then relaunches it with `aico company relaunch`\.\n$/,
         )
     })
 

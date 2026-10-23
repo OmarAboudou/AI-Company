@@ -26,7 +26,7 @@ export async function deleteEmployee(
     if (releasedPositionIds.length > 0 && !shouldForce) {
         const positionList = releasedPositionIds.join(", ")
         throw new UserError(
-            `Employee "${employee.id}" holds ${positionList}. Add --force to delete it anyway and give ${positionList} back to the directors.`,
+            `Employee "${employee.id}" holds ${positionList}. Add --force to delete it anyway and give ${positionList} back to the user.`,
         )
     }
     await Promise.all(

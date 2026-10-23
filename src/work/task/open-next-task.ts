@@ -2,7 +2,7 @@ import { requireJournalEvent } from "../../journal/require-journal-event.ts"
 import type { Journal } from "../../journal/schema.ts"
 import { loadJournal } from "../../journal/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
-import { getPositionsWorkedByDirectors } from "../../organization/human/get-positions-worked-by-directors.ts"
+import { getPositionsHeldByUser } from "../../organization/human/get-positions-held-by-user.ts"
 import { readCurrentPositionId } from "../../organization/human/read-current-position-id.ts"
 import { requirePositionsToWork } from "../../organization/human/require-positions-to-work.ts"
 import { listPositionAssignments } from "../../organization/position/list-position-assignments.ts"
@@ -85,9 +85,7 @@ export async function openNextTask(
         loadJournal(projectRoot),
     ])
     const positionsToWork = requirePositionsToWork(
-        getPositionsWorkedByDirectors(assignments).map(
-            ({ position }) => position,
-        ),
+        getPositionsHeldByUser(assignments).map(({ position }) => position),
         readCurrentPositionId(environment),
     )
     await dispatchEvents(journal, catalog)

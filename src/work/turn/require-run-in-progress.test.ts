@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { loadJournal } from "../../journal/storage.ts"
-import { createCompanyWorkedByDirectors } from "../create-company-worked-by-directors.testing.ts"
+import { createCompanyHeldByUser } from "../create-company-held-by-user.testing.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
 import { sendExampleMessage } from "../send-example-message.testing.ts"
 import { openNextTask } from "../task/open-next-task.ts"
@@ -11,7 +11,7 @@ let projectRoot: string
 let ticketNumber: number
 
 beforeEach(async () => {
-    const company = await createCompanyWorkedByDirectors()
+    const company = await createCompanyHeldByUser()
     projectRoot = company.projectRoot
     ticketNumber = company.ticketNumber
 })

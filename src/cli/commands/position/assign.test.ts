@@ -53,7 +53,7 @@ describe("aico position assign", () => {
         return Bun.file(path).json()
     }
 
-    test("assign gives an employee the position the directors held", async () => {
+    test("assign gives an employee the position the user held", async () => {
         const assignment = runCli("position", "assign", "developer", "omar")
 
         expect(assignment.exitCode).toBe(0)

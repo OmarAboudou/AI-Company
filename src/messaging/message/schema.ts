@@ -15,7 +15,7 @@ export const MessageConfigSchema = z
         }),
         employee: EmployeeSnapshotSchema.optional().meta({
             description:
-                "The employee who wrote the message, working that position. Absent when a director wrote it: a person working on the repository, whom the committer names.",
+                "The LLM employee who wrote the message, holding that position. Absent when the user wrote it, whom the committer names.",
         }),
         committer: CommitterSchema,
         sentAt: z.iso.datetime().meta({

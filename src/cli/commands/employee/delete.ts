@@ -13,7 +13,7 @@ function formatDeletedMessage({
 }: DeleteEmployeeResult): string {
     return releasedPositionIds.length === 0
         ? `Deleted employee "${employee.id}".`
-        : `Deleted employee "${employee.id}"; back to the directors: ${releasedPositionIds.join(", ")}.`
+        : `Deleted employee "${employee.id}"; back to you: ${releasedPositionIds.join(", ")}.`
 }
 
 export function registerEmployeeDeleteCommand(employeeCommand: Command): void {
@@ -27,7 +27,7 @@ export function registerEmployeeDeleteCommand(employeeCommand: Command): void {
         )
         .option(
             "-f, --force",
-            "delete it even if it holds positions, giving them back to the directors",
+            "delete it even if it holds positions, giving them back to you",
         )
         .action(async (rawId, { force: shouldForce }, command) => {
             const deletion = await runCommandOperation(command, () =>

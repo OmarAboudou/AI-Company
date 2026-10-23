@@ -57,7 +57,7 @@ describe("the task event types", () => {
 
     test.each([
         [taskCreatedEventType, {}],
-        [taskStartedEventType, { runId, worker: { kind: "directors" } }],
+        [taskStartedEventType, { runId, worker: { kind: "user" } }],
         [taskDoneEventType, { runId, hasPassedHand: true, result: {} }],
         [taskFailedEventType, { reason: "The ticket asks nothing." }],
     ])("accept their events, with the task's id", (eventType, fields) => {
@@ -99,7 +99,7 @@ describe("the task event types", () => {
     })
 
     test("require the run that starts a task", () => {
-        const worker = { kind: "directors" }
+        const worker = { kind: "user" }
         const event = { ...taskEvent, type: "task-started", worker }
 
         expect(isAcceptedBy(taskStartedEventType, event)).toBe(false)

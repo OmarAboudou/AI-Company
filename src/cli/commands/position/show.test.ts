@@ -32,14 +32,12 @@ describe("aico position show", () => {
         await assignPosition(projectRoot, "developer", "omar")
     })
 
-    test("says who holds the position: an employee, or the directors", () => {
+    test("says who holds the position: an employee, or the user", () => {
         const developerShow = runCli("position", "show", "developer").stdout
         const designerShow = runCli("position", "show", "designer").stdout
 
         expect(developerShow).toBe("# Developer\n\nheld by: omar\n\n\n")
-        expect(designerShow).toBe(
-            "# Designer\n\nheld by: the directors, the repository's git users\n\n\n",
-        )
+        expect(designerShow).toBe("# Designer\n\nheld by: you\n\n\n")
     })
 
     test("fails for an unknown position", () => {

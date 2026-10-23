@@ -18,7 +18,7 @@
             "description": "The position the message was written from."
         },
         "employee": {
-            "description": "The employee who wrote the message, working that position. Absent when a director wrote it: a person working on the repository, whom the committer names.",
+            "description": "The LLM employee who wrote the message, holding that position. Absent when the user wrote it, whom the committer names.",
             "type": "object",
             "properties": {
                 "id": {

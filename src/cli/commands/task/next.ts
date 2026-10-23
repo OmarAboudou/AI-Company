@@ -9,7 +9,7 @@ export function registerTaskNextCommand(taskCommand: Command): void {
     taskCommand
         .command("next")
         .description(
-            "Open the next task of the positions you work (see current-position), or resume the one in progress, and show what an LLM employee would be given: the system prompt, the task's message and the tools.",
+            "Open the next task of the positions you hold (see current-position), or resume the one in progress, and show what an LLM employee would be given: the system prompt, the task's message and the tools.",
         )
         .action(async (_options, command) => {
             const { openedTask, endedTasks } = await runCommandOperation(

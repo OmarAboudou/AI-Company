@@ -12,7 +12,7 @@
             "type": "string",
             "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
             "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-            "description": "Id of the director's position, i.e. the name of its folder in .aico/positions: the company's management, held by no employee: the people working on the repository, identified by git, write from it. It can't be deleted."
+            "description": "Id of the director's position, i.e. the name of its folder in .aico/positions: the company's management, which the user, the person git names, always holds. It can't be deleted."
         }
     },
     "required": ["name", "directorPositionId"],

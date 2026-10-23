@@ -52,14 +52,14 @@ describe("aico employee delete", () => {
 
         expect(deletion.exitCode).toBe(1)
         expect(deletion.stderr).toBe(
-            'Employee "omar" holds developer, qa-tester. Add --force to delete it anyway and give developer, qa-tester back to the directors.\n',
+            'Employee "omar" holds developer, qa-tester. Add --force to delete it anyway and give developer, qa-tester back to the user.\n',
         )
         expect(list).toContain("developer  Developer  omar\n")
         expect(list).toContain("qa-tester  QA Tester  omar\n")
     })
 
     test.each(["--force", "-f"])(
-        "delete %s gives the employee's positions back to the directors",
+        "delete %s gives the employee's positions back to the user",
         (flag) => {
             runCli("position", "assign", "developer", "omar")
             runCli("position", "assign", "qa-tester", "omar")
@@ -69,10 +69,10 @@ describe("aico employee delete", () => {
 
             expect(deletion.exitCode).toBe(0)
             expect(deletion.stdout).toBe(
-                'Deleted employee "omar"; back to the directors: developer, qa-tester.\n',
+                'Deleted employee "omar"; back to you: developer, qa-tester.\n',
             )
-            expect(list).toContain("developer  Developer  (git users)\n")
-            expect(list).toContain("qa-tester  QA Tester  (git users)\n")
+            expect(list).toContain("developer  Developer  (you)\n")
+            expect(list).toContain("qa-tester  QA Tester  (you)\n")
         },
     )
 })

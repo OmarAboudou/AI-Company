@@ -36,7 +36,7 @@ async function loadEmployeeId(positionId: string) {
 }
 
 describe("assignPosition", () => {
-    test("gives the directors' position to an employee", async () => {
+    test("gives the user's position to an employee", async () => {
         const assignment = await assignPosition(projectRoot, "dev", "omar")
 
         expect(await loadEmployeeId("dev")).toBe("omar")

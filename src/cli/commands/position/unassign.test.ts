@@ -53,26 +53,26 @@ describe("aico position unassign", () => {
         return Bun.file(path).json()
     }
 
-    test("unassign gives the position back to the directors", async () => {
+    test("unassign gives the position back to the user", async () => {
         runCli("position", "assign", "developer", "omar")
 
         const unassignment = runCli("position", "unassign", "developer")
 
         expect(unassignment.exitCode).toBe(0)
         expect(unassignment.stdout).toBe(
-            'Position "developer" is back to the directors: "omar" no longer holds it.\n',
+            'Position "developer" is back to you: "omar" no longer holds it.\n',
         )
         expect(await loadPositionConfigFile("developer")).toEqual({
             title: "Developer",
         })
     })
 
-    test("unassign says so when the directors already hold the position", () => {
+    test("unassign says so when the user already holds the position", () => {
         const unassignment = runCli("position", "unassign", "developer")
 
         expect(unassignment.exitCode).toBe(0)
         expect(unassignment.stdout).toBe(
-            'The directors already hold position "developer".\n',
+            'You already hold position "developer".\n',
         )
     })
 })

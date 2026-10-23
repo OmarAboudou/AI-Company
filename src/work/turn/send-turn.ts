@@ -50,7 +50,7 @@ export async function sendTurn(
     }
     const tools = requireRunTools(run.session)
     const { depth } = requireJournalEvent(journal, task.causeEventId)
-    const worker: RunWorker = { kind: "directors" }
+    const worker: RunWorker = { kind: "user" }
     const sentTurn: AssistantTurn = { role: "assistant", blocks }
     // Emptied before its tools run: a crash among them must not let the
     // person send the same turn, and its messages, a second time.

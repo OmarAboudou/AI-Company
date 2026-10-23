@@ -6,9 +6,7 @@ import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 
 function formatHolder(holder: Worker): string {
-    return holder.kind === "employee"
-        ? holder.employeeId
-        : "the directors, the repository's git users"
+    return holder.kind === "employee" ? holder.employeeId : "you"
 }
 
 export function registerPositionShowCommand(positionCommand: Command): void {

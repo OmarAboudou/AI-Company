@@ -36,7 +36,7 @@ export async function startHumanRun(
         depth: causeEvent.depth,
         taskId: task.id,
         runId,
-        worker: { kind: "directors" },
+        worker: { kind: "user" },
     })
     const { toolNames, boundToolInputs, result } = session
     const tools = getRunTools(toolNames, boundToolInputs)

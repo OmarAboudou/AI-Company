@@ -11,7 +11,7 @@ export const CompanyConfigSchema = z
             .meta({ description: "Name of the company, e.g. Acme." }),
         directorPositionId: IdSchema.meta({
             description:
-                "Id of the director's position, i.e. the name of its folder in .aico/positions: the company's management, held by no employee: the people working on the repository, identified by git, write from it. It can't be deleted.",
+                "Id of the director's position, i.e. the name of its folder in .aico/positions: the company's management, which the user, the person git names, always holds. It can't be deleted.",
         }),
     })
     .meta({
