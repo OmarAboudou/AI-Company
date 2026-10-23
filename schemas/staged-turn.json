@@ -23,7 +23,7 @@
                             "id": {
                                 "type": "string",
                                 "minLength": 1,
-                                "description": "Id of the call, which its result names: the model's own, or the one llmco gives a person's call."
+                                "description": "Id of the call, which its result names: the model's own, or the one AICo gives a person's call."
                             },
                             "name": {
                                 "type": "string",
@@ -44,6 +44,6 @@
     },
     "required": ["blocks"],
     "additionalProperties": false,
-    "title": "llmco staged turn",
-    "description": "The turn a person prepares in a run, in .aico/.state/runs/<run-id>.turn.json, until aico turn send sends it. Written by llmco and ignored by git."
+    "title": "AICo staged turn",
+    "description": "The turn a person prepares in a run, in .aico/.state/runs/<run-id>.turn.json, until aico turn send sends it. Written by AICo and ignored by git."
 }

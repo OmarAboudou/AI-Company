@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { getConnectedProtocols } from "./get-connected-protocols.ts"
 
 describe("getConnectedProtocols", () => {
-    test("lists the protocols the provider has a connection through, in llmco's order", () => {
+    test("lists the protocols the provider has a connection through, in AICo's order", () => {
         const openRouter = {
             id: "openrouter",
             name: "OpenRouter",

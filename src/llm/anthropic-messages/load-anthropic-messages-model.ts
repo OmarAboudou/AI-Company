@@ -25,7 +25,7 @@ export async function loadAnthropicMessagesModel(
     ])
     if (model.protocol !== "anthropic-messages") {
         throw new UserError(
-            `Model "${model.id}" of provider "${provider.id}" is called through ${model.protocol}, which llmco can't call yet.`,
+            `Model "${model.id}" of provider "${provider.id}" is called through ${model.protocol}, which AICo can't call yet.`,
         )
     }
     const connection = requireLlmConnection(provider, "anthropic-messages")

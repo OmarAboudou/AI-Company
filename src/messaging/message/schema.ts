@@ -26,7 +26,7 @@ export const MessageConfigSchema = z
         }),
     })
     .meta({
-        title: "llmco message",
+        title: "AICo message",
         description:
             "A message of a thread, in .aico/threads/<thread-id>/messages/<message-id>/message.json. Its body lives next to it, in body.md. Never modified once written.",
     })

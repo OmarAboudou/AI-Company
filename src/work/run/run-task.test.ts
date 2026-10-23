@@ -260,7 +260,7 @@ describe("runTask", () => {
         const running = runFakeTask(reviewTask)
 
         await expect(running).rejects.toThrow(
-            `Task "${task.id}" is of type "review-code", which this version of llmco doesn't know`,
+            `Task "${task.id}" is of type "review-code", which this version of AICo doesn't know`,
         )
     })
 

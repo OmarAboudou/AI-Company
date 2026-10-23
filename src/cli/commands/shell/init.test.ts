@@ -116,7 +116,7 @@ for (const shell of shells) {
                 expect(shellRun.stdout).toBe("julie|(julie @graphics) $ ")
             })
 
-            test("shows no label outside an llmco project", () => {
+            test("shows no label outside an AICo project", () => {
                 const shellRun = runFunction('cd "$HOME"', printShellState)
 
                 expect(shellRun.stdout).toBe("unset|$ ")

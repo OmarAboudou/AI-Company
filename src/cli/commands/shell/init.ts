@@ -7,7 +7,7 @@ export function registerShellInitCommand(shellCommand: Command): void {
     shellCommand
         .command("init")
         .description(
-            "Print llmco's shell function, which current-human and current-position set and clear need, for your shell's startup file to evaluate, or add the line evaluating it to that file with --install.",
+            "Print AICo's shell function, which current-human and current-position set and clear need, for your shell's startup file to evaluate, or add the line evaluating it to that file with --install.",
         )
         .addArgument(
             new Argument(
@@ -26,7 +26,7 @@ export function registerShellInitCommand(shellCommand: Command): void {
             }
             const rcFilePath = await saveShellInitLine(shell)
             console.log(
-                `Added llmco's shell function to ${rcFilePath}: current-human set works in the terminals opened from now on.`,
+                `Added AICo's shell function to ${rcFilePath}: current-human set works in the terminals opened from now on.`,
             )
         })
 }

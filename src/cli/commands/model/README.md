@@ -4,7 +4,7 @@ Declaring the models the providers serve. A model is designated by its provider,
 
 ## Invariants
 
-- `model create` always requires `-a, --api-id`: a model's id at its provider often differs from its id in llmco.
+- `model create` always requires `-a, --api-id`: a model's id at its provider often differs from its id in AICo.
 - `model create` lets `-p, --protocol` be left out only when the provider has a single connection.
 
 ## Decisions

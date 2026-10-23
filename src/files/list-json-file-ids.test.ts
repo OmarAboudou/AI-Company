@@ -7,7 +7,7 @@ import { listJsonFileIds } from "./list-json-file-ids.ts"
 let folderPath: string
 
 beforeEach(async () => {
-    folderPath = await mkdtemp(join(tmpdir(), "llmco-"))
+    folderPath = await mkdtemp(join(tmpdir(), "aico-"))
 })
 
 afterEach(async () => {

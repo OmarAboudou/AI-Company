@@ -1,14 +1,14 @@
-# llmco
+# AICo
 
 Run a virtual company staffed by LLM agents, from the command line.
 
-A company lives in a `.aico/` folder, in the directory you run llmco from, which must be inside a git repository: the company itself, its positions (job descriptions), its employees (an LLM or a human), the LLM providers whose models its LLM employees run on, the threads of messages its positions exchange, their tasks, and the journal of what happens. Everything is a plain file, to edit through the CLI or by hand.
+A company lives in a `.aico/` folder, in the directory you run AICo from, which must be inside a git repository: the company itself, its positions (job descriptions), its employees (an LLM or a human), the LLM providers whose models its LLM employees run on, the threads of messages its positions exchange, their tasks, and the journal of what happens. Everything is a plain file, to edit through the CLI or by hand.
 
 `aico init` also creates the director's position, the company's management.
 
 ## Getting started
 
-llmco runs on [Bun](https://bun.sh). From a clone of this repository:
+AICo runs on [Bun](https://bun.sh). From a clone of this repository:
 
 ```bash
 bun install
@@ -53,7 +53,7 @@ aico position interim directors backend-developer                 # the director
 aico position end-interim backend-developer                       # back to its default employee
 ```
 
-The `set` and `clear` commands of `current-human` and `current-position` change your shell's environment, which only llmco's shell function can do, set up once. `aico shell init <bash|zsh> --install` adds the line evaluating it to `~/.bashrc` or `~/.zshrc`; without `--install`, the command prints the function, for you to place where you prefer. In an llmco project, the function also shows who you are, and the selected position, in your prompt: `(director)`, `(julie)`, `(julie @graphics)`. A script sets `AICO_CURRENT_HUMAN_ID` and `AICO_CURRENT_POSITION_ID` itself, and `AICO_DISABLE_PROMPT` leaves the prompt as it is.
+The `set` and `clear` commands of `current-human` and `current-position` change your shell's environment, which only AICo's shell function can do, set up once. `aico shell init <bash|zsh> --install` adds the line evaluating it to `~/.bashrc` or `~/.zshrc`; without `--install`, the command prints the function, for you to place where you prefer. In an AICo project, the function also shows who you are, and the selected position, in your prompt: `(director)`, `(julie)`, `(julie @graphics)`. A script sets `AICO_CURRENT_HUMAN_ID` and `AICO_CURRENT_POSITION_ID` itself, and `AICO_DISABLE_PROMPT` leaves the prompt as it is.
 
 ```bash
 aico shell init bash --install         # once, then open a new terminal
@@ -76,7 +76,7 @@ aico run                                              # runs what is ready, then
 
 ## Working your tasks
 
-People work their tasks as LLM employees do: the same message, the same tools, turn by turn. llmco thus works without any LLM: two people, each in a terminal as a human employee, talk through their tasks. You work the tasks of the positions you work (see `aico current-human`), only the selected position's when one is set; as a director, those of the director's position and of the positions assigned temporarily to the directors.
+People work their tasks as LLM employees do: the same message, the same tools, turn by turn. AICo thus works without any LLM: two people, each in a terminal as a human employee, talk through their tasks. You work the tasks of the positions you work (see `aico current-human`), only the selected position's when one is set; as a director, those of the director's position and of the positions assigned temporarily to the directors.
 
 `aico task work` works them one after the other. It shows each task as a model gets it, its system prompt, its message and its tools, then asks what to do: call a tool, write a text, show, clear or send your turn. For a tool, it asks which one, then each of its inputs, a message's body in your editor (`$VISUAL` or `$EDITOR`). Sending the turn runs its calls and shows their results: `task_mark-as-done` or `task_mark-as-failed` ends the task, and a turn without any call gets the reminder a model gets. Once no task waits, the session waits for the next one, until Ctrl+C, or Ctrl+D as in a shell. What you prepared stays in your turn.
 

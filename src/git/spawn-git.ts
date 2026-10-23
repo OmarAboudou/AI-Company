@@ -8,10 +8,10 @@ function readRepositoryVariableNames(): string[] {
 }
 
 // git hooks and `git rebase --exec` hand their commands GIT_DIR and related
-// variables, while llmco names the repository it works on by its folder.
+// variables, while AICo names the repository it works on by its folder.
 function readEnvironmentWithoutRepositoryVariables() {
     repositoryVariableNames ??= readRepositoryVariableNames()
-    // biome-ignore lint/style/noProcessEnv: git runs in llmco's own environment, which the next lines clean.
+    // biome-ignore lint/style/noProcessEnv: git runs in AICo's own environment, which the next lines clean.
     const environment = { ...process.env }
     for (const name of repositoryVariableNames) {
         delete environment[name]
@@ -26,6 +26,6 @@ export function spawnGit(folderPath: string, args: string[]) {
             env: readEnvironmentWithoutRepositoryVariables(),
         })
     } catch {
-        throw new UserError("llmco needs git: install it, then try again.")
+        throw new UserError("AICo needs git: install it, then try again.")
     }
 }

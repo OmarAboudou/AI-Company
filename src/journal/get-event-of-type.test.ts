@@ -68,8 +68,8 @@ describe("getEventOfType", () => {
         expect(getting).toThrow(refusalMessage)
     })
 
-    test("ignores the fields a newer llmco added, at any depth", () => {
-        const noteFiledByNewerLlmco = {
+    test("ignores the fields a newer AICo added, at any depth", () => {
+        const noteFiledByNewerAico = {
             ...noteFiled,
             priority: "high",
             folder: { name: "Stack", color: "blue" },
@@ -77,7 +77,7 @@ describe("getEventOfType", () => {
             reviewer: { id: "backend-developer", since: "2026-10-18" },
         }
 
-        const event = getEventOfType(noteFiledByNewerLlmco, noteFiledEventType)
+        const event = getEventOfType(noteFiledByNewerAico, noteFiledEventType)
 
         expect(event).toEqual(noteFiled)
     })

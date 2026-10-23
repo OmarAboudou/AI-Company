@@ -11,7 +11,7 @@ const developer: IdHistory = {
 }
 
 describe("IdHistorySchema", () => {
-    test("accepts no history: created before llmco recorded it", () => {
+    test("accepts no history: created before AICo recorded it", () => {
         expect(accepts({})).toBe(true)
     })
 

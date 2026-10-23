@@ -33,7 +33,7 @@ export const TaskSchema = z
         }),
     })
     .meta({
-        title: "llmco task",
+        title: "AICo task",
         description:
             "A task for a position, in .aico/tasks/<task-id>.json, the id being its cause event's followed by a hash of its type, position and parameters, so that two machines asking for the same task write the same file. Never modified: the task's state comes from the journal's events.",
     })
@@ -119,7 +119,7 @@ export const taskFailedEventType = defineEventType({
 export const chainStoppedEventType = defineEventType({
     type: "chain-stopped",
     description:
-        "llmco created no task for an event, whose chain of tasks had reached the company's maxTaskDepth.",
+        "AICo created no task for an event, whose chain of tasks had reached the company's maxTaskDepth.",
     fields: {
         causeEventId: IdSchema.meta({
             description:

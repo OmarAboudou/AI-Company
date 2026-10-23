@@ -9,7 +9,7 @@ import { saveCompany } from "./storage.ts"
 let projectRoot: string
 
 beforeEach(async () => {
-    projectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
+    projectRoot = await mkdtemp(join(tmpdir(), "aico-"))
 })
 
 afterEach(async () => {

@@ -1,6 +1,6 @@
 # The anthropic-messages protocol
 
-The adapter of `anthropic-messages`, Anthropic's Messages API: it turns a run's conversation into a request, streams the model's answer as it comes, and turns the response back into a turn of the conversation. Anthropic's API speaks this protocol, and so do Ollama, LM Studio, llama.cpp and OpenRouter: it is the only one llmco calls for now.
+The adapter of `anthropic-messages`, Anthropic's Messages API: it turns a run's conversation into a request, streams the model's answer as it comes, and turns the response back into a turn of the conversation. Anthropic's API speaks this protocol, and so do Ollama, LM Studio, llama.cpp and OpenRouter: it is the only one AICo calls for now.
 
 ## Invariants
 

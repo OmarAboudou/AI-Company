@@ -9,7 +9,7 @@
             "description": "Display name of the LLM provider, e.g. Anthropic."
         },
         "apiKeySource": {
-            "description": "Where llmco reads the provider's API key, never the key itself. Absent for servers without authentication, such as a local Ollama.",
+            "description": "Where AICo reads the provider's API key, never the key itself. Absent for servers without authentication, such as a local Ollama.",
             "oneOf": [
                 {
                     "type": "object",
@@ -104,6 +104,6 @@
     },
     "required": ["name"],
     "additionalProperties": false,
-    "title": "llmco LLM provider",
+    "title": "AICo LLM provider",
     "description": "Configuration of an LLM provider, in .aico/llm-providers/<provider-id>/config.json. Its models live next to it, in models/<model-id>/config.json."
 }

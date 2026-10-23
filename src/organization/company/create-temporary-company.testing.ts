@@ -5,7 +5,7 @@ import { savePosition } from "../position/storage.ts"
 import { saveCompany } from "./storage.ts"
 
 export async function createTemporaryCompany(): Promise<string> {
-    const projectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
+    const projectRoot = await mkdtemp(join(tmpdir(), "aico-"))
     const directorPositionId = "director"
     await Promise.all([
         saveCompany(projectRoot, {

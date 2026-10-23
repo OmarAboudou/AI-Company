@@ -17,7 +17,7 @@ const anthropic = {
 }
 
 beforeEach(async () => {
-    projectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
+    projectRoot = await mkdtemp(join(tmpdir(), "aico-"))
     await saveLlmProvider(projectRoot, anthropic)
 })
 

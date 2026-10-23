@@ -17,8 +17,8 @@ export function useTemporaryProject() {
 
     beforeEach(async () => {
         ;[projectRoot, home] = await Promise.all([
-            mkdtemp(join(tmpdir(), "llmco-")),
-            mkdtemp(join(tmpdir(), "llmco-home-")),
+            mkdtemp(join(tmpdir(), "aico-")),
+            mkdtemp(join(tmpdir(), "aico-home-")),
         ])
         createGitRepository(projectRoot, {
             name: "Test User",

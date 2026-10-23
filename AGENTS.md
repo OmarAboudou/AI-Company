@@ -27,7 +27,7 @@ A name says what its value is, so that code reads at first sight, and says it fr
 - **Functions** start with a verb saying what they do:
   - `load`, `list`, `save`, `delete`: read or write the disk, for one item, all the items of a kind, writing, removing;
   - `get`: compute a value from data already in memory;
-  - `read`: read what comes from outside llmco, such as git or environment variables;
+  - `read`: read what comes from outside AICo, such as git or environment variables;
   - `require`: check, and throw when the check fails;
   - `is`, `has`, `can`: answer yes or no;
   - `format`, `build`: produce a text;

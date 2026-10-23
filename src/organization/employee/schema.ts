@@ -23,7 +23,7 @@ export const EmployeeConfigSchema = z
                 }),
                 modelId: IdSchema.meta({
                     description:
-                        "Id of one of the provider's models in llmco, i.e. the name of its folder in .aico/llm-providers/<provider-id>/models, e.g. claude-opus-5-5. Not its apiId, the id the provider's API expects.",
+                        "Id of one of the provider's models in AICo, i.e. the name of its folder in .aico/llm-providers/<provider-id>/models, e.g. claude-opus-5-5. Not its apiId, the id the provider's API expects.",
                 }),
             })
             .meta({ description: "An employee run by an LLM." }),
@@ -38,7 +38,7 @@ export const EmployeeConfigSchema = z
             .meta({ description: "An employee who is a human." }),
     ])
     .meta({
-        title: "llmco employee",
+        title: "AICo employee",
         description:
             "Configuration of an employee, in .aico/employees/<employee-id>/config.json.",
     })

@@ -7,7 +7,7 @@ export function registerCurrentPositionShowCommand(
     currentPositionCommand
         .command("show", { isDefault: true })
         .description(
-            "Show the position selected in this shell, or (none) when llmco picks the one to write from for each message.",
+            "Show the position selected in this shell, or (none) when AICo picks the one to write from for each message.",
         )
         .action(() => {
             console.log(readCurrentPositionId(process.env) ?? "(none)")

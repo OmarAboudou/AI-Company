@@ -9,7 +9,7 @@ const pluginPath = join(import.meta.dir, "require-async.grit")
 let sampleFolderPath: string
 
 beforeAll(async () => {
-    sampleFolderPath = await mkdtemp(join(tmpdir(), "llmco-lint-"))
+    sampleFolderPath = await mkdtemp(join(tmpdir(), "aico-lint-"))
     await Bun.write(
         join(sampleFolderPath, "biome.json"),
         JSON.stringify({ plugins: [pluginPath] }),

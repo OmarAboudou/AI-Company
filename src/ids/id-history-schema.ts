@@ -5,7 +5,7 @@ export const IdHistorySchema = z
     .strictObject({
         createdAt: z.iso.datetime().optional().meta({
             description:
-                "When it was created, in UTC. Absent if it was created before llmco recorded it: it then counts as existing since always.",
+                "When it was created, in UTC. Absent if it was created before AICo recorded it: it then counts as existing since always.",
         }),
         formerIds: z
             .array(
@@ -23,9 +23,9 @@ export const IdHistorySchema = z
             }),
     })
     .meta({
-        title: "llmco id history",
+        title: "AICo id history",
         description:
-            "When a position or an employee was created and the ids it had before, in history.json next to its config.json. Written by llmco, not by hand: absent for one created before llmco recorded it.",
+            "When a position or an employee was created and the ids it had before, in history.json next to its config.json. Written by AICo, not by hand: absent for one created before AICo recorded it.",
     })
 
 export type IdHistoryRecord = z.infer<typeof IdHistorySchema>

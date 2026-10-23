@@ -14,7 +14,7 @@ The rules that decide where code and documentation go, and how big they grow. Th
 ## A command calls an operation of the core
 
 - A command reads its arguments, calls the operation of the core named after it, and prints what the operation returns: `aico position delete` calls `deletePosition`.
-- The operation applies every rule, and throws each refusal with its message. The message says what to do in the command line's words, since the command line is llmco's interface for people and LLM employees alike.
+- The operation applies every rule, and throws each refusal with its message. The message says what to do in the command line's words, since the command line is AICo's interface for people and LLM employees alike.
 - A command that only reads uses the core's reading functions, and formats their result.
 
 ## The core is grouped by domain, then by concept

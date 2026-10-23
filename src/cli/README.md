@@ -1,6 +1,6 @@
 # Command line
 
-The command line is llmco's interface, for people and scripts alike, and later for LLM employees: each command reads its arguments, calls the operation of the core named after it, and prints what the operation returns. The company's rules live in the core, which words its refusals in the command line's terms, such as "Add --force to delete it anyway", since the command line is how everyone acts on the company.
+The command line is AICo's interface, for people and scripts alike, and later for LLM employees: each command reads its arguments, calls the operation of the core named after it, and prints what the operation returns. The company's rules live in the core, which words its refusals in the command line's terms, such as "Add --force to delete it anyway", since the command line is how everyone acts on the company.
 
 ## Invariants
 

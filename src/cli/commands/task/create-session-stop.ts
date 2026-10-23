@@ -21,7 +21,7 @@ export function createSessionStop(input: NodeJS.ReadStream): SessionStop {
         }
     }
     const onEnd = () => controller.abort()
-    // While llmco works between two questions, the terminal turns Ctrl+C
+    // While AICo works between two questions, the terminal turns Ctrl+C
     // into SIGINT: the session ends once that work is done, and a second
     // Ctrl+C ends it at once, should that work hang.
     const onInterrupt = () => {

@@ -10,7 +10,7 @@ import { listTasks } from "./storage.ts"
 let projectRoot: string
 
 beforeEach(async () => {
-    projectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
+    projectRoot = await mkdtemp(join(tmpdir(), "aico-"))
 })
 
 afterEach(async () => {
@@ -52,7 +52,7 @@ describe("createTask", () => {
     })
 
     test("writes the same file for the same task, wherever it is created", async () => {
-        const otherProjectRoot = await mkdtemp(join(tmpdir(), "llmco-"))
+        const otherProjectRoot = await mkdtemp(join(tmpdir(), "aico-"))
         const reorderedTask = {
             positionId: developerNewTask.positionId,
             params: developerNewTask.params,
