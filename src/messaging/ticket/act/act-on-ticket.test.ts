@@ -137,6 +137,22 @@ describe("actOnTicket", () => {
         )
     })
 
+    test("lets the director give a renounced ticket back to its assignee", async () => {
+        await act("renounce", developer, "No access to the API.")
+
+        await act("give-back", director, "You have access now.")
+
+        expect((await loadTicketState())?.status).toBe("open")
+    })
+
+    test("refuses to give back a ticket that wasn't renounced", async () => {
+        const givingBack = act("give-back", director)
+
+        await expect(givingBack).rejects.toThrow(
+            `You can't give back ticket #${ticketNumber} now: its assignee has the hand.`,
+        )
+    })
+
     test("refuses to renounce a ticket whose requester has the hand", async () => {
         await act("ask", developer)
 

@@ -8,6 +8,7 @@ import {
     ticketCancelledEventType,
     ticketDeliveredEventType,
     ticketFailedEventType,
+    ticketGivenBackEventType,
     ticketHandedOverEventType,
     ticketRenouncedEventType,
 } from "./schema.ts"
@@ -72,6 +73,13 @@ export const ticketActs = {
         action: "renounce",
         fromStatuses: ["open"],
         toStatus: "to-arbitrate",
+    },
+    "give-back": {
+        eventType: ticketGivenBackEventType,
+        actorRole: "director",
+        action: "give back",
+        fromStatuses: ["to-arbitrate"],
+        toStatus: "open",
     },
     "hand-over": {
         eventType: ticketHandedOverEventType,

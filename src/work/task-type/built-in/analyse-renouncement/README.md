@@ -1,6 +1,6 @@
 # Analyse the renouncement
 
-The director's task once a ticket's assignee renounced it, which paused the company: from what the assignee says went wrong, it readjusts what was missing with AICo's commands, then arbitrates, handing the ticket over to another position or closing it as failed, and relaunches the company.
+The director's task once a ticket's assignee renounced it, which paused the company: from what the assignee says went wrong, it readjusts what was missing with AICo's commands, then arbitrates, giving the ticket back to its assignee, handing it over to another position or closing it as failed, and relaunches the company.
 
 ## Decisions
 

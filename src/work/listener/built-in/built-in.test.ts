@@ -134,4 +134,13 @@ describe("AICo's listeners", () => {
             "analyse-renouncement @director",
         ])
     })
+
+    test("give the assignee Resume once the director gives the ticket back", async () => {
+        await createDeveloperTicket()
+        await act("renounce", developer)
+
+        const { createdTasks } = await act("give-back", director)
+
+        expect(getTaskSummaries(createdTasks)).toEqual(["resume @developer"])
+    })
 })

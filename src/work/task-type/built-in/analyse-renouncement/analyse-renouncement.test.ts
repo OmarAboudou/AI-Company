@@ -86,6 +86,7 @@ describe("Analyse the renouncement", () => {
         )
         expect(session.userMessage).toContain("I can't draw.")
         expect(session.toolNames).toEqual([
+            "ticket_give-back",
             "ticket_hand-over",
             "ticket_close",
             "ticket_show",

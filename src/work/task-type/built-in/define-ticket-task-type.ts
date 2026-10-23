@@ -23,6 +23,7 @@ type TicketToolName = Extract<
     | "ticket_cancel"
     | "ticket_close"
     | "ticket_deliver"
+    | "ticket_give-back"
     | "ticket_hand-over"
     | "ticket_refuse"
     | "ticket_renounce"

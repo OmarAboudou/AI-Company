@@ -3,6 +3,7 @@ import {
     questionAnsweredEventType,
     questionAskedEventType,
     ticketDeliveredEventType,
+    ticketGivenBackEventType,
     ticketHandedOverEventType,
     ticketRenouncedEventType,
 } from "../../../messaging/ticket/act/schema.ts"
@@ -46,6 +47,11 @@ const ticketTaskRules = [
         eventType: ticketRenouncedEventType,
         taskType: analyseRenouncementTaskType,
         recipientRole: "director",
+    },
+    {
+        eventType: ticketGivenBackEventType,
+        taskType: resumeTaskType,
+        recipientRole: "assignee",
     },
     {
         eventType: ticketHandedOverEventType,
