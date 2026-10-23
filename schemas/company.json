@@ -18,5 +18,5 @@
     "required": ["name", "directorPositionId"],
     "additionalProperties": false,
     "title": "AICo company",
-    "description": "Configuration of the company, in .aico/company/config.json. Its description lives next to it, in description.md."
+    "description": "Configuration of the company, in .aico/company/config.json."
 }

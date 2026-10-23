@@ -17,22 +17,14 @@ afterEach(async () => {
 })
 
 describe("updateCompany", () => {
-    test("changes the name and keeps the description", async () => {
+    test("changes the name", async () => {
         const before = await loadCompany(projectRoot)
 
-        await updateCompany(projectRoot, { name: "Globex" })
+        const updatedCompany = await updateCompany(projectRoot, {
+            name: "Globex",
+        })
 
-        const after = await loadCompany(projectRoot)
-        expect(after).toEqual({ ...before, name: "Globex" })
-    })
-
-    test("changes the description and keeps the name", async () => {
-        const before = await loadCompany(projectRoot)
-        const changes = { description: "We build rockets." }
-
-        const updatedCompany = await updateCompany(projectRoot, changes)
-
-        expect(updatedCompany).toEqual({ ...before, ...changes })
+        expect(updatedCompany).toEqual({ ...before, name: "Globex" })
         expect(await loadCompany(projectRoot)).toEqual(updatedCompany)
     })
 

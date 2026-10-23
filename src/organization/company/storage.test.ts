@@ -16,34 +16,21 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const acme: Company = {
-    name: "Acme",
-    directorPositionId: "director",
-    description: "We build things.",
-}
+const acme: Company = { name: "Acme", directorPositionId: "director" }
 
-async function writeCompanyFiles(config: unknown, description: string) {
-    const companyFolderPath = join(projectRoot, ".aico", "company")
-    await Bun.write(
-        join(companyFolderPath, "config.json"),
-        JSON.stringify(config),
-    )
-    await Bun.write(join(companyFolderPath, "description.md"), description)
+function getConfigPath() {
+    return join(projectRoot, ".aico", "company", "config.json")
 }
 
 describe("loadCompany", () => {
-    test("reads config.json and description.md", async () => {
-        const config = { name: "Acme", directorPositionId: "director" }
-        await writeCompanyFiles(config, "We build things.")
+    test("reads config.json", async () => {
+        await Bun.write(getConfigPath(), JSON.stringify(acme))
 
-        expect(await loadCompany(projectRoot)).toEqual({
-            ...config,
-            description: "We build things.",
-        })
+        expect(await loadCompany(projectRoot)).toEqual(acme)
     })
 
     test("rejects an invalid config.json", async () => {
-        await writeCompanyFiles({ name: "" }, "")
+        await Bun.write(getConfigPath(), JSON.stringify({ name: "" }))
 
         await expect(loadCompany(projectRoot)).rejects.toThrow(UserError)
     })
@@ -54,19 +41,13 @@ describe("loadCompany", () => {
 })
 
 describe("saveCompany", () => {
-    test("writes config.json and description.md", async () => {
+    test("writes config.json", async () => {
         await saveCompany(projectRoot, acme)
 
-        const companyFolderPath = join(projectRoot, ".aico", "company")
-        const [configText, descriptionText] = await Promise.all([
-            Bun.file(join(companyFolderPath, "config.json")).text(),
-            Bun.file(join(companyFolderPath, "description.md")).text(),
-        ])
+        const configText = await Bun.file(getConfigPath()).text()
         const expectedConfigText =
             '{\n    "name": "Acme",\n    "directorPositionId": "director"\n}\n'
-
         expect(configText).toBe(expectedConfigText)
-        expect(descriptionText).toBe("We build things.")
     })
 
     test("writes what loadCompany reads back", async () => {

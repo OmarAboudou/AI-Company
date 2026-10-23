@@ -6,10 +6,10 @@ import { projectRoot } from "../../project-root.ts"
 export function registerCompanyShowCommand(companyCommand: Command): void {
     companyCommand
         .command("show")
-        .description("Display the company name and description.")
+        .description("Display the company's name.")
         .action(async () => {
             await requireCompany(projectRoot)
             const company = await loadCompany(projectRoot)
-            console.log(`# ${company.name}\n\n${company.description}`)
+            console.log(`# ${company.name}`)
         })
 }

@@ -13,29 +13,12 @@ describe("aico company update", () => {
         })
     })
 
-    test("update -n changes the name and keeps the description", () => {
+    test("update -n changes the name", () => {
         const update = runCli("company", "update", "-n", "Acme Inc.")
         const show = runCli("company", "show").stdout
 
         expect(update.stdout).toBe('Updated company "Acme Inc.".\n')
-        expect(show).toBe("# Acme Inc.\n\nWe build things.\n")
-    })
-
-    test("update -d changes the description and keeps the name", () => {
-        runCli("company", "update", "-d", "We build better things.")
-
-        const show = runCli("company", "show").stdout
-
-        expect(show).toBe("# Acme\n\nWe build better things.\n")
-    })
-
-    test("update -F reads the new description from a file", async () => {
-        await Bun.write(getProjectPath("company.md"), "From a file.")
-
-        runCli("company", "update", "-F", "company.md")
-
-        const show = runCli("company", "show").stdout
-        expect(show).toBe("# Acme\n\nFrom a file.\n")
+        expect(show).toBe("# Acme Inc.\n")
     })
 
     test("update requires at least one option", () => {

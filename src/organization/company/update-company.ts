@@ -5,18 +5,14 @@ import { loadCompany, saveCompany } from "./storage.ts"
 
 export async function updateCompany(
     projectRoot: string,
-    changes: { name?: string; description?: string },
+    changes: { name?: string },
 ): Promise<Company> {
     await requireCompany(projectRoot)
-    const { description, ...config } = await loadCompany(projectRoot)
-    const updatedConfig = parseConfig(CompanyConfigSchema, {
-        ...config,
-        name: changes.name ?? config.name,
+    const company = await loadCompany(projectRoot)
+    const updatedCompany = parseConfig(CompanyConfigSchema, {
+        ...company,
+        name: changes.name ?? company.name,
     })
-    const updatedCompany = {
-        ...updatedConfig,
-        description: changes.description ?? description,
-    }
     await saveCompany(projectRoot, updatedCompany)
     return updatedCompany
 }
