@@ -13,14 +13,14 @@ import { type Task, taskStartedEventType } from "../task/schema.ts"
 import type { TaskType } from "../task-type/define-task-type.ts"
 import type { TaskEnding } from "../tool/define-tool.ts"
 import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
-import { beginTask } from "./begin-task.ts"
-import { buildSystemPrompt } from "./build-system-prompt.ts"
 import { endTask } from "./end-task.ts"
 import { getRunTools } from "./get-run-tools.ts"
 import { loadCancellationReason } from "./load-cancellation-reason.ts"
 import { runToolLoop } from "./run-tool-loop.ts"
 import type { RunProgress } from "./schema.ts"
-import { startRun } from "./start-run.ts"
+import { beginTask } from "./start/begin-task.ts"
+import { buildSystemPrompt } from "./start/build-system-prompt.ts"
+import { startRun } from "./start/start-run.ts"
 
 export type RunTaskResult = {
     taskEnding: TaskEnding

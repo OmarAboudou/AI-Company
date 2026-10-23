@@ -12,7 +12,7 @@ import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
 import { reminderText } from "./apply-assistant-turn.ts"
 import { runToolLoop } from "./run-tool-loop.ts"
 import type { RunProgress } from "./schema.ts"
-import { startRun } from "./start-run.ts"
+import { startRun } from "./start/start-run.ts"
 import { loadRun } from "./storage.ts"
 
 const fakeServer = useFakeAnthropicServer()

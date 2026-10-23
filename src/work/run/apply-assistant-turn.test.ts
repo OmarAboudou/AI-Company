@@ -18,7 +18,7 @@ import {
     reminderText,
 } from "./apply-assistant-turn.ts"
 import type { Run, RunProgress } from "./schema.ts"
-import { startRun } from "./start-run.ts"
+import { startRun } from "./start/start-run.ts"
 import { loadRun } from "./storage.ts"
 
 const runId = "20261018-140324-000-1b2c"

@@ -1,17 +1,17 @@
-import { recordEvent } from "../../journal/record-event.ts"
-import { requireJournalEvent } from "../../journal/require-journal-event.ts"
-import type { Journal } from "../../journal/schema.ts"
-import type { Position } from "../../organization/position/schema.ts"
+import { recordEvent } from "../../../journal/record-event.ts"
+import { requireJournalEvent } from "../../../journal/require-journal-event.ts"
+import type { Journal } from "../../../journal/schema.ts"
+import type { Position } from "../../../organization/position/schema.ts"
 import {
     type Task,
     taskCancelledEventType,
     taskDoneEventType,
-} from "../task/schema.ts"
-import type { TaskSession, TaskType } from "../task-type/define-task-type.ts"
-import { parseTaskParams } from "../task-type/parse-task-params.ts"
-import { requireTaskType } from "../task-type/require-task-type.ts"
-import type { TaskEnding } from "../tool/define-tool.ts"
-import { loadCancellationReason } from "./load-cancellation-reason.ts"
+} from "../../task/schema.ts"
+import type { TaskSession, TaskType } from "../../task-type/define-task-type.ts"
+import { parseTaskParams } from "../../task-type/parse-task-params.ts"
+import { requireTaskType } from "../../task-type/require-task-type.ts"
+import type { TaskEnding } from "../../tool/define-tool.ts"
+import { loadCancellationReason } from "../load-cancellation-reason.ts"
 
 export type BeginTaskResult =
     | { kind: "ended"; taskEnding: TaskEnding }

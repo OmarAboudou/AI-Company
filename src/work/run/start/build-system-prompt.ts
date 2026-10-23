@@ -1,7 +1,7 @@
-import { formatPositionLabel } from "../../messaging/message/format-position-label.ts"
-import type { Company } from "../../organization/company/schema.ts"
-import type { Position } from "../../organization/position/schema.ts"
-import type { Project } from "../../organization/project/schema.ts"
+import { formatPositionLabel } from "../../../messaging/message/format-position-label.ts"
+import type { Company } from "../../../organization/company/schema.ts"
+import type { Position } from "../../../organization/position/schema.ts"
+import type { Project } from "../../../organization/project/schema.ts"
 
 export type SystemPromptContext = {
     company: Company
