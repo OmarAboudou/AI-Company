@@ -43,7 +43,7 @@ export function useTemporaryProject() {
     // its zsh keeps its startup files.
     function readCliEnvironment(env: Record<string, string>) {
         const keptEntries = Object.entries(process.env).filter(
-            ([name]) => !/^((ANTHROPIC|OPENAI|LLMCO)_|ZDOTDIR$)/.test(name),
+            ([name]) => !/^((ANTHROPIC|OPENAI|AICO)_|ZDOTDIR$)/.test(name),
         )
         return { ...Object.fromEntries(keptEntries), HOME: home, ...env }
     }

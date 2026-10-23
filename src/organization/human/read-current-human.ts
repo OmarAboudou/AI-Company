@@ -17,13 +17,13 @@ export async function readCurrentHuman(
     }
     if (!(await hasEmployee(projectRoot, id))) {
         throw new UserError(
-            `LLMCO_CURRENT_HUMAN_ID names no employee: "${id}". Run \`aico employee list\`, or \`aico current-human clear\` to act as a director.`,
+            `AICO_CURRENT_HUMAN_ID names no employee: "${id}". Run \`aico employee list\`, or \`aico current-human clear\` to act as a director.`,
         )
     }
     const employee = await loadEmployee(projectRoot, id)
     if (employee.kind !== "human") {
         throw new UserError(
-            `LLMCO_CURRENT_HUMAN_ID names "${id}", an LLM employee: only a human employee can be at the keyboard. Run \`aico current-human clear\` to act as a director.`,
+            `AICO_CURRENT_HUMAN_ID names "${id}", an LLM employee: only a human employee can be at the keyboard. Run \`aico current-human clear\` to act as a director.`,
         )
     }
     return { kind: "employee", employee }

@@ -27,7 +27,7 @@ describe("aico current-position set", () => {
     })
 
     test("--shell-code prints the code selecting the position", () => {
-        const exportLine = 'export LLMCO_CURRENT_POSITION_ID="director"\n'
+        const exportLine = 'export AICO_CURRENT_POSITION_ID="director"\n'
 
         const selection = runCli(
             "current-position",
@@ -41,7 +41,7 @@ describe("aico current-position set", () => {
     })
 
     test("--shell-code prints nothing for a position you don't work", () => {
-        const julieEnv = { LLMCO_CURRENT_HUMAN_ID: "julie" }
+        const julieEnv = { AICO_CURRENT_HUMAN_ID: "julie" }
         const selectionArgs = ["current-position", "set", "graphics"]
 
         const selection = runCliWithEnv(

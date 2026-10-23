@@ -2,6 +2,6 @@ import type { CurrentHuman } from "../../../organization/human/read-current-huma
 
 export function buildCurrentHumanCode(currentHuman: CurrentHuman): string {
     return currentHuman.kind === "director"
-        ? "unset LLMCO_CURRENT_HUMAN_ID LLMCO_CURRENT_POSITION_ID\n"
-        : `export LLMCO_CURRENT_HUMAN_ID="${currentHuman.employee.id}"\nunset LLMCO_CURRENT_POSITION_ID\n`
+        ? "unset AICO_CURRENT_HUMAN_ID AICO_CURRENT_POSITION_ID\n"
+        : `export AICO_CURRENT_HUMAN_ID="${currentHuman.employee.id}"\nunset AICO_CURRENT_POSITION_ID\n`
 }

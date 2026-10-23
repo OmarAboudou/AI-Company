@@ -7,7 +7,7 @@ import { useTemporaryProject } from "./use-temporary-project.testing.ts"
 
 const { runCliWithEnv, getProjectPath } = useTemporaryProject()
 
-const julieEnv = { LLMCO_CURRENT_HUMAN_ID: "julie" }
+const julieEnv = { AICO_CURRENT_HUMAN_ID: "julie" }
 
 const connection = ["provider", "connection"]
 
@@ -128,7 +128,7 @@ describe("management commands", () => {
 
             expect(run.exitCode).toBe(1)
             expect(run.stderr).toBe(
-                `Only directors run \`aico ${commandName}\`: LLMCO_CURRENT_HUMAN_ID has you act as "julie". Run \`aico current-human clear\` to act as a director.\n`,
+                `Only directors run \`aico ${commandName}\`: AICO_CURRENT_HUMAN_ID has you act as "julie". Run \`aico current-human clear\` to act as a director.\n`,
             )
         },
     )
@@ -141,8 +141,8 @@ describe("management commands", () => {
         expect(show.exitCode).toBe(0)
     })
 
-    test("an empty LLMCO_CURRENT_HUMAN_ID is a director", () => {
-        const env = { LLMCO_CURRENT_HUMAN_ID: "" }
+    test("an empty AICO_CURRENT_HUMAN_ID is a director", () => {
+        const env = { AICO_CURRENT_HUMAN_ID: "" }
         const create = ["position", "create", "dev", "-t", "Dev"]
 
         const creation = runCliWithEnv(env, ...create)

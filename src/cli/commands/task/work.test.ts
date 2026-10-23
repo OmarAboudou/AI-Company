@@ -51,7 +51,7 @@ async function askTester() {
 function startJulieSession(editorText = "@director Yes.") {
     const editorPath = getProjectPath("fake-editor.sh")
     const env = {
-        LLMCO_CURRENT_HUMAN_ID: "julie",
+        AICO_CURRENT_HUMAN_ID: "julie",
         VISUAL: editorPath,
         EDITOR: editorPath,
         FAKE_EDITOR_TEXT: editorText,

@@ -12,7 +12,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCliWithEnv, getProjectPath } = useTemporaryProject()
 
-const julieEnv = { LLMCO_CURRENT_HUMAN_ID: "julie" }
+const julieEnv = { AICO_CURRENT_HUMAN_ID: "julie" }
 
 describe("aico task next", () => {
     let threadId = ""

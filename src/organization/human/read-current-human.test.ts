@@ -33,14 +33,14 @@ afterEach(async () => {
 })
 
 describe("readCurrentHuman", () => {
-    test("is a director without LLMCO_CURRENT_HUMAN_ID", async () => {
+    test("is a director without AICO_CURRENT_HUMAN_ID", async () => {
         const currentHuman = await readCurrentHuman(projectRoot, environment)
 
         expect(currentHuman).toEqual({ kind: "director" })
     })
 
-    test("is the human employee LLMCO_CURRENT_HUMAN_ID names", async () => {
-        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
+    test("is the human employee AICO_CURRENT_HUMAN_ID names", async () => {
+        environment.AICO_CURRENT_HUMAN_ID = "julie"
 
         const currentHuman = await readCurrentHuman(projectRoot, environment)
 
@@ -48,7 +48,7 @@ describe("readCurrentHuman", () => {
     })
 
     test("refuses an id that names no employee", async () => {
-        environment.LLMCO_CURRENT_HUMAN_ID = "bob"
+        environment.AICO_CURRENT_HUMAN_ID = "bob"
 
         const reading = readCurrentHuman(projectRoot, environment)
 
@@ -57,7 +57,7 @@ describe("readCurrentHuman", () => {
     })
 
     test("refuses an LLM employee", async () => {
-        environment.LLMCO_CURRENT_HUMAN_ID = "claude"
+        environment.AICO_CURRENT_HUMAN_ID = "claude"
 
         const reading = readCurrentHuman(projectRoot, environment)
 

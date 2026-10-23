@@ -175,7 +175,7 @@ describe("openNextTask among the person's positions", () => {
         const logo = await ask("@designer Is the logo ready?")
         const environment = {
             ...julieEnvironment,
-            LLMCO_CURRENT_POSITION_ID: "designer",
+            AICO_CURRENT_POSITION_ID: "designer",
         }
 
         const { openedTask } = await openNextTask(projectRoot, environment)
@@ -186,7 +186,7 @@ describe("openNextTask among the person's positions", () => {
     test("refuses a selected position the person doesn't work", async () => {
         const environment = {
             ...julieEnvironment,
-            LLMCO_CURRENT_POSITION_ID: "director",
+            AICO_CURRENT_POSITION_ID: "director",
         }
 
         const opening = openNextTask(projectRoot, environment)

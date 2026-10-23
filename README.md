@@ -53,7 +53,7 @@ aico position interim directors backend-developer                 # the director
 aico position end-interim backend-developer                       # back to its default employee
 ```
 
-The `set` and `clear` commands of `current-human` and `current-position` change your shell's environment, which only llmco's shell function can do, set up once. `aico shell init <bash|zsh> --install` adds the line evaluating it to `~/.bashrc` or `~/.zshrc`; without `--install`, the command prints the function, for you to place where you prefer. In an llmco project, the function also shows who you are, and the selected position, in your prompt: `(director)`, `(julie)`, `(julie @graphics)`. A script sets `LLMCO_CURRENT_HUMAN_ID` and `LLMCO_CURRENT_POSITION_ID` itself, and `LLMCO_DISABLE_PROMPT` leaves the prompt as it is.
+The `set` and `clear` commands of `current-human` and `current-position` change your shell's environment, which only llmco's shell function can do, set up once. `aico shell init <bash|zsh> --install` adds the line evaluating it to `~/.bashrc` or `~/.zshrc`; without `--install`, the command prints the function, for you to place where you prefer. In an llmco project, the function also shows who you are, and the selected position, in your prompt: `(director)`, `(julie)`, `(julie @graphics)`. A script sets `AICO_CURRENT_HUMAN_ID` and `AICO_CURRENT_POSITION_ID` itself, and `AICO_DISABLE_PROMPT` leaves the prompt as it is.
 
 ```bash
 aico shell init bash --install         # once, then open a new terminal

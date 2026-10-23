@@ -158,12 +158,12 @@ describe("sendMessage", () => {
         await assignPositionTemporarily(projectRoot, "qa-tester", {
             kind: "directors",
         })
-        environment.LLMCO_CURRENT_HUMAN_ID = "julie"
+        environment.AICO_CURRENT_HUMAN_ID = "julie"
         const { thread } = await createThread(projectRoot, environment, {
             subject: "Logo",
             body: "@qa-tester, is the logo broken?",
         })
-        delete environment.LLMCO_CURRENT_HUMAN_ID
+        delete environment.AICO_CURRENT_HUMAN_ID
 
         const { message } = await sendMessage(
             projectRoot,

@@ -7,7 +7,7 @@ import { createPosition } from "../organization/position/create-position.ts"
 
 export type CompanyWithHumanEmployee = { projectRoot: string; threadId: string }
 
-export const julieEnvironment = { LLMCO_CURRENT_HUMAN_ID: "julie" }
+export const julieEnvironment = { AICO_CURRENT_HUMAN_ID: "julie" }
 
 export async function createCompanyWithHumanEmployee(): Promise<CompanyWithHumanEmployee> {
     const projectRoot = await createTemporaryCompany()

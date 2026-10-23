@@ -4,13 +4,13 @@ import { UserError } from "../../user-error.ts"
 export function readCurrentHumanId(
     environment: NodeJS.ProcessEnv,
 ): string | undefined {
-    const rawId = environment.LLMCO_CURRENT_HUMAN_ID
+    const rawId = environment.AICO_CURRENT_HUMAN_ID
     if (rawId === undefined || rawId === "") {
         return undefined
     }
     if (!IdSchema.safeParse(rawId).success) {
         throw new UserError(
-            `LLMCO_CURRENT_HUMAN_ID is "${rawId}", which isn't an employee id. Run \`aico current-human clear\` to act as a director.`,
+            `AICO_CURRENT_HUMAN_ID is "${rawId}", which isn't an employee id. Run \`aico current-human clear\` to act as a director.`,
         )
     }
     return rawId

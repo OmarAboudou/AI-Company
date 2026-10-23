@@ -20,7 +20,7 @@ describe("aico current-human set", () => {
     })
 
     test("--shell-code prints the code switching to the employee", () => {
-        const exportLine = 'export LLMCO_CURRENT_HUMAN_ID="julie"\n'
+        const exportLine = 'export AICO_CURRENT_HUMAN_ID="julie"\n'
 
         const switching = runCli(
             "current-human",

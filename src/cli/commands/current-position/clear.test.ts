@@ -15,6 +15,6 @@ describe("aico current-position clear", () => {
         const clearing = runCli("current-position", "clear", "--shell-code")
 
         expect(clearing.exitCode).toBe(0)
-        expect(clearing.stdout).toBe("unset LLMCO_CURRENT_POSITION_ID\n")
+        expect(clearing.stdout).toBe("unset AICO_CURRENT_POSITION_ID\n")
     })
 })

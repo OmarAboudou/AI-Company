@@ -18,14 +18,14 @@ for (const shell of shells) {
             function runSwitches(currentHumans: CurrentHuman[]): string {
                 const script = [
                     'for code in "$@"; do eval "$code"; done',
-                    'printf "%s|%s" "${LLMCO_CURRENT_HUMAN_ID-unset}" "${LLMCO_CURRENT_POSITION_ID-unset}"',
+                    'printf "%s|%s" "${AICO_CURRENT_HUMAN_ID-unset}" "${AICO_CURRENT_POSITION_ID-unset}"',
                 ].join("\n")
                 const codes = currentHumans.map(buildCurrentHumanCode)
                 return runShell(shell, script, {
                     args: codes,
                     env: {
                         PATH: process.env.PATH ?? "",
-                        LLMCO_CURRENT_POSITION_ID: "graphics",
+                        AICO_CURRENT_POSITION_ID: "graphics",
                     },
                 }).stdout
             }

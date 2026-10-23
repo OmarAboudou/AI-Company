@@ -9,7 +9,7 @@ const { runCli, runCliWithEnv, getProjectPath } = useTemporaryProject()
 const interimEmployee = ["position", "interim", "employee"]
 
 function createEmployeeEnv(employeeId: string) {
-    return { LLMCO_CURRENT_HUMAN_ID: employeeId }
+    return { AICO_CURRENT_HUMAN_ID: employeeId }
 }
 
 const julieEnv = createEmployeeEnv("julie")
@@ -27,7 +27,7 @@ beforeEach(async () => {
 })
 
 describe("aico current-human", () => {
-    test("without LLMCO_CURRENT_HUMAN_ID, shows a director, named by git", () => {
+    test("without AICO_CURRENT_HUMAN_ID, shows a director, named by git", () => {
         const currentHumanRun = runCli("current-human")
 
         expect(currentHumanRun.exitCode).toBe(0)
@@ -39,7 +39,7 @@ describe("aico current-human", () => {
     })
 
     test("marks the position selected in this shell", () => {
-        const directorEnv = { LLMCO_CURRENT_POSITION_ID: "director" }
+        const directorEnv = { AICO_CURRENT_POSITION_ID: "director" }
         const positionsLine = "positions: director (selected)\n"
 
         const currentHumanRun = runCliWithEnv(directorEnv, "current-human")
@@ -54,7 +54,7 @@ describe("aico current-human", () => {
         expect(whoami.stdout).toBe(runCli("current-human").stdout)
     })
 
-    test("shows the human employee LLMCO_CURRENT_HUMAN_ID names, and the committer", () => {
+    test("shows the human employee AICO_CURRENT_HUMAN_ID names, and the committer", () => {
         const currentHumanRun = runCliWithEnv(julieEnv, "current-human")
 
         expect(currentHumanRun.exitCode).toBe(0)

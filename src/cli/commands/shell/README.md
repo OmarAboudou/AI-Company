@@ -5,7 +5,7 @@ llmco's shell function, for bash and zsh, through which `current-human` and `cur
 ## Invariants
 
 - llmco edits a startup file only when asked, with `--install`, and refuses one that already evaluates the function.
-- `LLMCO_DISABLE_PROMPT` leaves the prompt as it is.
+- `AICO_DISABLE_PROMPT` leaves the prompt as it is.
 
 ## Decisions
 

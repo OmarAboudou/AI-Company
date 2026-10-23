@@ -26,7 +26,7 @@ async function askAndOpen(body: string, positionId: string) {
     await sendMessage(projectRoot, {}, threadId, { body })
     const environment = {
         ...julieEnvironment,
-        LLMCO_CURRENT_POSITION_ID: positionId,
+        AICO_CURRENT_POSITION_ID: positionId,
     }
     const { openedTask } = await openNextTask(projectRoot, environment)
     if (openedTask === undefined) {
@@ -74,7 +74,7 @@ describe("requireRunInProgress", () => {
         const logoTask = await askAndOpen("@designer Logo?", "designer")
         const environment = {
             ...julieEnvironment,
-            LLMCO_CURRENT_POSITION_ID: "designer",
+            AICO_CURRENT_POSITION_ID: "designer",
         }
 
         const { run } = await requireJulieRun(environment)
