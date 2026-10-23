@@ -11,5 +11,5 @@ How AICo uses git: a company lives in a git repository, which keeps its history,
 
 ## Decisions
 
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): git is required, and messages record their committer.
-- [#86](https://github.com/OmarAboudou/LLM-Company/issues/86): what several domains use sits at the root of the code, named after what it does.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): git is required, and messages record their committer.
+- [#86](https://github.com/OmarAboudou/AI-Company/issues/86): what several domains use sits at the root of the code, named after what it does.

@@ -17,7 +17,7 @@ import { TaskSchema } from "../src/work/task/schema.ts"
 import { StagedTurnSchema } from "../src/work/turn/schema.ts"
 
 const publicationUrl =
-    "https://raw.githubusercontent.com/OmarAboudou/LLM-Company/main/schemas"
+    "https://raw.githubusercontent.com/OmarAboudou/AI-Company/main/schemas"
 
 const [firstEventType, ...otherEventTypes] = builtInEventTypes
 

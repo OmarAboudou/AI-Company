@@ -4,4 +4,4 @@ The tools that read threads, as `aico thread show` does: `thread_show` shows a t
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): threads stay readable word for word through tools.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): threads stay readable word for word through tools.

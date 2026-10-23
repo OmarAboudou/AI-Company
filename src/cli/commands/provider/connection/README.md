@@ -4,4 +4,4 @@ How providers are reached: one connection per API protocol, designated by its pr
 
 ## Decisions
 
-- [#55](https://github.com/OmarAboudou/LLM-Company/issues/55): connections, nested in their provider.
+- [#55](https://github.com/OmarAboudou/AI-Company/issues/55): connections, nested in their provider.

@@ -4,5 +4,5 @@ Creating, listing and reading threads. `thread create` prints the new thread's i
 
 ## Decisions
 
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): threads, shown in Markdown or as JSON Lines.
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): the positions with a task pending in a thread.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): threads, shown in Markdown or as JSON Lines.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): the positions with a task pending in a thread.

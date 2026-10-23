@@ -15,7 +15,7 @@ Whoever works a position is its default employee, unless it is assigned temporar
 
 ## Decisions
 
-- [#7](https://github.com/OmarAboudou/LLM-Company/issues/7): a position is the job, separate from whoever fills it.
-- [#24](https://github.com/OmarAboudou/LLM-Company/issues/24): a position names its default employee.
-- [#41](https://github.com/OmarAboudou/LLM-Company/issues/41): updating, renaming and deleting a position.
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): the director's position, temporary assignments and the id history.
+- [#7](https://github.com/OmarAboudou/AI-Company/issues/7): a position is the job, separate from whoever fills it.
+- [#24](https://github.com/OmarAboudou/AI-Company/issues/24): a position names its default employee.
+- [#41](https://github.com/OmarAboudou/AI-Company/issues/41): updating, renaming and deleting a position.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the director's position, temporary assignments and the id history.

@@ -12,8 +12,8 @@ Every command of AICo, grouped by the concept it acts on: `aico <concept> <verb>
 
 ## Decisions
 
-- [#24](https://github.com/OmarAboudou/LLM-Company/issues/24): the kind as a subcommand, short and long options, and `--replace`.
-- [#35](https://github.com/OmarAboudou/LLM-Company/issues/35): `<concept> <verb> <ids>`, rather than a command taking an argument then a subcommand.
-- [#41](https://github.com/OmarAboudou/LLM-Company/issues/41): `update`, `update-id`, `--force`, and the company's words as aliases.
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): every Markdown input can be read from a file.
-- [#86](https://github.com/OmarAboudou/LLM-Company/issues/86): the commands are laid out as the command line is.
+- [#24](https://github.com/OmarAboudou/AI-Company/issues/24): the kind as a subcommand, short and long options, and `--replace`.
+- [#35](https://github.com/OmarAboudou/AI-Company/issues/35): `<concept> <verb> <ids>`, rather than a command taking an argument then a subcommand.
+- [#41](https://github.com/OmarAboudou/AI-Company/issues/41): `update`, `update-id`, `--force`, and the company's words as aliases.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): every Markdown input can be read from a file.
+- [#86](https://github.com/OmarAboudou/AI-Company/issues/86): the commands are laid out as the command line is.

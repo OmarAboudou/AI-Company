@@ -4,4 +4,4 @@ Preparing your next turn in your task in progress, as git's index prepares a com
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): a person's turns, built like git's index.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): a person's turns, built like git's index.

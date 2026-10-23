@@ -14,5 +14,5 @@ A message asks something of the positions it mentions with `@<position-id>`: eac
 
 ## Decisions
 
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): immutable messages, mentions, authors and committers.
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): the `message-sent` event, whose mentions give tasks.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): immutable messages, mentions, authors and committers.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): the `message-sent` event, whose mentions give tasks.

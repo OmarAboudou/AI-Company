@@ -13,5 +13,5 @@ Its members are derived: its creator, every position that wrote in it, and every
 
 ## Decisions
 
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): threads, their derived members, their immutability, and the id history.
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): a thread's entries, which tasks catch up on.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): threads, their derived members, their immutability, and the id history.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): a thread's entries, which tasks catch up on.

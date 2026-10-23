@@ -8,4 +8,4 @@ The tools that end a task, given to every run whatever its type: `task_mark-as-d
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): a task ends explicitly, through `task_mark-as-done` or `task_mark-as-failed`.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): a task ends explicitly, through `task_mark-as-done` or `task_mark-as-failed`.

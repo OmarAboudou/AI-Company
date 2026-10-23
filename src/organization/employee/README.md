@@ -15,7 +15,7 @@ A human employee is fictitious: a role that a real person takes on at the keyboa
 
 ## Decisions
 
-- [#24](https://github.com/OmarAboudou/LLM-Company/issues/24): an employee is an LLM or a human, and the position names it.
-- [#35](https://github.com/OmarAboudou/LLM-Company/issues/35): an LLM employee runs on a model declared inside its provider.
-- [#41](https://github.com/OmarAboudou/LLM-Company/issues/41): updating, renaming, handing over and deleting an employee.
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): human employees are fictitious, the id history and `--reuse-id`.
+- [#24](https://github.com/OmarAboudou/AI-Company/issues/24): an employee is an LLM or a human, and the position names it.
+- [#35](https://github.com/OmarAboudou/AI-Company/issues/35): an LLM employee runs on a model declared inside its provider.
+- [#41](https://github.com/OmarAboudou/AI-Company/issues/41): updating, renaming, handing over and deleting an employee.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): human employees are fictitious, the id history and `--reuse-id`.

@@ -11,5 +11,5 @@ How AICo reads and writes the files of the company's folder: JSON checked agains
 
 ## Decisions
 
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): the local state ignores itself, as pytest's cache does.
-- [#86](https://github.com/OmarAboudou/LLM-Company/issues/86): what several domains use sits at the root of the code, named after what it does.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): the local state ignores itself, as pytest's cache does.
+- [#86](https://github.com/OmarAboudou/AI-Company/issues/86): what several domains use sits at the root of the code, named after what it does.

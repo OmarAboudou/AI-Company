@@ -8,7 +8,7 @@ Opening, filling and closing the company's positions: `create`, alias `open`, an
 
 ## Decisions
 
-- [#7](https://github.com/OmarAboudou/LLM-Company/issues/7): positions, apart from the employees who fill them.
-- [#24](https://github.com/OmarAboudou/LLM-Company/issues/24): `assign`, `unassign` and `--replace`.
-- [#41](https://github.com/OmarAboudou/LLM-Company/issues/41): `update`, `update-id` and `delete`.
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): `assign-temporarily` and `unassign-temporarily`.
+- [#7](https://github.com/OmarAboudou/AI-Company/issues/7): positions, apart from the employees who fill them.
+- [#24](https://github.com/OmarAboudou/AI-Company/issues/24): `assign`, `unassign` and `--replace`.
+- [#41](https://github.com/OmarAboudou/AI-Company/issues/41): `update`, `update-id` and `delete`.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): `assign-temporarily` and `unassign-temporarily`.

@@ -4,4 +4,4 @@ Hiring an employee, alias `hire`: `aico employee create llm` for an LLM employee
 
 ## Decisions
 
-- [#24](https://github.com/OmarAboudou/LLM-Company/issues/24): an employee is an LLM or a human, its kind given as a subcommand.
+- [#24](https://github.com/OmarAboudou/AI-Company/issues/24): an employee is an LLM or a human, its kind given as a subcommand.

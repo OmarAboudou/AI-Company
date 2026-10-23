@@ -14,6 +14,6 @@ A provider is reached through its connections, one per API protocol it speaks, w
 
 ## Decisions
 
-- [#35](https://github.com/OmarAboudou/LLM-Company/issues/35): providers, and the models declared inside them.
-- [#41](https://github.com/OmarAboudou/LLM-Company/issues/41): updating, renaming and deleting a provider.
-- [#55](https://github.com/OmarAboudou/LLM-Company/issues/55): connections, and API keys read from the environment or a file.
+- [#35](https://github.com/OmarAboudou/AI-Company/issues/35): providers, and the models declared inside them.
+- [#41](https://github.com/OmarAboudou/AI-Company/issues/41): updating, renaming and deleting a provider.
+- [#55](https://github.com/OmarAboudou/AI-Company/issues/55): connections, and API keys read from the environment or a file.

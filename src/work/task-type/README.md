@@ -13,4 +13,4 @@ Listeners create tasks through their type, which checks their parameters, and a 
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): task types, their results, and the inputs they fix in their tools.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): task types, their results, and the inputs they fix in their tools.

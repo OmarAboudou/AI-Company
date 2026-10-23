@@ -6,4 +6,4 @@ Who it goes to comes first, as a subcommand: leaving the employee out to mean th
 
 ## Decisions
 
-- [#56](https://github.com/OmarAboudou/LLM-Company/issues/56): temporary assignments.
+- [#56](https://github.com/OmarAboudou/AI-Company/issues/56): temporary assignments.

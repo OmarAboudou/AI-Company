@@ -4,4 +4,4 @@ The company's own commands: show it, and update its name or description. `aico i
 
 ## Decisions
 
-- [#41](https://github.com/OmarAboudou/LLM-Company/issues/41): the company can be updated, not deleted.
+- [#41](https://github.com/OmarAboudou/AI-Company/issues/41): the company can be updated, not deleted.

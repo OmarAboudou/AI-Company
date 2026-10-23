@@ -14,4 +14,4 @@ A run is one attempt at a task: a fresh conversation in which whoever works the 
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): runs as fresh conversations with tools, the reminder, and transcripts kept on their machine.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): runs as fresh conversations with tools, the reminder, and transcripts kept on their machine.

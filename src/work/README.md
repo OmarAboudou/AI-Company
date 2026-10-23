@@ -11,4 +11,4 @@ How the company's employees work: events in the journal give positions tasks, th
 
 ## Decisions
 
-- [#123](https://github.com/OmarAboudou/LLM-Company/issues/123): employees work through tasks that events create, each run a fresh conversation with tools.
+- [#123](https://github.com/OmarAboudou/AI-Company/issues/123): employees work through tasks that events create, each run a fresh conversation with tools.
