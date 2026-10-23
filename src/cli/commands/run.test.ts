@@ -9,8 +9,6 @@ import { useTemporaryProject } from "../use-temporary-project.testing.ts"
 const { runCli, getProjectPath } = useTemporaryProject()
 
 describe("aico run", () => {
-    let ticketNumber = 0
-
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme" })
@@ -18,10 +16,6 @@ describe("aico run", () => {
             title: "QA Tester",
             description: "",
         })
-        const ticket = await createExampleTicket(projectRoot, {
-            title: "Release",
-        })
-        ticketNumber = ticket.number
     })
 
     test("says when no task is ready, nor waiting", () => {
@@ -32,17 +26,33 @@ describe("aico run", () => {
     })
 
     test("lists the tasks left waiting, and why", async () => {
+        await createExampleTicket(getProjectPath(), {
+            title: "Release",
+            rawAssigneePositionId: "qa-tester",
+        })
+
+        const running = runCli("run")
+
+        expect(running.exitCode).toBe(0)
+        expect(running.stdout).toContain("No task is ready. These wait:")
+        expect(running.stdout).toMatch(
+            /@qa-tester +handle +for a vacant position/,
+        )
+    })
+
+    test("lists as waiting a task of a type it doesn't know", async () => {
+        const ticket = await createExampleTicket(getProjectPath(), {
+            title: "Release",
+        })
         await sendExampleMessage(
             getProjectPath(),
-            ticketNumber,
+            ticket.number,
             "A test plan?",
             createExampleWorkCatalog(["qa-tester"]),
         )
 
         const running = runCli("run")
 
-        expect(running.exitCode).toBe(0)
-        expect(running.stdout).toContain("No task is ready. These wait:")
         expect(running.stdout).toMatch(
             /@qa-tester +example +of a type this version of AICo doesn't know/,
         )

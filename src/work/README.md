@@ -2,7 +2,7 @@
 
 How the company's employees work: events in the journal give positions tasks, through listeners; whoever works a position does each task in a run, a fresh conversation with the message and tools its task's type builds; and a person works a task as a model does, turn by turn.
 
-AICo ships no task type nor listener yet: nothing gives a position a task.
+AICo's own task types and listeners are the tickets': each change of a ticket gives a task to the position that must act.
 
 ## Invariants
 

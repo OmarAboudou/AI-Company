@@ -2,7 +2,7 @@
 
 A listener subscribes to one type of event and answers each event of that type with effects, as data that AICo applies: creating a task, or cancelling a queued one. Dispatching hands the journal's new events to the listeners: before a person's next task is chosen, and at each turn of `aico run`.
 
-No listener is built in yet: no event gives a task.
+AICo's own listeners give the tasks of the tickets' lifecycle.
 
 ## Invariants
 
@@ -16,4 +16,5 @@ No listener is built in yet: no event gives a task.
 
 - [#123](https://github.com/OmarAboudou/AI-Company/issues/123): listeners returning effects, and the journal recording what was dispatched.
 - [#135](https://github.com/OmarAboudou/AI-Company/issues/135): no built-in listener until the tickets bring theirs.
+- [#145](https://github.com/OmarAboudou/AI-Company/issues/145): the tickets' listeners.
 - [#136](https://github.com/OmarAboudou/AI-Company/issues/136): the events already dispatched, versioned in the journal.
