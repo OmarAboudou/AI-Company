@@ -10,6 +10,7 @@ import { registerProviderCommands } from "./commands/provider/provider.ts"
 import { registerRunCommand } from "./commands/run.ts"
 import { registerShellCommands } from "./commands/shell/shell.ts"
 import { registerTaskCommands } from "./commands/task/task.ts"
+import { registerTicketCommands } from "./commands/ticket/ticket.ts"
 import { registerTurnCommands } from "./commands/turn/turn.ts"
 
 export function createProgram(): Command {
@@ -24,6 +25,7 @@ export function createProgram(): Command {
     registerEmployeeCommands(program)
     registerProviderCommands(program)
     registerModelCommands(program)
+    registerTicketCommands(program)
     registerRunCommand(program)
     registerTaskCommands(program)
     registerTurnCommands(program)
