@@ -8,7 +8,11 @@ import { startInteractiveCli } from "./start-interactive-cli.testing.ts"
 
 const cliPath = join(import.meta.dir, "main.ts")
 
-type RunOptions = { stdin?: string; env?: Record<string, string> }
+type RunOptions = {
+    stdin?: string
+    env?: Record<string, string>
+    folder?: string
+}
 
 export function useTemporaryProject() {
     let projectRoot = ""
@@ -48,9 +52,13 @@ export function useTemporaryProject() {
         return { ...Object.fromEntries(keptEntries), HOME: home, ...env }
     }
 
-    function createSpawnOptions({ stdin = "", env = {} }: RunOptions) {
+    function createSpawnOptions({
+        stdin = "",
+        env = {},
+        folder = ".",
+    }: RunOptions) {
         return {
-            cwd: projectRoot,
+            cwd: join(projectRoot, folder),
             env: readCliEnvironment(env),
             stdin: new TextEncoder().encode(stdin),
         }
@@ -99,6 +107,8 @@ export function useTemporaryProject() {
             run({ stdin }, args),
         runCliWithEnv: (env: Record<string, string>, ...args: string[]) =>
             run({ env }, args),
+        runCliInFolder: (folder: string, ...args: string[]) =>
+            run({ folder }, args),
         runCliAsync: (env: Record<string, string>, ...args: string[]) =>
             runAsync({ env }, args),
         startCliWithEnv: (env: Record<string, string>, ...args: string[]) =>
