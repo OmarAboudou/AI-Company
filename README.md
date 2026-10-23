@@ -2,9 +2,11 @@
 
 Run a virtual company staffed by LLM agents, from the command line.
 
-A company lives in a `.aico/` folder, in the directory you run AICo from, which must be inside a git repository: the company itself, its positions (job descriptions), its employees (an LLM or a human), the LLM providers whose models its LLM employees run on, the threads of messages its positions exchange, their tasks, and the journal of what happens. Everything is a plain file, to edit through the CLI or by hand.
+A company lives in a `.aico/` folder, in the directory you run AICo from, which must be inside a git repository: the company itself, its positions (job descriptions), its employees, run by LLMs, the LLM providers whose models they run on, the threads of messages its positions exchange, their tasks, and the journal of what happens. Everything is a plain file, to edit through the CLI or by hand.
 
 `aico init` also creates the director's position, the company's management.
+
+AICo is being rebuilt from llmco, as decided in [#135](https://github.com/OmarAboudou/AI-Company/issues/135): its first series renamed it and removed what the vision drops, such as mentions and fictitious human employees; tickets, deliverables in git, memory and decisions come next, one series at a time. Until the tickets bring their task types, nothing gives a position a task: AICo ships none yet, so the commands that run and work tasks have nothing to do.
 
 ## Getting started
 
@@ -25,25 +27,22 @@ aico provider connection create anthropic anthropic-messages -u https://api.anth
 aico model create anthropic claude-opus-5-5 -n "Claude Opus 5.5" -a claude-opus-5-5
 aico employee hire llm claude-senior -n "Claude Senior" -p anthropic -m claude-opus-5-5
 aico position assign backend-developer claude-senior
-aico thread create -s "Choice of framework" -b "@backend-developer Hono or Express for our API?"
-aico run
+aico thread create -s "Choice of framework" -b "Hono or Express for our API?"
 ```
 
-`thread create` prints the new thread's id, and gives `@backend-developer` a task to catch up on the thread. `aico run` runs it: Claude Senior reads the thread and answers in it, its run printed as it goes. `aico --help` lists every command.
+`thread create` prints the new thread's id. `aico --help` lists every command.
 
-## Talking to employees
+## Writing in threads
 
-Positions talk through **threads**, like posts in a forum: a subject and messages. You write as a director, signed with your git identity (`user.name` and `user.email`): from the director's position, or from a position assigned temporarily to the directors when it is the only one of yours in the thread. To act as a fictitious human employee instead, run `aico current-human set <employee-id>`: you then write from its positions, until `aico current-human clear`. `aico current-human`, or `aico whoami`, shows who you are and the positions you work. `aico current-position set <position-id>` makes you write from one of them until `aico current-position clear`, and `--as-position <position-id>` chooses another one for a single message. Commands that change the company's configuration, such as `create`, `update`, `delete`, `assign` or `interim`, are reserved to directors: run `aico current-human clear` first.
+Positions talk through **threads**, like posts in a forum: a subject and messages. You write as a director, signed with your git identity (`user.name` and `user.email`): from the director's position, or from a position assigned temporarily to the directors when it is the only one of yours in the thread. `aico current-position set <position-id>` makes you write from one of your positions until `aico current-position clear`, and `--as-position <position-id>` chooses another one for a single message. A message asks nothing of anyone yet: no listener gives a task for it.
 
 ```bash
-aico message send <thread-id> -b "@backend-developer Why Hono?"
+aico message send <thread-id> -b "Why Hono?"
 aico message send <thread-id> -F question.md         # or -F - for stdin
 aico thread list                                      # with the positions that have a task pending there
 aico thread show <thread-id>                          # in Markdown
 aico thread show <thread-id> --json | jq -r .body     # one message per line
 ```
-
-Mentioning a position with `@<position-id>` gives it a task, to catch up on the thread; a message without mention asks nothing of anyone. Sending a message from a position marks its tasks in that thread as done.
 
 Whoever works a position is its default employee, unless the position is assigned temporarily: to another employee, or to the directors, the people working on the repository, so that no LLM does its tasks meanwhile. The temporary assignment stays on your machine, in `.aico/.state/`, which git ignores.
 
@@ -53,20 +52,19 @@ aico position interim directors backend-developer                 # the director
 aico position end-interim backend-developer                       # back to its default employee
 ```
 
-The `set` and `clear` commands of `current-human` and `current-position` change your shell's environment, which only AICo's shell function can do, set up once. `aico shell init <bash|zsh> --install` adds the line evaluating it to `~/.bashrc` or `~/.zshrc`; without `--install`, the command prints the function, for you to place where you prefer. In an AICo project, the function also shows who you are, and the selected position, in your prompt: `(director)`, `(julie)`, `(julie @graphics)`. A script sets `AICO_CURRENT_HUMAN_ID` and `AICO_CURRENT_POSITION_ID` itself, and `AICO_DISABLE_PROMPT` leaves the prompt as it is.
+The `set` and `clear` commands of `current-position` change your shell's environment, which only AICo's shell function can do, set up once. `aico shell init <bash|zsh> --install` adds the line evaluating it to `~/.bashrc` or `~/.zshrc`; without `--install`, the command prints the function, for you to place where you prefer. In an AICo project, the function also shows the selected position in your prompt: `(director)`, then `(director @graphics)`. A script sets `AICO_CURRENT_POSITION_ID` itself, and `AICO_DISABLE_PROMPT` leaves the prompt as it is.
 
 ```bash
 aico shell init bash --install         # once, then open a new terminal
-aico current-human set julie           # the prompt shows (julie)
-aico current-position set graphics     # (julie @graphics)
-aico current-human clear               # (director)
+aico current-position set graphics     # the prompt shows (director @graphics)
+aico current-position clear            # (director)
 ```
 
 ## Running the company
 
-`aico run` runs the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then it lists the tasks left waiting, for a vacant position, a human or the directors, who work theirs themselves (see [Working your tasks](#working-your-tasks)). An error of a provider's API stops it, and the next `aico run` takes the task up again. Only `aico run` calls LLMs: sending a message never does.
+`aico run` runs the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then it lists the tasks left waiting, for a vacant position or for the directors, who work theirs themselves (see [Working your tasks](#working-your-tasks)). An error of a provider's API stops it, and the next `aico run` takes the task up again. Only `aico run` calls LLMs: sending a message never does.
 
-Each run is a fresh conversation with the employee's model: who it is, the task's situation, such as the thread's unread messages, and tools to read earlier messages, to answer and to mark the task as done or failed. Its messages give tasks in turn, which the same `aico run` runs. A chain of tasks, such as LLM employees mentioning each other, stops at the company's `maxTaskDepth`, 200 by default, set in `.aico/company/config.json`.
+Each run is a fresh conversation with the employee's model: who it is, the task's situation, as its type tells it, and the tools its type gives, with those that mark the task as done or failed. What a run does, such as the messages it sends, can give tasks in turn, which the same `aico run` runs.
 
 Everything that happens is recorded in the journal, `.aico/journal/`, one file per event; tasks live in `.aico/tasks/`. Each run's whole conversation stays on your machine, in `.aico/.state/runs/`, which git ignores.
 
@@ -76,12 +74,11 @@ aico run                                              # runs what is ready, then
 
 ## Working your tasks
 
-People work their tasks as LLM employees do: the same message, the same tools, turn by turn. AICo thus works without any LLM: two people, each in a terminal as a human employee, talk through their tasks. You work the tasks of the positions you work (see `aico current-human`), only the selected position's when one is set; as a director, those of the director's position and of the positions assigned temporarily to the directors.
+People work their tasks as LLM employees do: the same message, the same tools, turn by turn. As a director, you work the tasks of the director's position and of the positions assigned temporarily to the directors, only the selected position's when one is set.
 
 `aico task work` works them one after the other. It shows each task as a model gets it, its system prompt, its message and its tools, then asks what to do: call a tool, write a text, show, clear or send your turn. For a tool, it asks which one, then each of its inputs, a message's body in your editor (`$VISUAL` or `$EDITOR`). Sending the turn runs its calls and shows their results: `task_mark-as-done` or `task_mark-as-failed` ends the task, and a turn without any call gets the reminder a model gets. Once no task waits, the session waits for the next one, until Ctrl+C, or Ctrl+D as in a shell. What you prepared stays in your turn.
 
 ```bash
-aico current-human set julie
 aico task work
 ```
 
@@ -89,15 +86,13 @@ The same steps are commands of their own, for a script or a turn prepared over t
 
 ```bash
 aico task next                                        # opens your next task, or the one in progress
-aico turn add tool message_send -i '{"body": "@director Friday works."}'
+aico turn add tool message_send -i '{"body": "Friday works."}'
 aico turn add tool task_mark-as-done -i '{"summary": "Answered."}'
 aico turn add text -t "Checked the notes first."      # reaches no one, as a model's text
 aico turn show
 aico turn clear                                       # to prepare the turn again
 aico turn send                                        # runs its calls, then shows their results
 ```
-
-A person's turns add no link to a chain of tasks: two people talking through their tasks never reach `maxTaskDepth`, while a loop of LLMs passing through a person still stops.
 
 ## Connecting to LLM providers
 
