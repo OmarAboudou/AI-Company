@@ -27,13 +27,10 @@ beforeEach(async () => {
         providerId: "anthropic",
         modelId: "opus",
     } as const
-    const julie = { id: "julie", name: "Julie", kind: "human" } as const
     await Promise.all([
         saveEmployee(projectRoot, claude),
-        saveEmployee(projectRoot, julie),
         ...[
             { id: "backend-developer", defaultEmployeeId: "claude" },
-            { id: "support", defaultEmployeeId: "julie" },
             { id: "qa-tester" },
         ].map((position) =>
             savePosition(projectRoot, {
@@ -101,7 +98,7 @@ describe("listPendingTasks", () => {
     })
 
     test("lists as waiting the tasks of positions no LLM works, saying why", async () => {
-        for (const positionId of ["director", "support", "qa-tester", "ux"]) {
+        for (const positionId of ["director", "qa-tester", "ux"]) {
             await askPosition(positionId)
         }
 
@@ -115,7 +112,6 @@ describe("listPendingTasks", () => {
         )
         expect(reasons).toEqual([
             "worked-by-directors",
-            "worked-by-human",
             "vacant-position",
             "deleted-position",
         ])

@@ -51,12 +51,4 @@ describe("requireEmployeeModel", () => {
 
         await expect(checking).rejects.toThrow('No provider "openai".')
     })
-
-    test("asks nothing of a human", async () => {
-        const omar = { name: "Omar", kind: "human" } as const
-
-        const checking = requireEmployeeModel(projectRoot, omar)
-
-        await expect(checking).resolves.toBeUndefined()
-    })
 })

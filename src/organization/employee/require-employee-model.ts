@@ -5,11 +5,5 @@ export async function requireEmployeeModel(
     projectRoot: string,
     config: EmployeeConfig,
 ): Promise<void> {
-    if (config.kind === "llm") {
-        await loadExistingLlmModel(
-            projectRoot,
-            config.providerId,
-            config.modelId,
-        )
-    }
+    await loadExistingLlmModel(projectRoot, config.providerId, config.modelId)
 }

@@ -36,13 +36,11 @@ export async function updateLlmModelId(
             `Provider "${model.providerId}" already has a model "${newId}".`,
         )
     }
-    const modelEmployees = employees
-        .filter((employee) => employee.kind === "llm")
-        .filter(
-            (employee) =>
-                employee.providerId === model.providerId &&
-                employee.modelId === model.id,
-        )
+    const modelEmployees = employees.filter(
+        (employee) =>
+            employee.providerId === model.providerId &&
+            employee.modelId === model.id,
+    )
     // Copy, repoint, then delete rather than move, as for employees:
     // an employee must never run on a missing model.
     await copyLlmModelFolder(projectRoot, model.providerId, model.id, newId)

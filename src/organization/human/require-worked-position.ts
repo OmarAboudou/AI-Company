@@ -14,9 +14,7 @@ async function loadWorkerDescription(
         return "the directors work it"
     }
     const employee = await loadEmployee(projectRoot, worker.employeeId)
-    return employee.kind === "llm"
-        ? `${employee.name}, an LLM employee, works it, and nobody writes on an LLM's behalf`
-        : `${employee.name}, a human employee, works it`
+    return `${employee.name}, an LLM employee, works it, and nobody writes on an LLM's behalf`
 }
 
 export async function requireWorkedPosition(

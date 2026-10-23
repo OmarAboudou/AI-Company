@@ -18,7 +18,6 @@ export async function deleteLlmModel(
     const modelEmployeeIds = employees
         .filter(
             (employee) =>
-                employee.kind === "llm" &&
                 employee.providerId === model.providerId &&
                 employee.modelId === model.id,
         )

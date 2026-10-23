@@ -4,7 +4,6 @@ Hiring employees, changing them and letting them go: `create`, alias `hire`; `up
 
 ## Invariants
 
-- An employee's kind never changes: `replace` hands its positions over to another employee instead.
 - `replace` hands over the positions the employee works by default, and its temporary assignments only with `--temporary`.
 - An employee id found in the archives is given again only with `--reuse-id`.
 

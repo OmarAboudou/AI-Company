@@ -1,6 +1,6 @@
 import { loadJournal, refreshJournal } from "../../journal/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
-import type { LlmEmployee } from "../../organization/employee/schema.ts"
+import type { Employee } from "../../organization/employee/schema.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { UserError } from "../../user-error.ts"
 import { dispatchEvents } from "../listener/dispatch-events.ts"
@@ -21,7 +21,7 @@ export type RunReadyTasksProgress =
           kind: "task-started"
           task: Task
           position: Position
-          employee: LlmEmployee
+          employee: Employee
       }
     | { kind: "task-ended"; task: Task; result: RunTaskResult }
 
