@@ -17,7 +17,7 @@ export function registerTurnSendCommand(turnCommand: Command): void {
     turnCommand
         .command("send")
         .description(
-            "Send your next turn: its tool calls run and you get their results, as a model does. A call to task_mark-as-done or task_mark-as-failed ends your task.",
+            "Send your next turn: its texts join the discussion of your task's ticket and its tool calls run, as a model's do, and you get their results. An act that passes the hand, or a turn without any tool call, ends your session.",
         )
         .action(async (_options, command) => {
             const { sentTurn, answeringTurn, taskEnding } = await sendTurn(

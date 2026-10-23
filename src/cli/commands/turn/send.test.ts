@@ -29,23 +29,23 @@ function sendPersonTurn() {
 
 describe("aico turn send", () => {
     test("runs the turn's tool calls and shows their results", async () => {
-        await addToolCall("message_send", '{"body": "Friday."}')
+        await addToolCall("ticket_ask", '{"body": "Which build?"}')
 
         const sending = sendPersonTurn()
 
         expect(sending.exitCode).toBe(0)
         expect(sending.stdout).toBe(
-            `→ message_send\n  body: "Friday."\n← Sent as message #2 of ticket #${ticketNumber}.\n\nPrepare your next turn with \`aico turn add\`, then send it.\n`,
+            `→ ticket_ask\n  body: "Which build?"\n← Question asked, as message #1 of ticket #${ticketNumber}.\n\nTask done: its session passed the hand. Run \`aico task next\` for your next task.\n`,
         )
     })
 
-    test("reminds the person who calls no tool", async () => {
-        await addTurnText(getProjectPath(), {}, "Let me think.")
+    test("ends the session at a turn without any tool call", async () => {
+        await addTurnText(getProjectPath(), {}, "Friday works.")
 
         const sending = sendPersonTurn()
 
-        expect(sending.stdout).toStartWith(
-            "Let me think.\nReminder: You ended your turn without calling a tool.",
+        expect(sending.stdout).toBe(
+            "Friday works.\n\nTask done: its session ended without passing the hand. Run `aico task next` for your next task.\n",
         )
     })
 

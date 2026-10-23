@@ -53,8 +53,6 @@ function formatProgress(
             return progress.isError
                 ? [`✗ ${progress.text}`]
                 : [`← ${formatToolResult(progress.text)}`]
-        case "reminder":
-            return [`Reminder: ${progress.text}`]
         case "task-ended":
             return formatTaskEnd(progress.result)
     }

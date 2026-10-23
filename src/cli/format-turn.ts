@@ -21,9 +21,6 @@ export function formatTurn(
     const toolResults = answerBlocks.filter(
         (block) => block.type === "tool-result",
     )
-    const reminderLines = answerBlocks.flatMap((block) =>
-        block.type === "text" ? [`Reminder: ${block.text}`] : [],
-    )
     const turnLines = blocks.flatMap((block) => {
         if (block.type === "text") {
             return block.text.trimEnd().split("\n")
@@ -37,5 +34,5 @@ export function formatTurn(
             ...(toolResult === undefined ? [] : formatToolResult(toolResult)),
         ]
     })
-    return [...turnLines, ...reminderLines].join("\n")
+    return turnLines.join("\n")
 }

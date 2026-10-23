@@ -15,7 +15,6 @@ import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
 import {
     applyAssistantTurn,
     maxToolCallsPerRun,
-    reminderText,
 } from "./apply-assistant-turn.ts"
 import type { Run, RunProgress } from "./schema.ts"
 import { startRun } from "./start/start-run.ts"
@@ -202,33 +201,11 @@ describe("applyAssistantTurn", () => {
 })
 
 describe("applyAssistantTurn after a turn without any tool call", () => {
-    test("reminds whoever works the task to mark it as done or failed", async () => {
-        const progresses: RunProgress[] = []
+    test("ends the session, done without passing the hand", async () => {
+        const { run, taskEnding } = await applyFakeTurn(startedRun, textTurn)
 
-        const { run, taskEnding } = await applyFakeTurn(
-            startedRun,
-            textTurn,
-            progresses,
-        )
-
-        const reminderTurn = run.conversation.turns.at(-1)
-        expect(reminderTurn).toEqual({
-            role: "user",
-            blocks: [{ type: "text", text: reminderText }],
-        })
-        expect(progresses).toEqual([{ kind: "reminder", text: reminderText }])
-        expect(taskEnding).toBeUndefined()
-    })
-
-    test("fails the task after a second one", async () => {
-        const { run } = await applyFakeTurn(startedRun, textTurn)
-
-        const { taskEnding } = await applyFakeTurn(run, textTurn)
-
-        expect(taskEnding).toEqual({
-            state: "failed",
-            reason: "Two turns ended without calling a tool, the second after a reminder.",
-        })
+        expect(taskEnding).toEqual({ state: "done", hasPassedHand: false })
+        expect(run.conversation.turns.at(-1)).toEqual(textTurn)
     })
 })
 

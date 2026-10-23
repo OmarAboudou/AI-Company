@@ -67,7 +67,7 @@ export const UserTurnSchema = z
     })
     .meta({
         description:
-            "A turn AICo gives: the task's message, the results of the tool calls, or a reminder.",
+            "A turn AICo gives: the task's message, or the results of the tool calls.",
     })
 
 export type UserTurn = z.infer<typeof UserTurnSchema>

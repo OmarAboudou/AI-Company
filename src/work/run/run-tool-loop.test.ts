@@ -9,7 +9,6 @@ import { taskMarkAsFailedTool } from "../tool/built-in/task/mark-as-failed.ts"
 import { defineTool } from "../tool/define-tool.ts"
 import { exampleToolContext } from "../tool/example-tool-context.testing.ts"
 import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
-import { reminderText } from "./apply-assistant-turn.ts"
 import { runToolLoop } from "./run-tool-loop.ts"
 import type { RunProgress } from "./schema.ts"
 import { startRun } from "./start/start-run.ts"
@@ -124,19 +123,13 @@ describe("runToolLoop", () => {
         ])
     })
 
-    test("gives the model the reminder after a turn without any tool call", async () => {
-        fakeServer.respondWith(
-            { text: "I wrote the notes." },
-            { toolCalls: [markAsDoneCall] },
-        )
+    test("ends at a turn without any tool call, calling no model again", async () => {
+        fakeServer.respondWith({ text: "I wrote the notes." })
 
         const { taskEnding } = await runFakeLoop()
 
-        expect(getRequestTurns(1).at(-1)).toMatchObject({
-            role: "user",
-            content: [{ type: "text", text: reminderText }],
-        })
-        expect(taskEnding.state).toBe("done")
+        expect(fakeServer.requests).toHaveLength(1)
+        expect(taskEnding).toEqual({ state: "done", hasPassedHand: false })
     })
 
     test("ends after the turn that marks the task as done, calling no model", async () => {

@@ -47,15 +47,6 @@ describe("formatTurn", () => {
         expect(text).toEndWith("\n✗ No ticket #4.\n\n  Run aico ticket list.")
     })
 
-    test("shows the reminder that answers a turn without calls", () => {
-        const blocks = [{ type: "text" as const, text: "Let me think." }]
-        const reminder = { type: "text" as const, text: "Call a tool." }
-
-        const text = formatTurn(blocks, { role: "user", blocks: [reminder] })
-
-        expect(text).toBe("Let me think.\nReminder: Call a tool.")
-    })
-
     test("shows a turn not sent yet, without results", () => {
         const text = formatTurn([messageSendCall])
 

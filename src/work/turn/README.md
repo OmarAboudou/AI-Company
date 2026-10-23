@@ -8,7 +8,7 @@ A person's turn in a run, prepared as git's index prepares a commit: texts and t
 - A tool call is checked against the tool's schema as soon as it is added.
 - The turn is emptied before its calls run: a crash among them can't send the same turn, and its messages, twice.
 - With runs in progress in several positions, the selected position says which one a turn goes to.
-- A turn without any tool call gets the same reminder as a model's, and a second one fails the task.
+- A turn without any tool call ends the session, as a model's does.
 
 ## Decisions
 

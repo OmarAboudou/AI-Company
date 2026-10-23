@@ -70,7 +70,7 @@ describe("buildSystemPrompt", () => {
         const prompt = buildSystemPrompt(context)
 
         const rule =
-            "What you write outside your tools joins the discussion of your task's ticket, for the other position to read in a later session: write it for a reader who doesn't see this one. End each task with task_mark-as-done, or with task_mark-as-failed if you can't do it."
+            "What you write outside your tools joins the discussion of your task's ticket, for the other position to read in a later session: write it for a reader who doesn't see this one. Your session ends at an act that passes the hand on the ticket, or at a turn without any tool call, after which the ticket is resumed in a later session."
         expect(prompt).toEndWith(`# Your tasks\n\n${rule}`)
     })
 })

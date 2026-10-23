@@ -1,6 +1,6 @@
 # Conversation
 
-A conversation is what a run exchanges with whoever works its task, in AICo's own form rather than a protocol's: a system prompt, tools, and turns. AICo gives the user turns, the task's message, the results of tool calls and reminders; whoever works the task, a model or a person alike, takes the assistant turns, texts and tool calls in their order.
+A conversation is what a run exchanges with whoever works its task, in AICo's own form rather than a protocol's: a system prompt, tools, and turns. AICo gives the user turns, the task's message and the results of tool calls; whoever works the task, a model or a person alike, takes the assistant turns, texts and tool calls in their order.
 
 ## Invariants
 

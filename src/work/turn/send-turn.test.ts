@@ -8,14 +8,9 @@ import { listEvents } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { listMessages } from "../../messaging/message/storage.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
-import { reminderText } from "../run/apply-assistant-turn.ts"
 import { loadRun } from "../run/storage.ts"
 import type { OpenedTask } from "../task/open-next-task.ts"
-import {
-    taskCancelledEventType,
-    taskDoneEventType,
-    taskFailedEventType,
-} from "../task/schema.ts"
+import { taskCancelledEventType, taskDoneEventType } from "../task/schema.ts"
 import { addTurnText } from "./add-turn-text.ts"
 import { addTurnTool } from "./add-turn-tool.ts"
 import { createCompanyWithTaskInProgress } from "./create-company-with-task-in-progress.testing.ts"
@@ -219,30 +214,18 @@ describe("sendTurn", () => {
         })
     })
 
-    test("reminds the person who calls no tool, as it reminds a model", async () => {
-        await addTurnText(projectRoot, {}, "Let me think.")
+    test("ends the person's session at a turn without any tool call, as a model's", async () => {
+        await addTurnText(projectRoot, {}, "Friday works, I'll confirm Monday.")
 
         const { answeringTurn, taskEnding } = await sendPersonTurn()
 
-        const reminderBlock = { type: "text" as const, text: reminderText }
-        expect(taskEnding).toBeUndefined()
-        expect(answeringTurn?.blocks).toEqual([reminderBlock])
-    })
-
-    test("fails the task at a second turn that calls no tool", async () => {
-        await addTurnText(projectRoot, {}, "Let me think.")
-        await sendPersonTurn()
-        await addTurnText(projectRoot, {}, "Still thinking.")
-
-        const { taskEnding } = await sendPersonTurn()
-
-        const reason =
-            "Two turns ended without calling a tool, the second after a reminder."
-        expect(taskEnding).toEqual({ state: "failed", reason })
-        expect(await findLastEvent(taskFailedEventType)).toMatchObject({
-            depth: 0,
+        const messages = await listMessages(projectRoot, ticketNumber)
+        expect(taskEnding).toEqual({ state: "done", hasPassedHand: false })
+        expect(answeringTurn).toBeUndefined()
+        expect(messages.at(-1)?.body).toBe("Friday works, I'll confirm Monday.")
+        expect(await findLastEvent(taskDoneEventType)).toMatchObject({
             taskId: openedTask.task.id,
-            reason,
+            hasPassedHand: false,
         })
     })
 

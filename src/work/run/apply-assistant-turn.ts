@@ -13,9 +13,6 @@ import type { Run, RunProgress } from "./schema.ts"
 import { sendSessionText } from "./send-session-text.ts"
 import { appendRunTranscriptLine } from "./storage.ts"
 
-export const reminderText =
-    "You ended your turn without calling a tool. Call task_mark-as-done with a summary if your task is done, or task_mark-as-failed with the reason if you can't do it."
-
 // Settings (#35) will let management choose it.
 export const maxToolCallsPerRun = 50
 
@@ -66,12 +63,6 @@ function getFailureReason(
     ).length
     if (toolCallCount > maxToolCallsPerRun) {
         return `The run went beyond ${maxToolCallsPerRun} tool calls without ending its task.`
-    }
-    const hasBeenReminded = previousAssistantTurns.some(
-        (previousTurn) => getToolCalls(previousTurn).length === 0,
-    )
-    if (getToolCalls(turn).length === 0 && hasBeenReminded) {
-        return "Two turns ended without calling a tool, the second after a reminder."
     }
     return undefined
 }
@@ -145,10 +136,10 @@ async function answerTurn(
         return { taskEnding: { state: "failed", reason: failureReason } }
     }
     const { toolResults, taskEnding } = await applyBlocks(turn, application)
+    // Whoever works the task stopped without passing the hand: the session
+    // ends, and someone resumes the ticket in a later one.
     if (getToolCalls(turn).length === 0) {
-        application.onProgress?.({ kind: "reminder", text: reminderText })
-        const blocks = [{ type: "text" as const, text: reminderText }]
-        return { answeringTurn: { role: "user", blocks } }
+        return { taskEnding: { state: "done", hasPassedHand: false } }
     }
     return { answeringTurn: { role: "user", blocks: toolResults }, taskEnding }
 }

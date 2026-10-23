@@ -18,8 +18,8 @@ describe("aico turn show", () => {
             projectRoot,
             {},
             {
-                toolName: "message_send",
-                rawInput: '{"body": "Friday."}',
+                toolName: "ticket_ask",
+                rawInput: '{"body": "Which build?"}',
             },
         )
 
@@ -27,7 +27,7 @@ describe("aico turn show", () => {
 
         expect(show.exitCode).toBe(0)
         expect(show.stdout).toBe(
-            'Checking.\n→ message_send\n  body: "Friday."\n',
+            'Checking.\n→ ticket_ask\n  body: "Which build?"\n',
         )
     })
 
