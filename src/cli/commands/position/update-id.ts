@@ -5,6 +5,7 @@ import {
     formatNewIdArgumentDescription,
 } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
+import { runCommandOperation } from "../../run-command-operation.ts"
 
 export function registerPositionUpdateIdCommand(
     positionCommand: Command,
@@ -22,11 +23,10 @@ export function registerPositionUpdateIdCommand(
             "<new-position-id>",
             formatNewIdArgumentDescription("position", "api-developer"),
         )
-        .action(async (rawId, rawNewId) => {
-            const { position, renamedPosition } = await updatePositionId(
-                projectRoot,
-                rawId,
-                rawNewId,
+        .action(async (rawId, rawNewId, _options, command) => {
+            const { position, renamedPosition } = await runCommandOperation(
+                command,
+                () => updatePositionId(projectRoot, rawId, rawNewId),
             )
             console.log(
                 `Position "${position.id}" is now "${renamedPosition.id}".`,

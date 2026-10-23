@@ -3,6 +3,7 @@ import { updateLlmModel } from "../../../llm/model/update-llm-model.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { requireAtLeastOneOption } from "../../require-at-least-one-option.ts"
+import { runCommandOperation } from "../../run-command-operation.ts"
 import { createApiIdOption } from "./create-api-id-option.ts"
 import { createProtocolOption } from "./create-protocol-option.ts"
 
@@ -21,17 +22,14 @@ export function registerModelUpdateCommand(modelCommand: Command): void {
         .option("-n, --name <name>", "model name")
         .addOption(createApiIdOption())
         .addOption(createProtocolOption())
-        .action(async (rawProviderId, rawModelId, options) => {
+        .action(async (rawProviderId, rawModelId, options, command) => {
             requireAtLeastOneOption(options)
-            const model = await updateLlmModel(
-                projectRoot,
-                rawProviderId,
-                rawModelId,
-                {
+            const model = await runCommandOperation(command, () =>
+                updateLlmModel(projectRoot, rawProviderId, rawModelId, {
                     name: options.name,
                     apiId: options.apiId,
                     protocol: options.protocol,
-                },
+                }),
             )
             console.log(
                 `Updated model "${model.id}" of provider "${model.providerId}".`,

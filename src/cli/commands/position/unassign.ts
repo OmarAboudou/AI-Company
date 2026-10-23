@@ -5,6 +5,7 @@ import {
 } from "../../../organization/position/unassign-position.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
+import { runCommandOperation } from "../../run-command-operation.ts"
 import { formatStillTemporaryMessage } from "./format-still-temporary-message.ts"
 
 function formatUnassignedMessage({
@@ -30,8 +31,10 @@ export function registerPositionUnassignCommand(
             "<position-id>",
             formatIdArgumentDescription("position", "backend-developer"),
         )
-        .action(async (rawId) => {
-            const unassignment = await unassignPosition(projectRoot, rawId)
+        .action(async (rawId, _options, command) => {
+            const unassignment = await runCommandOperation(command, () =>
+                unassignPosition(projectRoot, rawId),
+            )
             console.log(formatUnassignedMessage(unassignment))
         })
 }

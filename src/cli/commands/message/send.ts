@@ -10,6 +10,7 @@ import {
 import { printCreatedTasks } from "../../print-created-tasks.ts"
 import { projectRoot } from "../../project-root.ts"
 import { readBody } from "../../read-body.ts"
+import { runCommandOperation } from "../../run-command-operation.ts"
 
 export function registerMessageSendCommand(messageCommand: Command): void {
     messageCommand
@@ -27,18 +28,20 @@ export function registerMessageSendCommand(messageCommand: Command): void {
         .addOption(createBodyOption())
         .addOption(createBodyFileOption())
         .addOption(createAsPositionOption())
-        .action(async (rawThreadId, options) => {
+        .action(async (rawThreadId, options, command) => {
             const body = await readBody(options)
             if (body === undefined) {
                 throw new UserError(
                     "Give the message with -b, --body or -F, --body-file.",
                 )
             }
-            const { message, createdTasks } = await sendMessage(
-                projectRoot,
-                process.env,
-                rawThreadId,
-                { body, asPositionId: options.asPosition },
+            const { message, createdTasks } = await runCommandOperation(
+                command,
+                () =>
+                    sendMessage(projectRoot, process.env, rawThreadId, {
+                        body,
+                        asPositionId: options.asPosition,
+                    }),
             )
             console.error(
                 `Sent message "${message.id}" in thread "${message.threadId}".`,

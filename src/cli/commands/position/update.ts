@@ -5,6 +5,7 @@ import { createDescriptionFileOption } from "../../options.ts"
 import { projectRoot } from "../../project-root.ts"
 import { readTextOrFile } from "../../read-text-or-file.ts"
 import { requireAtLeastOneOption } from "../../require-at-least-one-option.ts"
+import { runCommandOperation } from "../../run-command-operation.ts"
 
 export function registerPositionUpdateCommand(positionCommand: Command): void {
     positionCommand
@@ -22,16 +23,18 @@ export function registerPositionUpdateCommand(positionCommand: Command): void {
             "what the position is responsible for",
         )
         .addOption(createDescriptionFileOption())
-        .action(async (rawId, options) => {
+        .action(async (rawId, options, command) => {
             requireAtLeastOneOption(options)
             const description = await readTextOrFile(
                 options.description,
                 options.descriptionFile,
             )
-            const position = await updatePosition(projectRoot, rawId, {
-                title: options.title,
-                description,
-            })
+            const position = await runCommandOperation(command, () =>
+                updatePosition(projectRoot, rawId, {
+                    title: options.title,
+                    description,
+                }),
+            )
             console.log(`Updated position "${position.id}".`)
         })
 }
