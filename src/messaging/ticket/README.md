@@ -7,6 +7,7 @@ A ticket's state is derived from the journal, as a task's is, from the acts of i
 ## Invariants
 
 - A ticket is never modified once written: it freezes its positions' titles and its author's name as they were.
+- Only the director creates tickets for now: another position asks the director its questions.
 - Tickets are numbered in sequence, #1, #2…, each after the highest, by operations that never overlap: two tickets never get the same number, and a ticket whose creation stopped halfway keeps its own.
 - A ticket's creation is recorded in the journal once the ticket is written.
 - A ticket's state names its positions as they are called now, through their id history.

@@ -88,6 +88,22 @@ describe("createTicket", () => {
         expect(ticket.assignee).toEqual(ticket.requester)
     })
 
+    test("refuses a ticket from another position than the director's", async () => {
+        const developer: Author = {
+            ...director,
+            position: { id: "backend-developer", title: "Backend Developer" },
+        }
+        const journal = await loadJournal(projectRoot)
+
+        const creation = createTicket(journal, developer, frameworkRequest, {
+            depth: 1,
+        })
+
+        await expect(creation).rejects.toThrow(UserError)
+        await expect(creation).rejects.toThrow("ask @director instead.")
+        expect(await listTickets(projectRoot)).toEqual([])
+    })
+
     test("refuses an assignee that isn't a position", async () => {
         const creation = createFrameworkTicket({
             ...frameworkRequest,

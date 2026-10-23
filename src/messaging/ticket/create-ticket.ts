@@ -1,5 +1,6 @@
 import { recordEvent } from "../../journal/record-event.ts"
 import type { Journal } from "../../journal/schema.ts"
+import { loadCompany } from "../../organization/company/storage.ts"
 import { loadExistingPosition } from "../../organization/position/load-existing-position.ts"
 import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
@@ -28,10 +29,15 @@ export async function createTicket(
     if (request.trim() === "") {
         throw new UserError("The ticket's request is empty.")
     }
-    const assignee = await loadExistingPosition(
-        projectRoot,
-        rawAssigneePositionId,
-    )
+    const [{ directorPositionId }, assignee] = await Promise.all([
+        loadCompany(projectRoot),
+        loadExistingPosition(projectRoot, rawAssigneePositionId),
+    ])
+    if (author.position.id !== directorPositionId) {
+        throw new UserError(
+            `Only the director creates tickets for now: ask @${directorPositionId} instead.`,
+        )
+    }
     const { position: requester, ...authorship } = author
     const config = parseConfig(TicketConfigSchema, {
         title,
