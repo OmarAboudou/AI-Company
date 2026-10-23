@@ -47,7 +47,7 @@ export const TaskResultSchema = z.record(z.string(), z.unknown()).meta({
 
 export type TaskResult = z.infer<typeof TaskResultSchema>
 
-const TaskIdSchema = IdSchema.meta({
+export const TaskIdSchema = IdSchema.meta({
     description: "Id of the task, i.e. the name of its file in .aico/tasks.",
 })
 

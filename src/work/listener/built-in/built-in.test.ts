@@ -12,6 +12,7 @@ import { getTaskStates } from "../../task/get-task-states.ts"
 import {
     type Task,
     taskDoneEventType,
+    taskFailedEventType,
     taskStartedEventType,
 } from "../../task/schema.ts"
 import { listTasks } from "../../task/storage.ts"
@@ -91,6 +92,18 @@ async function startQueuedTaskOf(positionId: string) {
             worker: { kind: "directors" },
         })
     }
+}
+
+async function failTaskOf(positionId: string) {
+    await startQueuedTaskOf(positionId)
+    const runningTask = await findTaskOf(positionId, "running")
+    await recordEvent(await loadJournal(projectRoot), taskFailedEventType, {
+        depth: 1,
+        taskId: runningTask?.id ?? "",
+        runId: "20261023-150000-000-9e8d",
+        reason: "The model's turn was cut at its maximum length.",
+    })
+    return dispatch()
 }
 
 // Each act happens in a session of its position, the task it was given.
@@ -190,5 +203,17 @@ describe("AICo's listeners", () => {
         const { createdTasks } = await act("cancel", director)
 
         expect(createdTasks).toEqual([])
+    })
+
+    test("give the director Analyse the failure once a task failed", async () => {
+        await createDeveloperTicket()
+        const failedTask = await findTaskOf("developer", "queued")
+
+        const { createdTasks } = await failTaskOf("developer")
+
+        expect(getTaskSummaries(createdTasks)).toEqual([
+            "analyse-failure @director",
+        ])
+        expect(createdTasks[0]?.params).toEqual({ taskId: failedTask?.id })
     })
 })

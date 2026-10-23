@@ -1,6 +1,6 @@
 # Built-in task types
 
-The task types AICo ships with, which its upgrades reach, where copies in each company would stay behind: those of the tickets, one for each move of a ticket's lifecycle, Handle, Resume, Answer and Validate.
+The task types AICo ships with, which its upgrades reach, where copies in each company would stay behind: those of the tickets, one for each move of a ticket's lifecycle, Handle, Resume, Answer and Validate, and the director's Analyse the failure.
 
 A ticket's task gives the position its situation: the request, the messages of the discussion that arrived since its last session on the ticket, and what is expected of it, with the tools of its acts and `ticket_show`, fixed to the ticket.
 

@@ -15,6 +15,7 @@ export type CancelTaskEffect = {
 export type ListenerEffect = CreateTaskEffect | CancelTaskEffect
 
 export type ListenerContext = {
+    directorPositionId: string
     tasks: readonly Task[]
     taskStates: ReadonlyMap<string, TaskState>
     positions: readonly IdHistory[]

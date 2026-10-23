@@ -110,7 +110,7 @@ describe("aico run", () => {
             "Task failed: The anthropic-messages API",
         )
         expect(running.stdout).toMatch(
-            /\nThe company is paused since task "[^"]+" failed: once what failed it is fixed, `aico company relaunch` relaunches it\.\n$/,
+            /@director +analyse-failure +for the directors\n\nThe company is paused since task "[^"]+" failed: the director analyses the failure in `aico task work`, then relaunches it with `aico company relaunch`\.\n$/,
         )
     })
 

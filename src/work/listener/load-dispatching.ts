@@ -5,6 +5,7 @@ import {
     type TicketState,
 } from "../../messaging/ticket/get-ticket-states.ts"
 import { listTickets } from "../../messaging/ticket/storage.ts"
+import { loadCompany } from "../../organization/company/storage.ts"
 import { listPositions } from "../../organization/position/storage.ts"
 import { getTaskStates, type TaskState } from "../task/get-task-states.ts"
 import type { Task } from "../task/schema.ts"
@@ -14,6 +15,7 @@ import type { TaskType } from "../task-type/define-task-type.ts"
 export type Dispatching = {
     journal: Journal
     taskTypes: Record<string, TaskType>
+    directorPositionId: string
     tasks: Task[]
     taskStates: Map<string, TaskState>
     positions: IdHistory[]
@@ -27,14 +29,17 @@ export async function loadDispatching(
     taskTypes: Record<string, TaskType>,
 ): Promise<Dispatching> {
     const { projectRoot, events } = journal
-    const [tasks, positions, tickets] = await Promise.all([
-        listTasks(projectRoot),
-        listPositions(projectRoot),
-        listTickets(projectRoot),
-    ])
+    const [tasks, positions, tickets, { directorPositionId }] =
+        await Promise.all([
+            listTasks(projectRoot),
+            listPositions(projectRoot),
+            listTickets(projectRoot),
+            loadCompany(projectRoot),
+        ])
     return {
         journal,
         taskTypes,
+        directorPositionId,
         tasks,
         taskStates: getTaskStates(tasks, events),
         positions,
