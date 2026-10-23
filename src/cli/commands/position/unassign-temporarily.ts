@@ -3,6 +3,7 @@ import { formatWorkerName } from "../../../organization/position/format-worker-n
 import { unassignPositionTemporarily } from "../../../organization/position/unassign-position-temporarily.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
+import { runCommandOperation } from "../../run-command-operation.ts"
 
 export function registerPositionUnassignTemporarilyCommand(
     positionCommand: Command,
@@ -17,9 +18,11 @@ export function registerPositionUnassignTemporarilyCommand(
             "<position-id>",
             formatIdArgumentDescription("position", "backend-developer"),
         )
-        .action(async (rawId) => {
+        .action(async (rawId, _options, command) => {
             const { position, endedTemporaryAssignment } =
-                await unassignPositionTemporarily(projectRoot, rawId)
+                await runCommandOperation(command, () =>
+                    unassignPositionTemporarily(projectRoot, rawId),
+                )
             if (endedTemporaryAssignment === undefined) {
                 console.log(
                     `Position "${position.id}" isn't assigned temporarily.`,

@@ -5,6 +5,7 @@ import {
     formatNewIdArgumentDescription,
 } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
+import { runCommandOperation } from "../../run-command-operation.ts"
 
 export function registerModelUpdateIdCommand(modelCommand: Command): void {
     modelCommand
@@ -24,19 +25,23 @@ export function registerModelUpdateIdCommand(modelCommand: Command): void {
             "<new-model-id>",
             formatNewIdArgumentDescription("model", "opus"),
         )
-        .action(async (rawProviderId, rawModelId, rawNewId) => {
-            const { model, renamedModel, updatedEmployeeIds } =
-                await updateLlmModelId(
-                    projectRoot,
-                    rawProviderId,
-                    rawModelId,
-                    rawNewId,
+        .action(
+            async (rawProviderId, rawModelId, rawNewId, _options, command) => {
+                const { model, renamedModel, updatedEmployeeIds } =
+                    await runCommandOperation(command, () =>
+                        updateLlmModelId(
+                            projectRoot,
+                            rawProviderId,
+                            rawModelId,
+                            rawNewId,
+                        ),
+                    )
+                const renamedMessage = `Model "${model.id}" of provider "${model.providerId}" is now "${renamedModel.id}"`
+                console.log(
+                    updatedEmployeeIds.length === 0
+                        ? `${renamedMessage}.`
+                        : `${renamedMessage}; updated employees: ${updatedEmployeeIds.join(", ")}.`,
                 )
-            const renamedMessage = `Model "${model.id}" of provider "${model.providerId}" is now "${renamedModel.id}"`
-            console.log(
-                updatedEmployeeIds.length === 0
-                    ? `${renamedMessage}.`
-                    : `${renamedMessage}; updated employees: ${updatedEmployeeIds.join(", ")}.`,
-            )
-        })
+            },
+        )
 }

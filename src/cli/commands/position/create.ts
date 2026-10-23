@@ -4,6 +4,7 @@ import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { createDescriptionFileOption } from "../../options.ts"
 import { projectRoot } from "../../project-root.ts"
 import { readTextOrFile } from "../../read-text-or-file.ts"
+import { runCommandOperation } from "../../run-command-operation.ts"
 
 export function registerPositionCreateCommand(positionCommand: Command): void {
     positionCommand
@@ -21,15 +22,17 @@ export function registerPositionCreateCommand(positionCommand: Command): void {
             "",
         )
         .addOption(createDescriptionFileOption())
-        .action(async (rawId, options) => {
+        .action(async (rawId, options, command) => {
             const description = await readTextOrFile(
                 options.description,
                 options.descriptionFile,
             )
-            const position = await createPosition(projectRoot, rawId, {
-                title: options.title,
-                description,
-            })
+            const position = await runCommandOperation(command, () =>
+                createPosition(projectRoot, rawId, {
+                    title: options.title,
+                    description,
+                }),
+            )
             console.log(`Created position "${position.id}".`)
         })
 }

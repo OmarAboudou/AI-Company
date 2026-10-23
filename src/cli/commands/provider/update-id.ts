@@ -5,6 +5,7 @@ import {
     formatNewIdArgumentDescription,
 } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
+import { runCommandOperation } from "../../run-command-operation.ts"
 
 export function registerProviderUpdateIdCommand(
     providerCommand: Command,
@@ -22,9 +23,11 @@ export function registerProviderUpdateIdCommand(
             "<new-provider-id>",
             formatNewIdArgumentDescription("provider", "anthropic-api"),
         )
-        .action(async (rawId, rawNewId) => {
+        .action(async (rawId, rawNewId, _options, command) => {
             const { provider, renamedProvider, updatedEmployeeIds } =
-                await updateLlmProviderId(projectRoot, rawId, rawNewId)
+                await runCommandOperation(command, () =>
+                    updateLlmProviderId(projectRoot, rawId, rawNewId),
+                )
             const renamedMessage = `Provider "${provider.id}" is now "${renamedProvider.id}"`
             console.log(
                 updatedEmployeeIds.length === 0

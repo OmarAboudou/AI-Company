@@ -8,6 +8,7 @@ import {
 import { printCreatedTasks } from "../../print-created-tasks.ts"
 import { projectRoot } from "../../project-root.ts"
 import { readBody } from "../../read-body.ts"
+import { runCommandOperation } from "../../run-command-operation.ts"
 
 export function registerThreadCreateCommand(threadCommand: Command): void {
     threadCommand
@@ -19,16 +20,16 @@ export function registerThreadCreateCommand(threadCommand: Command): void {
         .addOption(createBodyOption("the thread's first message"))
         .addOption(createBodyFileOption("the thread's first message"))
         .addOption(createAsPositionOption())
-        .action(async (options) => {
+        .action(async (options, command) => {
             const body = await readBody(options)
-            const { thread, createdTasks } = await createThread(
-                projectRoot,
-                process.env,
-                {
-                    subject: options.subject,
-                    body,
-                    asPositionId: options.asPosition,
-                },
+            const { thread, createdTasks } = await runCommandOperation(
+                command,
+                () =>
+                    createThread(projectRoot, process.env, {
+                        subject: options.subject,
+                        body,
+                        asPositionId: options.asPosition,
+                    }),
             )
             console.log(thread.id)
             printCreatedTasks(createdTasks)

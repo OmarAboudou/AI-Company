@@ -2,6 +2,7 @@ import type { Command } from "@commander-js/extra-typings"
 import { deletePosition } from "../../../organization/position/delete-position.ts"
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
+import { runCommandOperation } from "../../run-command-operation.ts"
 
 export function registerPositionDeleteCommand(positionCommand: Command): void {
     positionCommand
@@ -15,11 +16,10 @@ export function registerPositionDeleteCommand(positionCommand: Command): void {
             formatIdArgumentDescription("position", "backend-developer"),
         )
         .option("-f, --force", "delete it even with tasks pending in threads")
-        .action(async (rawId, { force: shouldForce }) => {
-            const { position, pendingThreadIds } = await deletePosition(
-                projectRoot,
-                rawId,
-                { shouldForce },
+        .action(async (rawId, { force: shouldForce }, command) => {
+            const { position, pendingThreadIds } = await runCommandOperation(
+                command,
+                () => deletePosition(projectRoot, rawId, { shouldForce }),
             )
             const deletedMessage =
                 position.defaultEmployeeId === undefined

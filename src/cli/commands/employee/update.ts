@@ -3,6 +3,7 @@ import { updateEmployee } from "../../../organization/employee/update-employee.t
 import { formatIdArgumentDescription } from "../../id-argument-descriptions.ts"
 import { projectRoot } from "../../project-root.ts"
 import { requireAtLeastOneOption } from "../../require-at-least-one-option.ts"
+import { runCommandOperation } from "../../run-command-operation.ts"
 import { createModelOption } from "./create-model-option.ts"
 import { createProviderOption } from "./create-provider-option.ts"
 
@@ -19,13 +20,15 @@ export function registerEmployeeUpdateCommand(employeeCommand: Command): void {
         .option("-n, --name <name>", "employee name")
         .addOption(createProviderOption())
         .addOption(createModelOption())
-        .action(async (rawId, options) => {
+        .action(async (rawId, options, command) => {
             requireAtLeastOneOption(options)
-            const employee = await updateEmployee(projectRoot, rawId, {
-                name: options.name,
-                providerId: options.provider,
-                modelId: options.model,
-            })
+            const employee = await runCommandOperation(command, () =>
+                updateEmployee(projectRoot, rawId, {
+                    name: options.name,
+                    providerId: options.provider,
+                    modelId: options.model,
+                }),
+            )
             console.log(`Updated employee "${employee.id}".`)
         })
 }

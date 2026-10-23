@@ -2,6 +2,7 @@ import type { Command } from "@commander-js/extra-typings"
 import { assignPositionTemporarily } from "../../../../organization/position/assign-position-temporarily.ts"
 import { formatIdArgumentDescription } from "../../../id-argument-descriptions.ts"
 import { projectRoot } from "../../../project-root.ts"
+import { runCommandOperation } from "../../../run-command-operation.ts"
 import { createReplaceTemporaryAssignmentOption } from "./create-replace-temporary-assignment-option.ts"
 import { formatTemporarilyAssignedMessage } from "./format-temporarily-assigned-message.ts"
 
@@ -20,12 +21,14 @@ export function registerPositionAssignTemporarilyEmployeeCommand(
             formatIdArgumentDescription("employee", "claude-junior"),
         )
         .addOption(createReplaceTemporaryAssignmentOption())
-        .action(async (rawPositionId, rawEmployeeId, options) => {
-            const assignment = await assignPositionTemporarily(
-                projectRoot,
-                rawPositionId,
-                { kind: "employee", rawEmployeeId },
-                { shouldReplace: options.replace },
+        .action(async (rawPositionId, rawEmployeeId, options, command) => {
+            const assignment = await runCommandOperation(command, () =>
+                assignPositionTemporarily(
+                    projectRoot,
+                    rawPositionId,
+                    { kind: "employee", rawEmployeeId },
+                    { shouldReplace: options.replace },
+                ),
             )
             console.log(formatTemporarilyAssignedMessage(assignment))
         })
