@@ -3,7 +3,7 @@ import { getAicoFolderPath } from "../../files/get-aico-folder-path.ts"
 import { listFolderEntries } from "../../files/list-folder-entries.ts"
 import { UserError } from "../../user-error.ts"
 import { runGit } from "../run-git.ts"
-import { spawnGit } from "../spawn-git.ts"
+import { runGitOrThrow } from "../run-git-or-throw.ts"
 import { excludeAicoFolder } from "./exclude-aico-folder.ts"
 import { reservedBranchName } from "./reserved-branch.ts"
 
@@ -28,15 +28,6 @@ function listWorktrees(projectRoot: string): Worktree[] {
                 isPrunable: lines.some((line) => line.startsWith("prunable")),
             }
         })
-}
-
-function runGitOrThrow(projectRoot: string, args: string[]): void {
-    const gitProcess = spawnGit(projectRoot, args)
-    if (gitProcess.exitCode !== 0) {
-        throw new Error(
-            `git ${args.join(" ")} failed: ${gitProcess.stderr.toString()}`,
-        )
-    }
 }
 
 // git refuses to check a branch out twice, and keeps a worktree deleted
@@ -74,7 +65,7 @@ function readRemoteBranchNames(projectRoot: string): string[] {
     return (listing ?? "").split("\n").filter((name) => name !== "")
 }
 
-function readWorktreeAddArgs(projectRoot: string): string[] | undefined {
+function readCheckoutArgs(projectRoot: string): string[] | undefined {
     const hasLocalBranch =
         runGit(projectRoot, [
             "rev-parse",
@@ -111,15 +102,10 @@ export async function openReservedBranch(projectRoot: string): Promise<void> {
         return
     }
     freeReservedBranch(projectRoot)
-    const worktreeAddArgs = readWorktreeAddArgs(projectRoot)
-    if (worktreeAddArgs === undefined) {
+    const checkoutArgs = readCheckoutArgs(projectRoot)
+    if (checkoutArgs === undefined) {
         return
     }
-    runGitOrThrow(projectRoot, [
-        "worktree",
-        "add",
-        "--quiet",
-        ...worktreeAddArgs,
-    ])
+    runGitOrThrow(projectRoot, ["worktree", "add", "-q", ...checkoutArgs])
     await excludeAicoFolder(projectRoot)
 }
