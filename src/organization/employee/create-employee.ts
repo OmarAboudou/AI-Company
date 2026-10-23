@@ -3,7 +3,6 @@ import { parseConfig } from "../../parse-config.ts"
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
 import { requireEmployeeModel } from "./require-employee-model.ts"
-import { requireUnreservedEmployeeId } from "./require-unreserved-employee-id.ts"
 import { requireUnusedEmployeeId } from "./require-unused-employee-id.ts"
 import {
     type Employee,
@@ -20,7 +19,6 @@ export async function createEmployee(
 ): Promise<Employee> {
     await requireCompany(projectRoot)
     const id = parseId("employee", rawId)
-    requireUnreservedEmployeeId(id)
     const config = parseConfig(EmployeeConfigSchema, rawConfig)
     const [isTaken] = await Promise.all([
         hasEmployee(projectRoot, id),

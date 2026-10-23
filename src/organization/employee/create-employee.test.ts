@@ -102,12 +102,6 @@ describe("createEmployee", () => {
         await expect(creation).rejects.toThrow('Invalid employee id "Omar"')
     })
 
-    test("refuses the id reserved for the directors", async () => {
-        const creation = createEmployee(projectRoot, "director", omar)
-
-        await expect(creation).rejects.toThrow("reserved for the directors")
-    })
-
     test("refuses a blank name", async () => {
         const omarWithBlankName = { ...omar, name: " " }
 

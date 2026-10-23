@@ -7,7 +7,6 @@ import { savePosition, savePositionState } from "../position/storage.ts"
 import { getPositionsFilledBy } from "./get-positions-filled-by.ts"
 import { getPositionsWorkedTemporarilyBy } from "./get-positions-worked-temporarily-by.ts"
 import { loadExistingEmployee } from "./load-existing-employee.ts"
-import { requireUnreservedEmployeeId } from "./require-unreserved-employee-id.ts"
 import { requireUnusedEmployeeId } from "./require-unused-employee-id.ts"
 import type { Employee } from "./schema.ts"
 import {
@@ -32,7 +31,6 @@ export async function updateEmployeeId(
 ): Promise<UpdateEmployeeIdResult> {
     await requireCompany(projectRoot)
     const newId = parseId("employee", rawNewId)
-    requireUnreservedEmployeeId(newId)
     const [employee, isTaken, assignments] = await Promise.all([
         loadExistingEmployee(projectRoot, rawId),
         hasEmployee(projectRoot, newId),
