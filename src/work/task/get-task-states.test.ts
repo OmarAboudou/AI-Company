@@ -35,7 +35,7 @@ const developerTaskEvents = {
     done: {
         id: "20261018-140351-000-0a03",
         type: "task-done",
-        summary: "Answered: Hono, for Bun.",
+        hasPassedHand: true,
         result: {},
     },
     failed: {

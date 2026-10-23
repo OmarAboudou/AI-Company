@@ -60,10 +60,16 @@ export async function beginTask(
         await recordEvent(journal, taskDoneEventType, {
             depth: taskDepth,
             taskId: task.id,
+            hasPassedHand: false,
             summary,
             result: taskType.resultSchema.parse(session.result),
         })
-        return { kind: "ended", taskEnding: { state: "done", summary } }
+        const taskEnding: TaskEnding = {
+            state: "done",
+            hasPassedHand: false,
+            summary,
+        }
+        return { kind: "ended", taskEnding }
     }
     return { kind: "run", taskDepth, session }
 }

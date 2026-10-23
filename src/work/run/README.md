@@ -1,6 +1,6 @@
 # Run
 
-A run is one attempt at a task: a fresh conversation in which whoever works the task's position does it. It starts with a system prompt, saying who the worker is, in which company and position, then the message and tools the task's type built; each turn of the worker is applied, its texts joining the discussion of the task's ticket and its tool calls running, in their order, their results given back, until a tool ends the task. A model's run goes on by itself in `aico run`; a person's moves one turn at a time.
+A run is one attempt at a task: a fresh conversation in which whoever works the task's position does it. It starts with a system prompt, saying who the worker is, in which company and position, then the message and tools the task's type built; each turn of the worker is applied, its texts joining the discussion of the task's ticket and its tool calls running, in their order, their results given back, until the session ends: at an act that passes the hand on the ticket, or at a tool that ends the task. A model's run goes on by itself in `aico run`; a person's moves one turn at a time.
 
 ## Invariants
 

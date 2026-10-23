@@ -8,6 +8,7 @@ export type ToolCallResult = {
     text: string
     isError: boolean
     taskEnding?: TaskEnding
+    hasPassedHand?: boolean
 }
 
 export async function runToolCall(

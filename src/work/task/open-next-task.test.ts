@@ -255,7 +255,11 @@ describe("openNextTask with a task that needs no run", () => {
 
         const { openedTask, endedTasks } = await openNextExampleTask()
 
-        const taskEnding = { state: "done", summary: doneSummary } as const
+        const taskEnding = {
+            state: "done",
+            hasPassedHand: false,
+            summary: doneSummary,
+        } as const
         expect(endedTasks).toEqual([{ task: answeredTask, taskEnding }])
         expect(openedTask?.task).toEqual(logo.task)
     })

@@ -49,6 +49,7 @@ describe("a ticket's act as a tool", () => {
         expect(result).toEqual({
             text: `Question asked, as message #1 of ticket #${ticketNumber}.`,
             isError: false,
+            hasPassedHand: true,
         })
         expect((await listEvents(projectRoot)).at(-1)).toMatchObject({
             type: "ticket-question-asked",

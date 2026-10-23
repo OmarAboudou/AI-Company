@@ -49,6 +49,7 @@ export function defineTicketActTool({
                 ticketMessages.findIndex(({ id }) => id === message.id) + 1
             return {
                 text: `${doneText}, as message #${messageNumber} of ticket #${ticketNumber}.`,
+                hasPassedHand: true,
             }
         },
     })

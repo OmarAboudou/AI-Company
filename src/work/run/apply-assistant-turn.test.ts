@@ -130,6 +130,7 @@ describe("applyAssistantTurn", () => {
         expect(writtenNotes).toEqual(["note 0"])
         expect(taskEnding).toEqual({
             state: "done",
+            hasPassedHand: false,
             summary: "Wrote the notes.",
         })
     })

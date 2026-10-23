@@ -39,8 +39,15 @@ const noteWriteTool = defineTool({
     },
 })
 
+const noteHandOverTool = defineTool({
+    description: "Hand the notes over, passing the hand.",
+    inputSchema: z.strictObject({}),
+    execute: async () => ({ text: "Handed over.", hasPassedHand: true }),
+})
+
 const tools = {
     note_write: noteWriteTool,
+    "note_hand-over": noteHandOverTool,
     "task_mark-as-done": taskMarkAsDoneTool,
     "task_mark-as-failed": taskMarkAsFailedTool,
 }
@@ -144,6 +151,7 @@ describe("runToolLoop", () => {
 
         expect(taskEnding).toEqual({
             state: "done",
+            hasPassedHand: false,
             summary: "Wrote the notes.",
         })
         expect(fakeServer.requests).toHaveLength(1)
@@ -202,6 +210,27 @@ describe("runToolLoop", () => {
             expect(writtenNotes).toEqual([])
         },
     )
+
+    test("ends the session at a call that passes the hand, running no call after it", async () => {
+        fakeServer.respondWith({
+            toolCalls: [
+                { name: "note_hand-over", input: {} },
+                { name: "note_write", input: { text: "late" } },
+            ],
+        })
+
+        const { taskEnding } = await runFakeLoop()
+
+        const run = await loadRun(projectRoot, runId)
+        const lastResult = run.conversation.turns.at(-1)?.blocks.at(-1)
+        expect(fakeServer.requests).toHaveLength(1)
+        expect(taskEnding).toEqual({ state: "done", hasPassedHand: true })
+        expect(writtenNotes).toEqual([])
+        expect(lastResult).toMatchObject({
+            text: "Not run: you passed the hand with note_hand-over, which ended your session.",
+            isError: true,
+        })
+    })
 
     test("stops before calling the model again once the task became pointless", async () => {
         fakeServer.respondWith({

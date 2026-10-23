@@ -221,7 +221,12 @@ describe("runTask", () => {
 
         const result = await runFakeTask(answeredTask)
 
-        expect(result).toEqual({ taskEnding: { state: "done", summary } })
+        const taskEnding = {
+            state: "done",
+            hasPassedHand: false,
+            summary,
+        } as const
+        expect(result).toEqual({ taskEnding })
         expect(fakeServer.requests).toHaveLength(0)
         const events = await listEvents(projectRoot)
         const answeredTaskState = getTaskStates([answeredTask], events).get(

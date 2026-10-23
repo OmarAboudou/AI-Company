@@ -81,11 +81,16 @@ export const taskStartedEventType = defineEventType({
 export const taskDoneEventType = defineEventType({
     type: "task-done",
     description:
-        "The task was marked as done: whoever worked it says that it is finished.",
+        "The task's session ended normally, whatever it decided for the task's ticket: at an act that passed the hand, or when its worker stopped.",
     fields: {
         taskId: TaskIdSchema,
-        summary: z.string().trim().min(1).meta({
-            description: "What was done, as whoever did it sums it up.",
+        hasPassedHand: z.boolean().meta({
+            description:
+                "Whether the session ended at an act that passed the hand on its ticket, rather than when its worker stopped without passing it.",
+        }),
+        summary: z.string().trim().min(1).optional().meta({
+            description:
+                "What was done, as whoever did it sums it up, when they marked the task as done.",
         }),
         runId: RunIdSchema.optional().meta({
             description:

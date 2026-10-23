@@ -8,6 +8,7 @@ Unlike listeners and task types, a tool acts: it is given its run's task, positi
 
 - Only tools act: what a worker writes outside them joins the discussion of its task's ticket, passing the hand to no one.
 - A refused or malformed call fails alone, its result saying what to fix, and the run goes on.
+- A call that passes the hand, an act on a ticket, ends the session: the calls after it in the turn don't run, their results saying so.
 - A tool is named after the command line's command that does the same, where there is one, since the command line is AICo's interface for people and LLM employees alike: `message_send` after `aico message send`.
 - A task type can fix some inputs of a tool: they leave its schema, its description says "this ticket" rather than "a ticket", and they come back when the call runs.
 

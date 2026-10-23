@@ -192,7 +192,11 @@ describe("sendTurn", () => {
         const { taskEnding } = await sendPersonTurn()
 
         const run = await loadRun(projectRoot, openedTask.run.id)
-        expect(taskEnding).toEqual({ state: "done", summary: "Answered." })
+        expect(taskEnding).toEqual({
+            state: "done",
+            hasPassedHand: false,
+            summary: "Answered.",
+        })
         expect(run.conversation.turns).toHaveLength(5)
     })
 
@@ -209,6 +213,7 @@ describe("sendTurn", () => {
             depth: 0,
             taskId: openedTask.task.id,
             runId: openedTask.run.id,
+            hasPassedHand: false,
             summary: "Answered.",
             result: { runId: openedTask.run.id },
         })

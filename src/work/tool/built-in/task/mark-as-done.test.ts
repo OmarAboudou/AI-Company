@@ -12,7 +12,12 @@ describe("task_mark-as-done", () => {
 
         const result = await runToolCall(tools, call, exampleToolContext)
 
-        expect(result.taskEnding).toEqual({ state: "done", summary })
+        const taskEnding = {
+            state: "done",
+            hasPassedHand: false,
+            summary,
+        } as const
+        expect(result.taskEnding).toEqual(taskEnding)
     })
 
     test("requires a summary", async () => {

@@ -569,10 +569,14 @@
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
                     "description": "Id of the task, i.e. the name of its file in .aico/tasks."
                 },
+                "hasPassedHand": {
+                    "type": "boolean",
+                    "description": "Whether the session ended at an act that passed the hand on its ticket, rather than when its worker stopped without passing it."
+                },
                 "summary": {
+                    "description": "What was done, as whoever did it sums it up, when they marked the task as done.",
                     "type": "string",
-                    "minLength": 1,
-                    "description": "What was done, as whoever did it sums it up."
+                    "minLength": 1
                 },
                 "runId": {
                     "description": "Id of the run in which the task was marked as done. Absent when it was done outside a run, as when a listener marks it as done.",
@@ -625,11 +629,11 @@
                 "occurredAt",
                 "depth",
                 "taskId",
-                "summary",
+                "hasPassedHand",
                 "result"
             ],
             "additionalProperties": false,
-            "description": "The task was marked as done: whoever worked it says that it is finished."
+            "description": "The task's session ended normally, whatever it decided for the task's ticket: at an act that passed the hand, or when its worker stopped."
         },
         {
             "type": "object",

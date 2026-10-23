@@ -19,11 +19,15 @@ export type ToolContext = {
 }
 
 export type TaskEnding =
-    | { state: "done"; summary: string }
+    | { state: "done"; hasPassedHand: boolean; summary?: string }
     | { state: "failed"; reason: string }
     | { state: "cancelled"; reason: string }
 
-export type ToolResult = { text: string; taskEnding?: TaskEnding }
+export type ToolResult = {
+    text: string
+    taskEnding?: TaskEnding
+    hasPassedHand?: boolean
+}
 
 export type Tool<InputSchema extends z.ZodObject = z.ZodObject> = {
     description:

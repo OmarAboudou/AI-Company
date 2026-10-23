@@ -78,12 +78,12 @@ function getFailureReason(
 
 function createUnrunResult(
     { id }: ToolCallBlock,
-    cancellationReason: string,
+    unrunReason: string,
 ): ToolResultBlock {
     return {
         type: "tool-result",
         toolCallId: id,
-        text: `Not run: the task was cancelled. ${cancellationReason}`,
+        text: `Not run: ${unrunReason}`,
         isError: true,
     }
 }
@@ -96,22 +96,25 @@ async function applyBlocks(
 ) {
     const toolResults: ToolResultBlock[] = []
     let taskEnding: TaskEnding | undefined
-    for (const [index, block] of blocks.entries()) {
+    let unrunReason: string | undefined
+    for (const block of blocks) {
         if (block.type === "text") {
-            await sendSessionText(block.text, ctx)
+            if (taskEnding?.state !== "cancelled") {
+                await sendSessionText(block.text, ctx)
+            }
             continue
         }
-        const cancellationReason = await loadCancellationReason?.()
+        const cancellationReason =
+            unrunReason === undefined
+                ? await loadCancellationReason?.()
+                : undefined
         if (cancellationReason !== undefined) {
-            const unrunResults = blocks
-                .slice(index)
-                .filter((unrunBlock) => unrunBlock.type === "tool-call")
-                .map((unrunCall) =>
-                    createUnrunResult(unrunCall, cancellationReason),
-                )
-            toolResults.push(...unrunResults)
             taskEnding ??= { state: "cancelled", reason: cancellationReason }
-            break
+            unrunReason = `the task was cancelled. ${cancellationReason}`
+        }
+        if (unrunReason !== undefined) {
+            toolResults.push(createUnrunResult(block, unrunReason))
+            continue
         }
         const { id, name, input } = block
         onProgress?.({ kind: "tool-call", name, input })
@@ -124,6 +127,10 @@ async function applyBlocks(
         onProgress?.({ kind: "tool-result", name, text, isError })
         toolResults.push({ type: "tool-result", toolCallId: id, text, isError })
         taskEnding ??= result.taskEnding
+        if (result.hasPassedHand) {
+            taskEnding ??= { state: "done", hasPassedHand: true }
+            unrunReason = `you passed the hand with ${name}, which ended your session.`
+        }
     }
     return { toolResults, taskEnding }
 }
