@@ -26,14 +26,21 @@ export type RunReadyTasksProgress =
       }
     | { kind: "task-ended"; task: Task; result: RunTaskResult }
 
-export type RunReadyTasksResult = { waitingTasks: WaitingTask[] }
+export type ReadyTasksRunning = {
+    catalog?: WorkCatalog
+    signal?: AbortSignal
+}
+
+export type RunReadyTasksResult =
+    | { kind: "none-ready"; waitingTasks: WaitingTask[] }
+    | { kind: "stopped" }
 
 export async function runReadyTasks(
     projectRoot: string,
     environment: NodeJS.ProcessEnv,
     operationName: string,
     onProgress: (progress: RunReadyTasksProgress) => void,
-    catalog: WorkCatalog = builtInWorkCatalog,
+    { catalog = builtInWorkCatalog, signal }: ReadyTasksRunning = {},
 ): Promise<RunReadyTasksResult> {
     await requireCompany(projectRoot)
     const journal = await loadJournal(projectRoot)
@@ -44,6 +51,9 @@ export async function runReadyTasks(
             await refreshJournal(journal)
             await dispatchEvents(journal, catalog)
         })
+        if (signal?.aborted) {
+            return { kind: "stopped" }
+        }
         const pendingTasks = await listPendingTasks(journal, catalog.taskTypes)
         const readyTask = pendingTasks.find(
             (pendingTask) => pendingTask.kind === "ready",
@@ -52,7 +62,7 @@ export async function runReadyTasks(
             const waitingTasks = pendingTasks.filter(
                 (pendingTask) => pendingTask.kind === "waiting",
             )
-            return { waitingTasks }
+            return { kind: "none-ready", waitingTasks }
         }
         const { task, position, employee } = readyTask
         onProgress({ kind: "task-started", task, position, employee })
@@ -65,6 +75,7 @@ export async function runReadyTasks(
                 taskTypes: catalog.taskTypes,
                 operationName,
                 onProgress,
+                signal,
             })
         } catch (error) {
             if (!(error instanceof UserError)) {
@@ -75,6 +86,9 @@ export async function runReadyTasks(
             )
         }
         onProgress({ kind: "task-ended", task, result })
+        if (signal?.aborted) {
+            return { kind: "stopped" }
+        }
         if (result.taskEnding.state === "failed") {
             throw new UserError(
                 `aico run stops at the failure of task "${task.id}", so that the next tasks don't fail for the same reason. Once its cause is fixed, run \`aico run\` again for them: a failed task doesn't run again.`,

@@ -1,12 +1,24 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
 import { createExampleTicket } from "../../messaging/ticket/create-example-ticket.testing.ts"
 import { createCompany } from "../../organization/company/create-company.ts"
+import { assignPosition } from "../../organization/position/assign-position.ts"
 import { createPosition } from "../../organization/position/create-position.ts"
+import { createLlmEmployee } from "../../work/create-company-with-llm-employee.testing.ts"
 import { createExampleWorkCatalog } from "../../work/create-example-work-catalog.testing.ts"
 import { sendExampleMessage } from "../../work/send-example-message.testing.ts"
 import { useTemporaryProject } from "../use-temporary-project.testing.ts"
 
-const { runCli, getProjectPath } = useTemporaryProject()
+const { runCli, startCliWithEnv, getProjectPath } = useTemporaryProject()
+const fakeServer = useFakeAnthropicServer()
+
+const runTimeoutMs = 30_000
+
+async function waitForModelCall(): Promise<void> {
+    while (fakeServer.requests.length === 0) {
+        await Bun.sleep(10)
+    }
+}
 
 describe("aico run", () => {
     beforeEach(async () => {
@@ -57,4 +69,32 @@ describe("aico run", () => {
             /@qa-tester +example +of a type this version of AICo doesn't know/,
         )
     })
+
+    test(
+        "stops at Ctrl+C, failing the task in progress",
+        async () => {
+            const projectRoot = getProjectPath()
+            await createLlmEmployee(projectRoot, fakeServer.getUrl())
+            await assignPosition(projectRoot, "qa-tester", "claude")
+            await createExampleTicket(projectRoot, {
+                title: "Release",
+                rawAssigneePositionId: "qa-tester",
+            })
+            fakeServer.respondWith({ isHanging: true })
+            const running = startCliWithEnv(
+                { TEST_ANTHROPIC_KEY: "sk-test" },
+                "run",
+            )
+            await waitForModelCall()
+
+            running.process.kill("SIGINT")
+
+            const { exitCode, stderr } = await running.exited()
+            expect(exitCode).toBe(130)
+            expect(stderr).toContain(
+                "Task failed: aico run was stopped during the session.",
+            )
+        },
+        runTimeoutMs,
+    )
 })

@@ -13,11 +13,16 @@ import type { Run } from "./schema.ts"
 
 export type ToolLoop = Pick<
     AnthropicMessagesCall,
-    "connection" | "apiKey" | "apiId"
+    "connection" | "apiKey" | "apiId" | "signal"
 > &
     TurnApplication & { run: Run }
 
 export type RunToolLoopResult = { taskEnding: TaskEnding; usage: TokenUsage }
+
+const stoppedTaskEnding: TaskEnding = {
+    state: "failed",
+    reason: "aico run was stopped during the session.",
+}
 
 function addUsage(usage: TokenUsage, addedUsage: TokenUsage): TokenUsage {
     return {
@@ -32,8 +37,14 @@ function addUsage(usage: TokenUsage, addedUsage: TokenUsage): TokenUsage {
 }
 
 export async function runToolLoop(loop: ToolLoop): Promise<RunToolLoopResult> {
-    const { connection, apiKey, apiId, onProgress, loadCancellationReason } =
-        loop
+    const {
+        connection,
+        apiKey,
+        apiId,
+        signal,
+        onProgress,
+        loadCancellationReason,
+    } = loop
     let { run } = loop
     let usage: TokenUsage = {
         inputTokens: 0,
@@ -42,6 +53,9 @@ export async function runToolLoop(loop: ToolLoop): Promise<RunToolLoopResult> {
         cacheCreationInputTokens: 0,
     }
     while (true) {
+        if (signal?.aborted) {
+            return { taskEnding: stoppedTaskEnding, usage }
+        }
         const cancellationReason = await loadCancellationReason?.()
         if (cancellationReason !== undefined) {
             const taskEnding: TaskEnding = {
@@ -58,8 +72,12 @@ export async function runToolLoop(loop: ToolLoop): Promise<RunToolLoopResult> {
                 apiId,
                 conversation: run.conversation,
                 onText: (text) => onProgress?.({ kind: "text", text }),
+                signal,
             })
         } catch (error) {
+            if (signal?.aborted) {
+                return { taskEnding: stoppedTaskEnding, usage }
+            }
             if (!(error instanceof UserError)) {
                 throw error
             }

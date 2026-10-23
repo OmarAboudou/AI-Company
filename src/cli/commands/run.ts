@@ -92,19 +92,52 @@ function printWaitingTasks(waitingTasks: WaitingTask[]): void {
     )
 }
 
+type RunStop = { signal: AbortSignal; dispose(): void }
+
+// The terminal turns Ctrl+C into SIGINT: aico run stops once the task in
+// progress has failed, its model's call cut, and a second Ctrl+C quits at
+// once, should that hang.
+function createRunStop(): RunStop {
+    const controller = new AbortController()
+    const onInterrupt = () => {
+        if (controller.signal.aborted) {
+            process.exit(130)
+        }
+        controller.abort()
+        console.error(
+            "\nStopping aico run: the task in progress fails. Ctrl+C again to quit at once.",
+        )
+    }
+    process.on("SIGINT", onInterrupt)
+    return {
+        signal: controller.signal,
+        dispose: () => process.off("SIGINT", onInterrupt),
+    }
+}
+
 export function registerRunCommand(program: Command): void {
     program
         .command("run")
         .description(
-            "Run the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then list the tasks left waiting. A task that fails stops it.",
+            "Run the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then list the tasks left waiting. A task that fails stops it, and so does Ctrl+C, which fails the task in progress.",
         )
         .action(async (_options, command) => {
-            const { waitingTasks } = await runReadyTasks(
-                projectRoot,
-                process.env,
-                formatOperationName(command),
-                createProgressPrinter(),
-            )
-            printWaitingTasks(waitingTasks)
+            const stop = createRunStop()
+            try {
+                const result = await runReadyTasks(
+                    projectRoot,
+                    process.env,
+                    formatOperationName(command),
+                    createProgressPrinter(),
+                    { signal: stop.signal },
+                )
+                if (result.kind === "stopped") {
+                    process.exitCode = 130
+                    return
+                }
+                printWaitingTasks(result.waitingTasks)
+            } finally {
+                stop.dispose()
+            }
         })
 }

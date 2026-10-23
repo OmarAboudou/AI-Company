@@ -13,7 +13,11 @@ import { sendExampleMessage } from "../send-example-message.testing.ts"
 import { getTaskStates } from "../task/get-task-states.ts"
 import { listTasks } from "../task/storage.ts"
 import type { WorkCatalog } from "../work-catalog.ts"
-import { type RunReadyTasksProgress, runReadyTasks } from "./run-ready-tasks.ts"
+import {
+    type ReadyTasksRunning,
+    type RunReadyTasksProgress,
+    runReadyTasks,
+} from "./run-ready-tasks.ts"
 
 const fakeServer = useFakeAnthropicServer()
 const environment = { TEST_ANTHROPIC_KEY: "sk-test" }
@@ -35,14 +39,24 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-function runFakeTasks(catalog: WorkCatalog = developerCatalog) {
+function runFakeTasks({
+    catalog = developerCatalog,
+    signal,
+}: ReadyTasksRunning = {}) {
     return runReadyTasks(
         projectRoot,
         environment,
         "aico run",
         (progress) => progresses.push(progress),
-        catalog,
+        { catalog, signal },
     )
+}
+
+async function askBothDevelopers(): Promise<WorkCatalog> {
+    await assignPosition(projectRoot, "qa-tester", "julie")
+    const catalog = createExampleWorkCatalog(["backend-developer", "qa-tester"])
+    await sendQuestion("Hono or Express?", catalog)
+    return catalog
 }
 
 async function sendQuestion(
@@ -70,7 +84,7 @@ describe("runReadyTasks", () => {
         await sendQuestion("Hono or Express?")
         fakeServer.respondWith(showingReply, { text: "Hono." })
 
-        const { waitingTasks } = await runFakeTasks()
+        const result = await runFakeTasks()
 
         const messages = await listMessages(projectRoot, ticketNumber)
         expect(messages.map(({ body }) => body)).toEqual([
@@ -78,7 +92,7 @@ describe("runReadyTasks", () => {
             "Hono.",
         ])
         expect(await listTaskStates()).toEqual(["done"])
-        expect(waitingTasks).toEqual([])
+        expect(result).toEqual({ kind: "none-ready", waitingTasks: [] })
     })
 
     test("commits its steps as aico run, and each tool call apart", async () => {
@@ -129,24 +143,22 @@ describe("runReadyTasks", () => {
         await sendQuestion("Hono or Express?", catalog)
         fakeServer.respondWith({ text: "Hono, for Bun." })
 
-        const { waitingTasks } = await runFakeTasks(catalog)
+        const result = await runFakeTasks({ catalog })
 
         expect(await listTaskStates()).toEqual(["done", "queued"])
-        expect(waitingTasks).toMatchObject([
-            { positionId: "director", reason: "worked-by-directors" },
-        ])
+        expect(result).toMatchObject({
+            kind: "none-ready",
+            waitingTasks: [
+                { positionId: "director", reason: "worked-by-directors" },
+            ],
+        })
     })
 
     test("stops at a task that failed, before the next one", async () => {
-        await assignPosition(projectRoot, "qa-tester", "julie")
-        const catalog = createExampleWorkCatalog([
-            "backend-developer",
-            "qa-tester",
-        ])
-        await sendQuestion("Hono or Express?", catalog)
+        const catalog = await askBothDevelopers()
         fakeServer.respondWith({ status: 401, error: "invalid x-api-key" })
 
-        const failedRun = runFakeTasks(catalog)
+        const failedRun = runFakeTasks({ catalog })
 
         await expect(failedRun).rejects.toThrow(UserError)
         await expect(failedRun).rejects.toThrow(
@@ -160,9 +172,9 @@ describe("runReadyTasks", () => {
         fakeServer.respondWith({ status: 401, error: "invalid x-api-key" })
         await runFakeTasks().catch(() => {})
 
-        const { waitingTasks } = await runFakeTasks()
+        const result = await runFakeTasks()
 
-        expect(waitingTasks).toEqual([])
+        expect(result).toEqual({ kind: "none-ready", waitingTasks: [] })
         expect(fakeServer.requests).toHaveLength(1)
         expect(await listTaskStates()).toEqual(["failed"])
     })
@@ -175,11 +187,41 @@ describe("runReadyTasks", () => {
             {},
             "aico run",
             (progress) => progresses.push(progress),
-            developerCatalog,
+            { catalog: developerCatalog },
         )
 
         await expect(failedRun).rejects.toThrow("which isn't set")
         await expect(failedRun).rejects.toThrow("stays pending")
+        expect(await listTaskStates()).toEqual(["queued"])
+    })
+
+    test("stops once asked, failing the task in progress, before the next one", async () => {
+        const catalog = await askBothDevelopers()
+        const controller = new AbortController()
+
+        const result = await runReadyTasks(
+            projectRoot,
+            environment,
+            "aico run",
+            ({ kind }) => {
+                if (kind === "task-started") {
+                    controller.abort()
+                }
+            },
+            { catalog, signal: controller.signal },
+        )
+
+        expect(result).toEqual({ kind: "stopped" })
+        expect(await listTaskStates()).toEqual(["failed", "queued"])
+        expect(fakeServer.requests).toHaveLength(0)
+    })
+
+    test("starts no task once asked to stop", async () => {
+        await sendQuestion("Hono or Express?")
+
+        const result = await runFakeTasks({ signal: AbortSignal.abort() })
+
+        expect(result).toEqual({ kind: "stopped" })
         expect(await listTaskStates()).toEqual(["queued"])
     })
 })

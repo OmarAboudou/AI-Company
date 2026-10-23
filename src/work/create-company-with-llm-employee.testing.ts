@@ -12,7 +12,7 @@ export type CompanyWithLlmEmployee = {
     ticketNumber: number
 }
 
-async function createLlmEmployee(
+export async function createLlmEmployee(
     projectRoot: string,
     baseUrl: string,
 ): Promise<void> {

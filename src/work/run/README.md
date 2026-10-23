@@ -10,7 +10,7 @@ A run is one attempt at a task: a fresh conversation in which whoever works the 
 - A run's transcript, everything it was given and answered, stays on the machine that ran it, out of git; the journal records the run's start and end, the tokens it used and the messages it sent.
 - Each tool call is committed on its own, named after the tool and the task; starting and ending the task are committed under the name of the command that runs it, such as `aico run`.
 - A run whose task became pointless stops at its next step, checked before each tool call and each call of the model, and ends cancelled: the calls left in its turn don't run, and a person's run left in the middle ends rather than resumes.
-- `aico run` runs the ready tasks one at a time, oldest first, and stops at a task that fails, so that the next ones don't fail for the same reason. A failed task doesn't run again.
+- `aico run` runs the ready tasks one at a time, oldest first, and stops at a task that fails, so that the next ones don't fail for the same reason. A failed task doesn't run again. Stopping `aico run` fails the task in progress, its model's call cut short.
 - An interrupted run records no end: its task stays running, and the next `aico run` takes it up in a new run. A person resumes their own run on the machine that started it.
 - What a person's run causes keeps the depth of its task's cause: a person adds no link to a chain of tasks.
 

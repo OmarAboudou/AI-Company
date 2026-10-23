@@ -7,8 +7,7 @@ import { createTemporaryCompany } from "../../organization/company/create-tempor
 import { defineTool } from "../tool/define-tool.ts"
 import { exampleToolContext } from "../tool/example-tool-context.testing.ts"
 import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
-import { runToolLoop } from "./run-tool-loop.ts"
-import type { RunProgress } from "./schema.ts"
+import { runToolLoop, type ToolLoop } from "./run-tool-loop.ts"
 import { startRun } from "./start/start-run.ts"
 import { loadRun } from "./storage.ts"
 
@@ -49,10 +48,11 @@ const tools = {
 
 const handOverCall = { name: "note_hand-over", input: {} }
 
-async function runFakeLoop(
-    progresses: RunProgress[] = [],
-    loadCancellationReason?: () => Promise<string | undefined>,
-) {
+async function runFakeLoop({
+    onProgress,
+    loadCancellationReason,
+    signal,
+}: Pick<ToolLoop, "onProgress" | "loadCancellationReason" | "signal"> = {}) {
     const run = await startRun(projectRoot, {
         id: runId,
         apiId: "claude-opus-5-5",
@@ -67,8 +67,9 @@ async function runFakeLoop(
         connection: { baseUrl: fakeServer.getUrl() },
         apiKey: "sk-test",
         apiId: "claude-opus-5-5",
+        signal,
         tools,
-        onProgress: (progress) => progresses.push(progress),
+        onProgress,
         loadCancellationReason,
     })
 }
@@ -221,12 +222,42 @@ describe("runToolLoop", () => {
         const loadCancellationReason = async () =>
             writtenNotes.length > 0 ? "No more notes needed." : undefined
 
-        const { taskEnding } = await runFakeLoop([], loadCancellationReason)
+        const { taskEnding } = await runFakeLoop({ loadCancellationReason })
 
         expect(fakeServer.requests).toHaveLength(1)
         expect(taskEnding).toEqual({
             state: "cancelled",
             reason: "No more notes needed.",
         })
+    })
+
+    test("fails without calling the model once aico run is stopped", async () => {
+        const { taskEnding } = await runFakeLoop({
+            signal: AbortSignal.abort(),
+        })
+
+        expect(taskEnding).toEqual({
+            state: "failed",
+            reason: "aico run was stopped during the session.",
+        })
+        expect(fakeServer.requests).toHaveLength(0)
+    })
+
+    test("cuts the model's call short once aico run is stopped", async () => {
+        fakeServer.respondWith({ text: "Writing the first note now." })
+        const controller = new AbortController()
+
+        const { taskEnding } = await runFakeLoop({
+            onProgress: () => controller.abort(),
+            signal: controller.signal,
+        })
+
+        expect(taskEnding).toEqual({
+            state: "failed",
+            reason: "aico run was stopped during the session.",
+        })
+        const transcriptTurns = (await loadRun(projectRoot, runId)).conversation
+            .turns
+        expect(transcriptTurns).toHaveLength(1)
     })
 })

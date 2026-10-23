@@ -37,6 +37,7 @@ export async function runTask(
         taskTypes,
         operationName,
         onProgress,
+        signal,
     }: {
         task: Task
         position: Position
@@ -44,6 +45,7 @@ export async function runTask(
         taskTypes: Record<string, TaskType>
         operationName: string
         onProgress: (progress: RunProgress) => void
+        signal?: AbortSignal
     },
 ): Promise<RunTaskResult> {
     const { projectRoot } = journal
@@ -99,6 +101,7 @@ export async function runTask(
         connection,
         apiKey,
         apiId: model.apiId,
+        signal,
         tools,
         onProgress,
         loadCancellationReason: () =>
