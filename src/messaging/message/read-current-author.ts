@@ -32,7 +32,7 @@ function requireOnlyPosition(
     const employeeDescription = `${employee.name} (${employee.id})`
     if (workedPositions.length === 0) {
         throw new UserError(
-            `${employeeDescription} works no position to write from. A director can assign one temporarily: \`llmco position assign-temporarily employee <position-id> ${employee.id}\`.`,
+            `${employeeDescription} works no position to write from. A director can assign one temporarily: \`aico position assign-temporarily employee <position-id> ${employee.id}\`.`,
         )
     }
     throw new UserError(

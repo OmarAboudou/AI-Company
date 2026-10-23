@@ -9,7 +9,7 @@ export async function loadExistingLlmProvider(
 ): Promise<LlmProvider> {
     const id = parseId("provider", rawId)
     if (!(await hasLlmProvider(projectRoot, id))) {
-        throw new UserError(`No provider "${id}". Run \`llmco provider list\`.`)
+        throw new UserError(`No provider "${id}". Run \`aico provider list\`.`)
     }
     return loadLlmProvider(projectRoot, id)
 }

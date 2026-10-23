@@ -20,7 +20,7 @@ export function registerTaskNextCommand(taskCommand: Command): void {
             console.log(
                 openedTask === undefined
                     ? "No task waits for you."
-                    : `${formatOpenedTask(openedTask)}\n\nPrepare your turn with \`llmco turn add text\` or \`llmco turn add tool\`, then send it with \`llmco turn send\`.`,
+                    : `${formatOpenedTask(openedTask)}\n\nPrepare your turn with \`aico turn add text\` or \`aico turn add tool\`, then send it with \`aico turn send\`.`,
             )
         })
 }

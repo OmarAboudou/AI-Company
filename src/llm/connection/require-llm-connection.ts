@@ -9,7 +9,7 @@ export function requireLlmConnection<ConnectionProtocol extends Protocol>(
     const connection = provider.connections?.[protocol]
     if (connection === undefined) {
         throw new UserError(
-            `Provider "${provider.id}" has no ${protocol} connection. Run \`llmco provider connection list\` to see its connections, or \`llmco provider connection create\` to add one.`,
+            `Provider "${provider.id}" has no ${protocol} connection. Run \`aico provider connection list\` to see its connections, or \`aico provider connection create\` to add one.`,
         )
     }
     return connection

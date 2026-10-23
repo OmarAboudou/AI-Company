@@ -37,7 +37,7 @@ describe("loadExistingThread", () => {
 
     test("refuses an unknown thread, saying how to list them", async () => {
         const refusalMessage =
-            'No thread "2026-10-18-budget". Run `llmco thread list`.'
+            'No thread "2026-10-18-budget". Run `aico thread list`.'
 
         const loading = loadExistingThread(projectRoot, "2026-10-18-budget")
 

@@ -3,7 +3,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-describe("llmco company show", () => {
+describe("aico company show", () => {
     test("fails when there is no company", () => {
         expect(runCli("company", "show").exitCode).toBe(1)
     })

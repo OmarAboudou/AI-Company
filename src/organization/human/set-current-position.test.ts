@@ -88,6 +88,6 @@ describe("setCurrentPosition", () => {
             "director",
         )
 
-        await expect(selection).rejects.toThrow("Run `llmco init` first.")
+        await expect(selection).rejects.toThrow("Run `aico init` first.")
     })
 })

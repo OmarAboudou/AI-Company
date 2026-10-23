@@ -3,7 +3,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, runCliWithEnv } = useTemporaryProject()
 
-describe("llmco current-position", () => {
+describe("aico current-position", () => {
     test("shows that no position is selected", () => {
         const show = runCli("current-position")
 

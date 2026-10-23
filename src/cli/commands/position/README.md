@@ -1,4 +1,4 @@
-# `llmco position`
+# `aico position`
 
 Opening, filling and closing the company's positions: `create`, alias `open`, and `delete`, alias `close`; `assign` and `unassign` for the default employee; `assign-temporarily`, alias `interim`, and `unassign-temporarily`, alias `end-interim`, for a temporary one, kept on this machine.
 

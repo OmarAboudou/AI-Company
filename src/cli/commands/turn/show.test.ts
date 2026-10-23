@@ -11,7 +11,7 @@ beforeEach(async () => {
     await openJulieTask(getProjectPath())
 })
 
-describe("llmco turn show", () => {
+describe("aico turn show", () => {
     test("shows the turn's texts and tool calls, in order", async () => {
         const projectRoot = getProjectPath()
         await addTurnText(projectRoot, julieEnvironment, "Checking.\n")
@@ -32,7 +32,7 @@ describe("llmco turn show", () => {
         const show = runCliWithEnv(julieEnvironment, "turn", "show")
 
         expect(show.stdout).toBe(
-            "Your turn is empty: add to it with `llmco turn add text` or `llmco turn add tool`.\n",
+            "Your turn is empty: add to it with `aico turn add text` or `aico turn add tool`.\n",
         )
     })
 })

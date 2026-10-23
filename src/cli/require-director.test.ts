@@ -128,7 +128,7 @@ describe("management commands", () => {
 
             expect(run.exitCode).toBe(1)
             expect(run.stderr).toBe(
-                `Only directors run \`llmco ${commandName}\`: LLMCO_CURRENT_HUMAN_ID has you act as "julie". Run \`llmco current-human clear\` to act as a director.\n`,
+                `Only directors run \`aico ${commandName}\`: LLMCO_CURRENT_HUMAN_ID has you act as "julie". Run \`aico current-human clear\` to act as a director.\n`,
             )
         },
     )

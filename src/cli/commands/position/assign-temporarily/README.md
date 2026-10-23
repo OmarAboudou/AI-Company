@@ -1,4 +1,4 @@
-# `llmco position assign-temporarily`
+# `aico position assign-temporarily`
 
 Assigning a position temporarily, alias `interim`: `employee` to another employee, `directors` to the people working on the repository, who then work it themselves, so that no LLM does its tasks meanwhile. The default employee doesn't change, and the assignment stays on this machine until `unassign-temporarily`.
 

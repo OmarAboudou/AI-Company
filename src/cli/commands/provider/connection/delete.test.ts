@@ -20,7 +20,7 @@ function createConnection(...args: string[]) {
     return runCli("provider", "connection", "create", ...args)
 }
 
-describe("llmco provider connection delete", () => {
+describe("aico provider connection delete", () => {
     test("delete removes only that connection", () => {
         const url = "https://openrouter.ai/api"
         createConnection("openrouter", "anthropic-messages", "-u", url)

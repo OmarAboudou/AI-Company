@@ -26,7 +26,7 @@ beforeEach(async () => {
     ])
 })
 
-describe("llmco current-human", () => {
+describe("aico current-human", () => {
     test("without LLMCO_CURRENT_HUMAN_ID, shows a director, named by git", () => {
         const currentHumanRun = runCli("current-human")
 

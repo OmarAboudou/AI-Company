@@ -30,7 +30,7 @@ describe("loadExistingLlmProvider", () => {
         const loading = loadExistingLlmProvider(projectRoot, "anthropic")
 
         await expect(loading).rejects.toThrow(UserError)
-        await expect(loading).rejects.toThrow("Run `llmco provider list`.")
+        await expect(loading).rejects.toThrow("Run `aico provider list`.")
     })
 
     test("refuses an id that is not kebab-case", async () => {

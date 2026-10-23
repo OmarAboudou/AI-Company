@@ -24,7 +24,7 @@ function sendJulieTurn() {
     return runCliWithEnv(julieEnvironment, "turn", "send")
 }
 
-describe("llmco turn send", () => {
+describe("aico turn send", () => {
     test("runs the turn's tool calls and shows their results", async () => {
         await addJulieToolCall("message_send", '{"body": "@director Friday."}')
 
@@ -32,7 +32,7 @@ describe("llmco turn send", () => {
 
         expect(sending.exitCode).toBe(0)
         expect(sending.stdout).toBe(
-            `→ message_send\n  body: "@director Friday."\n← Sent as entry #2 of thread ${threadId}.\n\nPrepare your next turn with \`llmco turn add\`, then send it.\n`,
+            `→ message_send\n  body: "@director Friday."\n← Sent as entry #2 of thread ${threadId}.\n\nPrepare your next turn with \`aico turn add\`, then send it.\n`,
         )
     })
 
@@ -42,7 +42,7 @@ describe("llmco turn send", () => {
         const sending = sendJulieTurn()
 
         expect(sending.stdout).toEndWith(
-            "\nTask done: Answered. Run `llmco task next` for your next task.\n",
+            "\nTask done: Answered. Run `aico task next` for your next task.\n",
         )
     })
 
@@ -61,7 +61,7 @@ describe("llmco turn send", () => {
 
         expect(sending.exitCode).toBe(1)
         expect(sending.stderr).toBe(
-            "Your turn is empty: add to it with `llmco turn add text` or `llmco turn add tool`.\n",
+            "Your turn is empty: add to it with `aico turn add text` or `aico turn add tool`.\n",
         )
     })
 })

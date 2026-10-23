@@ -9,7 +9,7 @@ export async function loadExistingEmployee(
 ): Promise<Employee> {
     const id = parseId("employee", rawId)
     if (!(await hasEmployee(projectRoot, id))) {
-        throw new UserError(`No employee "${id}". Run \`llmco employee list\`.`)
+        throw new UserError(`No employee "${id}". Run \`aico employee list\`.`)
     }
     return loadEmployee(projectRoot, id)
 }

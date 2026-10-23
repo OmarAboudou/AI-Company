@@ -13,7 +13,7 @@ const { runCli, getProjectPath } = useTemporaryProject()
 const interimEmployee = ["position", "interim", "employee"]
 const interimDirectors = ["position", "interim", "directors"]
 
-describe("llmco position", () => {
+describe("aico position", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })
@@ -31,7 +31,7 @@ describe("llmco position", () => {
     })
 })
 
-describe("llmco position assign and unassign", () => {
+describe("aico position assign and unassign", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })
@@ -82,7 +82,7 @@ describe("llmco position assign and unassign", () => {
     })
 })
 
-describe("llmco position assign-temporarily and unassign-temporarily", () => {
+describe("aico position assign-temporarily and unassign-temporarily", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })

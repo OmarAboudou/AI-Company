@@ -55,7 +55,7 @@ function getPendingTask(
     const employee = employees.find(({ id }) => id === currentWorker.employeeId)
     if (employee === undefined) {
         throw new UserError(
-            `Position "${position.id}" names employee "${currentWorker.employeeId}", who doesn't exist. Run \`llmco position show ${position.id}\`.`,
+            `Position "${position.id}" names employee "${currentWorker.employeeId}", who doesn't exist. Run \`aico position show ${position.id}\`.`,
         )
     }
     if (employee.kind === "human") {

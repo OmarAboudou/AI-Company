@@ -99,6 +99,6 @@ describe("updatePosition", () => {
             title: "QA",
         })
 
-        await expect(updating).rejects.toThrow("Run `llmco init` first.")
+        await expect(updating).rejects.toThrow("Run `aico init` first.")
     })
 })

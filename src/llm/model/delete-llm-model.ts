@@ -25,7 +25,7 @@ export async function deleteLlmModel(
         .map(({ id }) => id)
     if (modelEmployeeIds.length > 0) {
         throw new UserError(
-            `Model "${model.id}" of provider "${model.providerId}" is used by ${modelEmployeeIds.join(", ")}. Give these employees another model with \`llmco employee update\`, or delete them, first.`,
+            `Model "${model.id}" of provider "${model.providerId}" is used by ${modelEmployeeIds.join(", ")}. Give these employees another model with \`aico employee update\`, or delete them, first.`,
         )
     }
     await deleteLlmModelFolder(projectRoot, model.providerId, model.id)

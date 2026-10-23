@@ -20,7 +20,7 @@ function createConnection(...args: string[]) {
     return runCli("provider", "connection", "create", ...args)
 }
 
-describe("llmco provider connection create", () => {
+describe("aico provider connection create", () => {
     test("list sorts by provider, then by protocol", () => {
         const url = "https://openrouter.ai/api/v1"
         createConnection("openrouter", "openai-responses", "-u", url)

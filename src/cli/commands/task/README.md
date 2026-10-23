@@ -1,6 +1,6 @@
-# `llmco task`
+# `aico task`
 
-Working your tasks as LLM employees do: the same system prompt, message and tools, turn by turn. `llmco task next` opens the next task of the positions you work, or shows the one in progress; `llmco task work` is an interactive session over the same steps, which asks for each tool's inputs from its schema, long texts in your editor, and waits for your next task until Ctrl+C or Ctrl+D.
+Working your tasks as LLM employees do: the same system prompt, message and tools, turn by turn. `aico task next` opens the next task of the positions you work, or shows the one in progress; `aico task work` is an interactive session over the same steps, which asks for each tool's inputs from its schema, long texts in your editor, and waits for your next task until Ctrl+C or Ctrl+D.
 
 ## Invariants
 

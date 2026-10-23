@@ -92,6 +92,6 @@ describe("unassignPositionTemporarily", () => {
             "dev",
         )
 
-        await expect(unassignment).rejects.toThrow("Run `llmco init` first.")
+        await expect(unassignment).rejects.toThrow("Run `aico init` first.")
     })
 })

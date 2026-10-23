@@ -1,6 +1,6 @@
 # Message tools
 
-The tools that write in threads, as `llmco message send` does: `message_send` sends a message from the run's position, signed by the run's worker and the committer, with the command's mentions and refusals. Its result is the message's number in the thread, and a word about each mention that names no position.
+The tools that write in threads, as `aico message send` does: `message_send` sends a message from the run's position, signed by the run's worker and the committer, with the command's mentions and refusals. Its result is the message's number in the thread, and a word about each mention that names no position.
 
 ## Invariants
 

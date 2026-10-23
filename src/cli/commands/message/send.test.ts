@@ -7,7 +7,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 const { runCli, runCliWithStdin, getProjectPath, runCliWithEnv } =
     useTemporaryProject()
 
-describe("llmco message send", () => {
+describe("aico message send", () => {
     let threadId = ""
 
     beforeEach(async () => {
@@ -196,7 +196,7 @@ describe("the positions it mentions", () => {
         threadId = thread.id
     })
 
-    test("message send gives each a task, which llmco run runs", () => {
+    test("message send gives each a task, which aico run runs", () => {
         const body = "@backend-developer Hono or Express?"
 
         const sending = runCli("message", "send", threadId, "-b", body)
@@ -205,6 +205,6 @@ describe("the positions it mentions", () => {
             /Created task "[^"]+" for @backend-developer: catch-up-thread\./
         expect(sending.exitCode).toBe(0)
         expect(sending.stderr).toMatch(createdTaskPattern)
-        expect(sending.stderr).toContain("Run `llmco run`")
+        expect(sending.stderr).toContain("Run `aico run`")
     })
 })

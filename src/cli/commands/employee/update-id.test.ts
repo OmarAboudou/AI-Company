@@ -22,7 +22,7 @@ function createEmployeeWorker(employeeId: string) {
     return { kind: "employee", employeeId }
 }
 
-describe("llmco employee update-id", () => {
+describe("aico employee update-id", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })

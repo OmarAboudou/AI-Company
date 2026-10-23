@@ -27,7 +27,7 @@ export function registerTurnAddToolCommand(turnAddCommand: Command): void {
                 (await readTextOrFile(options.input, options.inputFile)) ?? "{}"
             await addTurnTool(projectRoot, process.env, { toolName, rawInput })
             console.error(
-                `Added a call to ${toolName} to your turn. Send it with \`llmco turn send\`.`,
+                `Added a call to ${toolName} to your turn. Send it with \`aico turn send\`.`,
             )
         })
 }

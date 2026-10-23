@@ -18,7 +18,7 @@ function createConnection(...args: string[]) {
     return runCli("provider", "connection", "create", ...args)
 }
 
-describe("llmco provider connection update", () => {
+describe("aico provider connection update", () => {
     beforeEach(() => {
         createConnection(
             "openrouter",

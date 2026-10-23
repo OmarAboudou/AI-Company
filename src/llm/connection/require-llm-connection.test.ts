@@ -21,7 +21,7 @@ describe("requireLlmConnection", () => {
         const requireResponsesConnection = () =>
             requireLlmConnection(anthropic, "openai-responses")
         const refusalMessage =
-            'Provider "anthropic" has no openai-responses connection. Run `llmco provider connection list` to see its connections, or `llmco provider connection create` to add one.'
+            'Provider "anthropic" has no openai-responses connection. Run `aico provider connection list` to see its connections, or `aico provider connection create` to add one.'
 
         expect(requireResponsesConnection).toThrow(UserError)
         expect(requireResponsesConnection).toThrow(refusalMessage)

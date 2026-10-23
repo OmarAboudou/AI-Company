@@ -3,7 +3,7 @@ import { useTemporaryProject } from "../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-describe("llmco init", () => {
+describe("aico init", () => {
     test("creates a company that company show displays", () => {
         const init = runCli(
             "init",

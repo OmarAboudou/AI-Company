@@ -214,6 +214,6 @@ describe("sendMessage", () => {
             },
         )
 
-        await expect(sending).rejects.toThrow("Run `llmco init` first.")
+        await expect(sending).rejects.toThrow("Run `aico init` first.")
     })
 })

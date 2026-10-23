@@ -22,7 +22,7 @@ export async function deleteLlmConnection(
         .map(({ id }) => id)
     if (protocolModelIds.length > 0) {
         throw new UserError(
-            `The ${protocol} connection of provider "${provider.id}" is used by models ${protocolModelIds.join(", ")}. Give them another protocol with \`llmco model update -p\`, or delete them, first.`,
+            `The ${protocol} connection of provider "${provider.id}" is used by models ${protocolModelIds.join(", ")}. Give them another protocol with \`aico model update -p\`, or delete them, first.`,
         )
     }
     const remainingConnections = Object.entries(

@@ -4,7 +4,7 @@ How llmco uses git: a company lives in a git repository, which keeps its history
 
 ## Invariants
 
-- llmco works only inside a git repository: `llmco init` refuses to run elsewhere.
+- llmco works only inside a git repository: `aico init` refuses to run elsewhere.
 - A message's committer is git's `user.name` and `user.email`, without which no message is written.
 - git runs on the folder llmco works on, whatever repository the variables llmco inherits name, such as the `GIT_DIR` that git hands its hooks.
 - Without git installed, llmco says so rather than failing.

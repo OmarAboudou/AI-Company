@@ -51,7 +51,7 @@ export async function assignPositionTemporarily(
     if (employee !== undefined && employee.id === position.defaultEmployeeId) {
         if (currentAssignment !== undefined) {
             throw new UserError(
-                `"${employee.id}" is the default employee of position "${position.id}": run \`llmco position unassign-temporarily ${position.id}\` to give the position back to it.`,
+                `"${employee.id}" is the default employee of position "${position.id}": run \`aico position unassign-temporarily ${position.id}\` to give the position back to it.`,
             )
         }
         return {

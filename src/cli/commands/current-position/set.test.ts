@@ -18,12 +18,12 @@ beforeEach(async () => {
     ])
 })
 
-describe("llmco current-position set", () => {
+describe("aico current-position set", () => {
     test("says how to set up llmco's shell function, which it needs", () => {
         const selection = runCli("current-position", "set", "director")
 
         expect(selection.exitCode).toBe(1)
-        expect(selection.stderr).toContain("llmco shell init bash --install")
+        expect(selection.stderr).toContain("aico shell init bash --install")
     })
 
     test("--shell-code prints the code selecting the position", () => {

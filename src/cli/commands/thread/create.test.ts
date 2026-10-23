@@ -6,7 +6,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, runCliWithEnv, getProjectPath } = useTemporaryProject()
 
-describe("llmco thread create", () => {
+describe("aico thread create", () => {
     const today = new Date().toISOString().slice(0, 10)
 
     beforeEach(async () => {
@@ -104,7 +104,7 @@ describe("the positions its first message mentions", () => {
         })
     })
 
-    test("thread create -b gives each a task, which llmco run runs", () => {
+    test("thread create -b gives each a task, which aico run runs", () => {
         const body = "@backend-developer 50 € for the API?"
 
         const creation = runCli("thread", "create", "-s", "Budget", "-b", body)
@@ -113,6 +113,6 @@ describe("the positions its first message mentions", () => {
             /Created task "[^"]+" for @backend-developer: catch-up-thread\./
         expect(creation.exitCode).toBe(0)
         expect(creation.stderr).toMatch(createdTaskPattern)
-        expect(creation.stderr).toContain("Run `llmco run`")
+        expect(creation.stderr).toContain("Run `aico run`")
     })
 })

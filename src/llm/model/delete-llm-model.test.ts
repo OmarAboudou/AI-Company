@@ -61,6 +61,6 @@ describe("deleteLlmModel", () => {
 
         const deletion = deleteLlmModel(folderWithoutCompany, "ollama", "llama")
 
-        await expect(deletion).rejects.toThrow("Run `llmco init` first.")
+        await expect(deletion).rejects.toThrow("Run `aico init` first.")
     })
 })

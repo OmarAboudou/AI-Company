@@ -21,7 +21,7 @@ export function registerEmployeeListCommand(employeeCommand: Command): void {
                 shouldListPositions ? listPositions(projectRoot) : [],
             ])
             if (employees.length === 0) {
-                console.log("No employees yet. Run `llmco employee create`.")
+                console.log("No employees yet. Run `aico employee create`.")
                 return
             }
             printColumns(

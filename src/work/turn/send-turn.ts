@@ -27,7 +27,7 @@ export async function sendTurn(
     const { blocks } = await loadStagedTurn(projectRoot, run.id)
     if (blocks.length === 0) {
         throw new UserError(
-            "Your turn is empty: add to it with `llmco turn add text` or `llmco turn add tool`.",
+            "Your turn is empty: add to it with `aico turn add text` or `aico turn add tool`.",
         )
     }
     const tools = requireRunTools(run.session)

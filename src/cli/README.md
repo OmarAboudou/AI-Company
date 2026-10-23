@@ -7,7 +7,7 @@ The command line is llmco's interface, for people and scripts alike, and later f
 - A refusal prints its message alone and exits with 1; any other error is a bug, shown with its stack.
 - Only the command line knows the current directory and reads the environment: it hands the project's root and the environment to the core.
 - The commands that write the company's configuration run only for a director, and are refused to a fictitious human employee. Reading, writing in threads and working tasks are open to everyone.
-- No command but the interactive session of `llmco task work` asks a question: a refusal says what to add, such as `--force` or `--replace`, so that a person, a script and an LLM act the same way.
+- No command but the interactive session of `aico task work` asks a question: a refusal says what to add, such as `--force` or `--replace`, so that a person, a script and an LLM act the same way.
 
 ## Decisions
 

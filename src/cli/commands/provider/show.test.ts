@@ -5,7 +5,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-describe("llmco provider", () => {
+describe("aico provider", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })
@@ -43,7 +43,7 @@ describe("llmco provider", () => {
     })
 })
 
-describe("llmco provider connection create", () => {
+describe("aico provider connection create", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })

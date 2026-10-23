@@ -1,4 +1,4 @@
-# `llmco current-position`
+# `aico current-position`
 
 The position you write from in this shell, as an e-mail's From line: `thread create`, `message send` and the task commands use it until `clear`, and `--as-position` chooses another one for a single message. As with `current-human`, its `set` and `clear` need llmco's shell function.
 

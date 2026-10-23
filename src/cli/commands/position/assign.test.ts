@@ -19,7 +19,7 @@ async function loadPositionStateFile(id: string): Promise<unknown> {
     return (await file.exists()) ? file.json() : undefined
 }
 
-describe("llmco position assign and unassign", () => {
+describe("aico position assign and unassign", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })

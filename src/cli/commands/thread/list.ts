@@ -20,7 +20,7 @@ export function registerThreadListCommand(threadCommand: Command): void {
                 loadJournal(projectRoot).then(loadPendingPositionIdsByThread),
             ])
             if (threads.length === 0) {
-                console.log("No threads yet. Run `llmco thread create`.")
+                console.log("No threads yet. Run `aico thread create`.")
                 return
             }
             printColumns(

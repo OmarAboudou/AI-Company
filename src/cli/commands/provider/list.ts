@@ -12,7 +12,7 @@ export function registerProviderListCommand(providerCommand: Command): void {
             await requireCompany(projectRoot)
             const providers = await listLlmProviders(projectRoot)
             if (providers.length === 0) {
-                console.log("No providers yet. Run `llmco provider create`.")
+                console.log("No providers yet. Run `aico provider create`.")
                 return
             }
             printColumns(providers.map(({ id, name }) => [id, name]))

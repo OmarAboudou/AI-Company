@@ -1,6 +1,6 @@
 # Built-in tools
 
-The tools llmco ships with, grouped as the command line's commands are: a tool's name joins its group's and its own with `_`, as `message_send` does for `llmco message send`.
+The tools llmco ships with, grouped as the command line's commands are: a tool's name joins its group's and its own with `_`, as `message_send` does for `aico message send`.
 
 ## Decisions
 

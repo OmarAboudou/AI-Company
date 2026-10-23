@@ -42,7 +42,7 @@ export function registerProviderConnectionListCommand(
             )
             if (rows.length === 0) {
                 console.log(
-                    "No connections yet. Run `llmco provider connection create`.",
+                    "No connections yet. Run `aico provider connection create`.",
                 )
                 return
             }

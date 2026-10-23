@@ -16,7 +16,7 @@ export function registerTurnShowCommand(turnCommand: Command): void {
             )
             console.log(
                 blocks.length === 0
-                    ? "Your turn is empty: add to it with `llmco turn add text` or `llmco turn add tool`."
+                    ? "Your turn is empty: add to it with `aico turn add text` or `aico turn add tool`."
                     : formatTurn(blocks),
             )
         })

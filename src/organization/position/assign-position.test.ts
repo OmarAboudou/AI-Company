@@ -132,6 +132,6 @@ describe("assignPosition", () => {
 
         const assignment = assignPosition(folderWithoutCompany, "dev", "omar")
 
-        await expect(assignment).rejects.toThrow("Run `llmco init` first.")
+        await expect(assignment).rejects.toThrow("Run `aico init` first.")
     })
 })

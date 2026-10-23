@@ -67,12 +67,12 @@ export async function requireRunInProgress(
     const [runInProgress, ...otherRunsInProgress] = runsInProgress
     if (runInProgress === undefined) {
         throw new UserError(
-            "No task of yours is in progress: run `llmco task next` to open one.",
+            "No task of yours is in progress: run `aico task next` to open one.",
         )
     }
     if (otherRunsInProgress.length > 0) {
         throw new UserError(
-            `You have tasks in progress as ${formatPositionLabels(runsInProgress)}: select the position to answer from with \`llmco current-position set <position-id>\`.`,
+            `You have tasks in progress as ${formatPositionLabels(runsInProgress)}: select the position to answer from with \`aico current-position set <position-id>\`.`,
         )
     }
     return runInProgress

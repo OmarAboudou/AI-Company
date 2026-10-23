@@ -9,7 +9,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-describe("llmco employee", () => {
+describe("aico employee", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })
@@ -31,7 +31,7 @@ describe("llmco employee", () => {
     })
 })
 
-describe("llmco position assign and unassign", () => {
+describe("aico position assign and unassign", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })

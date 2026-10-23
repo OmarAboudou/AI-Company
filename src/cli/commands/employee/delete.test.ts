@@ -20,7 +20,7 @@ function createEmployeeWorker(employeeId: string) {
     return { kind: "employee", employeeId }
 }
 
-describe("llmco employee delete", () => {
+describe("aico employee delete", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme", description: "" })

@@ -48,6 +48,6 @@ describe("updateCompany", () => {
 
         const updating = updateCompany(folderWithoutCompany, { name: "Globex" })
 
-        await expect(updating).rejects.toThrow("Run `llmco init` first.")
+        await expect(updating).rejects.toThrow("Run `aico init` first.")
     })
 })

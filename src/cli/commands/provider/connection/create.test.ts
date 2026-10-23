@@ -20,7 +20,7 @@ function createConnection(...args: string[]) {
     return runCli("provider", "connection", "create", ...args)
 }
 
-describe("llmco provider connection create", () => {
+describe("aico provider connection create", () => {
     test("create then list shows the URL and how the key is sent", () => {
         const creation = createConnection(
             "anthropic",
