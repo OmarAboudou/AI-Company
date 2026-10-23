@@ -5,7 +5,7 @@ import { createExampleTicket } from "../../../messaging/ticket/create-example-ti
 import { createPosition } from "../../../organization/position/create-position.ts"
 import {
     developer,
-    director,
+    founder,
     getTaskSummaries,
     useListeningCompany,
 } from "./use-listening-company.testing.ts"
@@ -25,18 +25,18 @@ describe("AICo's listeners", () => {
         await createDeveloperTicket()
 
         const asking = await act("ask", developer)
-        const answering = await act("answer", director)
+        const answering = await act("answer", founder)
         const delivering = await act("deliver", developer)
-        const refusing = await act("refuse", director)
+        const refusing = await act("refuse", founder)
 
         expect(getTaskSummaries(asking.createdTasks)).toEqual([
-            "answer @director",
+            "answer @founder",
         ])
         expect(getTaskSummaries(answering.createdTasks)).toEqual([
             "resume @developer",
         ])
         expect(getTaskSummaries(delivering.createdTasks)).toEqual([
-            "validate @director",
+            "validate @founder",
         ])
         expect(getTaskSummaries(refusing.createdTasks)).toEqual([
             "resume @developer",
@@ -55,9 +55,9 @@ describe("AICo's listeners", () => {
         await createDeveloperTicket()
         await act("ask", developer)
 
-        const { createdTasks } = await endSessionOf("director")
+        const { createdTasks } = await endSessionOf("founder")
 
-        expect(getTaskSummaries(createdTasks)).toEqual(["answer @director"])
+        expect(getTaskSummaries(createdTasks)).toEqual(["answer @founder"])
     })
 
     test("give nothing more once a session ended passing the hand", async () => {
@@ -74,7 +74,7 @@ describe("AICo's listeners", () => {
         async (actName) => {
             await createDeveloperTicket()
 
-            const { cancelledTasks } = await act(actName, director)
+            const { cancelledTasks } = await act(actName, founder)
 
             expect(getTaskSummaries(cancelledTasks)).toEqual([
                 "handle @developer",
@@ -87,7 +87,7 @@ describe("AICo's listeners", () => {
             rawAssigneePositionId: "developer",
         })
 
-        const { createdTasks } = await act("cancel", director)
+        const { createdTasks } = await act("cancel", founder)
 
         expect(createdTasks).toEqual([])
     })
@@ -101,7 +101,7 @@ describe("AICo's listeners", () => {
 
         await handOverTicket(
             await loadJournal(getProjectRoot()),
-            director,
+            founder,
             {
                 ticketNumber: 1,
                 body: "The designer knows.",
@@ -114,32 +114,32 @@ describe("AICo's listeners", () => {
         expect(getTaskSummaries(createdTasks)).toEqual(["handle @designer"])
     })
 
-    test("give the director Analyse the renouncement once the assignee renounced", async () => {
+    test("give the founder Analyse the renouncement once the assignee renounced", async () => {
         await createDeveloperTicket()
 
         const { createdTasks } = await act("renounce", developer)
 
         expect(getTaskSummaries(createdTasks)).toEqual([
-            "analyse-renouncement @director",
+            "analyse-renouncement @founder",
         ])
     })
 
-    test("give the director Analyse the renouncement again once it ended without arbitrating", async () => {
+    test("give the founder Analyse the renouncement again once it ended without arbitrating", async () => {
         await createDeveloperTicket()
         await act("renounce", developer)
 
-        const { createdTasks } = await endSessionOf("director")
+        const { createdTasks } = await endSessionOf("founder")
 
         expect(getTaskSummaries(createdTasks)).toEqual([
-            "analyse-renouncement @director",
+            "analyse-renouncement @founder",
         ])
     })
 
-    test("give the assignee Resume once the director gives the ticket back", async () => {
+    test("give the assignee Resume once the founder gives the ticket back", async () => {
         await createDeveloperTicket()
         await act("renounce", developer)
 
-        const { createdTasks } = await act("give-back", director)
+        const { createdTasks } = await act("give-back", founder)
 
         expect(getTaskSummaries(createdTasks)).toEqual(["resume @developer"])
     })

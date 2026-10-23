@@ -10,24 +10,24 @@ const assignments = [
             description: "",
             employeeId: "claude",
         },
-        "director",
+        "founder",
     ),
     getPositionAssignment(
-        { id: "director", title: "Director", description: "" },
-        "director",
+        { id: "founder", title: "Founder", description: "" },
+        "founder",
     ),
     getPositionAssignment(
         { id: "qa", title: "QA", description: "" },
-        "director",
+        "founder",
     ),
 ]
 
 describe("getPositionsHeldByUser", () => {
-    test("gives the positions no employee holds, the director's among them", () => {
+    test("gives the positions no employee holds, the founder's among them", () => {
         const positionIds = getPositionsHeldByUser(assignments).map(
             ({ position }) => position.id,
         )
 
-        expect(positionIds).toEqual(["director", "qa"])
+        expect(positionIds).toEqual(["founder", "qa"])
     })
 })

@@ -28,7 +28,7 @@ export const relaunchListener = defineListener({
         { id },
         {
             events,
-            directorPositionId,
+            founderPositionId,
             tasks,
             taskStates,
             positions,
@@ -47,7 +47,7 @@ export const relaunchListener = defineListener({
         )
         return [...ticketNumbers].flatMap((ticketNumber): ListenerEffect[] => {
             const state = ticketStates.get(ticketNumber)
-            const handTask = state && getHandTask(state, directorPositionId)
+            const handTask = state && getHandTask(state, founderPositionId)
             const hasPendingTask = tasks.some(
                 (task) =>
                     task.params.ticketNumber === ticketNumber &&

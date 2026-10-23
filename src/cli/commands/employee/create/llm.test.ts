@@ -93,7 +93,7 @@ describe("--reuse-id", () => {
         await saveNewTicket(getProjectPath(), {
             number: ticketNumber,
             title: "Budget",
-            requester: { id: "director", title: "Director" },
+            requester: { id: "founder", title: "Founder" },
             assignee: { id: "developer", title: "Developer" },
             committer,
             createdAt: "2026-10-18T14:00:00.000Z",

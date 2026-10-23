@@ -16,7 +16,7 @@ import {
 } from "./schema.ts"
 import { hasCompany, saveCompany } from "./storage.ts"
 
-const directorPositionId = "director"
+const founderPositionId = "founder"
 
 export async function createCompany(
     projectRoot: string,
@@ -32,7 +32,7 @@ export async function createCompany(
     }
     const company = parseConfig(CompanyConfigSchema, {
         name,
-        directorPositionId,
+        founderPositionId,
     })
     if (!(await isReservedBranchWorktree(projectRoot))) {
         await createReservedBranch(projectRoot)
@@ -42,8 +42,8 @@ export async function createCompany(
     return runOperation(projectRoot, "aico init", async () => {
         await Promise.all([
             savePosition(projectRoot, {
-                id: directorPositionId,
-                title: "Director",
+                id: founderPositionId,
+                title: "Founder",
                 createdAt: new Date().toISOString(),
                 description: "",
             }),

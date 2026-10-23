@@ -14,7 +14,7 @@ export function formatTicketState({
         case "to-validate":
             return `to validate by @${requesterPositionId}`
         case "to-arbitrate":
-            return "to arbitrate by the director"
+            return "to arbitrate by the founder"
         case "closed":
             return `closed, ${outcome}`
     }

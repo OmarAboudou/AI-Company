@@ -12,8 +12,8 @@ import { actOnTicket } from "./act-on-ticket.ts"
 import { handOverTicket } from "./hand-over-ticket.ts"
 
 const committer = { name: "Test User", email: "test@example.com" }
-const director: Author = {
-    position: { id: "director", title: "Director" },
+const founder: Author = {
+    position: { id: "founder", title: "Founder" },
     committer,
 }
 const developer: Author = {
@@ -41,7 +41,7 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-async function handOver(rawAssigneePositionId: string, author = director) {
+async function handOver(rawAssigneePositionId: string, author = founder) {
     return handOverTicket(
         await loadJournal(projectRoot),
         author,
@@ -73,7 +73,7 @@ describe("handOverTicket", () => {
             type: "ticket-handed-over",
             ticketNumber,
             messageId: message.id,
-            positionId: "director",
+            positionId: "founder",
             assigneePositionId: "designer",
         })
     })
@@ -126,11 +126,11 @@ describe("handOverTicket", () => {
         await expect(handingOver).rejects.toThrow('No position "tester".')
     })
 
-    test("lets only the director hand a ticket over", async () => {
+    test("lets only the founder hand a ticket over", async () => {
         const handingOver = handOver("designer", developer)
 
         await expect(handingOver).rejects.toThrow(
-            `You can't hand over ticket #${ticketNumber}: only the director, @director, can.`,
+            `You can't hand over ticket #${ticketNumber}: only the founder, @founder, can.`,
         )
     })
 })

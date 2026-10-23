@@ -22,7 +22,7 @@ beforeEach(async () => {
         ...exampleToolContext,
         projectRoot,
         journal: await loadJournal(projectRoot),
-        position: { id: "director", title: "Director", description: "" },
+        position: { id: "founder", title: "Founder", description: "" },
         worker: { kind: "user" },
     }
 })
@@ -53,7 +53,7 @@ describe("ticket_create", () => {
         })
         expect(ticket).toMatchObject({
             title: "Choose the API framework",
-            requester: { id: "director" },
+            requester: { id: "founder" },
             assignee: { id: "backend-developer" },
             request: "Hono or Express?",
         })
@@ -69,7 +69,7 @@ describe("ticket_create", () => {
         })
     })
 
-    test("refuses a ticket from another position than the director's", async () => {
+    test("refuses a ticket from another position than the founder's", async () => {
         const developerCtx: ToolContext = {
             ...ctx,
             position: exampleToolContext.position,
@@ -78,7 +78,7 @@ describe("ticket_create", () => {
         const result = await callTicketCreate(frameworkInput, developerCtx)
 
         expect(result.isError).toBe(true)
-        expect(result.text).toStartWith("Only the director creates tickets")
+        expect(result.text).toStartWith("Only the founder creates tickets")
         expect(await listTickets(projectRoot)).toEqual([])
     })
 })

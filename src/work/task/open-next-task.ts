@@ -92,14 +92,14 @@ export async function openNextTask(
     const tasks = await listTasks(projectRoot)
     const taskStates = getTaskStates(tasks, journal.events)
     const positions = assignments.map(({ position }) => position)
-    const directorPositionId = assignments.find(
-        ({ isDirectorPosition }) => isDirectorPosition,
+    const founderPositionId = assignments.find(
+        ({ isFounderPosition }) => isFounderPosition,
     )?.position.id
     const isPaused = getCompanyPause(journal.events) !== undefined
     const canStart = (task: Task) =>
         !isPaused ||
         taskStates.get(task.id) === "running" ||
-        getTaskPositionId(task, positions) === directorPositionId
+        getTaskPositionId(task, positions) === founderPositionId
     const tasksToWork = tasks
         .filter(
             (task) =>

@@ -35,7 +35,7 @@ async function recordQuestionSent(depth = 0) {
         depth,
         ticketNumber,
         messageId: "20261018-140322-123-3f9a",
-        positionId: "director",
+        positionId: "founder",
     })
 }
 
@@ -213,7 +213,7 @@ describe("createTaskOnce through the positions' id history", () => {
         depth: 0,
         ticketNumber,
         messageId: "20261018-140322-123-3f9a",
-        positionId: "director",
+        positionId: "founder",
     }
 
     beforeEach(async () => {

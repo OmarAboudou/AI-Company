@@ -24,7 +24,7 @@ afterEach(async () => {
 const frameworkTicket: Ticket = {
     number: 2,
     title: "Choose the API framework",
-    requester: { id: "director", title: "Director" },
+    requester: { id: "founder", title: "Founder" },
     assignee: { id: "backend-developer", title: "Backend Developer" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
     createdAt: "2026-10-23T14:03:22.123Z",

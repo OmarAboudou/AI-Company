@@ -169,7 +169,7 @@ describe("runReadyTasks", () => {
     test("runs the tasks its runs create, until none is ready", async () => {
         const catalog = createExampleWorkCatalog([
             "backend-developer",
-            "director",
+            "founder",
         ])
         await sendQuestion("Hono or Express?", catalog)
         fakeServer.respondWith({ text: "Hono, for Bun." })
@@ -179,7 +179,7 @@ describe("runReadyTasks", () => {
         expect(await listTaskStates()).toEqual(["done", "queued"])
         expect(result).toMatchObject({
             kind: "none-ready",
-            waitingTasks: [{ positionId: "director", reason: "held-by-user" }],
+            waitingTasks: [{ positionId: "founder", reason: "held-by-user" }],
         })
     })
 

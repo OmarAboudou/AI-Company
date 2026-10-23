@@ -63,7 +63,7 @@ for (const shell of shells) {
                     printShellState,
                 )
 
-                expect(shellRun.stdout).toBe("graphics|(director @graphics) $ ")
+                expect(shellRun.stdout).toBe("graphics|(aico @graphics) $ ")
             })
 
             test("lets current-position clear switch back", () => {
@@ -73,7 +73,7 @@ for (const shell of shells) {
                     printShellState,
                 )
 
-                expect(shellRun.stdout).toBe("unset|(director) $ ")
+                expect(shellRun.stdout).toBe("unset|(aico) $ ")
             })
 
             test("leaves the shell as it was when current-position set refuses", () => {
@@ -83,7 +83,7 @@ for (const shell of shells) {
                 )
 
                 expect(shellRun.stderr).toContain('No position "support".')
-                expect(shellRun.stdout).toBe("unset|(director) $ ")
+                expect(shellRun.stdout).toBe("unset|(aico) $ ")
             })
 
             test("shows no label outside an AICo project", () => {
@@ -100,7 +100,7 @@ for (const shell of shells) {
                     printShellState,
                 )
 
-                expect(shellRun.stdout).toBe("unset|(director) $ unset|$ ")
+                expect(shellRun.stdout).toBe("unset|(aico) $ unset|$ ")
             })
 
             test("updates the label before each prompt, registered once", () => {

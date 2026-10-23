@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { loadJournal } from "../../../journal/storage.ts"
 import { pauseCompany } from "../../pause/pause-company.ts"
 import {
-    director,
+    founder,
     getTaskSummaries,
     useListeningCompany,
 } from "./use-listening-company.testing.ts"
@@ -23,7 +23,7 @@ describe("relaunchListener", () => {
     test("give no task at the relaunch on a ticket closed during the pause", async () => {
         await createDeveloperTicket()
         await failTaskOf("developer")
-        await act("cancel", director)
+        await act("cancel", founder)
 
         const { createdTasks } = await relaunch()
 

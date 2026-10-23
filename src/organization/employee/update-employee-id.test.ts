@@ -40,12 +40,12 @@ const omar = {
 
 async function archiveMessageBy(employeeId: string, sentAt: string) {
     const committer = { name: "Omar Aboudou", email: "omar@example.com" }
-    const director = { id: "director", title: "Director" }
+    const founder = { id: "founder", title: "Founder" }
     const ticket = {
         number: 1,
         title: "Budget",
-        requester: director,
-        assignee: director,
+        requester: founder,
+        assignee: founder,
         committer,
         createdAt: "2026-10-18T14:00:00.000Z",
         request: "How much?",
@@ -54,7 +54,7 @@ async function archiveMessageBy(employeeId: string, sentAt: string) {
     await saveMessage(projectRoot, {
         ticketNumber: ticket.number,
         id: "20261018-140100-000-0000",
-        position: director,
+        position: founder,
         employee: { id: employeeId, name: "Earlier" },
         committer,
         sentAt,

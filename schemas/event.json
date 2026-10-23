@@ -21,7 +21,7 @@
             },
             "required": ["type", "occurredAt", "depth"],
             "additionalProperties": false,
-            "description": "aico init created the company, with its director's position, whose first task follows."
+            "description": "aico init created the company, with its founder's position, whose first task follows."
         },
         {
             "type": "object",
@@ -446,7 +446,7 @@
                 "positionId"
             ],
             "additionalProperties": false,
-            "description": "The ticket's assignee renounced, saying what went wrong: the company pauses, and the director arbitrates."
+            "description": "The ticket's assignee renounced, saying what went wrong: the company pauses, and the founder arbitrates."
         },
         {
             "type": "object",
@@ -498,7 +498,7 @@
                 "positionId"
             ],
             "additionalProperties": false,
-            "description": "The director gave the renounced ticket back to its assignee, saying what was readjusted: the assignee has the hand again."
+            "description": "The founder gave the renounced ticket back to its assignee, saying what was readjusted: the assignee has the hand again."
         },
         {
             "type": "object",
@@ -557,7 +557,7 @@
                 "assigneePositionId"
             ],
             "additionalProperties": false,
-            "description": "The director handed the ticket over to another position, saying why: its new assignee has the hand."
+            "description": "The founder handed the ticket over to another position, saying why: its new assignee has the hand."
         },
         {
             "type": "object",
@@ -609,7 +609,7 @@
                 "positionId"
             ],
             "additionalProperties": false,
-            "description": "The director closed the ticket, failed, saying why: its request won't be met."
+            "description": "The founder closed the ticket, failed, saying why: its request won't be met."
         },
         {
             "type": "object",
@@ -1028,7 +1028,7 @@
             },
             "required": ["type", "occurredAt", "depth"],
             "additionalProperties": false,
-            "description": "The director paused the company: no new task starts but the director's until it is relaunched, while the running sessions finish."
+            "description": "The founder paused the company: no new task starts but the founder's until it is relaunched, while the running sessions finish."
         },
         {
             "type": "object",
@@ -1049,7 +1049,7 @@
             },
             "required": ["type", "occurredAt", "depth"],
             "additionalProperties": false,
-            "description": "The director relaunched the paused company: its tasks start again."
+            "description": "The founder relaunched the paused company: its tasks start again."
         },
         {
             "type": "object",

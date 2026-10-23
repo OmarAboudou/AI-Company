@@ -24,7 +24,7 @@ export async function updatePositionId(
 ): Promise<UpdatePositionIdResult> {
     await requireCompany(projectRoot)
     const newId = parseId("position", rawNewId)
-    const [{ position, isDirectorPosition }, isTaken] = await Promise.all([
+    const [{ position, isFounderPosition }, isTaken] = await Promise.all([
         loadExistingPositionAssignment(projectRoot, rawId),
         hasPosition(projectRoot, newId),
     ])
@@ -37,14 +37,14 @@ export async function updatePositionId(
         new Date().toISOString(),
     )
     // Copy, repoint, then delete rather than move, as for employees:
-    // the company must never name a missing director's position.
+    // the company must never name a missing founder's position.
     await copyPositionFolder(projectRoot, position.id, newId)
     await savePosition(projectRoot, renamedPosition)
-    if (isDirectorPosition) {
+    if (isFounderPosition) {
         const company = await loadCompany(projectRoot)
         await saveCompany(projectRoot, {
             ...company,
-            directorPositionId: newId,
+            founderPositionId: newId,
         })
     }
     await deletePositionFolder(projectRoot, position.id)

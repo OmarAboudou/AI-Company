@@ -8,7 +8,7 @@ import { sendUnsentMessage } from "./send-unsent-message.ts"
 import { listMessages } from "./storage.ts"
 
 const question: UnsentMessage = {
-    position: { id: "director", title: "Director" },
+    position: { id: "founder", title: "Founder" },
     committer: { name: "Test User", email: "test@example.com" },
     body: "Hono or Express?",
 }
@@ -60,7 +60,7 @@ describe("sendUnsentMessage", () => {
             depth: 2,
             ticketNumber,
             messageId: message.id,
-            positionId: "director",
+            positionId: "founder",
             runId,
         })
     })

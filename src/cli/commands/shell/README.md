@@ -1,6 +1,6 @@
 # `aico shell`
 
-AICo's shell function, for bash and zsh, through which `current-position` changes the shell's environment, since a program can't do that for the shell that started it. It also shows the selected position in the prompt, as `(director @graphics)`, inside an AICo project only, as git's `__git_ps1` shows the branch only inside a repository. `aico shell init` prints it, for the shell's startup file to evaluate, as `pyenv init` does.
+AICo's shell function, for bash and zsh, through which `current-position` changes the shell's environment, since a program can't do that for the shell that started it. It also shows the selected position in the prompt, as `(aico @graphics)`, inside an AICo project only, as git's `__git_ps1` shows the branch only inside a repository. `aico shell init` prints it, for the shell's startup file to evaluate, as `pyenv init` does.
 
 ## Invariants
 

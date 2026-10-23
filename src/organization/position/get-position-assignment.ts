@@ -2,13 +2,13 @@ import type { Position, PositionAssignment, Worker } from "./schema.ts"
 
 export function getPositionAssignment(
     position: Position,
-    directorPositionId: string,
+    founderPositionId: string,
 ): PositionAssignment {
-    const isDirectorPosition = position.id === directorPositionId
+    const isFounderPosition = position.id === founderPositionId
     const { employeeId } = position
     const holder: Worker =
-        isDirectorPosition || employeeId === undefined
+        isFounderPosition || employeeId === undefined
             ? { kind: "user" }
             : { kind: "employee", employeeId }
-    return { position, isDirectorPosition, holder }
+    return { position, isFounderPosition, holder }
 }

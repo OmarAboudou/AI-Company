@@ -15,8 +15,8 @@ import { createUncreatedTask } from "../../create-uncreated-task.ts"
 import { analyseRenouncementTaskType } from "./analyse-renouncement.ts"
 
 const committer = { name: "Test User", email: "test@example.com" }
-const director: Author = {
-    position: { id: "director", title: "Director" },
+const founder: Author = {
+    position: { id: "founder", title: "Founder" },
     committer,
 }
 const developer: Author = {
@@ -56,7 +56,7 @@ beforeEach(async () => {
     analysis = await createTask(
         journal,
         createUncreatedTask(analyseRenouncementTaskType, {
-            positionId: "director",
+            positionId: "founder",
             params: { ticketNumber: 1 },
         }),
         renouncedEvent,
@@ -96,7 +96,7 @@ describe("Analyse the renouncement", () => {
     test("becomes pointless once the ticket is arbitrated", async () => {
         await handOverTicket(
             await loadJournal(projectRoot),
-            director,
+            founder,
             {
                 ticketNumber: 1,
                 body: "The designer draws.",

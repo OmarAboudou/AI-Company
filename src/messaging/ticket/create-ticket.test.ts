@@ -8,8 +8,8 @@ import type { Author } from "../message/schema.ts"
 import { createTicket, type TicketToCreate } from "./create-ticket.ts"
 import { listTickets, loadTicket } from "./storage.ts"
 
-const director: Author = {
-    position: { id: "director", title: "Director" },
+const founder: Author = {
+    position: { id: "founder", title: "Founder" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
 }
 
@@ -35,7 +35,7 @@ afterEach(async () => {
 
 async function createFrameworkTicket(ticketToCreate = frameworkRequest) {
     const journal = await loadJournal(projectRoot)
-    return createTicket(journal, director, ticketToCreate, { depth: 0 })
+    return createTicket(journal, founder, ticketToCreate, { depth: 0 })
 }
 
 describe("createTicket", () => {
@@ -46,9 +46,9 @@ describe("createTicket", () => {
         expect(ticket).toMatchObject({
             number: 1,
             title: "Choose the API framework",
-            requester: { id: "director", title: "Director" },
+            requester: { id: "founder", title: "Founder" },
             assignee: { id: "backend-developer", title: "Backend Developer" },
-            committer: director.committer,
+            committer: founder.committer,
             request: "Hono or Express?",
         })
     })
@@ -73,7 +73,7 @@ describe("createTicket", () => {
                 type: "ticket-created",
                 depth: 0,
                 ticketNumber: ticket.number,
-                requesterPositionId: "director",
+                requesterPositionId: "founder",
                 assigneePositionId: "backend-developer",
             },
         ])
@@ -82,15 +82,15 @@ describe("createTicket", () => {
     test("lets a position address a ticket to itself", async () => {
         const ticket = await createFrameworkTicket({
             ...frameworkRequest,
-            rawAssigneePositionId: "director",
+            rawAssigneePositionId: "founder",
         })
 
         expect(ticket.assignee).toEqual(ticket.requester)
     })
 
-    test("refuses a ticket from another position than the director's", async () => {
+    test("refuses a ticket from another position than the founder's", async () => {
         const developer: Author = {
-            ...director,
+            ...founder,
             position: { id: "backend-developer", title: "Backend Developer" },
         }
         const journal = await loadJournal(projectRoot)
@@ -100,7 +100,7 @@ describe("createTicket", () => {
         })
 
         await expect(creation).rejects.toThrow(UserError)
-        await expect(creation).rejects.toThrow("ask @director instead.")
+        await expect(creation).rejects.toThrow("ask @founder instead.")
         expect(await listTickets(projectRoot)).toEqual([])
     })
 

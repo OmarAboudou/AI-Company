@@ -2,7 +2,7 @@ import type { TicketState } from "./get-ticket-states.ts"
 
 export function getHandPositionId(
     state: TicketState,
-    directorPositionId: string,
+    founderPositionId: string,
 ): string | undefined {
     switch (state.status) {
         case "open":
@@ -11,7 +11,7 @@ export function getHandPositionId(
         case "to-validate":
             return state.requesterPositionId
         case "to-arbitrate":
-            return directorPositionId
+            return founderPositionId
         case "closed":
             return undefined
     }

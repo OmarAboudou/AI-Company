@@ -8,7 +8,7 @@ export async function createExampleTicket(
     ticketToCreate: Partial<TicketToCreate> = {},
 ): Promise<Ticket> {
     const author = {
-        position: { id: "director", title: "Director" },
+        position: { id: "founder", title: "Founder" },
         committer: readGitCommitter(projectRoot),
     }
     return createTicket(
@@ -17,7 +17,7 @@ export async function createExampleTicket(
         {
             title: "Choose the API framework",
             request: "Hono or Express?",
-            rawAssigneePositionId: "director",
+            rawAssigneePositionId: "founder",
             ...ticketToCreate,
         },
         { depth: 0 },

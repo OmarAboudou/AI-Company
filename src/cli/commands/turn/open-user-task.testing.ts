@@ -7,7 +7,7 @@ export type UserTask = { ticketNumber: number; taskId: string }
 
 // The user opens the task that AICo's own listeners give: the
 // command line, which knows only AICo's task types, can then end it. The
-// QA position is selected, the director's What now? coming first.
+// QA position is selected, the founder's What now? coming first.
 export async function openUserTask(projectRoot: string): Promise<UserTask> {
     await createCompany(projectRoot, { name: "Acme" })
     await createPosition(projectRoot, "qa-tester", {

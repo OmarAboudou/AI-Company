@@ -69,7 +69,7 @@ describe("saveEvent and listEvents", () => {
         const ticketStarred = {
             ...firstNoteWritten,
             type: "ticket-starred",
-            starredBy: "director",
+            starredBy: "founder",
         }
         await saveEvent(projectRoot, ticketStarred)
 

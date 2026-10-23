@@ -14,8 +14,8 @@ import { actOnTicket } from "./act-on-ticket.ts"
 import type { MessageActName } from "./ticket-acts.ts"
 
 const committer = { name: "Test User", email: "test@example.com" }
-const director: Author = {
-    position: { id: "director", title: "Director" },
+const founder: Author = {
+    position: { id: "founder", title: "Founder" },
     committer,
 }
 const developer: Author = {
@@ -85,7 +85,7 @@ describe("actOnTicket", () => {
     test("passes the hand from one position to the other, act by act", async () => {
         await act("ask", developer)
         const waitingState = await loadTicketState()
-        await act("answer", director)
+        await act("answer", founder)
         const answeredState = await loadTicketState()
         await act("deliver", developer)
         const deliveredState = await loadTicketState()
@@ -97,11 +97,11 @@ describe("actOnTicket", () => {
 
     test("closes the ticket, done, once its delivery is validated", async () => {
         await act("deliver", developer)
-        await act("refuse", director)
+        await act("refuse", founder)
         const refusedState = await loadTicketState()
         await act("deliver", developer)
 
-        await act("validate", director)
+        await act("validate", founder)
 
         expect(refusedState?.status).toBe("open")
         expect(await loadTicketState()).toMatchObject({
@@ -117,7 +117,7 @@ describe("actOnTicket", () => {
                 await act(actName, developer)
             }
 
-            await act("cancel", director, "No longer needed.")
+            await act("cancel", founder, "No longer needed.")
 
             expect(await loadTicketState()).toMatchObject({
                 status: "closed",
@@ -126,27 +126,27 @@ describe("actOnTicket", () => {
         },
     )
 
-    test("lets the assignee renounce, for the director to arbitrate", async () => {
+    test("lets the assignee renounce, for the founder to arbitrate", async () => {
         await act("renounce", developer, "No access to the API.")
 
         const delivering = act("deliver", developer)
 
         expect((await loadTicketState())?.status).toBe("to-arbitrate")
         await expect(delivering).rejects.toThrow(
-            `You can't deliver ticket #${ticketNumber} now: it waits for @director to arbitrate it.`,
+            `You can't deliver ticket #${ticketNumber} now: it waits for @founder to arbitrate it.`,
         )
     })
 
-    test("lets the director give a renounced ticket back to its assignee", async () => {
+    test("lets the founder give a renounced ticket back to its assignee", async () => {
         await act("renounce", developer, "No access to the API.")
 
-        await act("give-back", director, "You have access now.")
+        await act("give-back", founder, "You have access now.")
 
         expect((await loadTicketState())?.status).toBe("open")
     })
 
     test("refuses to give back a ticket that wasn't renounced", async () => {
-        const givingBack = act("give-back", director)
+        const givingBack = act("give-back", founder)
 
         await expect(givingBack).rejects.toThrow(
             `You can't give back ticket #${ticketNumber} now: its assignee has the hand.`,
@@ -159,14 +159,14 @@ describe("actOnTicket", () => {
         const renouncing = act("renounce", developer)
 
         await expect(renouncing).rejects.toThrow(
-            `You can't renounce ticket #${ticketNumber} now: it waits for @director to answer.`,
+            `You can't renounce ticket #${ticketNumber} now: it waits for @founder to answer.`,
         )
     })
 
-    test("lets the director close the ticket, failed, whoever has the hand", async () => {
+    test("lets the founder close the ticket, failed, whoever has the hand", async () => {
         await act("ask", developer)
 
-        await act("close", director, "The API is dropped.")
+        await act("close", founder, "The API is dropped.")
 
         expect(await loadTicketState()).toMatchObject({
             status: "closed",
@@ -174,16 +174,16 @@ describe("actOnTicket", () => {
         })
     })
 
-    test("lets only the director close a ticket as failed", async () => {
+    test("lets only the founder close a ticket as failed", async () => {
         const closing = act("close", developer)
 
         await expect(closing).rejects.toThrow(
-            `You can't close ticket #${ticketNumber}: only the director, @director, can.`,
+            `You can't close ticket #${ticketNumber}: only the founder, @founder, can.`,
         )
     })
 
     test("refuses an act from a position whose role it isn't", async () => {
-        const delivering = act("deliver", director)
+        const delivering = act("deliver", founder)
 
         const refusalMessage = `You can't deliver ticket #${ticketNumber}: only its assignee, @developer, can.`
         await expect(delivering).rejects.toThrow(UserError)
@@ -195,12 +195,12 @@ describe("actOnTicket", () => {
 
         const delivering = act("deliver", developer)
 
-        const refusalMessage = `You can't deliver ticket #${ticketNumber} now: it waits for @director to answer.`
+        const refusalMessage = `You can't deliver ticket #${ticketNumber} now: it waits for @founder to answer.`
         await expect(delivering).rejects.toThrow(refusalMessage)
     })
 
     test("refuses any act on a closed ticket", async () => {
-        await act("cancel", director)
+        await act("cancel", founder)
 
         const asking = act("ask", developer)
 
@@ -211,8 +211,8 @@ describe("actOnTicket", () => {
         const ticket = await createExampleTicket(projectRoot)
         ticketNumber = ticket.number
 
-        await act("deliver", director)
-        await act("validate", director)
+        await act("deliver", founder)
+        await act("validate", founder)
 
         expect((await loadTicketState())?.status).toBe("closed")
     })

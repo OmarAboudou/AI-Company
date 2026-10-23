@@ -50,7 +50,7 @@ beforeEach(async () => {
     analysis = await createTask(
         journal,
         createUncreatedTask(analyseFailureTaskType, {
-            positionId: "director",
+            positionId: "founder",
             params: { taskId: failedTask.id },
         }),
         failedEvent,

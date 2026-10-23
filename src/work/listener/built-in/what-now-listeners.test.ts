@@ -18,29 +18,29 @@ async function recordCompanyCreation() {
 }
 
 describe("whatNowListeners", () => {
-    test("give the director What now? once the company is created", async () => {
+    test("give the founder What now? once the company is created", async () => {
         await recordCompanyCreation()
 
         const { createdTasks } = await dispatch()
 
-        expect(getTaskSummaries(createdTasks)).toEqual(["what-now @director"])
+        expect(getTaskSummaries(createdTasks)).toEqual(["what-now @founder"])
     })
 
-    test("give the director What now? again once its session ends", async () => {
+    test("give the founder What now? again once its session ends", async () => {
         await recordCompanyCreation()
         await dispatch()
 
-        const { createdTasks } = await endSessionOf("director")
+        const { createdTasks } = await endSessionOf("founder")
 
-        expect(getTaskSummaries(createdTasks)).toEqual(["what-now @director"])
+        expect(getTaskSummaries(createdTasks)).toEqual(["what-now @founder"])
     })
 
-    test("never give the director a second What now? while one is pending", async () => {
+    test("never give the founder a second What now? while one is pending", async () => {
         await recordCompanyCreation()
         await recordCompanyCreation()
 
         const { createdTasks } = await dispatch()
 
-        expect(getTaskSummaries(createdTasks)).toEqual(["what-now @director"])
+        expect(getTaskSummaries(createdTasks)).toEqual(["what-now @founder"])
     })
 })

@@ -27,7 +27,7 @@ describe("loadExistingPositionAssignment", () => {
 
         expect(assignment).toEqual({
             position: developer,
-            isDirectorPosition: false,
+            isFounderPosition: false,
             holder: { kind: "user" },
         })
     })

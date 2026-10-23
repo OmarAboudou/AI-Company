@@ -16,7 +16,7 @@ export type Dispatching = {
     journal: Journal
     events: JournalEvent[]
     taskTypes: Record<string, TaskType>
-    directorPositionId: string
+    founderPositionId: string
     tasks: Task[]
     taskStates: Map<string, TaskState>
     positions: IdHistory[]
@@ -30,7 +30,7 @@ export async function loadDispatching(
     taskTypes: Record<string, TaskType>,
 ): Promise<Dispatching> {
     const { projectRoot, events } = journal
-    const [tasks, positions, tickets, { directorPositionId }] =
+    const [tasks, positions, tickets, { founderPositionId }] =
         await Promise.all([
             listTasks(projectRoot),
             listPositions(projectRoot),
@@ -41,7 +41,7 @@ export async function loadDispatching(
         journal,
         events,
         taskTypes,
-        directorPositionId,
+        founderPositionId,
         tasks,
         taskStates: getTaskStates(tasks, events),
         positions,

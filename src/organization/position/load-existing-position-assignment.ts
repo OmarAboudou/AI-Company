@@ -7,9 +7,9 @@ export async function loadExistingPositionAssignment(
     projectRoot: string,
     rawId: string,
 ): Promise<PositionAssignment> {
-    const [position, { directorPositionId }] = await Promise.all([
+    const [position, { founderPositionId }] = await Promise.all([
         loadExistingPosition(projectRoot, rawId),
         loadCompany(projectRoot),
     ])
-    return getPositionAssignment(position, directorPositionId)
+    return getPositionAssignment(position, founderPositionId)
 }

@@ -22,7 +22,7 @@ type TicketTaskType = typeof handleTaskType
 
 const committer = { name: "Test User", email: "test@example.com" }
 const authors = {
-    director: { position: { id: "director", title: "Director" }, committer },
+    founder: { position: { id: "founder", title: "Founder" }, committer },
     developer: { position: { id: "developer", title: "Developer" }, committer },
 }
 
@@ -51,7 +51,7 @@ async function act(actName: MessageActName, body: string) {
     const author =
         actName === "ask" || actName === "deliver"
             ? authors.developer
-            : authors.director
+            : authors.founder
     const journal = await loadJournal(projectRoot)
     return actOnTicket(
         journal,
@@ -113,7 +113,7 @@ async function handOverToDesigner() {
     })
     await handOverTicket(
         await loadJournal(projectRoot),
-        authors.director,
+        authors.founder,
         {
             ticketNumber,
             body: "The designer knows.",
@@ -135,7 +135,7 @@ describe("a ticket's task", () => {
 
         expect(userMessage).toBe(
             [
-                "Director (@director) asks you for work, in ticket #1:",
+                "Founder (@founder) asks you for work, in ticket #1:",
                 "",
                 '<request ticket="1">',
                 "# Choose the API framework",
@@ -149,7 +149,7 @@ describe("a ticket's task", () => {
     })
 
     test("gives the tools of the position's acts, and ticket_show, fixed to the ticket", async () => {
-        const task = await createTicketTask(validateTaskType, "director")
+        const task = await createTicketTask(validateTaskType, "founder")
 
         const session = await createSession(validateTaskType, task)
 
@@ -172,7 +172,7 @@ describe("a ticket's task", () => {
     test("gives the whole discussion at the position's first session", async () => {
         await act("ask", "Bun or Node?")
 
-        const userMessage = await createUserMessage(answerTaskType, "director")
+        const userMessage = await createUserMessage(answerTaskType, "founder")
 
         expect(userMessage).toStartWith(
             "Developer (@developer) asks you a question on ticket #1, which you asked of it:",
@@ -192,7 +192,7 @@ describe("a ticket's task", () => {
         const userMessage = await createUserMessage(resumeTaskType, "developer")
 
         const introduction =
-            "Resume your work on ticket #1, which Director (@director) asked of you:"
+            "Resume your work on ticket #1, which Founder (@founder) asked of you:"
         const discussionHeading =
             "Its discussion since your last session on it, from message #3 (ticket_show reads the earlier ones):"
         expect(userMessage).toStartWith(introduction)
@@ -225,7 +225,7 @@ describe("a ticket's task", () => {
 
     test("becomes pointless once the hand left its position", async () => {
         await act("ask", "Bun or Node?")
-        const answering = await createTicketTask(answerTaskType, "director")
+        const answering = await createTicketTask(answerTaskType, "founder")
 
         await handOverToDesigner()
 
@@ -236,10 +236,10 @@ describe("a ticket's task", () => {
 
     test("says when no message arrived since the position's last session", async () => {
         await act("ask", "Bun or Node?")
-        const answering = await createTicketTask(answerTaskType, "director")
+        const answering = await createTicketTask(answerTaskType, "founder")
         await startTask(answering)
 
-        const userMessage = await createUserMessage(answerTaskType, "director")
+        const userMessage = await createUserMessage(answerTaskType, "founder")
 
         expect(userMessage).toContain(
             "No message arrived since your last session on it: ticket_show reads its discussion.",

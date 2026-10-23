@@ -8,14 +8,14 @@ export function registerCompanyPauseCommand(companyCommand: Command): void {
     companyCommand
         .command("pause")
         .description(
-            "Pause the company: no new task starts but the director's until you relaunch it, while the running sessions finish.",
+            "Pause the company: no new task starts but the founder's until you relaunch it, while the running sessions finish.",
         )
         .action(async (_options, command) => {
             await runCommandOperation(command, async () =>
                 pauseCompany(await loadJournal(projectRoot)),
             )
             console.log(
-                "Paused the company: no new task starts but the director's until `aico company relaunch`.",
+                "Paused the company: no new task starts but the founder's until `aico company relaunch`.",
             )
         })
 }

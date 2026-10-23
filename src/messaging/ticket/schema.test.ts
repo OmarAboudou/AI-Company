@@ -3,7 +3,7 @@ import { TicketConfigSchema, ticketCreatedEventType } from "./schema.ts"
 
 const frameworkTicket = {
     title: "Choose the API framework",
-    requester: { id: "director", title: "Director" },
+    requester: { id: "founder", title: "Founder" },
     assignee: { id: "backend-developer", title: "Backend Developer" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
     createdAt: "2026-10-23T14:03:22.123Z",
@@ -47,7 +47,7 @@ describe("ticketCreatedEventType", () => {
         occurredAt: "2026-10-23T14:03:22.123Z",
         depth: 0,
         ticketNumber: 1,
-        requesterPositionId: "director",
+        requesterPositionId: "founder",
         assigneePositionId: "backend-developer",
     }
 

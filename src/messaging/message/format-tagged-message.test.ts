@@ -5,7 +5,7 @@ import type { Message } from "./schema.ts"
 const question: Message = {
     ticketNumber: 1,
     id: "20261018-140322-123-3f9a",
-    position: { id: "director", title: "Director" },
+    position: { id: "founder", title: "Founder" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
     sentAt: "2026-10-18T14:03:22.123Z",
     body: "Hono or Express?\n",
@@ -17,7 +17,7 @@ describe("formatTaggedMessage", () => {
 
         expect(taggedQuestion).toBe(
             [
-                '<message number="5" from="Omar Aboudou" position="Director (@director)" sent="2026-10-18 14:03 UTC">',
+                '<message number="5" from="Omar Aboudou" position="Founder (@founder)" sent="2026-10-18 14:03 UTC">',
                 "Hono or Express?",
                 "</message>",
             ].join("\n"),

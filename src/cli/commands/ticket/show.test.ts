@@ -44,14 +44,14 @@ describe("aico ticket show", () => {
             "# #1 Choose the API framework",
             "",
             expect.stringMatching(
-                /^Asked by Test User, Director \(@director\), to Developer \(@developer\), .+ UTC\.$/,
+                /^Asked by Test User, Founder \(@founder\), to Developer \(@developer\), .+ UTC\.$/,
             ),
             "State: open, @developer has the hand.",
             "",
             "Hono or Express?",
             "",
             expect.stringMatching(
-                /^## Test User, Director \(@director\) · .+ UTC$/,
+                /^## Test User, Founder \(@founder\) · .+ UTC$/,
             ),
             "",
             "For Bun, if possible.",
@@ -75,7 +75,7 @@ describe("aico ticket show", () => {
         const [line, ...otherLines] = showing.stdout.trimEnd().split("\n")
         expect(otherLines).toEqual([])
         expect(JSON.parse(line ?? "")).toMatchObject({
-            position: { id: "director" },
+            position: { id: "founder" },
             body: "For Bun, if possible.",
         })
     })

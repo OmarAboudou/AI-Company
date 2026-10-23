@@ -29,13 +29,13 @@ export async function createTicket(
     if (request.trim() === "") {
         throw new UserError("The ticket's request is empty.")
     }
-    const [{ directorPositionId }, assignee] = await Promise.all([
+    const [{ founderPositionId }, assignee] = await Promise.all([
         loadCompany(projectRoot),
         loadExistingPosition(projectRoot, rawAssigneePositionId),
     ])
-    if (author.position.id !== directorPositionId) {
+    if (author.position.id !== founderPositionId) {
         throw new UserError(
-            `Only the director creates tickets for now: ask @${directorPositionId} instead.`,
+            `Only the founder creates tickets for now: ask @${founderPositionId} instead.`,
         )
     }
     const { position: requester, ...authorship } = author

@@ -71,7 +71,7 @@ export function defineTicketTaskType({
             { ticketNumber },
             { projectRoot, journal, position },
         ) {
-            const [ticket, positions, { directorPositionId }] =
+            const [ticket, positions, { founderPositionId }] =
                 await Promise.all([
                     loadTicket(projectRoot, ticketNumber),
                     listPositions(projectRoot),
@@ -86,7 +86,7 @@ export function defineTicketTaskType({
                 return `Ticket #${ticketNumber} was closed, ${state.outcome}.`
             }
             const handPositionId =
-                state && getHandPositionId(state, directorPositionId)
+                state && getHandPositionId(state, founderPositionId)
             return state?.status === status && handPositionId === position.id
                 ? undefined
                 : `Ticket #${ticketNumber} changed since: @${handPositionId} has the hand.`

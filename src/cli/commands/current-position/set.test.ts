@@ -19,19 +19,19 @@ beforeEach(async () => {
 
 describe("aico current-position set", () => {
     test("says how to set up AICo's shell function, which it needs", () => {
-        const selection = runCli("current-position", "set", "director")
+        const selection = runCli("current-position", "set", "founder")
 
         expect(selection.exitCode).toBe(1)
         expect(selection.stderr).toContain("aico shell init bash --install")
     })
 
     test("--shell-code prints the code selecting the position", () => {
-        const exportLine = 'export AICO_CURRENT_POSITION_ID="director"\n'
+        const exportLine = 'export AICO_CURRENT_POSITION_ID="founder"\n'
 
         const selection = runCli(
             "current-position",
             "set",
-            "director",
+            "founder",
             "--shell-code",
         )
 

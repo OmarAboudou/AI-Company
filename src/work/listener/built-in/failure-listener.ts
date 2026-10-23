@@ -5,11 +5,11 @@ import { defineListener } from "../define-listener.ts"
 
 export const failureListener = defineListener({
     eventType: taskFailedEventType,
-    getEffects: ({ taskId }, { directorPositionId }) => [
+    getEffects: ({ taskId }, { founderPositionId }) => [
         {
             kind: "create-task",
             task: createUncreatedTask(analyseFailureTaskType, {
-                positionId: directorPositionId,
+                positionId: founderPositionId,
                 params: { taskId },
             }),
         },

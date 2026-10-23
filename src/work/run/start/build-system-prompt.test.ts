@@ -5,7 +5,7 @@ import {
 } from "./build-system-prompt.ts"
 
 const context: SystemPromptContext = {
-    company: { name: "Acme", directorPositionId: "director" },
+    company: { name: "Acme", founderPositionId: "founder" },
     project: { description: "We build things.\n" },
     position: {
         id: "backend-developer",

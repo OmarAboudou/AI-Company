@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { MessageConfigSchema, messageSentEventType } from "./schema.ts"
 
 const question = {
-    position: { id: "director", title: "Director" },
+    position: { id: "founder", title: "Founder" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
     sentAt: "2026-10-18T14:03:22.123Z",
 }
@@ -29,7 +29,7 @@ describe("MessageConfigSchema", () => {
     })
 
     test("rejects a position id that isn't kebab-case", () => {
-        const position = { id: "Director", title: "Director" }
+        const position = { id: "Founder", title: "Founder" }
 
         expect(accepts({ ...question, position })).toBe(false)
     })
@@ -46,7 +46,7 @@ describe("messageSentEventType", () => {
         depth: 0,
         ticketNumber: 1,
         messageId: "20261018-140322-123-3f9a",
-        positionId: "director",
+        positionId: "founder",
     }
 
     function isAccepted(event: unknown): boolean {

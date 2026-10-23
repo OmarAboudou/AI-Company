@@ -31,18 +31,18 @@ afterEach(async () => {
 const acme = { name: "Acme", projectDescription: "We build things." }
 
 describe("createCompany", () => {
-    test("saves the company, naming its director's position", async () => {
+    test("saves the company, naming its founder's position", async () => {
         const createdCompany = await createCompany(projectRoot, acme)
 
         const company = await loadCompany(projectRoot)
         expect(company).toEqual({
             name: "Acme",
-            directorPositionId: "director",
+            founderPositionId: "founder",
         })
         expect(createdCompany).toEqual(company)
     })
 
-    test("records the company's creation, for the director's first task", async () => {
+    test("records the company's creation, for the founder's first task", async () => {
         await createCompany(projectRoot, acme)
 
         const events = await listEvents(projectRoot)
@@ -56,14 +56,14 @@ describe("createCompany", () => {
         expect(project).toEqual({ description: "We build things." })
     })
 
-    test("creates the director's position, which no employee holds", async () => {
+    test("creates the founder's position, which no employee holds", async () => {
         const before = Date.now()
         await createCompany(projectRoot, acme)
         const after = Date.now()
 
-        const position = await loadPosition(projectRoot, "director")
+        const position = await loadPosition(projectRoot, "founder")
         const createdTime = Date.parse(position.createdAt ?? "")
-        expect(position).toMatchObject({ title: "Director", description: "" })
+        expect(position).toMatchObject({ title: "Founder", description: "" })
         expect(position.employeeId).toBeUndefined()
         expect(createdTime).toBeGreaterThanOrEqual(before)
         expect(createdTime).toBeLessThanOrEqual(after)

@@ -32,7 +32,7 @@ async function askPosition(positionId: string): Promise<number> {
             depth: 0,
             ticketNumber,
             messageId: "20261019-100000-000-a1b2",
-            positionId: "director",
+            positionId: "founder",
         },
     )
     const uncreatedTask = {
@@ -75,12 +75,12 @@ describe("deletePosition", () => {
         expect(await hasEmployee(projectRoot, "omar")).toBe(true)
     })
 
-    test("refuses the director's position", async () => {
-        const deletion = deletePosition(projectRoot, "director")
+    test("refuses the founder's position", async () => {
+        const deletion = deletePosition(projectRoot, "founder")
 
         await expect(deletion).rejects.toThrow(UserError)
-        await expect(deletion).rejects.toThrow("is the director's position")
-        expect(await hasPosition(projectRoot, "director")).toBe(true)
+        await expect(deletion).rejects.toThrow("is the founder's position")
+        expect(await hasPosition(projectRoot, "founder")).toBe(true)
     })
 
     test("refuses a position with pending tasks, naming their tickets", async () => {

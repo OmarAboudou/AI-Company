@@ -61,7 +61,7 @@ describe("a ticket's act as a tool", () => {
     test("gives back why it refuses an act, for the caller to act otherwise", async () => {
         const result = await callTool("ticket_answer", "Hono.")
 
-        const refusalMessage = `You can't answer the question on ticket #${ticketNumber}: only its requester, @director, can.`
+        const refusalMessage = `You can't answer the question on ticket #${ticketNumber}: only its requester, @founder, can.`
         expect(result.isError).toBe(true)
         expect(result.text).toBe(refusalMessage)
     })

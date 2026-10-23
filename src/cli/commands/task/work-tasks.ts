@@ -40,7 +40,7 @@ async function workTasksUntilStopped(
                 const events = await listEvents(session.projectRoot)
                 if (getCompanyPause(events) !== undefined) {
                     console.log(
-                        "\nThe company is paused: only the director's tasks open until `aico company relaunch`.",
+                        "\nThe company is paused: only the founder's tasks open until `aico company relaunch`.",
                     )
                 }
                 console.log("\nWaiting for your next task. Ctrl+C to stop.")

@@ -28,7 +28,7 @@ async function askPosition(positionId: string, ticketNumber: number) {
             depth: 0,
             ticketNumber,
             messageId: "20261018-140322-123-3f9a",
-            positionId: "director",
+            positionId: "founder",
         },
     )
     const uncreatedTask = {
@@ -48,7 +48,7 @@ describe("loadPendingPositionIdsByTicket", () => {
         await askPosition("backend-developer", frameworkTicketNumber)
         await askPosition("qa-tester", frameworkTicketNumber)
         await askPosition("backend-developer", frameworkTicketNumber)
-        await askPosition("director", budgetTicketNumber)
+        await askPosition("founder", budgetTicketNumber)
 
         const pendingPositionIds = await loadPendingPositionIdsByTicket(
             await loadJournal(projectRoot),
@@ -57,7 +57,7 @@ describe("loadPendingPositionIdsByTicket", () => {
         expect(pendingPositionIds).toEqual(
             new Map([
                 [frameworkTicketNumber, ["backend-developer", "qa-tester"]],
-                [budgetTicketNumber, ["director"]],
+                [budgetTicketNumber, ["founder"]],
             ]),
         )
     })

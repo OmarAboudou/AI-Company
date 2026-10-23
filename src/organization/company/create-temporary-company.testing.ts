@@ -15,14 +15,14 @@ export async function createTemporaryCompany(): Promise<string> {
         email: "test@example.com",
     })
     await createReservedBranch(projectRoot)
-    const directorPositionId = "director"
+    const founderPositionId = "founder"
     await runOperation(projectRoot, "aico init", async () => {
         await Promise.all([
-            saveCompany(projectRoot, { name: "Acme", directorPositionId }),
+            saveCompany(projectRoot, { name: "Acme", founderPositionId }),
             saveProject(projectRoot, { description: "" }),
             savePosition(projectRoot, {
-                id: directorPositionId,
-                title: "Director",
+                id: founderPositionId,
+                title: "Founder",
                 description: "",
             }),
         ])

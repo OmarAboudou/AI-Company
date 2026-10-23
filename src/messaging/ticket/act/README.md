@@ -1,6 +1,6 @@
 # Ticket acts
 
-The acts that pass the hand on a ticket: its assignee asks a question, delivers, or renounces when it can't meet the request; its requester answers, validates or refuses the delivery, or cancels the ticket; the director gives a renounced ticket back to its assignee, hands a ticket over to another position, which becomes its assignee, or closes it as failed. Each act is a message of the ticket's discussion, recorded in the journal as the act it carries, from which the ticket's state follows: open while the assignee has the hand, waiting for the requester's answer, to validate, to arbitrate by the director once renounced, then closed, done, cancelled or failed.
+The acts that pass the hand on a ticket: its assignee asks a question, delivers, or renounces when it can't meet the request; its requester answers, validates or refuses the delivery, or cancels the ticket; the founder gives a renounced ticket back to its assignee, hands a ticket over to another position, which becomes its assignee, or closes it as failed. Each act is a message of the ticket's discussion, recorded in the journal as the act it carries, from which the ticket's state follows: open while the assignee has the hand, waiting for the requester's answer, to validate, to arbitrate by the founder once renounced, then closed, done, cancelled or failed.
 
 ## Invariants
 

@@ -70,7 +70,7 @@ function readLastCommits(count: number) {
 }
 
 describe("sendTurn", () => {
-    test("runs the turn's calls from the person's position, as a director", async () => {
+    test("runs the turn's calls from the person's position, as a founder", async () => {
         await addToolCall("ticket_deliver", { body: "Ready for Friday." })
 
         await sendPersonTurn()

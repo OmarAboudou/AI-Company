@@ -19,7 +19,7 @@ export async function sendExampleMessage(
     ticketNumber: number,
     body: string,
     catalog: WorkCatalog,
-    { positionId = "director" }: { positionId?: string } = {},
+    { positionId = "founder" }: { positionId?: string } = {},
 ): Promise<SendExampleMessageResult> {
     const [journal, position] = await Promise.all([
         loadJournal(projectRoot),

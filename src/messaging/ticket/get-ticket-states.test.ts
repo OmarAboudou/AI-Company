@@ -5,7 +5,7 @@ import type { Ticket } from "./schema.ts"
 const frameworkTicket: Ticket = {
     number: 1,
     title: "Choose the API framework",
-    requester: { id: "director", title: "Director" },
+    requester: { id: "founder", title: "Founder" },
     assignee: { id: "developer", title: "Developer" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
     createdAt: "2026-10-23T14:00:00.000Z",
@@ -22,7 +22,7 @@ describe("getTicketStates", () => {
                     1,
                     {
                         status: "open",
-                        requesterPositionId: "director",
+                        requesterPositionId: "founder",
                         assigneePositionId: "developer",
                     },
                 ],

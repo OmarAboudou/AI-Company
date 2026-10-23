@@ -20,7 +20,7 @@ export type ListenerEffect = CreateTaskEffect | CancelTaskEffect
 
 export type ListenerContext = {
     events: readonly JournalEvent[]
-    directorPositionId: string
+    founderPositionId: string
     tasks: readonly Task[]
     taskStates: ReadonlyMap<string, TaskState>
     positions: readonly IdHistory[]

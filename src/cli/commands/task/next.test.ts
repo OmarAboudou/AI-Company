@@ -10,7 +10,7 @@ describe("aico task next", () => {
         await createCompany(getProjectPath(), { name: "Acme" })
     })
 
-    test("opens the director's What now?, which always waits", () => {
+    test("opens the founder's What now?, which always waits", () => {
         const next = runCli("task", "next")
 
         expect(next.exitCode).toBe(0)

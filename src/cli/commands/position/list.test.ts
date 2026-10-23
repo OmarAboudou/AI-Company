@@ -21,7 +21,7 @@ describe("aico position", () => {
 
         expect(runCli("position", "list").stdout).toBe(
             "developer  Developer  (you)\n" +
-                "director   Director   (you)\n" +
+                "founder    Founder    (you)\n" +
                 "qa-tester  QA Tester  (you)\n",
         )
     })
@@ -71,7 +71,7 @@ describe("aico position list and show", () => {
 
         expect(runCli("position", "list").stdout).toBe(
             "developer  Developer  (you)\n" +
-                "director   Director   (you)\n" +
+                "founder    Founder    (you)\n" +
                 "qa-tester  QA Tester  claude-senior\n",
         )
         expect(runCli("position", "show", "qa-tester").stdout).toBe(

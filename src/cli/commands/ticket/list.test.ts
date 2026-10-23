@@ -34,8 +34,8 @@ describe("aico ticket list", () => {
         const listing = runCli("ticket", "list")
 
         expect(listing.stdout).toBe(
-            "#1  open  @director → @developer  Choose the API framework\n" +
-                "#2  open  @director → @director   Plan the release\n",
+            "#1  open  @founder → @developer  Choose the API framework\n" +
+                "#2  open  @founder → @founder    Plan the release\n",
         )
     })
 })

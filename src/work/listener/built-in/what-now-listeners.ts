@@ -16,7 +16,7 @@ import {
 } from "../define-listener.ts"
 
 // An init run again after an interruption creates the company twice: the
-// director never gets a second What now? while one is pending.
+// founder never gets a second What now? while one is pending.
 function giveWhatNow(
     positionId: string,
     { tasks, taskStates }: ListenerContext,
@@ -39,7 +39,7 @@ function giveWhatNow(
 export const whatNowListeners: Listener[] = [
     defineListener({
         eventType: companyCreatedEventType,
-        getEffects: (_event, ctx) => giveWhatNow(ctx.directorPositionId, ctx),
+        getEffects: (_event, ctx) => giveWhatNow(ctx.founderPositionId, ctx),
     }),
     ...[taskDoneEventType, taskFailedEventType, taskCancelledEventType].map(
         (eventType) =>

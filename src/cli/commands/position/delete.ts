@@ -10,7 +10,7 @@ export function registerPositionDeleteCommand(positionCommand: Command): void {
         .command("delete")
         .alias("close")
         .description(
-            "Delete (close) a position, except the director's. Its default employee stays hired. Refused while tasks on tickets await it, unless --force.",
+            "Delete (close) a position, except the founder's. Its employee stays hired. Refused while tasks on tickets await it, unless --force.",
         )
         .argument(
             "<position-id>",

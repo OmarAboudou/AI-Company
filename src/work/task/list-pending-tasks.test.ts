@@ -59,7 +59,7 @@ async function askPosition(
             depth: 0,
             ticketNumber,
             messageId: "20261018-140322-123-3f9a",
-            positionId: "director",
+            positionId: "founder",
         },
     )
     const uncreatedTask = { type, positionId, params: { ticketNumber } }
@@ -99,7 +99,7 @@ describe("listPendingTasks", () => {
     })
 
     test("lists as waiting the tasks of positions no LLM holds, saying why", async () => {
-        for (const positionId of ["director", "qa-tester", "ux"]) {
+        for (const positionId of ["founder", "qa-tester", "ux"]) {
             await askPosition(positionId)
         }
 
@@ -176,7 +176,7 @@ describe("listPendingTasks", () => {
     test("lists a model's queued task as waiting for the relaunch during a pause", async () => {
         const queuedTask = await askPosition("backend-developer")
         const runningTask = await askPosition("backend-developer")
-        const directorTask = await askPosition("director")
+        const founderTask = await askPosition("founder")
         await startTask(runningTask)
         await pauseCompany(await loadJournal(projectRoot))
 
@@ -190,7 +190,7 @@ describe("listPendingTasks", () => {
             { kind: "waiting", task: runningTask, reason: "running" },
             {
                 kind: "waiting",
-                task: directorTask,
+                task: founderTask,
                 reason: "held-by-user",
             },
         ])

@@ -4,7 +4,7 @@ import { answerTaskType } from "../../task-type/built-in/answer/answer.ts"
 import { resumeTaskType } from "../../task-type/built-in/resume/resume.ts"
 import { validateTaskType } from "../../task-type/built-in/validate/validate.ts"
 
-export function getHandTask(state: TicketState, directorPositionId: string) {
+export function getHandTask(state: TicketState, founderPositionId: string) {
     switch (state.status) {
         case "open":
             return {
@@ -23,7 +23,7 @@ export function getHandTask(state: TicketState, directorPositionId: string) {
             }
         case "to-arbitrate":
             return {
-                positionId: directorPositionId,
+                positionId: founderPositionId,
                 taskType: analyseRenouncementTaskType,
             }
         case "closed":

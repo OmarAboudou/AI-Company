@@ -46,7 +46,7 @@ const ticketTaskRules = [
     {
         eventType: ticketRenouncedEventType,
         taskType: analyseRenouncementTaskType,
-        recipientRole: "director",
+        recipientRole: "founder",
     },
     {
         eventType: ticketGivenBackEventType,
@@ -63,15 +63,15 @@ const ticketTaskRules = [
 function getRecipientPositionId(
     recipientRole: (typeof ticketTaskRules)[number]["recipientRole"],
     state: TicketState,
-    directorPositionId: string,
+    founderPositionId: string,
 ): string {
     switch (recipientRole) {
         case "requester":
             return state.requesterPositionId
         case "assignee":
             return state.assigneePositionId
-        case "director":
-            return directorPositionId
+        case "founder":
+            return founderPositionId
     }
 }
 
@@ -81,7 +81,7 @@ export const ticketTaskListeners: Listener[] = ticketTaskRules.map(
             eventType,
             getEffects: (
                 { ticketNumber },
-                { directorPositionId, ticketStates },
+                { founderPositionId, ticketStates },
             ) => {
                 const state = ticketStates.get(ticketNumber)
                 if (state === undefined || state.status === "closed") {
@@ -90,7 +90,7 @@ export const ticketTaskListeners: Listener[] = ticketTaskRules.map(
                 const positionId = getRecipientPositionId(
                     recipientRole,
                     state,
-                    directorPositionId,
+                    founderPositionId,
                 )
                 const task = createUncreatedTask(taskType, {
                     positionId,

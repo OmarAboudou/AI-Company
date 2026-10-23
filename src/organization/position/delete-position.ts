@@ -26,9 +26,9 @@ export async function deletePosition(
     ])
     const pendingPositionIdsByTicket =
         await loadPendingPositionIdsByTicket(journal)
-    if (company.directorPositionId === position.id) {
+    if (company.founderPositionId === position.id) {
         throw new UserError(
-            `Position "${position.id}" is the director's position: it can't be deleted.`,
+            `Position "${position.id}" is the founder's position: it can't be deleted.`,
         )
     }
     const pendingTicketNumbers = [...pendingPositionIdsByTicket]

@@ -5,7 +5,7 @@ import type { Message } from "./schema.ts"
 const question: Message = {
     ticketNumber: 1,
     id: "20261018-140322-123-3f9a",
-    position: { id: "director", title: "Director" },
+    position: { id: "founder", title: "Founder" },
     committer: { name: "Omar Aboudou", email: "omar@example.com" },
     sentAt: "2026-10-18T14:03:22.123Z",
     body: "Hono or Express?",

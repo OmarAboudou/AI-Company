@@ -17,13 +17,13 @@ export async function assignPosition(
     { shouldReplace = false }: { shouldReplace?: boolean } = {},
 ): Promise<AssignPositionResult> {
     await requireCompany(projectRoot)
-    const [{ position, isDirectorPosition }, employee] = await Promise.all([
+    const [{ position, isFounderPosition }, employee] = await Promise.all([
         loadExistingPositionAssignment(projectRoot, rawPositionId),
         loadExistingEmployee(projectRoot, rawEmployeeId),
     ])
-    if (isDirectorPosition) {
+    if (isFounderPosition) {
         throw new UserError(
-            `Position "${position.id}" is the director's position: you always hold it, never an employee.`,
+            `Position "${position.id}" is the founder's position: you always hold it, never an employee.`,
         )
     }
     const previousEmployeeId = position.employeeId

@@ -84,12 +84,12 @@ describe("assignPosition", () => {
         expect(await loadEmployeeId("qa")).toBe("omar")
     })
 
-    test("refuses the director's position", async () => {
-        const assignment = assignPosition(projectRoot, "director", "omar")
+    test("refuses the founder's position", async () => {
+        const assignment = assignPosition(projectRoot, "founder", "omar")
 
         await expect(assignment).rejects.toThrow(UserError)
-        await expect(assignment).rejects.toThrow("is the director's position")
-        expect(await loadEmployeeId("director")).toBeUndefined()
+        await expect(assignment).rejects.toThrow("is the founder's position")
+        expect(await loadEmployeeId("founder")).toBeUndefined()
     })
 
     test("refuses an unknown position", async () => {

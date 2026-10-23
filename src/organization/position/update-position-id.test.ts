@@ -86,14 +86,14 @@ describe("updatePositionId", () => {
         ])
     })
 
-    test("makes the company follow its director's position", async () => {
+    test("makes the company follow its founder's position", async () => {
         const before = await loadCompany(projectRoot)
 
-        await updatePositionId(projectRoot, "director", "management")
+        await updatePositionId(projectRoot, "founder", "management")
 
         const after = await loadCompany(projectRoot)
-        expect(before.directorPositionId).toBe("director")
-        expect(after.directorPositionId).toBe("management")
+        expect(before.founderPositionId).toBe("founder")
+        expect(after.founderPositionId).toBe("management")
     })
 
     test("refuses an id another position has", async () => {

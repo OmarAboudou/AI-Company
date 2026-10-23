@@ -52,6 +52,6 @@ export type Worker = z.infer<typeof WorkerSchema>
 
 export type PositionAssignment = {
     position: Position
-    isDirectorPosition: boolean
+    isFounderPosition: boolean
     holder: Worker
 }

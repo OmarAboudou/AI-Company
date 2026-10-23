@@ -34,25 +34,25 @@ export const deliveryRefusedEventType = defineMessageEventType({
 export const ticketFailedEventType = defineMessageEventType({
     type: "ticket-failed",
     description:
-        "The director closed the ticket, failed, saying why: its request won't be met.",
+        "The founder closed the ticket, failed, saying why: its request won't be met.",
 })
 
 export const ticketRenouncedEventType = defineMessageEventType({
     type: "ticket-renounced",
     description:
-        "The ticket's assignee renounced, saying what went wrong: the company pauses, and the director arbitrates.",
+        "The ticket's assignee renounced, saying what went wrong: the company pauses, and the founder arbitrates.",
 })
 
 export const ticketGivenBackEventType = defineMessageEventType({
     type: "ticket-given-back",
     description:
-        "The director gave the renounced ticket back to its assignee, saying what was readjusted: the assignee has the hand again.",
+        "The founder gave the renounced ticket back to its assignee, saying what was readjusted: the assignee has the hand again.",
 })
 
 export const ticketHandedOverEventType = defineMessageEventType({
     type: "ticket-handed-over",
     description:
-        "The director handed the ticket over to another position, saying why: its new assignee has the hand.",
+        "The founder handed the ticket over to another position, saying why: its new assignee has the hand.",
     fields: {
         assigneePositionId: IdSchema.meta({
             description:

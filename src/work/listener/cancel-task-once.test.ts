@@ -27,7 +27,7 @@ beforeEach(async () => {
             depth: 0,
             ticketNumber,
             messageId: "20261018-140322-123-3f9a",
-            positionId: "director",
+            positionId: "founder",
         },
     )
     const uncreatedTask = createUncreatedTask(exampleTaskType, {

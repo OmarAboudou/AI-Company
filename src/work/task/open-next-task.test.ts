@@ -30,7 +30,7 @@ afterEach(async () => {
 async function ask(
     askedPositionId: string,
     body: string,
-    authorPositionId = "director",
+    authorPositionId = "founder",
 ) {
     const sending = await sendExampleMessage(
         projectRoot,
@@ -213,15 +213,15 @@ describe("openNextTask among the person's positions", () => {
         await expect(opening).rejects.toThrow("isn't one you hold now")
     })
 
-    test("lets the user work the tasks of the director's position", async () => {
-        const question = await ask("director", "Ready?", "qa-tester")
+    test("lets the user work the tasks of the founder's position", async () => {
+        const question = await ask("founder", "Ready?", "qa-tester")
 
         const { openedTask } = await openNextExampleTask({})
 
         const [startedEvent] = await listTaskStartedEvents()
         expect(openedTask?.task).toEqual(question.task)
         expect(openedTask?.run.conversation.systemPrompt).toStartWith(
-            "You are Omar Aboudou, Director (@director) at Acme.",
+            "You are Omar Aboudou, Founder (@founder) at Acme.",
         )
         expect(startedEvent?.worker).toEqual({ kind: "user" })
     })
@@ -252,9 +252,9 @@ describe("openNextTask with a task that became pointless", () => {
         expect(openedTask?.task).toEqual(logo.createdTasks[0])
     })
 
-    test("opens during a pause only the director's tasks", async () => {
+    test("opens during a pause only the founder's tasks", async () => {
         await ask("qa-tester", "Can we ship on Friday?")
-        const planning = await ask("director", "A plan?", "qa-tester")
+        const planning = await ask("founder", "A plan?", "qa-tester")
         await pauseCompany(await loadJournal(projectRoot))
 
         const { openedTask } = await openNextExampleTask()

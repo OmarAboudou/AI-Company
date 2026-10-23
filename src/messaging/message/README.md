@@ -1,6 +1,6 @@
 # Message
 
-A message is what a position writes in a ticket's discussion: a body in Markdown, the position it was written from, the employee who wrote it, and the committer, the person at the keyboard according to git, as in a commit. A director's message has no employee: its committer is its author.
+A message is what a position writes in a ticket's discussion: a body in Markdown, the position it was written from, the employee who wrote it, and the committer, the person at the keyboard according to git, as in a commit. A message the user writes has no employee: its committer is its author.
 
 ## Invariants
 

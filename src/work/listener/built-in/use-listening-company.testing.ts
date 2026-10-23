@@ -22,8 +22,8 @@ import { dispatchEvents } from "../dispatch-events.ts"
 
 const committer = { name: "Test User", email: "test@example.com" }
 
-export const director: Author = {
-    position: { id: "director", title: "Director" },
+export const founder: Author = {
+    position: { id: "founder", title: "Founder" },
     committer,
 }
 

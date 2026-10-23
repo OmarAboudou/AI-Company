@@ -8,7 +8,7 @@ const { runCli, startCliWithEnv, getProjectPath } = useTemporaryProject()
 
 const sessionTimeoutMs = 30_000
 
-// The QA position, held by the user, is selected: the director's
+// The QA position, held by the user, is selected: the founder's
 // What now?, which always waits, would never let a session wait.
 beforeEach(async () => {
     const projectRoot = getProjectPath()
@@ -89,7 +89,7 @@ describe("aico task work", () => {
             const session = startSession()
 
             await session.waitForOutput(
-                "The company is paused: only the director's tasks open until `aico company relaunch`.",
+                "The company is paused: only the founder's tasks open until `aico company relaunch`.",
             )
             session.write("\x04")
 

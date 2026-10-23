@@ -11,25 +11,25 @@ import type { TicketAct } from "./ticket-acts.ts"
 function getActorPositionId(
     { actorRole }: TicketAct,
     state: TicketState,
-    directorPositionId: string,
+    founderPositionId: string,
 ): string {
     switch (actorRole) {
         case "requester":
             return state.requesterPositionId
         case "assignee":
             return state.assigneePositionId
-        case "director":
-            return directorPositionId
+        case "founder":
+            return founderPositionId
     }
 }
 
 function formatActorRole({ actorRole }: TicketAct): string {
-    return actorRole === "director" ? "the director" : `its ${actorRole}`
+    return actorRole === "founder" ? "the founder" : `its ${actorRole}`
 }
 
 function formatStatusReason(
     { status, outcome, requesterPositionId }: TicketState,
-    directorPositionId: string,
+    founderPositionId: string,
 ): string {
     switch (status) {
         case "open":
@@ -39,7 +39,7 @@ function formatStatusReason(
         case "to-validate":
             return `it waits for @${requesterPositionId} to validate it`
         case "to-arbitrate":
-            return `it waits for @${directorPositionId} to arbitrate it`
+            return `it waits for @${founderPositionId} to arbitrate it`
         case "closed":
             return `it is closed, ${outcome}`
     }
@@ -54,7 +54,7 @@ export async function requireTicketAct(
     ticketNumber: number,
 ): Promise<RequireTicketActResult> {
     const { projectRoot } = journal
-    const [ticket, positions, { directorPositionId }] = await Promise.all([
+    const [ticket, positions, { founderPositionId }] = await Promise.all([
         loadExistingTicket(projectRoot, ticketNumber),
         listPositions(projectRoot),
         loadCompany(projectRoot),
@@ -65,7 +65,7 @@ export async function requireTicketAct(
     if (state === undefined) {
         throw new Error(`Ticket #${ticket.number} got no state`)
     }
-    const actorPositionId = getActorPositionId(act, state, directorPositionId)
+    const actorPositionId = getActorPositionId(act, state, founderPositionId)
     if (author.position.id !== actorPositionId) {
         throw new UserError(
             `You can't ${act.action} ticket #${ticket.number}: only ${formatActorRole(act)}, @${actorPositionId}, can.`,
@@ -73,7 +73,7 @@ export async function requireTicketAct(
     }
     if (!act.fromStatuses.includes(state.status)) {
         throw new UserError(
-            `You can't ${act.action} ticket #${ticket.number} now: ${formatStatusReason(state, directorPositionId)}.`,
+            `You can't ${act.action} ticket #${ticket.number} now: ${formatStatusReason(state, founderPositionId)}.`,
         )
     }
     return { ticket, state }

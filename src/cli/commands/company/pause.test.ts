@@ -13,7 +13,7 @@ describe("aico company pause", () => {
 
         expect(pausing.exitCode).toBe(0)
         expect(pausing.stdout).toBe(
-            "Paused the company: no new task starts but the director's until `aico company relaunch`.\n",
+            "Paused the company: no new task starts but the founder's until `aico company relaunch`.\n",
         )
         expect(runCli("company", "show").stdout).toMatch(
             /^# Acme\n\nPaused since \d{4}-\d\d-\d\d \d\d:\d\d UTC: `aico company relaunch` relaunches it\.\n$/,

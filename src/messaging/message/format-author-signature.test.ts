@@ -20,7 +20,7 @@ describe("formatAuthorSignature", () => {
         )
     })
 
-    test("signs with the committer's name when a director wrote", () => {
+    test("signs with the committer's name when a founder wrote", () => {
         const signature = formatAuthorSignature({ position, committer })
 
         expect(signature).toBe("Omar, Backend Developer (@backend-developer)")

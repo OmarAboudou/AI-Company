@@ -23,10 +23,10 @@ afterEach(async () => {
 })
 
 describe("setCurrentPosition", () => {
-    test("selects the director's position", async () => {
-        const position = await setCurrentPosition(projectRoot, "director")
+    test("selects the founder's position", async () => {
+        const position = await setCurrentPosition(projectRoot, "founder")
 
-        expect(position.id).toBe("director")
+        expect(position.id).toBe("founder")
     })
 
     test("selects a position no employee holds", async () => {
@@ -72,7 +72,7 @@ describe("setCurrentPosition", () => {
     test("refuses to run outside a company", async () => {
         const folderWithoutCompany = join(projectRoot, "elsewhere")
 
-        const selection = setCurrentPosition(folderWithoutCompany, "director")
+        const selection = setCurrentPosition(folderWithoutCompany, "founder")
 
         await expect(selection).rejects.toThrow("Run `aico init` first.")
     })

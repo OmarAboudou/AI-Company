@@ -2,7 +2,7 @@
 
 The human at the keyboard is the user, who acts in a shell: the person git names.
 
-They act from the positions they hold: the director's position and every position no LLM employee holds. A position selected with `aico current-position set`, kept in the shell's environment until `clear`, narrows them to one, as an e-mail's From line does.
+They act from the positions they hold: the founder's position and every position no LLM employee holds. A position selected with `aico current-position set`, kept in the shell's environment until `clear`, narrows them to one, as an e-mail's From line does.
 
 ## Invariants
 

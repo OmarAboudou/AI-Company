@@ -29,16 +29,16 @@ describe("listPositionAssignments", () => {
         expect(assignments).toEqual([
             {
                 position: developer,
-                isDirectorPosition: false,
+                isFounderPosition: false,
                 holder: { kind: "employee", employeeId: "claude" },
             },
             {
                 position: {
-                    id: "director",
-                    title: "Director",
+                    id: "founder",
+                    title: "Founder",
                     description: "",
                 },
-                isDirectorPosition: true,
+                isFounderPosition: true,
                 holder: { kind: "user" },
             },
         ])

@@ -15,7 +15,7 @@ import {
 
 export type TicketAct = {
     eventType: MessageEventType
-    actorRole: "requester" | "assignee" | "director"
+    actorRole: "requester" | "assignee" | "founder"
     action: string
     fromStatuses: TicketStatus[]
     toStatus: TicketStatus
@@ -76,21 +76,21 @@ export const ticketActs = {
     },
     "give-back": {
         eventType: ticketGivenBackEventType,
-        actorRole: "director",
+        actorRole: "founder",
         action: "give back",
         fromStatuses: ["to-arbitrate"],
         toStatus: "open",
     },
     "hand-over": {
         eventType: ticketHandedOverEventType,
-        actorRole: "director",
+        actorRole: "founder",
         action: "hand over",
         fromStatuses: ["open", "waiting", "to-validate", "to-arbitrate"],
         toStatus: "open",
     },
     close: {
         eventType: ticketFailedEventType,
-        actorRole: "director",
+        actorRole: "founder",
         action: "close",
         fromStatuses: ["open", "waiting", "to-validate", "to-arbitrate"],
         toStatus: "closed",

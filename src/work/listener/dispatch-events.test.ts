@@ -28,7 +28,7 @@ const ticketNumber = 1
 const exampleCatalog = createExampleWorkCatalog(["backend-developer"])
 
 async function createMessageSentEvent(
-    positionId = "director",
+    positionId = "founder",
     depth = 0,
     eventTicketNumber = ticketNumber,
 ) {
