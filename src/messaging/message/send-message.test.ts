@@ -2,16 +2,15 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { createGitRepository } from "../../git/create-git-repository.testing.ts"
-import { recordEvent } from "../../journal/record-event.ts"
-import { listEvents, loadJournal } from "../../journal/storage.ts"
+import { listEvents } from "../../journal/storage.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
 import { saveEmployee } from "../../organization/employee/storage.ts"
 import { assignPositionTemporarily } from "../../organization/position/assign-position-temporarily.ts"
 import { savePosition } from "../../organization/position/storage.ts"
 import { UserError } from "../../user-error.ts"
+import { createExampleWorkCatalog } from "../../work/create-example-work-catalog.testing.ts"
 import { listTasks } from "../../work/task/storage.ts"
 import { createThread } from "../thread/create-thread.ts"
-import { messageSentEventType } from "./schema.ts"
 import { sendMessage } from "./send-message.ts"
 import { listMessages } from "./storage.ts"
 
@@ -78,47 +77,21 @@ describe("sendMessage", () => {
         )
     })
 
-    test("asks each position it mentions, with a task", async () => {
-        const body = "@qa-tester, a test plan?"
+    test("returns the tasks its catalog's listeners create", async () => {
+        const catalog = createExampleWorkCatalog(["qa-tester"])
 
-        const { createdTasks } = await sendInThread(body)
+        const { createdTasks } = await sendMessage(
+            projectRoot,
+            environment,
+            threadId,
+            { body: "A test plan?" },
+            catalog,
+        )
 
         expect(createdTasks).toMatchObject([
-            {
-                type: "catch-up-thread",
-                positionId: "qa-tester",
-                params: { threadId },
-            },
+            { type: "example", positionId: "qa-tester", params: { threadId } },
         ])
-    })
-
-    test("marks as done what earlier messages asked of its position", async () => {
-        await recordEvent(
-            await loadJournal(projectRoot),
-            messageSentEventType,
-            {
-                depth: 1,
-                threadId,
-                messageId: "20261018-140322-123-3f9a",
-                positionId: "backend-developer",
-                mentions: ["director"],
-            },
-        )
-
-        const { message } = await sendInThread("Hono.")
-
-        const [tasks, events] = await Promise.all([
-            listTasks(projectRoot),
-            listEvents(projectRoot),
-        ])
-        const directorCatchUp = tasks.find(
-            ({ positionId }) => positionId === "director",
-        )
-        expect(events.at(-1)).toMatchObject({
-            type: "task-done",
-            taskId: directorCatchUp?.id,
-            result: { lastReadEntryId: message.id },
-        })
+        expect(await listTasks(projectRoot)).toEqual(createdTasks)
     })
 
     test("records its author and the positions it mentions", async () => {

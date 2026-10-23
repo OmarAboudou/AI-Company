@@ -7,6 +7,7 @@ import { createTemporaryCompany } from "../../organization/company/create-tempor
 import { assignPositionTemporarily } from "../../organization/position/assign-position-temporarily.ts"
 import { savePosition } from "../../organization/position/storage.ts"
 import { UserError } from "../../user-error.ts"
+import { createExampleWorkCatalog } from "../../work/create-example-work-catalog.testing.ts"
 import { listMessages } from "../message/storage.ts"
 import { createThread } from "./create-thread.ts"
 import { listThreads, loadThread } from "./storage.ts"
@@ -97,19 +98,17 @@ describe("createThread", () => {
         )
     })
 
-    test("asks each position its first message mentions, with a task", async () => {
+    test("returns the tasks its first message gets from the catalog's listeners", async () => {
         const { thread, createdTasks } = await createThread(
             projectRoot,
             environment,
-            {
-                subject: "Tests",
-                body: "@qa-tester, a test plan?",
-            },
+            { subject: "Tests", body: "A test plan?" },
+            createExampleWorkCatalog(["qa-tester"]),
         )
 
         expect(createdTasks).toMatchObject([
             {
-                type: "catch-up-thread",
+                type: "example",
                 positionId: "qa-tester",
                 params: { threadId: thread.id },
             },

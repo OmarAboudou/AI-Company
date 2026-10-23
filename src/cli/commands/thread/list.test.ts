@@ -1,10 +1,22 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { sendMessage } from "../../../messaging/message/send-message.ts"
 import { createThread } from "../../../messaging/thread/create-thread.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
+import { createExampleWorkCatalog } from "../../../work/create-example-work-catalog.testing.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
+
+async function askTester(threadId: string): Promise<void> {
+    await sendMessage(
+        getProjectPath(),
+        {},
+        threadId,
+        { body: "A test plan?" },
+        createExampleWorkCatalog(["qa-tester"]),
+    )
+}
 
 describe("aico thread list", () => {
     beforeEach(async () => {
@@ -36,7 +48,7 @@ describe("aico thread list", () => {
     })
 })
 
-describe("mentions", () => {
+describe("pending tasks", () => {
     let threadId = ""
 
     beforeEach(async () => {
@@ -66,10 +78,10 @@ describe("mentions", () => {
         ])
     })
 
-    test("thread list shows the positions with a pending task there", () => {
+    test("thread list shows the positions with a pending task there", async () => {
         const before = runCli("thread", "list").stdout
 
-        runCli("message", "send", threadId, "-b", "@qa-tester, a test plan?")
+        await askTester(threadId)
         const after = runCli("thread", "list").stdout
 
         expect(before).not.toContain("pending")

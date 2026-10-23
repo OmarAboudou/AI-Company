@@ -2,6 +2,8 @@
 
 How the company's employees work: events in the journal give positions tasks, through listeners; whoever works a position does each task in a run, a fresh conversation with the message and tools its task's type builds; and a person works a task as a model does, turn by turn.
 
+AICo ships no task type nor listener yet, so that nothing gives a position a task: the engine's tests run tasks of an example type.
+
 ## Invariants
 
 - Only `aico run` calls models: writing a message, creating a thread or working a task by hand never spends tokens.

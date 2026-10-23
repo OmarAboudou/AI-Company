@@ -1,9 +1,29 @@
 import { beforeEach, describe, expect, test } from "bun:test"
+import { sendMessage } from "../../../messaging/message/send-message.ts"
+import { createThread } from "../../../messaging/thread/create-thread.ts"
 import { createCompany } from "../../../organization/company/create-company.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
+import { createExampleWorkCatalog } from "../../../work/create-example-work-catalog.testing.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
+
+async function askDeveloper(): Promise<string> {
+    const projectRoot = getProjectPath()
+    const { thread } = await createThread(
+        projectRoot,
+        {},
+        { subject: "Release" },
+    )
+    await sendMessage(
+        projectRoot,
+        {},
+        thread.id,
+        { body: "Can you check?" },
+        createExampleWorkCatalog(["developer"]),
+    )
+    return thread.id
+}
 
 describe("aico position delete", () => {
     beforeEach(async () => {
@@ -40,10 +60,8 @@ describe("aico position delete", () => {
         expect(show.stdout).toContain("positions: (none)")
     })
 
-    test("delete refuses a position with pending tasks, listing their threads", () => {
-        const ask = ["-b", "@developer Can you check?"]
-        const creation = runCli("thread", "create", "-s", "Release", ...ask)
-        const threadId = creation.stdout.trim()
+    test("delete refuses a position with pending tasks, listing their threads", async () => {
+        const threadId = await askDeveloper()
 
         const deletion = runCli("position", "delete", "developer")
 
@@ -55,10 +73,8 @@ describe("aico position delete", () => {
 
     test.each(["--force", "-f"])(
         "delete %s deletes a position with pending tasks",
-        (flag) => {
-            const ask = ["-b", "@developer Can you check?"]
-            const creation = runCli("thread", "create", "-s", "Release", ...ask)
-            const threadId = creation.stdout.trim()
+        async (flag) => {
+            const threadId = await askDeveloper()
 
             const deletion = runCli("position", "delete", "developer", flag)
             const list = runCli("thread", "list").stdout

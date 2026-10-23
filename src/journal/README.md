@@ -1,6 +1,6 @@
 # Journal
 
-The journal is the company's activity journal: one event for each thing that happened, a message sent, a task created, started, done or failed, kept in git with the rest of the company. The state of tasks, and a position's read marker in a thread, are derived from it rather than stored.
+The journal is the company's activity journal: one event for each thing that happened, a message sent, a task created, started, done or failed, kept in git with the rest of the company. The state of tasks is derived from it rather than stored.
 
 Each concept defines its own types of events, with their fields. The journal itself knows only what every event has: its type, when it happened, and its depth, how many tasks led to it, 0 for what a person does.
 

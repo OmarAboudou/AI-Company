@@ -25,11 +25,11 @@ const runStart = {
             inputSchema: { type: "object" },
         },
     ],
-    userMessage: "Catch up on this thread.",
+    userMessage: "Answer the last message of this thread.",
     session: {
         toolNames: ["message_send"],
         boundToolInputs: { message_send: { threadId: "2026-10-18-stack" } },
-        result: { lastReadEntryId: "20261018-140322-123-3f9a" },
+        result: { askedEntryId: "20261018-140322-123-3f9a" },
     },
 }
 
@@ -46,7 +46,10 @@ describe("startRun", () => {
                     {
                         role: "user",
                         blocks: [
-                            { type: "text", text: "Catch up on this thread." },
+                            {
+                                type: "text",
+                                text: "Answer the last message of this thread.",
+                            },
                         ],
                     },
                 ],

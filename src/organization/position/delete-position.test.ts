@@ -38,14 +38,10 @@ async function askPosition(positionId: string): Promise<string> {
             threadId,
             messageId: "20261019-100000-000-a1b2",
             positionId: "director",
-            mentions: [positionId],
+            mentions: [],
         },
     )
-    const uncreatedTask = {
-        type: "catch-up-thread",
-        positionId,
-        params: { threadId },
-    }
+    const uncreatedTask = { type: "example", positionId, params: { threadId } }
     await createTask(
         await loadJournal(projectRoot),
         uncreatedTask,

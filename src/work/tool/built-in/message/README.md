@@ -4,7 +4,7 @@ The tools that write in threads, as `aico message send` does: `message_send` sen
 
 ## Invariants
 
-- A message sent in a run names the run, and has the run's depth: the tasks its mentions give continue the chain.
+- A message sent in a run names the run, and has the run's depth.
 
 ## Decisions
 

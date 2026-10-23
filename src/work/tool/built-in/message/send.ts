@@ -8,7 +8,7 @@ import { loadExistingThread } from "../../../../messaging/thread/load-existing-t
 import { defineTool } from "../../define-tool.ts"
 
 function buildDescription(thread: string): string {
-    return `Send a message in ${thread}, from your position. To ask a position to act on the thread, mention it in the message as @position-id: a position you don't mention isn't asked anything.`
+    return `Send a message in ${thread}, from your position.`
 }
 
 export const messageSendTool = defineTool({

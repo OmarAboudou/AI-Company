@@ -2,7 +2,7 @@
 
 A listener subscribes to one type of event and answers each event of that type with effects, as data that AICo applies: creating a task, or marking one as done. Dispatching hands the journal's new events to the listeners: once `message send` or `thread create` has written its message, before a person's next task is chosen, and at each turn of `aico run`.
 
-The built-in listener answers each message: it gives every position the message mentions a task to catch up on the thread, and, for a person's message, marks as done the catch-ups its position had pending there, since writing in the thread means having read it.
+No listener is built in yet: no event gives a task.
 
 ## Invariants
 

@@ -5,6 +5,7 @@ import { createEmployee } from "../../../organization/employee/create-employee.t
 import { assignPosition } from "../../../organization/position/assign-position.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
 import { julieEnvironment } from "../../../work/create-company-with-human-employee.testing.ts"
+import { createExampleWorkCatalog } from "../../../work/create-example-work-catalog.testing.ts"
 import { openNextTask } from "../../../work/task/open-next-task.ts"
 
 export type JulieTask = { threadId: string; taskId: string }
@@ -22,10 +23,18 @@ export async function openJulieTask(projectRoot: string): Promise<JulieTask> {
         {},
         { subject: "Release" },
     )
-    await sendMessage(projectRoot, {}, thread.id, {
-        body: "@qa-tester Can we ship on Friday?",
-    })
-    const { openedTask } = await openNextTask(projectRoot, julieEnvironment)
+    await sendMessage(
+        projectRoot,
+        {},
+        thread.id,
+        { body: "Can we ship on Friday?" },
+        createExampleWorkCatalog(["qa-tester"]),
+    )
+    const { openedTask } = await openNextTask(
+        projectRoot,
+        julieEnvironment,
+        createExampleWorkCatalog(),
+    )
     if (openedTask === undefined) {
         throw new Error("Julie has no task to open")
     }
