@@ -5,17 +5,21 @@ import { recordEvent } from "../../journal/record-event.ts"
 import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
+import {
+    createExampleWorkCatalog,
+    exampleTaskType,
+} from "../create-example-work-catalog.testing.ts"
 import { createTask } from "../task/create-task.ts"
 import { type Task, taskFailedEventType } from "../task/schema.ts"
-import { builtInTaskTypes } from "../task-type/built-in/built-in.ts"
+import { createUncreatedTask } from "../task-type/create-uncreated-task.ts"
 import type { MarkTaskAsDoneEffect } from "./define-listener.ts"
 import { loadDispatching } from "./load-dispatching.ts"
 import { markTaskAsDoneOnce } from "./mark-task-as-done-once.ts"
 
 const threadId = "2026-10-18-choice-of-framework"
-const answerId = "20261018-150000-000-9e8d"
+const runId = "20261018-150000-000-9e8d"
 let projectRoot: string
-let catchUp: Task
+let exampleTask: Task
 
 beforeEach(async () => {
     projectRoot = await createTemporaryCompany()
@@ -27,15 +31,14 @@ beforeEach(async () => {
             threadId,
             messageId: "20261018-140322-123-3f9a",
             positionId: "director",
-            mentions: ["qa-tester"],
+            mentions: [],
         },
     )
-    const uncreatedTask = {
-        type: "catch-up-thread",
+    const uncreatedTask = createUncreatedTask(exampleTaskType, {
         positionId: "qa-tester",
         params: { threadId },
-    }
-    catchUp = await createTask(
+    })
+    exampleTask = await createTask(
         await loadJournal(projectRoot),
         uncreatedTask,
         questionSent,
@@ -47,11 +50,11 @@ afterEach(async () => {
 })
 
 function createMarking(
-    result: Record<string, unknown> = { lastReadEntryId: answerId },
+    result: Record<string, unknown> = { runId },
 ): MarkTaskAsDoneEffect {
     return {
         kind: "mark-task-as-done",
-        taskId: catchUp.id,
+        taskId: exampleTask.id,
         summary: "Sent a message in the thread.",
         result,
     }
@@ -60,7 +63,7 @@ function createMarking(
 async function markInNewDispatching(marking = createMarking()) {
     const dispatching = await loadDispatching(
         await loadJournal(projectRoot),
-        builtInTaskTypes,
+        createExampleWorkCatalog().taskTypes,
     )
     await markTaskAsDoneOnce(marking, dispatching)
     return dispatching
@@ -75,13 +78,13 @@ describe("markTaskAsDoneOnce", () => {
     test("records the task done, with its result, at the task's depth", async () => {
         const { doneTasks } = await markInNewDispatching()
 
-        expect(doneTasks).toEqual([catchUp])
+        expect(doneTasks).toEqual([exampleTask])
         expect(await listTaskDoneEvents()).toMatchObject([
             {
                 depth: 1,
-                taskId: catchUp.id,
+                taskId: exampleTask.id,
                 summary: "Sent a message in the thread.",
-                result: { lastReadEntryId: answerId },
+                result: { runId },
             },
         ])
     })
@@ -98,7 +101,7 @@ describe("markTaskAsDoneOnce", () => {
     test("leaves a task that already ended", async () => {
         await recordEvent(await loadJournal(projectRoot), taskFailedEventType, {
             depth: 1,
-            taskId: catchUp.id,
+            taskId: exampleTask.id,
             reason: "The thread asks nothing.",
         })
 
@@ -109,7 +112,7 @@ describe("markTaskAsDoneOnce", () => {
     })
 
     test("refuses a result that the task's type rejects", async () => {
-        const wrongMarking = createMarking({ readUpTo: answerId })
+        const wrongMarking = createMarking({ runIds: [runId] })
 
         const markingAsDone = markInNewDispatching(wrongMarking)
 
