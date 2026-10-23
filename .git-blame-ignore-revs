@@ -298,3 +298,8 @@ af319381d67e9234d0e193d71cd64f8817ba2475
 
 # Rename formatMentions to formatPositionIds
 c28561b4941048de55a6390b894a29783ce2dab8
+
+# Keep AICo's data on the reserved branch, the second series of AICo (#143), as it landed on main
+
+# Name the series' readers after what they read
+c476dee02b875c9ac97c4c449d503bbd045533fb
