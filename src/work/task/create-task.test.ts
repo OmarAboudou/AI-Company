@@ -19,7 +19,7 @@ afterEach(async () => {
 
 const developerNewTask = {
     type: "example",
-    params: { threadId: "2026-10-18-choice-of-framework" },
+    params: { ticketNumber: 1 },
     positionId: "backend-developer",
 }
 

@@ -1,6 +1,6 @@
 # Built-in tools
 
-The tools AICo ships with, grouped as the command line's commands are: a tool's name joins its group's and its own with `_`, as `message_send` does for `aico message send`.
+The tools AICo ships with, grouped as the command line's commands are: a tool's name joins its group's and its own with `_`, as `ticket_show` does for `aico ticket show`.
 
 ## Decisions
 

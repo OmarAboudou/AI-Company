@@ -6,11 +6,16 @@ import type { Position } from "../../organization/position/schema.ts"
 import { UserError } from "../../user-error.ts"
 import { dispatchEvents } from "../listener/dispatch-events.ts"
 import {
+    type CompanyPause,
+    getCompanyPause,
+} from "../pause/get-company-pause.ts"
+import {
     listPendingTasks,
     type PendingTask,
 } from "../task/list-pending-tasks.ts"
 import type { Task } from "../task/schema.ts"
 import { builtInWorkCatalog, type WorkCatalog } from "../work-catalog.ts"
+import { failCutShortTasks } from "./fail-cut-short-tasks.ts"
 import { type RunTaskResult, runTask } from "./run-task.ts"
 import type { RunProgress } from "./schema.ts"
 
@@ -25,18 +30,36 @@ export type RunReadyTasksProgress =
           employee: Employee
       }
     | { kind: "task-ended"; task: Task; result: RunTaskResult }
+    | { kind: "task-cut-short"; task: Task }
 
-export type RunReadyTasksResult = { waitingTasks: WaitingTask[] }
+export type ReadyTasksRunning = {
+    catalog?: WorkCatalog
+    signal?: AbortSignal
+}
+
+export type RunReadyTasksResult =
+    | {
+          kind: "none-ready"
+          waitingTasks: WaitingTask[]
+          pause: CompanyPause | undefined
+      }
+    | { kind: "stopped" }
 
 export async function runReadyTasks(
     projectRoot: string,
     environment: NodeJS.ProcessEnv,
     operationName: string,
     onProgress: (progress: RunReadyTasksProgress) => void,
-    catalog: WorkCatalog = builtInWorkCatalog,
+    { catalog = builtInWorkCatalog, signal }: ReadyTasksRunning = {},
 ): Promise<RunReadyTasksResult> {
     await requireCompany(projectRoot)
     const journal = await loadJournal(projectRoot)
+    const cutShortTasks = await runOperation(projectRoot, operationName, () =>
+        failCutShortTasks(journal),
+    )
+    for (const task of cutShortTasks) {
+        onProgress({ kind: "task-cut-short", task })
+    }
     while (true) {
         await runOperation(projectRoot, operationName, async () => {
             // Another process, a person's terminal for one, may have
@@ -44,6 +67,9 @@ export async function runReadyTasks(
             await refreshJournal(journal)
             await dispatchEvents(journal, catalog)
         })
+        if (signal?.aborted) {
+            return { kind: "stopped" }
+        }
         const pendingTasks = await listPendingTasks(journal, catalog.taskTypes)
         const readyTask = pendingTasks.find(
             (pendingTask) => pendingTask.kind === "ready",
@@ -52,20 +78,22 @@ export async function runReadyTasks(
             const waitingTasks = pendingTasks.filter(
                 (pendingTask) => pendingTask.kind === "waiting",
             )
-            return { waitingTasks }
+            const pause = getCompanyPause(journal.events)
+            return { kind: "none-ready", waitingTasks, pause }
         }
         const { task, position, employee } = readyTask
         onProgress({ kind: "task-started", task, position, employee })
+        let result: RunTaskResult
         try {
-            const result = await runTask(journal, environment, {
+            result = await runTask(journal, environment, {
                 task,
                 position,
                 employee,
                 taskTypes: catalog.taskTypes,
                 operationName,
                 onProgress,
+                signal,
             })
-            onProgress({ kind: "task-ended", task, result })
         } catch (error) {
             if (!(error instanceof UserError)) {
                 throw error
@@ -73,6 +101,10 @@ export async function runReadyTasks(
             throw new UserError(
                 `${error.message}\nTask "${task.id}" stays pending: run \`aico run\` again to take it up.`,
             )
+        }
+        onProgress({ kind: "task-ended", task, result })
+        if (signal?.aborted) {
+            return { kind: "stopped" }
         }
     }
 }

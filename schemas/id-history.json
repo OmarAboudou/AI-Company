@@ -10,7 +10,7 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
         },
         "formerIds": {
-            "description": "Ids it had before, oldest first, added by update-id. Threads keep the ids they were written with: a former id still designates it in messages written before the change.",
+            "description": "Ids it had before, oldest first, added by update-id. Tickets and messages keep the ids they were written with: a former id still designates it in what was written before the change.",
             "type": "array",
             "items": {
                 "type": "object",

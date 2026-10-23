@@ -6,7 +6,7 @@ import type { Task } from "../task/schema.ts"
 
 export type RunWorker =
     | { kind: "employee"; employee: Employee }
-    | { kind: "directors" }
+    | { kind: "user" }
 
 export type ToolContext = {
     projectRoot: string
@@ -19,10 +19,11 @@ export type ToolContext = {
 }
 
 export type TaskEnding =
-    | { state: "done"; summary: string }
+    | { state: "done"; hasPassedHand: boolean }
     | { state: "failed"; reason: string }
+    | { state: "cancelled"; reason: string }
 
-export type ToolResult = { text: string; taskEnding?: TaskEnding }
+export type ToolResult = { text: string; hasPassedHand?: boolean }
 
 export type Tool<InputSchema extends z.ZodObject = z.ZodObject> = {
     description:

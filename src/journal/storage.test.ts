@@ -66,14 +66,14 @@ describe("saveEvent and listEvents", () => {
     })
 
     test("list keeps every event, whatever its type and fields", async () => {
-        const threadClosed = {
+        const ticketStarred = {
             ...firstNoteWritten,
-            type: "thread-closed",
-            reason: "Decided: Hono.",
+            type: "ticket-starred",
+            starredBy: "founder",
         }
-        await saveEvent(projectRoot, threadClosed)
+        await saveEvent(projectRoot, ticketStarred)
 
-        expect(await listEvents(projectRoot)).toEqual([threadClosed])
+        expect(await listEvents(projectRoot)).toEqual([ticketStarred])
     })
 
     test("save never overwrites an event", async () => {

@@ -7,12 +7,7 @@ import { readJsonFile } from "../../files/read-json-file.ts"
 import { readTextFile } from "../../files/read-text-file.ts"
 import { saveJsonFile } from "../../files/save-json-file.ts"
 import { loadIdHistory, saveIdHistory } from "../../ids/id-history-storage.ts"
-import {
-    type Position,
-    PositionConfigSchema,
-    type PositionState,
-    PositionStateSchema,
-} from "./schema.ts"
+import { type Position, PositionConfigSchema } from "./schema.ts"
 
 function getPositionsFolderPath(projectRoot: string): string {
     return join(getAicoFolderPath(projectRoot), "positions")
@@ -28,7 +23,6 @@ function getPositionFilePaths(projectRoot: string, id: string) {
         config: join(positionFolderPath, "config.json"),
         description: join(positionFolderPath, "description.md"),
         history: join(positionFolderPath, "history.json"),
-        state: join(positionFolderPath, "state.json"),
     }
 }
 
@@ -88,28 +82,4 @@ export async function copyPositionFolder(
         getPositionFolderPath(projectRoot, id),
         getPositionFolderPath(projectRoot, newId),
     )
-}
-
-export async function loadPositionState(
-    projectRoot: string,
-    id: string,
-): Promise<PositionState> {
-    const path = getPositionFilePaths(projectRoot, id).state
-    if (!(await Bun.file(path).exists())) {
-        return {}
-    }
-    return readJsonFile(projectRoot, path, PositionStateSchema)
-}
-
-export async function savePositionState(
-    projectRoot: string,
-    id: string,
-    state: PositionState,
-): Promise<void> {
-    const path = getPositionFilePaths(projectRoot, id).state
-    if (Object.values(state).every((value) => value === undefined)) {
-        await rm(path, { force: true })
-        return
-    }
-    await saveJsonFile(path, state)
 }

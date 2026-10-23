@@ -12,7 +12,7 @@ import {
 } from "../create-example-work-catalog.testing.ts"
 import { createTask } from "../task/create-task.ts"
 import { getTaskPositionId } from "../task/get-task-position-id.ts"
-import type { UncreatedTask } from "../task/schema.ts"
+import { taskStartedEventType, type UncreatedTask } from "../task/schema.ts"
 import { listTasks } from "../task/storage.ts"
 import { createUncreatedTask } from "../task-type/create-uncreated-task.ts"
 import { createTaskOnce } from "./create-task-once.ts"
@@ -28,21 +28,21 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const threadId = "2026-10-18-choice-of-framework"
+const ticketNumber = 1
 
 async function recordQuestionSent(depth = 0) {
     return recordEvent(await loadJournal(projectRoot), messageSentEventType, {
         depth,
-        threadId,
+        ticketNumber,
         messageId: "20261018-140322-123-3f9a",
-        positionId: "director",
+        positionId: "founder",
     })
 }
 
 function createExampleRequest(positionId = "qa-tester"): UncreatedTask {
     return createUncreatedTask(exampleTaskType, {
         positionId,
-        params: { threadId },
+        params: { ticketNumber },
     })
 }
 
@@ -77,7 +77,7 @@ describe("createTaskOnce", () => {
         expect(createdTasks).toMatchObject([
             {
                 type: "example",
-                params: { threadId },
+                params: { ticketNumber },
                 positionId: "qa-tester",
                 causeEventId: questionSent.id,
             },
@@ -118,15 +118,102 @@ describe("createTaskOnce", () => {
     })
 })
 
+describe("createTaskOnce on a ticket", () => {
+    test("gives a position no second queued task on the same ticket", async () => {
+        const firstQuestionSent = await recordQuestionSent()
+        const secondQuestionSent = await recordQuestionSent()
+        await createInNewDispatching(createExampleRequest(), firstQuestionSent)
+
+        const { createdTasks } = await createInNewDispatching(
+            createExampleRequest(),
+            secondQuestionSent,
+        )
+
+        expect(createdTasks).toEqual([])
+        expect(await listTasks(projectRoot)).toHaveLength(1)
+    })
+
+    test("replaces a position's queued task on a ticket by one of another type", async () => {
+        const firstQuestionSent = await recordQuestionSent()
+        const secondQuestionSent = await recordQuestionSent()
+        const firstCreation = await createInNewDispatching(
+            createExampleRequest(),
+            firstQuestionSent,
+        )
+        const reviewRequest = {
+            type: "review",
+            positionId: "qa-tester",
+            params: { ticketNumber },
+        }
+
+        const { createdTasks, cancelledTasks } = await createInNewDispatching(
+            reviewRequest,
+            secondQuestionSent,
+        )
+
+        expect(cancelledTasks).toEqual(firstCreation.createdTasks)
+        expect(createdTasks).toMatchObject([{ type: "review" }])
+    })
+
+    test("gives another position, or another ticket, a task of its own", async () => {
+        const firstQuestionSent = await recordQuestionSent()
+        const secondQuestionSent = await recordQuestionSent()
+        await createInNewDispatching(createExampleRequest(), firstQuestionSent)
+        const otherTicketRequest = createUncreatedTask(exampleTaskType, {
+            positionId: "qa-tester",
+            params: { ticketNumber: 2 },
+        })
+
+        const designerCreation = await createInNewDispatching(
+            createExampleRequest("designer"),
+            secondQuestionSent,
+        )
+        const otherTicketCreation = await createInNewDispatching(
+            otherTicketRequest,
+            secondQuestionSent,
+        )
+
+        expect(designerCreation.createdTasks).toHaveLength(1)
+        expect(otherTicketCreation.createdTasks).toHaveLength(1)
+    })
+
+    test("gives a new task once the queued one started", async () => {
+        const firstQuestionSent = await recordQuestionSent()
+        const secondQuestionSent = await recordQuestionSent()
+        const firstCreation = await createInNewDispatching(
+            createExampleRequest(),
+            firstQuestionSent,
+        )
+        const [firstTask] = firstCreation.createdTasks
+        await recordEvent(
+            await loadJournal(projectRoot),
+            taskStartedEventType,
+            {
+                depth: 1,
+                taskId: firstTask?.id ?? "",
+                runId: "20261018-150000-000-9e8d",
+                worker: { kind: "user" },
+            },
+        )
+
+        const { createdTasks } = await createInNewDispatching(
+            createExampleRequest(),
+            secondQuestionSent,
+        )
+
+        expect(createdTasks).toHaveLength(1)
+    })
+})
+
 describe("createTaskOnce through the positions' id history", () => {
     const questionSent = {
         id: "20261018-140322-123-5d1e",
         type: "message-sent",
         occurredAt: "2026-10-18T14:03:22.123Z",
         depth: 0,
-        threadId,
+        ticketNumber,
         messageId: "20261018-140322-123-3f9a",
-        positionId: "director",
+        positionId: "founder",
     }
 
     beforeEach(async () => {

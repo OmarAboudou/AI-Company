@@ -5,64 +5,39 @@ const developer = {
     id: "developer",
     title: "Developer",
     description: "",
-    defaultEmployeeId: "claude",
+    employeeId: "claude",
 }
-const julieWorker = { kind: "employee", employeeId: "julie" } as const
-const directors = { kind: "directors" } as const
+const user = { kind: "user" } as const
 
 describe("getPositionAssignment", () => {
-    test("has the default employee work a position not assigned temporarily", () => {
-        const assignment = getPositionAssignment(developer, {}, "director")
+    test("has the position's employee hold it", () => {
+        const assignment = getPositionAssignment(developer, "founder")
 
         expect(assignment).toEqual({
             position: developer,
-            isDirectorPosition: false,
-            state: {},
-            currentWorker: { kind: "employee", employeeId: "claude" },
+            isFounderPosition: false,
+            holder: { kind: "employee", employeeId: "claude" },
         })
     })
 
-    test.each([julieWorker, directors])(
-        "has the temporary assignee %j work the position",
-        (assignee) => {
-            const state = { temporaryAssignment: assignee }
+    test("has the user hold a position no employee holds", () => {
+        const { employeeId, ...userDeveloper } = developer
 
-            const assignment = getPositionAssignment(
-                developer,
-                state,
-                "director",
-            )
+        const assignment = getPositionAssignment(userDeveloper, "founder")
 
-            expect(assignment.currentWorker).toEqual(assignee)
-        },
-    )
-
-    test("has nobody work a vacant position", () => {
-        const { defaultEmployeeId, ...vacantDeveloper } = developer
-
-        const assignment = getPositionAssignment(
-            vacantDeveloper,
-            {},
-            "director",
-        )
-
-        expect(assignment.currentWorker).toBeUndefined()
+        expect(assignment.holder).toEqual(user)
     })
 
-    test("has the directors work the director's position", () => {
-        const directorPosition = {
-            id: "director",
-            title: "Director",
+    test("has the user hold the founder's position", () => {
+        const founderPosition = {
+            id: "founder",
+            title: "Founder",
             description: "",
         }
 
-        const assignment = getPositionAssignment(
-            directorPosition,
-            {},
-            "director",
-        )
+        const assignment = getPositionAssignment(founderPosition, "founder")
 
-        expect(assignment.isDirectorPosition).toBe(true)
-        expect(assignment.currentWorker).toEqual(directors)
+        expect(assignment.isFounderPosition).toBe(true)
+        expect(assignment.holder).toEqual(user)
     })
 })

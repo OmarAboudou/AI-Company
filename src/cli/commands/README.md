@@ -5,10 +5,10 @@ Every command of AICo, grouped by the concept it acts on: `aico <concept> <verb>
 ## Invariants
 
 - The verbs are the same across groups, `create`, `list`, `show`, `update`, `update-id` and `delete`, and the company's own words are their aliases, such as `employee hire` and `position close`.
-- A kind that decides which options exist comes first, as a subcommand: `employee create llm`, `position assign-temporarily directors`.
+- A kind that decides which options exist comes first, as a subcommand: `employee create llm`.
 - `update` takes the options of `create`, all optional, and changes only those given; an id changes only through `update-id`.
 - Nothing is replaced without `--replace`, and a deletion that changes other entities needs `--force`; one that would leave a broken reference is refused even with it.
-- Every option in the help has a short and a long form, and every long input, such as a description or a message's body, can be read from a file instead, or from stdin, with `-F`.
+- Every option in the help has a short and a long form, and every long input, such as a description, can be read from a file instead, or from stdin, with `-F`.
 
 ## Decisions
 

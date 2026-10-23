@@ -4,13 +4,7 @@ import { join } from "node:path"
 import { UserError } from "../../user-error.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
 import { loadCompany } from "../company/storage.ts"
-import {
-    hasPosition,
-    loadPosition,
-    loadPositionState,
-    savePosition,
-    savePositionState,
-} from "./storage.ts"
+import { hasPosition, loadPosition, savePosition } from "./storage.ts"
 import { updatePositionId } from "./update-position-id.ts"
 
 let projectRoot: string
@@ -27,7 +21,7 @@ const developer = {
     id: "developer",
     title: "Developer",
     description: "You build the API.",
-    defaultEmployeeId: "omar",
+    employeeId: "omar",
     createdAt: "2026-10-18T14:00:00.000Z",
 }
 
@@ -92,31 +86,14 @@ describe("updatePositionId", () => {
         ])
     })
 
-    test("moves the state with the position", async () => {
-        const julieState = {
-            temporaryAssignment: { kind: "employee", employeeId: "julie" },
-        } as const
-        await savePosition(projectRoot, developer)
-        await savePositionState(projectRoot, "developer", julieState)
-
-        await updatePositionId(projectRoot, "developer", "api-developer")
-
-        const [formerState, movedState] = await Promise.all([
-            loadPositionState(projectRoot, "developer"),
-            loadPositionState(projectRoot, "api-developer"),
-        ])
-        expect(formerState).toEqual({})
-        expect(movedState).toEqual(julieState)
-    })
-
-    test("makes the company follow its director's position", async () => {
+    test("makes the company follow its founder's position", async () => {
         const before = await loadCompany(projectRoot)
 
-        await updatePositionId(projectRoot, "director", "management")
+        await updatePositionId(projectRoot, "founder", "management")
 
         const after = await loadCompany(projectRoot)
-        expect(before.directorPositionId).toBe("director")
-        expect(after.directorPositionId).toBe("management")
+        expect(before.founderPositionId).toBe("founder")
+        expect(after.founderPositionId).toBe("management")
     })
 
     test("refuses an id another position has", async () => {

@@ -24,13 +24,17 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const threadId = "2026-10-18-choice-of-framework"
+const ticketNumber = 1
 const exampleCatalog = createExampleWorkCatalog(["backend-developer"])
 
-async function createMessageSentEvent(positionId = "director", depth = 0) {
+async function createMessageSentEvent(
+    positionId = "founder",
+    depth = 0,
+    eventTicketNumber = ticketNumber,
+) {
     return recordEvent(await loadJournal(projectRoot), messageSentEventType, {
         depth,
-        threadId,
+        ticketNumber: eventTicketNumber,
         messageId: "20261018-140322-123-3f9a",
         positionId,
     })
@@ -38,13 +42,13 @@ async function createMessageSentEvent(positionId = "director", depth = 0) {
 
 const reviewListener = defineListener({
     eventType: messageSentEventType,
-    getEffects: ({ threadId }) => [
+    getEffects: ({ ticketNumber }) => [
         {
             kind: "create-task",
             task: {
-                type: "review-thread",
+                type: "review-ticket",
                 positionId: "qa-tester",
-                params: { threadId },
+                params: { ticketNumber },
             },
         },
     ],
@@ -52,7 +56,7 @@ const reviewListener = defineListener({
 
 const positionNotedEventType = defineEventType({
     type: "test-position-noted",
-    description: "A test noted that a position finished its tasks.",
+    description: "A test noted that a position has nothing left to do.",
     fields: { positionId: IdSchema },
 })
 
@@ -63,13 +67,12 @@ const notingListener = defineListener({
             .filter(
                 (task) =>
                     task.positionId === positionId &&
-                    taskStates.get(task.id) === "waiting",
+                    taskStates.get(task.id) === "queued",
             )
             .map((task) => ({
-                kind: "mark-task-as-done",
+                kind: "cancel-task",
                 taskId: task.id,
-                summary: "Noted as finished.",
-                result: {},
+                reason: "Noted as having nothing left to do.",
             })),
 })
 
@@ -115,7 +118,7 @@ describe("dispatchEvents", () => {
         const { createdTasks } = await dispatchToListeners(listeners)
 
         const taskTypes = createdTasks.map(({ type }) => type)
-        expect(taskTypes).toEqual(["example", "review-thread"])
+        expect(taskTypes).toEqual(["example", "review-ticket"])
     })
 
     test("records in the journal the events it gave, even those that ask nothing", async () => {
@@ -133,7 +136,7 @@ describe("dispatchEvents", () => {
     test("gives an event only once", async () => {
         await createMessageSentEvent()
         await dispatchToExampleListener()
-        const followUpSent = await createMessageSentEvent("qa-tester", 1)
+        const followUpSent = await createMessageSentEvent("qa-tester", 1, 2)
 
         const { createdTasks } = await dispatchToExampleListener()
 
@@ -175,27 +178,28 @@ describe("dispatchEvents", () => {
         )
         const listeners = [...exampleCatalog.listeners, notingListener]
 
-        const { createdTasks, doneTasks } = await dispatchToListeners(listeners)
+        const { createdTasks, cancelledTasks } =
+            await dispatchToListeners(listeners)
 
         expect(createdTasks).toHaveLength(1)
-        expect(doneTasks).toEqual(createdTasks)
+        expect(cancelledTasks).toEqual(createdTasks)
     })
 
     test("passes over an event of a type no listener handles", async () => {
-        const threadClosed = {
+        const ticketStarred = {
             id: "20261018-150000-000-9e3f",
-            type: "thread-closed",
+            type: "ticket-starred",
             occurredAt: "2026-10-18T15:00:00.000Z",
             depth: 0,
-            threadId,
+            ticketNumber,
         }
-        await saveEvent(projectRoot, threadClosed)
+        await saveEvent(projectRoot, ticketStarred)
 
         const { createdTasks } = await dispatchToExampleListener()
 
         expect(createdTasks).toEqual([])
         expect(await listDispatchings()).toMatchObject([
-            { eventIds: [threadClosed.id] },
+            { eventIds: [ticketStarred.id] },
         ])
     })
 })

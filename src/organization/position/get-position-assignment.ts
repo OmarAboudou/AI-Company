@@ -1,24 +1,14 @@
-import type {
-    Position,
-    PositionAssignment,
-    PositionState,
-    Worker,
-} from "./schema.ts"
-
-function getDefaultWorker({ defaultEmployeeId }: Position): Worker | undefined {
-    return defaultEmployeeId === undefined
-        ? undefined
-        : { kind: "employee", employeeId: defaultEmployeeId }
-}
+import type { Position, PositionAssignment, Worker } from "./schema.ts"
 
 export function getPositionAssignment(
     position: Position,
-    state: PositionState,
-    directorPositionId: string,
+    founderPositionId: string,
 ): PositionAssignment {
-    const isDirectorPosition = position.id === directorPositionId
-    const currentWorker: Worker | undefined = isDirectorPosition
-        ? { kind: "directors" }
-        : (state.temporaryAssignment ?? getDefaultWorker(position))
-    return { position, isDirectorPosition, state, currentWorker }
+    const isFounderPosition = position.id === founderPositionId
+    const { employeeId } = position
+    const holder: Worker =
+        isFounderPosition || employeeId === undefined
+            ? { kind: "user" }
+            : { kind: "employee", employeeId }
+    return { position, isFounderPosition, holder }
 }

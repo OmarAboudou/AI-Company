@@ -13,7 +13,7 @@ export function registerPositionUpdateIdCommand(
     positionCommand
         .command("update-id")
         .description(
-            "Change the id of a position, which renames its folder. For the director's position, the company follows.",
+            "Change the id of a position, which renames its folder. For the founder's position, the company follows.",
         )
         .argument(
             "<position-id>",

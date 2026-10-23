@@ -10,10 +10,8 @@ import type {
 import type { TaskEnding, Tool, ToolContext } from "../tool/define-tool.ts"
 import { runToolCall } from "../tool/run-tool-call.ts"
 import type { Run, RunProgress } from "./schema.ts"
+import { sendSessionText } from "./send-session-text.ts"
 import { appendRunTranscriptLine } from "./storage.ts"
-
-export const reminderText =
-    "You ended your turn without calling a tool, and only tools act: what you write outside them reaches no one. Call task_mark-as-done with a summary if your task is done, or task_mark-as-failed with the reason if you can't do it."
 
 // Settings (#35) will let management choose it.
 export const maxToolCallsPerRun = 50
@@ -22,6 +20,7 @@ export type TurnApplication = {
     tools: Record<string, Tool>
     ctx: ToolContext
     onProgress?: (progress: RunProgress) => void
+    loadCancellationReason?: () => Promise<string | undefined>
 }
 
 type TurnAnswer = { answeringTurn?: UserTurn; taskEnding?: TaskEnding }
@@ -65,22 +64,50 @@ function getFailureReason(
     if (toolCallCount > maxToolCallsPerRun) {
         return `The run went beyond ${maxToolCallsPerRun} tool calls without ending its task.`
     }
-    const hasBeenReminded = previousAssistantTurns.some(
-        (previousTurn) => getToolCalls(previousTurn).length === 0,
-    )
-    if (getToolCalls(turn).length === 0 && hasBeenReminded) {
-        return "Two turns ended without calling a tool, the second after a reminder."
-    }
     return undefined
 }
 
-async function runToolCalls(
-    toolCalls: ToolCallBlock[],
-    { tools, ctx, onProgress }: TurnApplication,
+function createUnrunResult(
+    { id }: ToolCallBlock,
+    unrunReason: string,
+): ToolResultBlock {
+    return {
+        type: "tool-result",
+        toolCallId: id,
+        text: `Not run: ${unrunReason}`,
+        isError: true,
+    }
+}
+
+// Texts join the ticket's discussion and calls run in the turn's order,
+// so that a text written before an act is read before it.
+async function applyBlocks(
+    { blocks }: AssistantTurn,
+    { tools, ctx, onProgress, loadCancellationReason }: TurnApplication,
 ) {
     const toolResults: ToolResultBlock[] = []
     let taskEnding: TaskEnding | undefined
-    for (const { id, name, input } of toolCalls) {
+    let unrunReason: string | undefined
+    for (const block of blocks) {
+        if (block.type === "text") {
+            if (taskEnding?.state !== "cancelled") {
+                await sendSessionText(block.text, ctx)
+            }
+            continue
+        }
+        const cancellationReason =
+            unrunReason === undefined
+                ? await loadCancellationReason?.()
+                : undefined
+        if (cancellationReason !== undefined) {
+            taskEnding ??= { state: "cancelled", reason: cancellationReason }
+            unrunReason = `the task was cancelled. ${cancellationReason}`
+        }
+        if (unrunReason !== undefined) {
+            toolResults.push(createUnrunResult(block, unrunReason))
+            continue
+        }
+        const { id, name, input } = block
         onProgress?.({ kind: "tool-call", name, input })
         const operationName = `${name} in task ${ctx.task.id}`
         const { text, isError, ...result } = await runOperation(
@@ -90,7 +117,10 @@ async function runToolCalls(
         )
         onProgress?.({ kind: "tool-result", name, text, isError })
         toolResults.push({ type: "tool-result", toolCallId: id, text, isError })
-        taskEnding ??= result.taskEnding
+        if (result.hasPassedHand) {
+            taskEnding ??= { state: "done", hasPassedHand: true }
+            unrunReason = `you passed the hand with ${name}, which ended your session.`
+        }
     }
     return { toolResults, taskEnding }
 }
@@ -104,16 +134,12 @@ async function answerTurn(
     if (failureReason !== undefined) {
         return { taskEnding: { state: "failed", reason: failureReason } }
     }
-    const toolCalls = getToolCalls(turn)
-    if (toolCalls.length === 0) {
-        application.onProgress?.({ kind: "reminder", text: reminderText })
-        const blocks = [{ type: "text" as const, text: reminderText }]
-        return { answeringTurn: { role: "user", blocks } }
+    const { toolResults, taskEnding } = await applyBlocks(turn, application)
+    // Whoever works the task stopped without passing the hand: the session
+    // ends, and someone resumes the ticket in a later one.
+    if (getToolCalls(turn).length === 0) {
+        return { taskEnding: { state: "done", hasPassedHand: false } }
     }
-    const { toolResults, taskEnding } = await runToolCalls(
-        toolCalls,
-        application,
-    )
     return { answeringTurn: { role: "user", blocks: toolResults }, taskEnding }
 }
 

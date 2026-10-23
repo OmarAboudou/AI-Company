@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test"
 import { formatTurn } from "./format-turn.ts"
 
-const messageSendCall = {
+const askCall = {
     type: "tool-call" as const,
     id: "call_8f3a2b1c9d0e",
-    name: "message_send",
-    input: { body: "Friday." },
+    name: "ticket_ask",
+    input: { body: "Which build?" },
 }
 
 function createAnswer(text: string, isError = false) {
@@ -14,7 +14,7 @@ function createAnswer(text: string, isError = false) {
         blocks: [
             {
                 type: "tool-result" as const,
-                toolCallId: messageSendCall.id,
+                toolCallId: askCall.id,
                 text,
                 isError,
             },
@@ -27,35 +27,29 @@ describe("formatTurn", () => {
         const blocks = [{ type: "text" as const, text: "Checking.\n" }]
 
         const text = formatTurn(
-            [...blocks, messageSendCall],
-            createAnswer("Sent as entry #2."),
+            [...blocks, askCall],
+            createAnswer("Question asked, as message #2 of ticket #1."),
         )
 
         expect(text).toBe(
-            'Checking.\n→ message_send\n  body: "Friday."\n← Sent as entry #2.',
+            'Checking.\n→ ticket_ask\n  body: "Which build?"\n← Question asked, as message #2 of ticket #1.',
         )
     })
 
     test("marks a call that failed, and indents its result's later lines", () => {
-        const answer = createAnswer("No thread.\n\nRun aico thread list.", true)
+        const answer = createAnswer(
+            "No ticket #4.\n\nRun aico ticket list.",
+            true,
+        )
 
-        const text = formatTurn([messageSendCall], answer)
+        const text = formatTurn([askCall], answer)
 
-        expect(text).toEndWith("\n✗ No thread.\n\n  Run aico thread list.")
-    })
-
-    test("shows the reminder that answers a turn without calls", () => {
-        const blocks = [{ type: "text" as const, text: "Let me think." }]
-        const reminder = { type: "text" as const, text: "Call a tool." }
-
-        const text = formatTurn(blocks, { role: "user", blocks: [reminder] })
-
-        expect(text).toBe("Let me think.\nReminder: Call a tool.")
+        expect(text).toEndWith("\n✗ No ticket #4.\n\n  Run aico ticket list.")
     })
 
     test("shows a turn not sent yet, without results", () => {
-        const text = formatTurn([messageSendCall])
+        const text = formatTurn([askCall])
 
-        expect(text).toBe('→ message_send\n  body: "Friday."')
+        expect(text).toBe('→ ticket_ask\n  body: "Which build?"')
     })
 })

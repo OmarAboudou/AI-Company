@@ -3,12 +3,7 @@ import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { UserError } from "../../user-error.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
-import {
-    loadPosition,
-    loadPositionState,
-    savePosition,
-    savePositionState,
-} from "../position/storage.ts"
+import { loadPosition, savePosition } from "../position/storage.ts"
 import { replaceEmployee } from "./replace-employee.ts"
 import { hasEmployee, saveEmployee } from "./storage.ts"
 
@@ -37,92 +32,40 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-function createPosition(id: string, defaultEmployeeId: string | undefined) {
-    return { id, title: id, description: "", defaultEmployeeId }
+function createPosition(id: string, employeeId: string | undefined) {
+    return { id, title: id, description: "", employeeId }
 }
 
-function assignTemporarily(positionId: string, employeeId: string) {
-    return savePositionState(projectRoot, positionId, {
-        temporaryAssignment: { kind: "employee", employeeId },
-    })
-}
-
-async function loadDefaultEmployeeId(positionId: string) {
+async function loadEmployeeId(positionId: string) {
     const position = await loadPosition(projectRoot, positionId)
-    return position.defaultEmployeeId
+    return position.employeeId
 }
 
-async function loadTemporaryAssignment(positionId: string) {
-    const state = await loadPositionState(projectRoot, positionId)
-    return state.temporaryAssignment
-}
-
-const handOverOptions = { shouldHandOverTemporaryAssignments: true }
-
-function replaceOmarByAlice(options?: typeof handOverOptions) {
-    return replaceEmployee(projectRoot, "omar", "alice", options)
+function replaceOmarByAlice() {
+    return replaceEmployee(projectRoot, "omar", "alice")
 }
 
 describe("replaceEmployee", () => {
-    test("gives the replacement every position the employee fills", async () => {
+    test("gives the replacement every position the employee holds", async () => {
         const handover = await replaceOmarByAlice()
 
-        expect(await loadDefaultEmployeeId("dev")).toBe("alice")
-        expect(await loadDefaultEmployeeId("qa")).toBe("alice")
-        expect(handover.filledPositionIds).toEqual(["dev", "qa"])
+        expect(await loadEmployeeId("dev")).toBe("alice")
+        expect(await loadEmployeeId("qa")).toBe("alice")
+        expect(handover.heldPositionIds).toEqual(["dev", "qa"])
     })
 
     test("keeps both employees and the replacement's own positions", async () => {
         await replaceOmarByAlice()
 
         expect(await hasEmployee(projectRoot, "omar")).toBe(true)
-        expect(await loadDefaultEmployeeId("ux")).toBe("alice")
+        expect(await loadEmployeeId("ux")).toBe("alice")
     })
 
-    test("changes nothing for an employee who fills no position", async () => {
+    test("changes nothing for an employee who holds no position", async () => {
         const handover = await replaceEmployee(projectRoot, "bob", "alice")
 
-        expect(handover.filledPositionIds).toEqual([])
-        expect(handover.endedTemporaryPositionIds).toEqual([])
-    })
-
-    test("keeps the employee's temporary assignments", async () => {
-        await assignTemporarily("support", "omar")
-
-        const handover = await replaceOmarByAlice()
-
-        const assignment = await loadTemporaryAssignment("support")
-        expect(assignment).toEqual({ kind: "employee", employeeId: "omar" })
-        expect(handover.keptTemporaryPositionIds).toEqual(["support"])
-    })
-
-    test("ends the replacement's temporary assignment of a position it now fills", async () => {
-        await assignTemporarily("dev", "alice")
-
-        const handover = await replaceOmarByAlice()
-
-        expect(await loadTemporaryAssignment("dev")).toBeUndefined()
-        expect(handover.endedTemporaryPositionIds).toEqual(["dev"])
-    })
-
-    test("hands over the employee's temporary assignments when told to", async () => {
-        await assignTemporarily("support", "omar")
-
-        const handover = await replaceOmarByAlice(handOverOptions)
-
-        const assignment = await loadTemporaryAssignment("support")
-        expect(assignment).toEqual({ kind: "employee", employeeId: "alice" })
-        expect(handover.handedOverPositionIds).toEqual(["support"])
-        expect(handover.keptTemporaryPositionIds).toEqual([])
-    })
-
-    test("ends a handed over temporary assignment where the replacement is the default employee", async () => {
-        await assignTemporarily("ux", "omar")
-
-        const handover = await replaceOmarByAlice(handOverOptions)
-
-        expect(await loadTemporaryAssignment("ux")).toBeUndefined()
-        expect(handover.endedTemporaryPositionIds).toEqual(["ux"])
+        expect(handover.heldPositionIds).toEqual([])
+        expect(await loadEmployeeId("support")).toBeUndefined()
     })
 
     test("refuses an employee replacing itself", async () => {
@@ -136,7 +79,7 @@ describe("replaceEmployee", () => {
         const replacing = replaceEmployee(projectRoot, "omar", "eve")
 
         await expect(replacing).rejects.toThrow('No employee "eve".')
-        expect(await loadDefaultEmployeeId("dev")).toBe("omar")
+        expect(await loadEmployeeId("dev")).toBe("omar")
     })
 
     test("refuses to run outside a company", async () => {

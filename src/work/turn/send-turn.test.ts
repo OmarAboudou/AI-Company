@@ -8,10 +8,9 @@ import { listEvents } from "../../journal/storage.ts"
 import { messageSentEventType } from "../../messaging/message/schema.ts"
 import { listMessages } from "../../messaging/message/storage.ts"
 import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
-import { reminderText } from "../run/apply-assistant-turn.ts"
 import { loadRun } from "../run/storage.ts"
 import type { OpenedTask } from "../task/open-next-task.ts"
-import { taskDoneEventType, taskFailedEventType } from "../task/schema.ts"
+import { taskCancelledEventType, taskDoneEventType } from "../task/schema.ts"
 import { addTurnText } from "./add-turn-text.ts"
 import { addTurnTool } from "./add-turn-tool.ts"
 import { createCompanyWithTaskInProgress } from "./create-company-with-task-in-progress.testing.ts"
@@ -19,13 +18,13 @@ import { sendTurn } from "./send-turn.ts"
 import { loadStagedTurn } from "./storage.ts"
 
 let projectRoot: string
-let threadId: string
+let ticketNumber: number
 let openedTask: OpenedTask
 
 beforeEach(async () => {
     const company = await createCompanyWithTaskInProgress()
     projectRoot = company.projectRoot
-    threadId = company.threadId
+    ticketNumber = company.ticketNumber
     openedTask = company.openedTask
 })
 
@@ -38,13 +37,11 @@ async function addToolCall(toolName: string, input: object) {
     await addTurnTool(projectRoot, {}, { toolName, rawInput })
 }
 
-async function sendPersonTurn() {
-    return sendTurn(
-        projectRoot,
-        {},
-        "aico turn send",
-        createExampleWorkCatalog(),
-    )
+async function sendPersonTurn(shouldEndSession = false) {
+    return sendTurn(projectRoot, {}, "aico turn send", {
+        catalog: createExampleWorkCatalog(),
+        shouldEndSession,
+    })
 }
 
 async function findLastEvent<Content extends Omit<JournalEvent, "id">>(
@@ -73,22 +70,22 @@ function readLastCommits(count: number) {
 }
 
 describe("sendTurn", () => {
-    test("runs the turn's calls from the person's position, as a director", async () => {
-        await addToolCall("message_send", { body: "Friday." })
+    test("runs the turn's calls from the person's position, as a founder", async () => {
+        await addToolCall("ticket_deliver", { body: "Ready for Friday." })
 
         await sendPersonTurn()
 
-        const [, answer] = await listMessages(projectRoot, threadId)
-        expect(answer).toMatchObject({
+        const [, delivery] = await listMessages(projectRoot, ticketNumber)
+        expect(delivery).toMatchObject({
             position: { id: "qa-tester", title: "QA" },
             committer: { name: "Omar Aboudou", email: "omar@example.com" },
-            body: "Friday.",
+            body: "Ready for Friday.",
         })
-        expect(answer).not.toHaveProperty("employee")
+        expect(delivery).not.toHaveProperty("employee")
     })
 
     test("gives back the turn and its answer, as the run's transcript keeps them", async () => {
-        await addToolCall("message_send", { body: "Friday." })
+        await addToolCall("ticket_show", { from: 1 })
 
         const { sentTurn, answeringTurn } = await sendPersonTurn()
 
@@ -102,8 +99,8 @@ describe("sendTurn", () => {
                 {
                     type: "tool-call",
                     id: expect.stringMatching(/^call_/),
-                    name: "message_send",
-                    input: { body: "Friday." },
+                    name: "ticket_show",
+                    input: { from: 1 },
                 },
             ],
         })
@@ -112,7 +109,7 @@ describe("sendTurn", () => {
             blocks: [
                 {
                     type: "tool-result",
-                    text: `Sent as entry #2 of thread ${threadId}.`,
+                    text: expect.stringMatching(/^Message #1 of ticket #/),
                     isError: false,
                 },
             ],
@@ -120,7 +117,7 @@ describe("sendTurn", () => {
     })
 
     test("records what the run causes at the depth of the task's cause", async () => {
-        await addToolCall("message_send", { body: "Logo?" })
+        await addTurnText(projectRoot, {}, "Logo?")
 
         await sendPersonTurn()
 
@@ -130,7 +127,7 @@ describe("sendTurn", () => {
     })
 
     test("empties the turn once it is sent", async () => {
-        await addToolCall("message_send", { body: "Friday." })
+        await addToolCall("ticket_show", { from: 1 })
 
         await sendPersonTurn()
 
@@ -139,20 +136,38 @@ describe("sendTurn", () => {
     })
 
     test("commits each tool call apart, named after it and its task", async () => {
-        await addToolCall("message_send", { body: "Friday." })
-        await addToolCall("message_send", { body: "Or Monday." })
+        await addToolCall("ticket_deliver", { body: "Ready for Friday." })
 
         await sendPersonTurn()
 
-        const subject = `message_send in task ${openedTask.task.id}`
-        expect(readLastCommits(2)).toEqual([
-            { subject, messageFileCount: 1 },
-            { subject, messageFileCount: 1 },
+        const subject = `ticket_deliver in task ${openedTask.task.id}`
+        expect(readLastCommits(2)[1]).toEqual({
+            subject,
+            messageFileCount: 1,
+        })
+    })
+
+    test("writes the turn's texts in the ticket's discussion, each in its place", async () => {
+        await addTurnText(projectRoot, {}, "Checked the plan.")
+        await addToolCall("ticket_deliver", { body: "Ready for Friday." })
+
+        await sendPersonTurn()
+
+        const messages = await listMessages(projectRoot, ticketNumber)
+        const textSubject = `text in task ${openedTask.task.id}`
+        expect(messages.map(({ body }) => body)).toEqual([
+            "Can we ship on Friday?",
+            "Checked the plan.",
+            "Ready for Friday.",
         ])
+        expect(readLastCommits(3)[2]).toEqual({
+            subject: textSubject,
+            messageFileCount: 1,
+        })
     })
 
     test("commits the task's end as the command that sends the turn", async () => {
-        await addToolCall("task_mark-as-done", { summary: "Answered." })
+        await addTurnText(projectRoot, {}, "Friday works.")
 
         await sendPersonTurn()
 
@@ -162,20 +177,19 @@ describe("sendTurn", () => {
     })
 
     test("goes on from the turns sent before, in a later call", async () => {
-        await addToolCall("message_send", { body: "Friday." })
+        await addToolCall("ticket_show", { from: 1 })
         await sendPersonTurn()
-        await addToolCall("task_mark-as-done", { summary: "Answered." })
+        await addTurnText(projectRoot, {}, "Done for now.")
 
         const { taskEnding } = await sendPersonTurn()
 
         const run = await loadRun(projectRoot, openedTask.run.id)
-        expect(taskEnding).toEqual({ state: "done", summary: "Answered." })
-        expect(run.conversation.turns).toHaveLength(5)
+        expect(taskEnding).toEqual({ state: "done", hasPassedHand: false })
+        expect(run.conversation.turns).toHaveLength(4)
     })
 
-    test("ends the task when the turn marks it as done, with its result", async () => {
-        await addToolCall("message_send", { body: "Friday." })
-        await addToolCall("task_mark-as-done", { summary: "Answered." })
+    test("ends the task with what its type makes of the run", async () => {
+        await addTurnText(projectRoot, {}, "Friday works.")
 
         await sendPersonTurn()
 
@@ -186,36 +200,60 @@ describe("sendTurn", () => {
             depth: 0,
             taskId: openedTask.task.id,
             runId: openedTask.run.id,
-            summary: "Answered.",
+            hasPassedHand: false,
             result: { runId: openedTask.run.id },
         })
     })
 
-    test("reminds the person who calls no tool, as it reminds a model", async () => {
-        await addTurnText(projectRoot, {}, "Let me think.")
+    test("ends the person's session at a turn without any tool call, as a model's", async () => {
+        await addTurnText(projectRoot, {}, "Friday works, I'll confirm Monday.")
 
         const { answeringTurn, taskEnding } = await sendPersonTurn()
 
-        const reminderBlock = { type: "text" as const, text: reminderText }
-        expect(taskEnding).toBeUndefined()
-        expect(answeringTurn?.blocks).toEqual([reminderBlock])
+        const messages = await listMessages(projectRoot, ticketNumber)
+        expect(taskEnding).toEqual({ state: "done", hasPassedHand: false })
+        expect(answeringTurn).toBeUndefined()
+        expect(messages.at(-1)?.body).toBe("Friday works, I'll confirm Monday.")
+        expect(await findLastEvent(taskDoneEventType)).toMatchObject({
+            taskId: openedTask.task.id,
+            hasPassedHand: false,
+        })
     })
 
-    test("fails the task at a second turn that calls no tool", async () => {
-        await addTurnText(projectRoot, {}, "Let me think.")
-        await sendPersonTurn()
-        await addTurnText(projectRoot, {}, "Still thinking.")
+    test("stops the turn at its next call once the task became pointless", async () => {
+        await addTurnText(projectRoot, {}, "Stop.")
+        await addToolCall("ticket_deliver", { body: "Ready for Friday." })
 
         const { taskEnding } = await sendPersonTurn()
 
-        const reason =
-            "Two turns ended without calling a tool, the second after a reminder."
-        expect(taskEnding).toEqual({ state: "failed", reason })
-        expect(await findLastEvent(taskFailedEventType)).toMatchObject({
-            depth: 0,
+        const messages = await listMessages(projectRoot, ticketNumber)
+        const reason = `Ticket #${ticketNumber}'s discussion says Stop.`
+        expect(messages.map(({ body }) => body)).toEqual([
+            "Can we ship on Friday?",
+            "Stop.",
+        ])
+        expect(taskEnding).toEqual({ state: "cancelled", reason })
+        expect(await findLastEvent(taskCancelledEventType)).toMatchObject({
             taskId: openedTask.task.id,
+            runId: openedTask.run.id,
             reason,
         })
+    })
+
+    test("ends the session on demand, even with an empty turn", async () => {
+        const { taskEnding } = await sendPersonTurn(true)
+
+        expect(taskEnding).toEqual({ state: "done", hasPassedHand: false })
+    })
+
+    test("refuses to end the session on a turn that calls tools", async () => {
+        await addToolCall("ticket_show", { from: 1 })
+
+        const ending = sendPersonTurn(true)
+
+        await expect(ending).rejects.toThrow("Your turn calls tools")
+        const { blocks } = await loadStagedTurn(projectRoot, openedTask.run.id)
+        expect(blocks).toHaveLength(1)
     })
 
     test("refuses an empty turn", async () => {

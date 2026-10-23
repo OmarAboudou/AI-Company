@@ -23,7 +23,7 @@ const stagedTurn: StagedTurn = {
         {
             type: "tool-call",
             id: "call_8f3a2b1c9d0e",
-            name: "message_send",
+            name: "ticket_ask",
             input: { body: "Yes." },
         },
     ],

@@ -11,6 +11,7 @@ import {
     createExampleWorkCatalog,
     exampleTaskType,
 } from "../create-example-work-catalog.testing.ts"
+import { pauseCompany } from "../pause/pause-company.ts"
 import { createTask } from "./create-task.ts"
 import { listPendingTasks } from "./list-pending-tasks.ts"
 import { type Task, taskDoneEventType, taskStartedEventType } from "./schema.ts"
@@ -30,7 +31,7 @@ beforeEach(async () => {
     await Promise.all([
         saveEmployee(projectRoot, claude),
         ...[
-            { id: "backend-developer", defaultEmployeeId: "claude" },
+            { id: "backend-developer", employeeId: "claude" },
             { id: "qa-tester" },
         ].map((position) =>
             savePosition(projectRoot, {
@@ -50,18 +51,18 @@ async function askPosition(
     positionId: string,
     type = exampleTaskType.type,
 ): Promise<Task> {
-    const threadId = "2026-10-18-choice-of-framework"
+    const ticketNumber = 1
     const messageSentEvent = await recordEvent(
         await loadJournal(projectRoot),
         messageSentEventType,
         {
             depth: 0,
-            threadId,
+            ticketNumber,
             messageId: "20261018-140322-123-3f9a",
-            positionId: "director",
+            positionId: "founder",
         },
     )
-    const uncreatedTask = { type, positionId, params: { threadId } }
+    const uncreatedTask = { type, positionId, params: { ticketNumber } }
     return createTask(
         await loadJournal(projectRoot),
         uncreatedTask,
@@ -97,8 +98,8 @@ describe("listPendingTasks", () => {
         ])
     })
 
-    test("lists as waiting the tasks of positions no LLM works, saying why", async () => {
-        for (const positionId of ["director", "qa-tester", "ux"]) {
+    test("lists as waiting the tasks of positions no LLM holds, saying why", async () => {
+        for (const positionId of ["founder", "qa-tester", "ux"]) {
             await askPosition(positionId)
         }
 
@@ -111,8 +112,8 @@ describe("listPendingTasks", () => {
             pendingTask.kind === "waiting" ? pendingTask.reason : undefined,
         )
         expect(reasons).toEqual([
-            "worked-by-directors",
-            "vacant-position",
+            "held-by-user",
+            "held-by-user",
             "deleted-position",
         ])
     })
@@ -122,7 +123,7 @@ describe("listPendingTasks", () => {
             id: "designer",
             title: "Designer",
             description: "",
-            defaultEmployeeId: "bob",
+            employeeId: "bob",
         })
         await askPosition("designer")
         const refusalMessage =
@@ -150,14 +151,15 @@ describe("listPendingTasks", () => {
         ])
     })
 
-    test("lists a task left running, and not one that ended", async () => {
+    test("lists as waiting a task already running, and not one that ended", async () => {
         const runningTask = await askPosition("backend-developer")
         const doneTask = await askPosition("backend-developer")
         await Promise.all([startTask(runningTask), startTask(doneTask)])
         await recordEvent(await loadJournal(projectRoot), taskDoneEventType, {
             depth: 1,
             taskId: doneTask.id,
-            summary: "Answered.",
+            runId: "20261018-150000-000-9e8d",
+            hasPassedHand: false,
             result: {},
         })
 
@@ -166,6 +168,31 @@ describe("listPendingTasks", () => {
             taskTypes,
         )
 
-        expect(pendingTasks).toMatchObject([{ task: runningTask }])
+        expect(pendingTasks).toMatchObject([
+            { kind: "waiting", task: runningTask, reason: "running" },
+        ])
+    })
+
+    test("lists a model's queued task as waiting for the relaunch during a pause", async () => {
+        const queuedTask = await askPosition("backend-developer")
+        const runningTask = await askPosition("backend-developer")
+        const founderTask = await askPosition("founder")
+        await startTask(runningTask)
+        await pauseCompany(await loadJournal(projectRoot))
+
+        const pendingTasks = await listPendingTasks(
+            await loadJournal(projectRoot),
+            taskTypes,
+        )
+
+        expect(pendingTasks).toMatchObject([
+            { kind: "waiting", task: queuedTask, reason: "paused" },
+            { kind: "waiting", task: runningTask, reason: "running" },
+            {
+                kind: "waiting",
+                task: founderTask,
+                reason: "held-by-user",
+            },
+        ])
     })
 })

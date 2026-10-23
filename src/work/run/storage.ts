@@ -14,6 +14,7 @@ export type NewRunTranscriptLine =
     | {
           type: "start"
           apiId?: string
+          processId?: number
           systemPrompt: string
           tools: ToolDefinition[]
           session: RunSession
@@ -70,6 +71,11 @@ export async function loadRun(projectRoot: string, id: string): Promise<Run> {
         const { at, type, ...turn } = line
         return turn
     })
-    const { systemPrompt, tools, session } = startLine
-    return { id, conversation: { systemPrompt, tools, turns }, session }
+    const { systemPrompt, tools, session, processId } = startLine
+    return {
+        id,
+        conversation: { systemPrompt, tools, turns },
+        session,
+        ...(processId !== undefined && { processId }),
+    }
 }

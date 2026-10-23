@@ -6,6 +6,7 @@ import { createGitRepository } from "../../git/create-git-repository.testing.ts"
 import { createReservedBranch } from "../../git/reserved-branch/create-reserved-branch.ts"
 import { isReservedBranchWorktree } from "../../git/reserved-branch/is-reserved-branch-worktree.ts"
 import { runGit } from "../../git/run-git.ts"
+import { listEvents } from "../../journal/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { loadPosition } from "../position/storage.ts"
 import { loadProject } from "../project/storage.ts"
@@ -30,15 +31,22 @@ afterEach(async () => {
 const acme = { name: "Acme", projectDescription: "We build things." }
 
 describe("createCompany", () => {
-    test("saves the company, naming its director's position", async () => {
+    test("saves the company, naming its founder's position", async () => {
         const createdCompany = await createCompany(projectRoot, acme)
 
         const company = await loadCompany(projectRoot)
         expect(company).toEqual({
             name: "Acme",
-            directorPositionId: "director",
+            founderPositionId: "founder",
         })
         expect(createdCompany).toEqual(company)
+    })
+
+    test("records the company's creation, for the founder's first task", async () => {
+        await createCompany(projectRoot, acme)
+
+        const events = await listEvents(projectRoot)
+        expect(events).toMatchObject([{ type: "company-created", depth: 0 }])
     })
 
     test("describes the project the company carries out", async () => {
@@ -48,15 +56,15 @@ describe("createCompany", () => {
         expect(project).toEqual({ description: "We build things." })
     })
 
-    test("creates the director's position, held by no employee", async () => {
+    test("creates the founder's position, which no employee holds", async () => {
         const before = Date.now()
         await createCompany(projectRoot, acme)
         const after = Date.now()
 
-        const position = await loadPosition(projectRoot, "director")
+        const position = await loadPosition(projectRoot, "founder")
         const createdTime = Date.parse(position.createdAt ?? "")
-        expect(position).toMatchObject({ title: "Director", description: "" })
-        expect(position.defaultEmployeeId).toBeUndefined()
+        expect(position).toMatchObject({ title: "Founder", description: "" })
+        expect(position.employeeId).toBeUndefined()
         expect(createdTime).toBeGreaterThanOrEqual(before)
         expect(createdTime).toBeLessThanOrEqual(after)
     })

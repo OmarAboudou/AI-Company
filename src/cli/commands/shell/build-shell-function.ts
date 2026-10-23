@@ -31,7 +31,7 @@ export function buildShellFunction(shell: Shell): string {
         "}",
         "_aico_prompt_label() {",
         "    [ -d .aico ] || return 0",
-        '    local label="director"',
+        '    local label="aico"',
         '    if [ -n "${AICO_CURRENT_POSITION_ID-}" ]; then',
         '        label="$label @$AICO_CURRENT_POSITION_ID"',
         "    fi",

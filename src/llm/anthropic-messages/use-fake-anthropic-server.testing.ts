@@ -12,6 +12,7 @@ export type FakeReply =
           stopReason?: Anthropic.StopReason
       }
     | { status: number; error: string }
+    | { isHanging: true }
 
 export type ReceivedBlock = {
     type: string
@@ -64,7 +65,7 @@ function formatEventStream({
     signature,
     toolCalls = [],
     stopReason,
-}: Exclude<FakeReply, { error: string }>): string {
+}: Exclude<FakeReply, { error: string } | { isHanging: true }>): string {
     const blocks: [object, object[]][] = []
     if (signature !== undefined) {
         blocks.push([
@@ -137,6 +138,9 @@ export function useFakeAnthropicServer() {
                     body: (await request.json()) as ReceivedRequest["body"],
                 })
                 const reply = replies.shift() ?? { text: "Done." }
+                if ("isHanging" in reply) {
+                    return new Promise<Response>(() => {})
+                }
                 if ("error" in reply) {
                     const error = { type: "api_error", message: reply.error }
                     return Response.json(

@@ -8,7 +8,7 @@ export function registerInitCommand(program: Command): void {
     program
         .command("init")
         .description(
-            "Create a company in the current git repository, with its director's position.",
+            "Create a company in the current git repository, with its founder's position.",
         )
         .requiredOption("-n, --name <name>", "company name")
         .option(
@@ -27,7 +27,7 @@ export function registerInitCommand(program: Command): void {
                 projectDescription,
             })
             console.log(
-                `Created company "${company.name}" and its director's position "${company.directorPositionId}".`,
+                `Created company "${company.name}" and its founder's position "${company.founderPositionId}".`,
             )
         })
 }

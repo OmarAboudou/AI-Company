@@ -8,8 +8,8 @@
             "minLength": 1,
             "description": "Title of the position, e.g. Backend Developer."
         },
-        "defaultEmployeeId": {
-            "description": "Id of the employee working this position by default, i.e. the name of its folder in .aico/employees. Absent when the position is vacant.",
+        "employeeId": {
+            "description": "Id of the LLM employee holding the position, i.e. the name of its folder in .aico/employees. Absent when the user holds it, the person git names.",
             "type": "string",
             "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
             "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"

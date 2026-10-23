@@ -4,14 +4,14 @@ import { getWithSortedKeys } from "./get-with-sorted-keys.ts"
 describe("getWithSortedKeys", () => {
     test("sorts an object's keys at every depth, keeping arrays' order", () => {
         const params = {
-            threadId: "2026-10-18-stack",
+            ticketNumber: 3,
             entries: [{ to: 3, from: 1 }, 2],
         }
 
         const sortedParams = getWithSortedKeys(params)
 
         expect(JSON.stringify(sortedParams)).toBe(
-            '{"entries":[{"from":1,"to":3},2],"threadId":"2026-10-18-stack"}',
+            '{"entries":[{"from":1,"to":3},2],"ticketNumber":3}',
         )
     })
 

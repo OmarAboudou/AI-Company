@@ -2,14 +2,14 @@ import { beforeEach, describe, expect, test } from "bun:test"
 import { addTurnText } from "../../../work/turn/add-turn-text.ts"
 import { addTurnTool } from "../../../work/turn/add-turn-tool.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
-import { openDirectorsTask } from "./open-directors-task.testing.ts"
+import { openUserTask } from "./open-user-task.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-let threadId = ""
+let ticketNumber = 0
 
 beforeEach(async () => {
-    ;({ threadId } = await openDirectorsTask(getProjectPath()))
+    ;({ ticketNumber } = await openUserTask(getProjectPath()))
 })
 
 async function addToolCall(toolName: string, rawInput: string) {
@@ -29,23 +29,23 @@ function sendPersonTurn() {
 
 describe("aico turn send", () => {
     test("runs the turn's tool calls and shows their results", async () => {
-        await addToolCall("message_send", '{"body": "Friday."}')
+        await addToolCall("ticket_ask", '{"body": "Which build?"}')
 
         const sending = sendPersonTurn()
 
         expect(sending.exitCode).toBe(0)
         expect(sending.stdout).toBe(
-            `→ message_send\n  body: "Friday."\n← Sent as entry #2 of thread ${threadId}.\n\nPrepare your next turn with \`aico turn add\`, then send it.\n`,
+            `→ ticket_ask\n  body: "Which build?"\n← Question asked, as message #1 of ticket #${ticketNumber}.\n\nTask done: its session passed the hand. Run \`aico task next\` for your next task.\n`,
         )
     })
 
-    test("reminds the person who calls no tool", async () => {
-        await addTurnText(getProjectPath(), {}, "Let me think.")
+    test("ends the session at a turn without any tool call", async () => {
+        await addTurnText(getProjectPath(), {}, "Friday works.")
 
         const sending = sendPersonTurn()
 
-        expect(sending.stdout).toStartWith(
-            "Let me think.\nReminder: You ended your turn without calling a tool,",
+        expect(sending.stdout).toBe(
+            "Friday works.\n\nTask done: its session ended without passing the hand. Run `aico task next` for your next task.\n",
         )
     })
 

@@ -5,7 +5,8 @@ import {
     CommitterSchema,
     EmployeeSnapshotSchema,
     PositionSnapshotSchema,
-} from "../thread/schema.ts"
+    TicketNumberSchema,
+} from "../ticket/schema.ts"
 
 export const MessageConfigSchema = z
     .strictObject({
@@ -14,7 +15,7 @@ export const MessageConfigSchema = z
         }),
         employee: EmployeeSnapshotSchema.optional().meta({
             description:
-                "The employee who wrote the message, working that position. Absent when a director wrote it: a person working on the repository, whom the committer names.",
+                "The LLM employee who wrote the message, holding that position. Absent when the user wrote it, whom the committer names.",
         }),
         committer: CommitterSchema,
         sentAt: z.iso.datetime().meta({
@@ -24,7 +25,7 @@ export const MessageConfigSchema = z
     .meta({
         title: "AICo message",
         description:
-            "A message of a thread, in .aico/threads/<thread-id>/messages/<message-id>/message.json. Its body lives next to it, in body.md. Never modified once written.",
+            "A message of a ticket's discussion, in .aico/tickets/<ticket-number>/messages/<message-id>/message.json. Its body lives next to it, in body.md. Never modified once written.",
     })
 
 export type MessageConfig = z.infer<typeof MessageConfigSchema>
@@ -34,30 +35,49 @@ export type Author = Pick<MessageConfig, "position" | "employee" | "committer">
 export type UnsentMessage = Author & { body: string }
 
 export type Message = MessageConfig & {
-    threadId: string
+    ticketNumber: number
     id: string
     body: string
 }
 
-export const messageSentEventType = defineEventType({
+const messageEventFields = {
+    ticketNumber: TicketNumberSchema,
+    messageId: IdSchema.meta({
+        description:
+            "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message.",
+    }),
+    positionId: IdSchema.meta({
+        description:
+            "Id of the position the message was written from, as its message.json records it.",
+    }),
+    runId: IdSchema.optional().meta({
+        description:
+            "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a message written outside a run.",
+    }),
+}
+
+export function defineMessageEventType<
+    Type extends string,
+    ActFields extends z.ZodRawShape = Record<never, never>,
+>({
+    type,
+    description,
+    fields,
+}: {
+    type: Type
+    description: string
+    fields?: ActFields
+}) {
+    return defineEventType({
+        type,
+        description,
+        fields: { ...messageEventFields, ...(fields as ActFields) },
+    })
+}
+
+export type MessageEventType = ReturnType<typeof defineMessageEventType<string>>
+
+export const messageSentEventType = defineMessageEventType({
     type: "message-sent",
-    description: "A message was added to a thread.",
-    fields: {
-        threadId: IdSchema.meta({
-            description:
-                "Id of the thread, i.e. the name of its folder in .aico/threads.",
-        }),
-        messageId: IdSchema.meta({
-            description:
-                "Id of the message, i.e. the name of its folder in the thread's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message.",
-        }),
-        positionId: IdSchema.meta({
-            description:
-                "Id of the position the message was written from, as its message.json records it.",
-        }),
-        runId: IdSchema.optional().meta({
-            description:
-                "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a person's message.",
-        }),
-    },
+    description: "A message was added to a ticket's discussion.",
 })

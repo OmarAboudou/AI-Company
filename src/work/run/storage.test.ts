@@ -32,7 +32,7 @@ const runStart: NewRunTranscriptLine = {
 
 const taskTurn: UserTurn = {
     role: "user",
-    blocks: [{ type: "text", text: "Answer the thread." }],
+    blocks: [{ type: "text", text: "Answer the ticket." }],
 }
 
 const answeringTurn: AssistantTurn = {

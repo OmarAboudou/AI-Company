@@ -1,12 +1,12 @@
 import { input, select } from "@inquirer/prompts"
 import { UserError } from "../../../user-error.ts"
 import type { OpenedTask } from "../../../work/task/open-next-task.ts"
-import type { TaskEnding } from "../../../work/tool/define-tool.ts"
 import { addTurnText } from "../../../work/turn/add-turn-text.ts"
 import { addTurnTool } from "../../../work/turn/add-turn-tool.ts"
 import { clearTurn } from "../../../work/turn/clear-turn.ts"
 import { loadCurrentStagedTurn } from "../../../work/turn/load-current-staged-turn.ts"
 import { sendTurn } from "../../../work/turn/send-turn.ts"
+import { formatTaskEnding } from "../../format-task-ending.ts"
 import { formatTurn } from "../../format-turn.ts"
 import { askToolInput } from "./ask-tool-input.ts"
 import {
@@ -22,7 +22,7 @@ export type TaskSession = {
     context: PromptContext
 }
 
-type TurnAction = "tool" | "text" | "show" | "clear" | "send"
+type TurnAction = "tool" | "text" | "show" | "clear" | "send" | "end"
 
 const turnActionChoices: {
     name: string
@@ -33,11 +33,17 @@ const turnActionChoices: {
     {
         name: "Write a text",
         value: "text",
-        description: "A text reaches no one: only your tools act.",
+        description: "A text joins the discussion of your task's ticket.",
     },
     { name: "Show the turn", value: "show" },
     { name: "Clear the turn", value: "clear" },
     { name: "Send the turn", value: "send" },
+    {
+        name: "End the session",
+        value: "end",
+        description:
+            "Send your texts, if any, as your last turn, passing the hand to no one.",
+    },
 ]
 
 const emptyTurnMessage = "Your turn is empty: call a tool or write a text."
@@ -75,12 +81,6 @@ async function addText({
 }: TaskSession): Promise<void> {
     const text = await input({ message: "Text:", required: true }, context)
     await addTurnText(projectRoot, environment, text)
-}
-
-function formatTaskEnding(taskEnding: TaskEnding): string {
-    return taskEnding.state === "done"
-        ? `Task done: ${taskEnding.summary}`
-        : `Task failed: ${taskEnding.reason}`
 }
 
 export async function workTask(
@@ -158,6 +158,19 @@ export async function workTask(
                     }
                     turnNumber++
                     break
+                }
+                case "end": {
+                    const { sentTurn, taskEnding } = await sendTurn(
+                        projectRoot,
+                        environment,
+                        operationName,
+                        { shouldEndSession: true },
+                    )
+                    console.log(formatTurn(sentTurn.blocks))
+                    if (taskEnding !== undefined) {
+                        console.log(`\n${formatTaskEnding(taskEnding)}`)
+                    }
+                    return
                 }
             }
         } catch (error) {

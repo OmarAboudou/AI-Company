@@ -27,6 +27,7 @@ export type AnthropicMessagesCall = {
     apiId: string
     conversation: Conversation
     onText: (text: string) => void
+    signal?: AbortSignal
 }
 
 function getTurnsCachedToTheEnd(
@@ -57,6 +58,7 @@ export async function callAnthropicMessages({
     apiId,
     conversation,
     onText,
+    signal,
 }: AnthropicMessagesCall): Promise<ModelTurn> {
     const isBearerAuth = connection.auth === "bearer"
     const client = new AnthropicWithoutLocalCredentials({
@@ -68,25 +70,28 @@ export async function callAnthropicMessages({
     const tools = getAnthropicTools(conversation.tools)
     try {
         const message = await client.messages
-            .stream({
-                model: apiId,
-                max_tokens: maxTokens,
-                // Two cache breakpoints: the system prompt's covers the tools
-                // and the system prompt, which every run of an employee in a
-                // position shares; the last block's covers the conversation,
-                // which each request of a tool loop extends.
-                system: [
-                    {
-                        type: "text",
-                        text: conversation.systemPrompt,
-                        cache_control: cacheControl,
-                    },
-                ],
-                ...(tools.length > 0 && { tools }),
-                messages: getTurnsCachedToTheEnd(
-                    getAnthropicTurns(conversation.turns),
-                ),
-            })
+            .stream(
+                {
+                    model: apiId,
+                    max_tokens: maxTokens,
+                    // Two cache breakpoints: the system prompt's covers the tools
+                    // and the system prompt, which every run of an employee in a
+                    // position shares; the last block's covers the conversation,
+                    // which each request of a tool loop extends.
+                    system: [
+                        {
+                            type: "text",
+                            text: conversation.systemPrompt,
+                            cache_control: cacheControl,
+                        },
+                    ],
+                    ...(tools.length > 0 && { tools }),
+                    messages: getTurnsCachedToTheEnd(
+                        getAnthropicTurns(conversation.turns),
+                    ),
+                },
+                { signal },
+            )
             .on("text", onText)
             .finalMessage()
         return getAssistantTurn(message)

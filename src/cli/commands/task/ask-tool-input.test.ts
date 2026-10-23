@@ -8,12 +8,12 @@ import {
     type ToolInputQuestion,
 } from "./ask-tool-input.ts"
 
-const threadId = "2026-10-21-release"
+const ticketNumber = 1
 
 const toolDefinitions = getToolDefinitions(
-    getRunTools(["message_send", "thread_show"], {
-        message_send: { threadId },
-        thread_show: { threadId },
+    getRunTools(["ticket_deliver", "ticket_create", "ticket_show"], {
+        ticket_deliver: { ticketNumber },
+        ticket_show: { ticketNumber },
     }),
 )
 
@@ -61,11 +61,11 @@ function createPrompts({
 }
 
 describe("askToolInput", () => {
-    test("asks for a Markdown text in the editor, as message_send's body", async () => {
+    test("asks for a Markdown text in the editor, as a delivery's body", async () => {
         const { prompts, questions } = createPrompts({ texts: ["Yes."] })
 
         const input = await askToolInput(
-            getToolDefinition("message_send"),
+            getToolDefinition("ticket_deliver"),
             prompts,
         )
 
@@ -73,20 +73,32 @@ describe("askToolInput", () => {
         expect(questions).toEqual([
             {
                 kind: "text",
-                message: "body: The message, in Markdown.",
+                message:
+                    "body: What you did and how to check it, in Markdown: the requester reads it, without the rest of your work.",
                 isRequired: true,
             },
         ])
     })
 
-    test("asks for a short text on its line, as a task's summary", async () => {
-        const { prompts, questions } = createPrompts({ lines: ["Answered."] })
-        const tool = getToolDefinition("task_mark-as-done")
+    test("asks for a short text on its line, as a ticket's title", async () => {
+        const { prompts, questions } = createPrompts({
+            lines: ["Choose the API framework", "backend-developer"],
+            texts: ["Hono or Express?"],
+        })
+        const tool = getToolDefinition("ticket_create")
 
         const input = await askToolInput(tool, prompts)
 
-        expect(input).toEqual({ summary: "Answered." })
-        expect(questions.map(({ kind }) => kind)).toEqual(["line"])
+        expect(input).toEqual({
+            title: "Choose the API framework",
+            request: "Hono or Express?",
+            assigneePositionId: "backend-developer",
+        })
+        expect(questions.map(({ kind }) => kind)).toEqual([
+            "line",
+            "text",
+            "line",
+        ])
     })
 
     test("asks for whole numbers, leaving out an optional one left empty", async () => {
@@ -95,7 +107,7 @@ describe("askToolInput", () => {
         })
 
         const input = await askToolInput(
-            getToolDefinition("thread_show"),
+            getToolDefinition("ticket_show"),
             prompts,
         )
 
@@ -113,15 +125,15 @@ describe("askToolInput", () => {
     test("refuses an input it can't ask for", async () => {
         const { prompts } = createPrompts({})
         const tool = {
-            name: "thread_tag",
-            description: "Tag the thread.",
+            name: "ticket_tag",
+            description: "Tag the ticket.",
             inputSchema: { properties: { tags: { type: "array" } } },
         }
 
         const asking = askToolInput(tool, prompts)
 
         await expect(asking).rejects.toThrow(
-            "thread_tag takes a tags that is neither a text, a number nor a yes or no",
+            "ticket_tag takes a tags that is neither a text, a number nor a yes or no",
         )
     })
 })

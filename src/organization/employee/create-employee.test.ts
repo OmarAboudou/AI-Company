@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { saveLlmModel } from "../../llm/model/storage.ts"
 import { saveLlmProvider } from "../../llm/provider/storage.ts"
 import { saveMessage } from "../../messaging/message/storage.ts"
-import { saveThread } from "../../messaging/thread/storage.ts"
+import { saveNewTicket } from "../../messaging/ticket/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
 import { createEmployee } from "./create-employee.ts"
@@ -43,18 +43,22 @@ const claude = {
 
 async function archiveMessageBy(employeeId: string) {
     const committer = { name: "Omar Aboudou", email: "omar@example.com" }
-    const director = { id: "director", title: "Director" }
+    const founder = { id: "founder", title: "Founder" }
     const sentAt = "2026-10-18T14:01:00.000Z"
-    const thread = { id: "2026-10-18-budget", subject: "Budget" }
-    await saveThread(projectRoot, {
-        ...thread,
+    const ticket = {
+        number: 1,
+        title: "Budget",
+        requester: founder,
+        assignee: founder,
+        committer,
         createdAt: sentAt,
-        createdBy: { position: director, committer },
-    })
+        request: "How much?",
+    }
+    await saveNewTicket(projectRoot, ticket)
     await saveMessage(projectRoot, {
-        threadId: thread.id,
+        ticketNumber: ticket.number,
         id: "20261018-140100-000-0000",
-        position: director,
+        position: founder,
         employee: { id: employeeId, name: "Earlier" },
         committer,
         sentAt,

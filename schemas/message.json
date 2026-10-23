@@ -18,7 +18,7 @@
             "description": "The position the message was written from."
         },
         "employee": {
-            "description": "The employee who wrote the message, working that position. Absent when a director wrote it: a person working on the repository, whom the committer names.",
+            "description": "The LLM employee who wrote the message, holding that position. Absent when the user wrote it, whom the committer names.",
             "type": "object",
             "properties": {
                 "id": {
@@ -51,5 +51,5 @@
     "required": ["position", "committer", "sentAt"],
     "additionalProperties": false,
     "title": "AICo message",
-    "description": "A message of a thread, in .aico/threads/<thread-id>/messages/<message-id>/message.json. Its body lives next to it, in body.md. Never modified once written."
+    "description": "A message of a ticket's discussion, in .aico/tickets/<ticket-number>/messages/<message-id>/message.json. Its body lives next to it, in body.md. Never modified once written."
 }

@@ -47,14 +47,14 @@ export const TaskResultSchema = z.record(z.string(), z.unknown()).meta({
 
 export type TaskResult = z.infer<typeof TaskResultSchema>
 
-const TaskIdSchema = IdSchema.meta({
+export const TaskIdSchema = IdSchema.meta({
     description: "Id of the task, i.e. the name of its file in .aico/tasks.",
 })
 
 export const taskCreatedEventType = defineEventType({
     type: "task-created",
     description:
-        "A task was created for a position, and waits for whoever works it.",
+        "A task was created for a position, and waits for whoever holds it.",
     fields: { taskId: TaskIdSchema },
 })
 
@@ -66,7 +66,7 @@ export const taskStartedEventType = defineEventType({
         runId: RunIdSchema,
         worker: WorkerSchema.meta({
             description:
-                "Who does the run, working the task's position: an employee, or the directors themselves.",
+                "Who does the run, holding the task's position: an LLM employee, or the user.",
         }),
         model: z
             .strictObject({ providerId: IdSchema, modelId: IdSchema })
@@ -81,15 +81,15 @@ export const taskStartedEventType = defineEventType({
 export const taskDoneEventType = defineEventType({
     type: "task-done",
     description:
-        "The task was marked as done: whoever worked it says that it is finished.",
+        "The task's session ended normally, whatever it decided for the task's ticket: at an act that passed the hand, or when its worker stopped.",
     fields: {
         taskId: TaskIdSchema,
-        summary: z.string().trim().min(1).meta({
-            description: "What was done, as whoever did it sums it up.",
-        }),
-        runId: RunIdSchema.optional().meta({
+        hasPassedHand: z.boolean().meta({
             description:
-                "Id of the run in which the task was marked as done. Absent when it was done outside a run, as when a listener marks it as done.",
+                "Whether the session ended at an act that passed the hand on its ticket, rather than when its worker stopped without passing it.",
+        }),
+        runId: RunIdSchema.meta({
+            description: "Id of the run whose session ended.",
         }),
         usage: TokenUsageSchema.optional(),
         result: TaskResultSchema,
@@ -97,6 +97,23 @@ export const taskDoneEventType = defineEventType({
 })
 
 export type TaskDoneEvent = EventOfType<typeof taskDoneEventType>
+
+export const taskCancelledEventType = defineEventType({
+    type: "task-cancelled",
+    description:
+        "The task became pointless: it waited in its position's queue, or its run stopped at its next step.",
+    fields: {
+        taskId: TaskIdSchema,
+        reason: z.string().trim().min(1).meta({
+            description: "Why the task became pointless.",
+        }),
+        runId: RunIdSchema.optional().meta({
+            description:
+                "Id of the run that stopped. Absent when the task was cancelled before it started.",
+        }),
+        usage: TokenUsageSchema.optional(),
+    },
+})
 
 export const taskFailedEventType = defineEventType({
     type: "task-failed",

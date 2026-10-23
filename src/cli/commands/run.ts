@@ -1,6 +1,7 @@
 import type { Command } from "@commander-js/extra-typings"
 import type { TokenUsage } from "../../llm/conversation/schema.ts"
 import { formatPositionLabel } from "../../messaging/message/format-position-label.ts"
+import type { CompanyPause } from "../../work/pause/get-company-pause.ts"
 import {
     type RunReadyTasksProgress,
     runReadyTasks,
@@ -8,6 +9,7 @@ import {
 } from "../../work/run/run-ready-tasks.ts"
 import type { RunTaskResult } from "../../work/run/run-task.ts"
 import { formatOperationName } from "../format-operation-name.ts"
+import { formatTaskEnding } from "../format-task-ending.ts"
 import { formatToolInput } from "../format-tool-input.ts"
 import { printColumns } from "../print-columns.ts"
 import { projectRoot } from "../project-root.ts"
@@ -15,8 +17,9 @@ import { projectRoot } from "../project-root.ts"
 const waitingReasonTexts: Record<WaitingTask["reason"], string> = {
     "unknown-type": "of a type this version of AICo doesn't know",
     "deleted-position": "for a deleted position",
-    "vacant-position": "for a vacant position",
-    "worked-by-directors": "for the directors",
+    "held-by-user": "for you",
+    running: "already running, in another process",
+    paused: "until the company is relaunched",
 }
 
 function formatUsage(usage: TokenUsage): string {
@@ -25,10 +28,7 @@ function formatUsage(usage: TokenUsage): string {
 }
 
 function formatTaskEnd({ taskEnding, run }: RunTaskResult): string[] {
-    const endLine =
-        taskEnding.state === "done"
-            ? `Task done: ${taskEnding.summary}`
-            : `Task failed: ${taskEnding.reason}`
+    const endLine = formatTaskEnding(taskEnding)
     return run === undefined
         ? [`${endLine} No model was called.`]
         : [endLine, formatUsage(run.usage)]
@@ -55,10 +55,12 @@ function formatProgress(
             return progress.isError
                 ? [`✗ ${progress.text}`]
                 : [`← ${formatToolResult(progress.text)}`]
-        case "reminder":
-            return [`Reminder: ${progress.text}`]
         case "task-ended":
             return formatTaskEnd(progress.result)
+        case "task-cut-short":
+            return [
+                `Task "${progress.task.id}" failed: its session was cut short, the process that ran it having stopped before it ended.`,
+            ]
     }
 }
 
@@ -80,6 +82,17 @@ function createProgressPrinter(): (progress: RunReadyTasksProgress) => void {
     }
 }
 
+function formatPause({ cause }: CompanyPause): string {
+    switch (cause.kind) {
+        case "command":
+            return "The company is paused: `aico company relaunch` relaunches it."
+        case "failure":
+            return `The company is paused since task "${cause.taskId}" failed: the founder analyses the failure in \`aico task work\`, then relaunches it with \`aico company relaunch\`.`
+        case "renouncement":
+            return `The company is paused since ticket #${cause.ticketNumber} was renounced: the founder arbitrates it in \`aico task work\`, then relaunches it with \`aico company relaunch\`.`
+    }
+}
+
 function printWaitingTasks(waitingTasks: WaitingTask[]): void {
     if (waitingTasks.length === 0) {
         console.log("No task is ready, nor waiting.")
@@ -96,19 +109,55 @@ function printWaitingTasks(waitingTasks: WaitingTask[]): void {
     )
 }
 
+type RunStop = { signal: AbortSignal; dispose(): void }
+
+// The terminal turns Ctrl+C into SIGINT: aico run stops once the task in
+// progress has failed, its model's call cut, and a second Ctrl+C quits at
+// once, should that hang.
+function createRunStop(): RunStop {
+    const controller = new AbortController()
+    const onInterrupt = () => {
+        if (controller.signal.aborted) {
+            process.exit(130)
+        }
+        controller.abort()
+        console.error(
+            "\nStopping aico run: the task in progress fails. Ctrl+C again to quit at once.",
+        )
+    }
+    process.on("SIGINT", onInterrupt)
+    return {
+        signal: controller.signal,
+        dispose: () => process.off("SIGINT", onInterrupt),
+    }
+}
+
 export function registerRunCommand(program: Command): void {
     program
         .command("run")
         .description(
-            "Run the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then list the tasks left waiting.",
+            "Run the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then list the tasks left waiting. A task that fails pauses the company, which starts no other; Ctrl+C stops it, failing the task in progress.",
         )
         .action(async (_options, command) => {
-            const { waitingTasks } = await runReadyTasks(
-                projectRoot,
-                process.env,
-                formatOperationName(command),
-                createProgressPrinter(),
-            )
-            printWaitingTasks(waitingTasks)
+            const stop = createRunStop()
+            try {
+                const result = await runReadyTasks(
+                    projectRoot,
+                    process.env,
+                    formatOperationName(command),
+                    createProgressPrinter(),
+                    { signal: stop.signal },
+                )
+                if (result.kind === "stopped") {
+                    process.exitCode = 130
+                    return
+                }
+                printWaitingTasks(result.waitingTasks)
+                if (result.pause !== undefined) {
+                    console.log(`\n${formatPause(result.pause)}`)
+                }
+            } finally {
+                stop.dispose()
+            }
         })
 }

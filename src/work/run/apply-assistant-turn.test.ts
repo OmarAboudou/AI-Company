@@ -7,18 +7,15 @@ import type {
     TurnStop,
 } from "../../llm/conversation/schema.ts"
 import { createTemporaryCompany } from "../../organization/company/create-temporary-company.testing.ts"
-import { taskMarkAsDoneTool } from "../tool/built-in/task/mark-as-done.ts"
-import { taskMarkAsFailedTool } from "../tool/built-in/task/mark-as-failed.ts"
 import { defineTool } from "../tool/define-tool.ts"
 import { exampleToolContext } from "../tool/example-tool-context.testing.ts"
 import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
 import {
     applyAssistantTurn,
     maxToolCallsPerRun,
-    reminderText,
 } from "./apply-assistant-turn.ts"
 import type { Run, RunProgress } from "./schema.ts"
-import { startRun } from "./start-run.ts"
+import { startRun } from "./start/start-run.ts"
 import { loadRun } from "./storage.ts"
 
 const runId = "20261018-140324-000-1b2c"
@@ -34,8 +31,6 @@ const noteWriteTool = defineTool({
 
 const tools = {
     note_write: noteWriteTool,
-    "task_mark-as-done": taskMarkAsDoneTool,
-    "task_mark-as-failed": taskMarkAsFailedTool,
 }
 
 let projectRoot: string
@@ -65,13 +60,6 @@ function createNoteWritings(count: number): ToolCallBlock[] {
         name: "note_write",
         input: { text: `note ${index}` },
     }))
-}
-
-const markAsDoneCall: ToolCallBlock = {
-    type: "tool-call",
-    id: "call_done",
-    name: "task_mark-as-done",
-    input: { summary: "Wrote the notes." },
 }
 
 function createTurn(...blocks: AssistantTurn["blocks"]): AssistantTurn {
@@ -122,34 +110,45 @@ describe("applyAssistantTurn", () => {
         expect(taskEnding).toBeUndefined()
     })
 
-    test("ends the task with the turn's first ending, once all its calls have run", async () => {
-        const turn = createTurn(markAsDoneCall, ...createNoteWritings(1))
+    test("stops before its next call once the task became pointless", async () => {
+        const turn = createTurn(...createNoteWritings(2))
 
-        const { taskEnding } = await applyFakeTurn(startedRun, turn)
+        const { run, taskEnding } = await applyAssistantTurn(startedRun, turn, {
+            tools,
+            ctx: { ...exampleToolContext, projectRoot, runId },
+            loadCancellationReason: async () =>
+                writtenNotes.length > 0 ? "No more notes needed." : undefined,
+        })
 
         expect(writtenNotes).toEqual(["note 0"])
         expect(taskEnding).toEqual({
-            state: "done",
-            summary: "Wrote the notes.",
+            state: "cancelled",
+            reason: "No more notes needed.",
+        })
+        expect(run.conversation.turns.at(-1)?.blocks.at(-1)).toEqual({
+            type: "tool-result",
+            toolCallId: "call_1",
+            text: "Not run: the task was cancelled. No more notes needed.",
+            isError: true,
         })
     })
 
     test("reports each call and its result as it runs", async () => {
         const progresses: RunProgress[] = []
-        const turn = createTurn(markAsDoneCall)
+        const turn = createTurn(...createNoteWritings(1))
 
         await applyFakeTurn(startedRun, turn, progresses)
 
         expect(progresses).toEqual([
             {
                 kind: "tool-call",
-                name: "task_mark-as-done",
-                input: { summary: "Wrote the notes." },
+                name: "note_write",
+                input: { text: "note 0" },
             },
             {
                 kind: "tool-result",
-                name: "task_mark-as-done",
-                text: "Task marked as done.",
+                name: "note_write",
+                text: 'Wrote "note 0".',
                 isError: false,
             },
         ])
@@ -178,33 +177,11 @@ describe("applyAssistantTurn", () => {
 })
 
 describe("applyAssistantTurn after a turn without any tool call", () => {
-    test("reminds whoever works the task to mark it as done or failed", async () => {
-        const progresses: RunProgress[] = []
+    test("ends the session, done without passing the hand", async () => {
+        const { run, taskEnding } = await applyFakeTurn(startedRun, textTurn)
 
-        const { run, taskEnding } = await applyFakeTurn(
-            startedRun,
-            textTurn,
-            progresses,
-        )
-
-        const reminderTurn = run.conversation.turns.at(-1)
-        expect(reminderTurn).toEqual({
-            role: "user",
-            blocks: [{ type: "text", text: reminderText }],
-        })
-        expect(progresses).toEqual([{ kind: "reminder", text: reminderText }])
-        expect(taskEnding).toBeUndefined()
-    })
-
-    test("fails the task after a second one", async () => {
-        const { run } = await applyFakeTurn(startedRun, textTurn)
-
-        const { taskEnding } = await applyFakeTurn(run, textTurn)
-
-        expect(taskEnding).toEqual({
-            state: "failed",
-            reason: "Two turns ended without calling a tool, the second after a reminder.",
-        })
+        expect(taskEnding).toEqual({ state: "done", hasPassedHand: false })
+        expect(run.conversation.turns.at(-1)).toEqual(textTurn)
     })
 })
 

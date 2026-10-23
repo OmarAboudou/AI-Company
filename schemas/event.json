@@ -5,6 +5,615 @@
         {
             "type": "object",
             "properties": {
+                "type": { "type": "string", "const": "company-created" },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                }
+            },
+            "required": ["type", "occurredAt", "depth"],
+            "additionalProperties": false,
+            "description": "aico init created the company, with its founder's position, whose first task follows."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": { "type": "string", "const": "ticket-created" },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                },
+                "ticketNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "description": "Number of the ticket, i.e. the name of its folder in .aico/tickets: tickets are numbered in sequence, from 1."
+                },
+                "requesterPositionId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the position that asks, as its ticket.json records it."
+                },
+                "assigneePositionId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the position asked, as its ticket.json records it."
+                },
+                "runId": {
+                    "description": "Id of the run in which the ticket was created, i.e. the name of its transcript in .aico/.state/runs. Absent when it was created outside a run.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                }
+            },
+            "required": [
+                "type",
+                "occurredAt",
+                "depth",
+                "ticketNumber",
+                "requesterPositionId",
+                "assigneePositionId"
+            ],
+            "additionalProperties": false,
+            "description": "A position asked another for work: the ticket was created, and its assignee has the hand."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": { "type": "string", "const": "ticket-question-asked" },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                },
+                "ticketNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "description": "Number of the ticket, i.e. the name of its folder in .aico/tickets: tickets are numbered in sequence, from 1."
+                },
+                "messageId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
+                },
+                "positionId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the position the message was written from, as its message.json records it."
+                },
+                "runId": {
+                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a message written outside a run.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                }
+            },
+            "required": [
+                "type",
+                "occurredAt",
+                "depth",
+                "ticketNumber",
+                "messageId",
+                "positionId"
+            ],
+            "additionalProperties": false,
+            "description": "The ticket's assignee asked its requester a question: the requester has the hand."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "ticket-question-answered"
+                },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                },
+                "ticketNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "description": "Number of the ticket, i.e. the name of its folder in .aico/tickets: tickets are numbered in sequence, from 1."
+                },
+                "messageId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
+                },
+                "positionId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the position the message was written from, as its message.json records it."
+                },
+                "runId": {
+                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a message written outside a run.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                }
+            },
+            "required": [
+                "type",
+                "occurredAt",
+                "depth",
+                "ticketNumber",
+                "messageId",
+                "positionId"
+            ],
+            "additionalProperties": false,
+            "description": "The ticket's requester answered the assignee's question: the assignee has the hand again."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": { "type": "string", "const": "ticket-delivered" },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                },
+                "ticketNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "description": "Number of the ticket, i.e. the name of its folder in .aico/tickets: tickets are numbered in sequence, from 1."
+                },
+                "messageId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
+                },
+                "positionId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the position the message was written from, as its message.json records it."
+                },
+                "runId": {
+                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a message written outside a run.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                }
+            },
+            "required": [
+                "type",
+                "occurredAt",
+                "depth",
+                "ticketNumber",
+                "messageId",
+                "positionId"
+            ],
+            "additionalProperties": false,
+            "description": "The ticket's assignee delivered it, its message summing up what was done: the requester has the hand, to validate the delivery."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "ticket-delivery-validated"
+                },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                },
+                "ticketNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "description": "Number of the ticket, i.e. the name of its folder in .aico/tickets: tickets are numbered in sequence, from 1."
+                },
+                "messageId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
+                },
+                "positionId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the position the message was written from, as its message.json records it."
+                },
+                "runId": {
+                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a message written outside a run.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                }
+            },
+            "required": [
+                "type",
+                "occurredAt",
+                "depth",
+                "ticketNumber",
+                "messageId",
+                "positionId"
+            ],
+            "additionalProperties": false,
+            "description": "The ticket's requester validated the delivery: the ticket is closed, done."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "ticket-delivery-refused"
+                },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                },
+                "ticketNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "description": "Number of the ticket, i.e. the name of its folder in .aico/tickets: tickets are numbered in sequence, from 1."
+                },
+                "messageId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
+                },
+                "positionId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the position the message was written from, as its message.json records it."
+                },
+                "runId": {
+                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a message written outside a run.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                }
+            },
+            "required": [
+                "type",
+                "occurredAt",
+                "depth",
+                "ticketNumber",
+                "messageId",
+                "positionId"
+            ],
+            "additionalProperties": false,
+            "description": "The ticket's requester refused the delivery, saying why: the assignee has the hand again."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": { "type": "string", "const": "ticket-cancelled" },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                },
+                "ticketNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "description": "Number of the ticket, i.e. the name of its folder in .aico/tickets: tickets are numbered in sequence, from 1."
+                },
+                "messageId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
+                },
+                "positionId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the position the message was written from, as its message.json records it."
+                },
+                "runId": {
+                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a message written outside a run.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                }
+            },
+            "required": [
+                "type",
+                "occurredAt",
+                "depth",
+                "ticketNumber",
+                "messageId",
+                "positionId"
+            ],
+            "additionalProperties": false,
+            "description": "The ticket's requester withdrew its request, saying why: the ticket is closed, cancelled."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": { "type": "string", "const": "ticket-renounced" },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                },
+                "ticketNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "description": "Number of the ticket, i.e. the name of its folder in .aico/tickets: tickets are numbered in sequence, from 1."
+                },
+                "messageId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
+                },
+                "positionId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the position the message was written from, as its message.json records it."
+                },
+                "runId": {
+                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a message written outside a run.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                }
+            },
+            "required": [
+                "type",
+                "occurredAt",
+                "depth",
+                "ticketNumber",
+                "messageId",
+                "positionId"
+            ],
+            "additionalProperties": false,
+            "description": "The ticket's assignee renounced, saying what went wrong: the company pauses, and the founder arbitrates."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": { "type": "string", "const": "ticket-given-back" },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                },
+                "ticketNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "description": "Number of the ticket, i.e. the name of its folder in .aico/tickets: tickets are numbered in sequence, from 1."
+                },
+                "messageId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
+                },
+                "positionId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the position the message was written from, as its message.json records it."
+                },
+                "runId": {
+                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a message written outside a run.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                }
+            },
+            "required": [
+                "type",
+                "occurredAt",
+                "depth",
+                "ticketNumber",
+                "messageId",
+                "positionId"
+            ],
+            "additionalProperties": false,
+            "description": "The founder gave the renounced ticket back to its assignee, saying what was readjusted: the assignee has the hand again."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": { "type": "string", "const": "ticket-handed-over" },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                },
+                "ticketNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "description": "Number of the ticket, i.e. the name of its folder in .aico/tickets: tickets are numbered in sequence, from 1."
+                },
+                "messageId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
+                },
+                "positionId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the position the message was written from, as its message.json records it."
+                },
+                "runId": {
+                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a message written outside a run.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                },
+                "assigneePositionId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the ticket's new assignee, as the position was called then."
+                }
+            },
+            "required": [
+                "type",
+                "occurredAt",
+                "depth",
+                "ticketNumber",
+                "messageId",
+                "positionId",
+                "assigneePositionId"
+            ],
+            "additionalProperties": false,
+            "description": "The founder handed the ticket over to another position, saying why: its new assignee has the hand."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": { "type": "string", "const": "ticket-failed" },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                },
+                "ticketNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "description": "Number of the ticket, i.e. the name of its folder in .aico/tickets: tickets are numbered in sequence, from 1."
+                },
+                "messageId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
+                },
+                "positionId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the position the message was written from, as its message.json records it."
+                },
+                "runId": {
+                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a message written outside a run.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                }
+            },
+            "required": [
+                "type",
+                "occurredAt",
+                "depth",
+                "ticketNumber",
+                "messageId",
+                "positionId"
+            ],
+            "additionalProperties": false,
+            "description": "The founder closed the ticket, failed, saying why: its request won't be met."
+        },
+        {
+            "type": "object",
+            "properties": {
                 "type": { "type": "string", "const": "message-sent" },
                 "occurredAt": {
                     "type": "string",
@@ -18,17 +627,17 @@
                     "maximum": 9007199254740991,
                     "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
                 },
-                "threadId": {
-                    "type": "string",
-                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the thread, i.e. the name of its folder in .aico/threads."
+                "ticketNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991,
+                    "description": "Number of the ticket, i.e. the name of its folder in .aico/tickets: tickets are numbered in sequence, from 1."
                 },
                 "messageId": {
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
-                    "description": "Id of the message, i.e. the name of its folder in the thread's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
+                    "description": "Id of the message, i.e. the name of its folder in the ticket's messages. Recorded just before the message is written: an interrupted sending can leave it naming no message."
                 },
                 "positionId": {
                     "type": "string",
@@ -37,7 +646,7 @@
                     "description": "Id of the position the message was written from, as its message.json records it."
                 },
                 "runId": {
-                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a person's message.",
+                    "description": "Id of the run that posted the message, i.e. the name of its transcript in .aico/.state/runs. Absent for a message written outside a run.",
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
@@ -47,12 +656,12 @@
                 "type",
                 "occurredAt",
                 "depth",
-                "threadId",
+                "ticketNumber",
                 "messageId",
                 "positionId"
             ],
             "additionalProperties": false,
-            "description": "A message was added to a thread."
+            "description": "A message was added to a ticket's discussion."
         },
         {
             "type": "object",
@@ -79,7 +688,7 @@
             },
             "required": ["type", "occurredAt", "depth", "taskId"],
             "additionalProperties": false,
-            "description": "A task was created for a position, and waits for whoever works it."
+            "description": "A task was created for a position, and waits for whoever holds it."
         },
         {
             "type": "object",
@@ -134,15 +743,15 @@
                             "properties": {
                                 "kind": {
                                     "type": "string",
-                                    "const": "directors",
-                                    "description": "directors: the people working on the repository, identified by git, work the position themselves, without an employee."
+                                    "const": "user",
+                                    "description": "user: the user, the person git names, holds the position and works its tasks."
                                 }
                             },
                             "required": ["kind"],
                             "additionalProperties": false
                         }
                     ],
-                    "description": "Who does the run, working the task's position: an employee, or the directors themselves."
+                    "description": "Who does the run, holding the task's position: an LLM employee, or the user."
                 },
                 "model": {
                     "description": "The model an LLM employee does the run with: its provider's id and its own, in .aico/llm-providers.",
@@ -196,16 +805,15 @@
                     "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
                     "description": "Id of the task, i.e. the name of its file in .aico/tasks."
                 },
-                "summary": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "What was done, as whoever did it sums it up."
+                "hasPassedHand": {
+                    "type": "boolean",
+                    "description": "Whether the session ended at an act that passed the hand on its ticket, rather than when its worker stopped without passing it."
                 },
                 "runId": {
-                    "description": "Id of the run in which the task was marked as done. Absent when it was done outside a run, as when a listener marks it as done.",
                     "type": "string",
                     "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
-                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the run whose session ended."
                 },
                 "usage": {
                     "type": "object",
@@ -252,11 +860,12 @@
                 "occurredAt",
                 "depth",
                 "taskId",
-                "summary",
+                "hasPassedHand",
+                "runId",
                 "result"
             ],
             "additionalProperties": false,
-            "description": "The task was marked as done: whoever worked it says that it is finished."
+            "description": "The task's session ended normally, whatever it decided for the task's ticket: at an act that passed the hand, or when its worker stopped."
         },
         {
             "type": "object",
@@ -328,6 +937,119 @@
             "required": ["type", "occurredAt", "depth", "taskId", "reason"],
             "additionalProperties": false,
             "description": "The task was given up."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": { "type": "string", "const": "task-cancelled" },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                },
+                "taskId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens",
+                    "description": "Id of the task, i.e. the name of its file in .aico/tasks."
+                },
+                "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Why the task became pointless."
+                },
+                "runId": {
+                    "description": "Id of the run that stopped. Absent when the task was cancelled before it started.",
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "patternErrorMessage": "must be kebab-case: lowercase letters and digits separated by single hyphens"
+                },
+                "usage": {
+                    "type": "object",
+                    "properties": {
+                        "inputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        },
+                        "outputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        },
+                        "cacheReadInputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        },
+                        "cacheCreationInputTokens": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        }
+                    },
+                    "required": [
+                        "inputTokens",
+                        "outputTokens",
+                        "cacheReadInputTokens",
+                        "cacheCreationInputTokens"
+                    ],
+                    "additionalProperties": false,
+                    "description": "The tokens that the run's requests used, as the provider counted them: the input tokens read from the prompt cache and those written to it count apart from the others, at their own prices."
+                }
+            },
+            "required": ["type", "occurredAt", "depth", "taskId", "reason"],
+            "additionalProperties": false,
+            "description": "The task became pointless: it waited in its position's queue, or its run stopped at its next step."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": { "type": "string", "const": "company-paused" },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                }
+            },
+            "required": ["type", "occurredAt", "depth"],
+            "additionalProperties": false,
+            "description": "The founder paused the company: no new task starts but the founder's until it is relaunched, while the running sessions finish."
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": { "type": "string", "const": "company-relaunched" },
+                "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "When it happened, in UTC."
+                },
+                "depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "How many tasks led to it, each caused by the one before: 0 for what a person does. A task created from an event of depth d has depth d + 1, and so has what its run causes."
+                }
+            },
+            "required": ["type", "occurredAt", "depth"],
+            "additionalProperties": false,
+            "description": "The founder relaunched the paused company: its tasks start again."
         },
         {
             "type": "object",

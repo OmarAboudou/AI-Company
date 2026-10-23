@@ -9,7 +9,7 @@ import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
-describe("aico position assign and unassign", () => {
+describe("aico position unassign", () => {
     beforeEach(async () => {
         const projectRoot = getProjectPath()
         await createCompany(projectRoot, { name: "Acme" })
@@ -53,24 +53,26 @@ describe("aico position assign and unassign", () => {
         return Bun.file(path).json()
     }
 
-    test("unassign makes the position vacant", async () => {
+    test("unassign gives the position back to the user", async () => {
         runCli("position", "assign", "developer", "omar")
 
         const unassignment = runCli("position", "unassign", "developer")
 
         expect(unassignment.exitCode).toBe(0)
-        expect(unassignment.stdout).toContain(
-            '"omar" is no longer its default employee',
+        expect(unassignment.stdout).toBe(
+            'Position "developer" is back to you: "omar" no longer holds it.\n',
         )
         expect(await loadPositionConfigFile("developer")).toEqual({
             title: "Developer",
         })
     })
 
-    test("unassign says so when the position is already vacant", () => {
+    test("unassign says so when the user already holds the position", () => {
         const unassignment = runCli("position", "unassign", "developer")
 
         expect(unassignment.exitCode).toBe(0)
-        expect(unassignment.stdout).toContain("already vacant")
+        expect(unassignment.stdout).toBe(
+            'You already hold position "developer".\n',
+        )
     })
 })

@@ -11,7 +11,7 @@ import {
 const exampleTask = {
     askedAt: "2026-10-18T14:03:23.000Z",
     type: "example",
-    params: { threadId: "2026-10-18-choice-of-framework" },
+    params: { ticketNumber: 1 },
     positionId: "backend-developer",
     causeEventId: "20261018-140322-123-5d1e",
 }
@@ -38,7 +38,7 @@ describe("TaskSchema", () => {
     })
 
     test("rejects an unknown key, such as a state", () => {
-        expect(accepts({ ...exampleTask, state: "waiting" })).toBe(false)
+        expect(accepts({ ...exampleTask, state: "queued" })).toBe(false)
     })
 })
 
@@ -57,32 +57,23 @@ describe("the task event types", () => {
 
     test.each([
         [taskCreatedEventType, {}],
-        [taskStartedEventType, { runId, worker: { kind: "directors" } }],
-        [
-            taskDoneEventType,
-            { summary: "Answered: Hono, for Bun.", result: {} },
-        ],
-        [taskFailedEventType, { reason: "The thread asks nothing." }],
+        [taskStartedEventType, { runId, worker: { kind: "user" } }],
+        [taskDoneEventType, { runId, hasPassedHand: true, result: {} }],
+        [taskFailedEventType, { reason: "The ticket asks nothing." }],
     ])("accept their events, with the task's id", (eventType, fields) => {
         const event = { ...taskEvent, type: eventType.type, ...fields }
 
         expect(isAcceptedBy(eventType, event)).toBe(true)
     })
 
-    test("require a summary to mark a task as done", () => {
-        const event = {
-            ...taskEvent,
-            type: "task-done",
-            summary: " ",
-            result: {},
-        }
+    test("require whether a session passed the hand to mark it as done", () => {
+        const event = { ...taskEvent, type: "task-done", result: {} }
 
         expect(isAcceptedBy(taskDoneEventType, event)).toBe(false)
     })
 
     test("require the result that the task's type gives", () => {
-        const summary = "Answered: Hono, for Bun."
-        const event = { ...taskEvent, type: "task-done", summary }
+        const event = { ...taskEvent, type: "task-done", hasPassedHand: true }
 
         expect(isAcceptedBy(taskDoneEventType, event)).toBe(false)
     })
@@ -108,7 +99,7 @@ describe("the task event types", () => {
     })
 
     test("require the run that starts a task", () => {
-        const worker = { kind: "directors" }
+        const worker = { kind: "user" }
         const event = { ...taskEvent, type: "task-started", worker }
 
         expect(isAcceptedBy(taskStartedEventType, event)).toBe(false)
@@ -127,8 +118,12 @@ describe("the task event types", () => {
             cacheReadInputTokens: 9000,
             cacheCreationInputTokens: 800,
         }
-        const summary = "Answered: Hono, for Bun."
-        const event = { ...taskEvent, type: "task-done", summary, result: {} }
+        const event = {
+            ...taskEvent,
+            type: "task-done",
+            hasPassedHand: true,
+            result: {},
+        }
 
         const runEnd = { ...event, runId, usage }
         expect(isAcceptedBy(taskDoneEventType, runEnd)).toBe(true)

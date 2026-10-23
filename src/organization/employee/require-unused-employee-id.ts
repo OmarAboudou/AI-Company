@@ -1,17 +1,33 @@
 import { isAuthorOf } from "../../ids/is-author-of.ts"
-import { listArchives } from "../../messaging/thread/list-archives.ts"
+import { listMessages } from "../../messaging/message/storage.ts"
+import type { Ticket } from "../../messaging/ticket/schema.ts"
+import { listTickets } from "../../messaging/ticket/storage.ts"
 import { UserError } from "../../user-error.ts"
 import type { Employee } from "./schema.ts"
 import { listEmployees } from "./storage.ts"
+
+type Authorship = { employee?: { id: string }; sentAt: string }
+
+async function listTicketAuthorships(
+    projectRoot: string,
+    ticket: Ticket,
+): Promise<Authorship[]> {
+    const ticketAuthorship = {
+        employee: ticket.employee,
+        sentAt: ticket.createdAt,
+    }
+    const messages = await listMessages(projectRoot, ticket.number)
+    return [ticketAuthorship, ...messages]
+}
 
 async function listEarlierUses(
     projectRoot: string,
     id: string,
     renamedEmployee: Employee | undefined,
 ): Promise<string[]> {
-    const [employees, archives] = await Promise.all([
+    const [employees, tickets] = await Promise.all([
         listEmployees(projectRoot),
-        listArchives(projectRoot),
+        listTickets(projectRoot),
     ])
     const formerIdUses = employees
         .filter(
@@ -20,13 +36,10 @@ async function listEarlierUses(
                 employee.formerIds?.some(({ id: formerId }) => formerId === id),
         )
         .map((employee) => `as a former id of employee "${employee.id}"`)
-    const threadUses = archives
-        .filter(({ thread, messages }) => {
-            const threadCreator = {
-                employee: thread.createdBy.employee,
-                sentAt: thread.createdAt,
-            }
-            return [threadCreator, ...messages].some(
+    const ticketUses = await Promise.all(
+        tickets.map(async (ticket) => {
+            const authorships = await listTicketAuthorships(projectRoot, ticket)
+            const isUsed = authorships.some(
                 (authorship) =>
                     authorship.employee?.id === id &&
                     !(
@@ -34,9 +47,10 @@ async function listEarlierUses(
                         isAuthorOf(renamedEmployee, authorship)
                     ),
             )
-        })
-        .map(({ thread }) => `in thread "${thread.id}"`)
-    return [...formerIdUses, ...threadUses]
+            return isUsed ? [`in ticket #${ticket.number}`] : []
+        }),
+    )
+    return [...formerIdUses, ...ticketUses.flat()]
 }
 
 export async function requireUnusedEmployeeId(

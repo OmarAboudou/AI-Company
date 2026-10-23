@@ -1,15 +1,18 @@
 import { createLlmConnection } from "../llm/connection/create-llm-connection.ts"
 import { createLlmModel } from "../llm/model/create-llm-model.ts"
 import { createLlmProvider } from "../llm/provider/create-llm-provider.ts"
-import { createThread } from "../messaging/thread/create-thread.ts"
+import { createExampleTicket } from "../messaging/ticket/create-example-ticket.testing.ts"
 import { createTemporaryCompany } from "../organization/company/create-temporary-company.testing.ts"
 import { createEmployee } from "../organization/employee/create-employee.ts"
 import { assignPosition } from "../organization/position/assign-position.ts"
 import { createPosition } from "../organization/position/create-position.ts"
 
-export type CompanyWithLlmEmployee = { projectRoot: string; threadId: string }
+export type CompanyWithLlmEmployee = {
+    projectRoot: string
+    ticketNumber: number
+}
 
-async function createLlmEmployee(
+export async function createLlmEmployee(
     projectRoot: string,
     baseUrl: string,
 ): Promise<void> {
@@ -47,6 +50,9 @@ export async function createCompanyWithLlmEmployee(
         modelId: "opus",
     })
     await assignPosition(projectRoot, "backend-developer", "claude")
-    const { thread } = await createThread(projectRoot, {}, { subject: "Stack" })
-    return { projectRoot, threadId: thread.id }
+    const ticket = await createExampleTicket(projectRoot, {
+        title: "Stack",
+        rawAssigneePositionId: "backend-developer",
+    })
+    return { projectRoot, ticketNumber: ticket.number }
 }

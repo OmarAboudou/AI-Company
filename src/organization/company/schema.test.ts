@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test"
 import { CompanyConfigSchema } from "./schema.ts"
 
-const acme = { name: "Acme", directorPositionId: "director" }
+const acme = { name: "Acme", founderPositionId: "founder" }
 
 function accepts(config: unknown): boolean {
     return CompanyConfigSchema.safeParse(config).success
 }
 
 describe("CompanyConfigSchema", () => {
-    test("accepts a config with a name and a director's position", () => {
+    test("accepts a config with a name and a founder's position", () => {
         expect(CompanyConfigSchema.parse(acme)).toEqual(acme)
     })
 
@@ -19,7 +19,7 @@ describe("CompanyConfigSchema", () => {
     })
 
     test("rejects a config without a name", () => {
-        expect(accepts({ directorPositionId: "director" })).toBe(false)
+        expect(accepts({ founderPositionId: "founder" })).toBe(false)
     })
 
     test("rejects an empty or whitespace-only name", () => {
@@ -27,9 +27,9 @@ describe("CompanyConfigSchema", () => {
         expect(accepts({ ...acme, name: "   " })).toBe(false)
     })
 
-    test("requires a kebab-case director's position", () => {
+    test("requires a kebab-case founder's position", () => {
         expect(accepts({ name: "Acme" })).toBe(false)
-        expect(accepts({ ...acme, directorPositionId: "Director" })).toBe(false)
+        expect(accepts({ ...acme, founderPositionId: "Founder" })).toBe(false)
     })
 
     test("rejects an unknown key", () => {

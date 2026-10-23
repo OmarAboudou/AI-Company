@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, test } from "bun:test"
 import { chmod, mkdir } from "node:fs/promises"
 import { join } from "node:path"
 import { createCompany } from "../../../organization/company/create-company.ts"
-import { assignPositionTemporarily } from "../../../organization/position/assign-position-temporarily.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
 import {
@@ -30,9 +29,6 @@ beforeEach(async () => {
     await createPosition(projectRoot, "graphics", {
         title: "Graphics",
         description: "",
-    })
-    await assignPositionTemporarily(projectRoot, "graphics", {
-        kind: "directors",
     })
     const aicoPath = getHomePath("bin", "aico")
     await Bun.write(
@@ -67,7 +63,7 @@ for (const shell of shells) {
                     printShellState,
                 )
 
-                expect(shellRun.stdout).toBe("graphics|(director @graphics) $ ")
+                expect(shellRun.stdout).toBe("graphics|(aico @graphics) $ ")
             })
 
             test("lets current-position clear switch back", () => {
@@ -77,7 +73,7 @@ for (const shell of shells) {
                     printShellState,
                 )
 
-                expect(shellRun.stdout).toBe("unset|(director) $ ")
+                expect(shellRun.stdout).toBe("unset|(aico) $ ")
             })
 
             test("leaves the shell as it was when current-position set refuses", () => {
@@ -87,7 +83,7 @@ for (const shell of shells) {
                 )
 
                 expect(shellRun.stderr).toContain('No position "support".')
-                expect(shellRun.stdout).toBe("unset|(director) $ ")
+                expect(shellRun.stdout).toBe("unset|(aico) $ ")
             })
 
             test("shows no label outside an AICo project", () => {
@@ -104,7 +100,7 @@ for (const shell of shells) {
                     printShellState,
                 )
 
-                expect(shellRun.stdout).toBe("unset|(director) $ unset|$ ")
+                expect(shellRun.stdout).toBe("unset|(aico) $ unset|$ ")
             })
 
             test("updates the label before each prompt, registered once", () => {

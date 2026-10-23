@@ -19,7 +19,7 @@ export const IdHistorySchema = z
             .optional()
             .meta({
                 description:
-                    "Ids it had before, oldest first, added by update-id. Threads keep the ids they were written with: a former id still designates it in messages written before the change.",
+                    "Ids it had before, oldest first, added by update-id. Tickets and messages keep the ids they were written with: a former id still designates it in what was written before the change.",
             }),
     })
     .meta({

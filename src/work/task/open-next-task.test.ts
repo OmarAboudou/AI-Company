@@ -3,28 +3,24 @@ import { rm } from "node:fs/promises"
 import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import { recordEvent } from "../../journal/record-event.ts"
 import { listEvents, loadJournal } from "../../journal/storage.ts"
-import { messageSentEventType } from "../../messaging/message/schema.ts"
-import { sendMessage } from "../../messaging/message/send-message.ts"
-import { createPosition } from "../../organization/position/create-position.ts"
-import { createCompanyWorkedByDirectors } from "../create-company-worked-by-directors.testing.ts"
-import {
-    createExampleWorkCatalog,
-    exampleTaskType,
-} from "../create-example-work-catalog.testing.ts"
-import { createUncreatedTask } from "../task-type/create-uncreated-task.ts"
+import { createExampleTicket } from "../../messaging/ticket/create-example-ticket.testing.ts"
+import { savePosition } from "../../organization/position/storage.ts"
+import { createCompanyHeldByUser } from "../create-company-held-by-user.testing.ts"
+import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
+import { pauseCompany } from "../pause/pause-company.ts"
+import { sendExampleMessage } from "../send-example-message.testing.ts"
 import { addTurnText } from "../turn/add-turn-text.ts"
-import { createTask } from "./create-task.ts"
 import { openNextTask } from "./open-next-task.ts"
 import { taskStartedEventType } from "./schema.ts"
 
 const exampleCatalog = createExampleWorkCatalog()
 let projectRoot: string
-let threadId: string
+let ticketNumber: number
 
 beforeEach(async () => {
-    const company = await createCompanyWorkedByDirectors()
+    const company = await createCompanyHeldByUser()
     projectRoot = company.projectRoot
-    threadId = company.threadId
+    ticketNumber = company.ticketNumber
 })
 
 afterEach(async () => {
@@ -34,14 +30,14 @@ afterEach(async () => {
 async function ask(
     askedPositionId: string,
     body: string,
-    asPositionId?: string,
+    authorPositionId = "founder",
 ) {
-    const sending = await sendMessage(
+    const sending = await sendExampleMessage(
         projectRoot,
-        {},
-        threadId,
-        { body, ...(asPositionId !== undefined && { asPositionId }) },
+        ticketNumber,
+        body,
         createExampleWorkCatalog([askedPositionId]),
+        { positionId: authorPositionId },
     )
     const [task] = sending.createdTasks
     if (task === undefined) {
@@ -79,12 +75,12 @@ describe("openNextTask", () => {
         expect(taskTurn?.blocks).toEqual([
             {
                 type: "text",
-                text: `Answer the last message of thread ${threadId}.`,
+                text: `Answer the last message of ticket #${ticketNumber}.`,
             },
         ])
     })
 
-    test("starts the person's run, by the directors, without a model", async () => {
+    test("starts the person's run, by the user, without a model", async () => {
         const shipping = await ask("qa-tester", "Can we ship on Friday?")
 
         const { openedTask } = await openNextExampleTask()
@@ -93,27 +89,25 @@ describe("openNextTask", () => {
         expect(startedEvent).toMatchObject({
             taskId: shipping.task.id,
             runId: openedTask?.run.id,
-            worker: { kind: "directors" },
+            worker: { kind: "user" },
         })
         expect(startedEvent).not.toHaveProperty("model")
     })
 
-    test("gives the run the tools of the task's type, its thread fixed", async () => {
+    test("gives the run the tools of the task's type, its ticket fixed", async () => {
         await ask("qa-tester", "Can we ship on Friday?")
 
         const { openedTask } = await openNextExampleTask()
 
         const tools = openedTask?.run.conversation.tools ?? []
-        const sendingTool = tools.find(({ name }) => name === "message_send")
-        expect(tools.map(({ name }) => name)).toEqual([
-            "message_send",
-            "task_mark-as-done",
-            "task_mark-as-failed",
-            "thread_show",
-        ])
-        expect(sendingTool?.description).toStartWith(
-            "Send a message in this thread,",
+        const deliveringTool = tools.find(
+            ({ name }) => name === "ticket_deliver",
         )
+        expect(tools.map(({ name }) => name)).toEqual([
+            "ticket_deliver",
+            "ticket_show",
+        ])
+        expect(deliveringTool?.description).toStartWith("Deliver this ticket")
     })
 
     test("starts the person's run at its cause's depth, adding no link", async () => {
@@ -169,10 +163,28 @@ describe("openNextTask", () => {
         expect(openedTask?.run.id).not.toBe(modelRunId)
     })
 
+    test("ends rather than resumes a run whose task became pointless", async () => {
+        const shipping = await ask("qa-tester", "Can we ship on Friday?")
+        await openNextExampleTask()
+        await sendExampleMessage(
+            projectRoot,
+            ticketNumber,
+            "Stop.",
+            createExampleWorkCatalog(),
+        )
+
+        const { openedTask, endedTasks } = await openNextExampleTask()
+
+        const reason = `Ticket #${ticketNumber}'s discussion says Stop.`
+        const taskEnding = { state: "cancelled", reason } as const
+        expect(endedTasks).toEqual([{ task: shipping.task, taskEnding }])
+        expect(openedTask).toBeUndefined()
+    })
+
     test("opens nothing when no task waits for the person", async () => {
         const result = await openNextExampleTask()
 
-        expect(result).toEqual({ openedTask: undefined, doneTasks: [] })
+        expect(result).toEqual({ openedTask: undefined, endedTasks: [] })
     })
 })
 
@@ -187,58 +199,81 @@ describe("openNextTask among the person's positions", () => {
         expect(openedTask?.task).toEqual(logo.task)
     })
 
-    test("refuses a selected position the person doesn't work", async () => {
-        await createPosition(projectRoot, "support", {
+    test("refuses a selected position the person doesn't hold", async () => {
+        await savePosition(projectRoot, {
+            id: "support",
             title: "Support",
             description: "",
+            employeeId: "claude",
         })
         const environment = { AICO_CURRENT_POSITION_ID: "support" }
 
         const opening = openNextExampleTask(environment)
 
-        await expect(opening).rejects.toThrow("isn't one you work now")
+        await expect(opening).rejects.toThrow("isn't one you hold now")
     })
 
-    test("lets the directors work the tasks of the director's position", async () => {
-        const question = await ask("director", "Ready?", "qa-tester")
+    test("lets the user work the tasks of the founder's position", async () => {
+        const question = await ask("founder", "Ready?", "qa-tester")
 
         const { openedTask } = await openNextExampleTask({})
 
         const [startedEvent] = await listTaskStartedEvents()
         expect(openedTask?.task).toEqual(question.task)
         expect(openedTask?.run.conversation.systemPrompt).toStartWith(
-            "You are Omar Aboudou, Director (@director) at Acme.",
+            "You are Omar Aboudou, Founder (@founder) at Acme.",
         )
-        expect(startedEvent?.worker).toEqual({ kind: "directors" })
+        expect(startedEvent?.worker).toEqual({ kind: "user" })
     })
 })
 
-describe("openNextTask with a task that needs no run", () => {
-    async function createAnsweredTask(doneSummary: string) {
-        const journal = await loadJournal(projectRoot)
-        const questionSent = await recordEvent(journal, messageSentEventType, {
-            depth: 0,
-            threadId,
-            messageId: "20261018-140322-123-3f9a",
-            positionId: "director",
+describe("openNextTask with a task that became pointless", () => {
+    test("cancels at once a task that became pointless, then opens the next", async () => {
+        const shipping = await ask("qa-tester", "Can we ship on Friday?")
+        await sendExampleMessage(
+            projectRoot,
+            ticketNumber,
+            "Stop.",
+            createExampleWorkCatalog(),
+        )
+        const logoTicket = await createExampleTicket(projectRoot)
+        const logo = await sendExampleMessage(
+            projectRoot,
+            logoTicket.number,
+            "Is the logo ready?",
+            createExampleWorkCatalog(["designer"]),
+        )
+
+        const { openedTask, endedTasks } = await openNextExampleTask()
+
+        const reason = `Ticket #${ticketNumber}'s discussion says Stop.`
+        const taskEnding = { state: "cancelled", reason } as const
+        expect(endedTasks).toEqual([{ task: shipping.task, taskEnding }])
+        expect(openedTask?.task).toEqual(logo.createdTasks[0])
+    })
+
+    test("opens during a pause only the founder's tasks", async () => {
+        await ask("qa-tester", "Can we ship on Friday?")
+        const planning = await ask("founder", "A plan?", "qa-tester")
+        await pauseCompany(await loadJournal(projectRoot))
+
+        const { openedTask } = await openNextExampleTask()
+        const testerOpening = await openNextExampleTask({
+            AICO_CURRENT_POSITION_ID: "qa-tester",
         })
-        const answeredTask = createUncreatedTask(exampleTaskType, {
-            positionId: "qa-tester",
-            params: { threadId, doneSummary },
-        })
-        return createTask(journal, answeredTask, questionSent)
-    }
 
-    test("marks it as done at once, then opens the next", async () => {
-        const doneSummary = "Already answered."
-        const answeredTask = await createAnsweredTask(doneSummary)
-        const logo = await ask("designer", "Is the logo ready?")
+        expect(openedTask?.task).toEqual(planning.task)
+        expect(testerOpening.openedTask).toBe(undefined)
+    })
 
-        const { openedTask, doneTasks } = await openNextExampleTask()
+    test("resumes during a pause a task already running", async () => {
+        const shipping = await ask("qa-tester", "Can we ship on Friday?")
+        await openNextExampleTask()
+        await pauseCompany(await loadJournal(projectRoot))
 
-        expect(doneTasks).toEqual([
-            { task: answeredTask, summary: doneSummary },
-        ])
-        expect(openedTask?.task).toEqual(logo.task)
+        const { openedTask } = await openNextExampleTask()
+
+        expect(openedTask?.task).toEqual(shipping.task)
+        expect(openedTask?.isResumed).toBe(true)
     })
 })

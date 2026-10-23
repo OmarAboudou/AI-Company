@@ -7,9 +7,9 @@ export const PositionConfigSchema = z
         title: z.string().trim().min(1).meta({
             description: "Title of the position, e.g. Backend Developer.",
         }),
-        defaultEmployeeId: IdSchema.optional().meta({
+        employeeId: IdSchema.optional().meta({
             description:
-                "Id of the employee working this position by default, i.e. the name of its folder in .aico/employees. Absent when the position is vacant.",
+                "Id of the LLM employee holding the position, i.e. the name of its folder in .aico/employees. Absent when the user holds it, the person git names.",
         }),
     })
     .meta({
@@ -38,37 +38,20 @@ export const WorkerSchema = z
             }),
         }),
         z.strictObject({
-            kind: z.literal("directors").meta({
+            kind: z.literal("user").meta({
                 description:
-                    "directors: the people working on the repository, identified by git, work the position themselves, without an employee.",
+                    "user: the user, the person git names, holds the position and works its tasks.",
             }),
         }),
     ])
     .meta({
-        description:
-            "Who works a position: an employee, or the directors themselves.",
+        description: "Who holds a position: an LLM employee, or the user.",
     })
 
 export type Worker = z.infer<typeof WorkerSchema>
 
-export const PositionStateSchema = z
-    .strictObject({
-        temporaryAssignment: WorkerSchema.optional().meta({
-            description:
-                "Who works the position instead of its default employee, until unassign-temporarily. Never its default employee.",
-        }),
-    })
-    .meta({
-        title: "AICo position state",
-        description:
-            "What happens to a position while the company runs, in .aico/positions/<position-id>/state.json. Written by AICo; absent while the position's default employee works it, or nobody if it is vacant.",
-    })
-
-export type PositionState = z.infer<typeof PositionStateSchema>
-
 export type PositionAssignment = {
     position: Position
-    isDirectorPosition: boolean
-    state: PositionState
-    currentWorker: Worker | undefined
+    isFounderPosition: boolean
+    holder: Worker
 }

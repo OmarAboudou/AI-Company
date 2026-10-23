@@ -2,11 +2,11 @@
 
 Run a virtual company staffed by LLM agents, from the command line.
 
-A company lives in its project's git repository, on a branch of its own, `aico/data`: the company itself, the project it carries out, its positions (job descriptions), its employees, run by LLMs, the LLM providers whose models they run on, the threads of messages its positions exchange, their tasks, and the journal of what happens. Everything is a plain file, to edit through the CLI or by hand, and every change is a commit.
+A company lives in its project's git repository, on a branch of its own, `aico/data`: the company itself, the project it carries out, its positions (job descriptions), its employees, run by LLMs, the LLM providers whose models they run on, its tickets, the requests its positions make to each other, their tasks, and the journal of what happens. Everything is a plain file, to edit through the CLI or by hand, and every change is a commit.
 
-`aico init` also creates the director's position, the company's management.
+You, the person git names, are the founder: `aico init` creates the founder's position, the company's management, which you always hold, as you hold every position no LLM employee holds.
 
-AICo is being rebuilt from llmco, as decided in [#135](https://github.com/OmarAboudou/AI-Company/issues/135): its first series renamed it and removed what the vision drops, such as mentions and fictitious human employees; the second moved its data to the reserved branch, as decided in [#136](https://github.com/OmarAboudou/AI-Company/issues/136); tickets, deliverables in git, memory and decisions come next, one series at a time. Until the tickets bring their task types, nothing gives a position a task: AICo ships none yet, so the commands that run and work tasks have nothing to do.
+AICo is being rebuilt from llmco, as decided in [#135](https://github.com/OmarAboudou/AI-Company/issues/135): its first series renamed it and removed what the vision drops, such as mentions and fictitious human employees; the second moved its data to the reserved branch, as decided in [#136](https://github.com/OmarAboudou/AI-Company/issues/136); the third brought tickets, their tasks, the founder and the company's pause, as decided in [#145](https://github.com/OmarAboudou/AI-Company/issues/145). Deliverables in git, sessions with development tools, then memory and decisions come next, one series at a time: until then, a delivery is the text that describes it.
 
 ## Getting started
 
@@ -27,74 +27,92 @@ aico provider connection create anthropic anthropic-messages -u https://api.anth
 aico model create anthropic claude-opus-5-5 -n "Claude Opus 5.5" -a claude-opus-5-5
 aico employee hire llm claude-senior -n "Claude Senior" -p anthropic -m claude-opus-5-5
 aico position assign backend-developer claude-senior
-aico thread create -s "Choice of framework" -b "Hono or Express for our API?"
+aico task work     # your What now?: ask @backend-developer for work with ticket_create, then end your session
+aico run           # Claude Senior handles the ticket
 ```
 
-`init`'s description is the project's, which every LLM employee is given; `aico project update` changes it. `thread create` prints the new thread's id. `aico --help` lists every command; each works from any folder of the repository, as git's do.
+`init`'s description is the project's, which every LLM employee is given; `aico project update` changes it. `aico --help` lists every command; each works from any folder of the repository, as git's do.
 
 ## Where the company lives
 
 The company lives on its own branch, `aico/data`, which AICo creates without any history in common with your code: your branches carry only your project. AICo checks it out in `.aico/`, at the top of your working copy, and lists `.aico/` in `.git/info/exclude`, so that `git status` stays clean.
 
-Each command that changes the company, and each tool call of a task, is a commit of its own on `aico/data`, named after it:
+Each command that changes the company, and each tool call and text of a session, is a commit of its own on `aico/data`, named after it:
 
 ```bash
 git -C .aico log --oneline
-# 2c3d4e5 aico message send 2026-10-23-choice-of-framework
-# 9b8c7d6 aico thread create
-# 1e2f3a4 aico position create backend-developer
+# 6f7a8b9 aico run
+# 5e6f7a8 ticket_deliver in task 20261024-101500-123-4a5b-6c7d8e9f
+# 4d5e6f7 text in task 20261024-101500-123-4a5b-6c7d8e9f
+# 3c4d5e6 aico run
+# 2b3c4d5 ticket_create in task 20261024-100000-456-7a8b-9c0d1e2f
+# 1a2b3c4 aico task work
 # 5a6b7c8 aico init
 ```
 
-AICo commits as you, as git names you (`user.name` and `user.email`), and never pushes `aico/data`: publishing the company is yours to decide, since its threads and its journal would become as public as your repository. Once you push it, with `git push origin aico/data`, a clone finds the company again: AICo checks the branch out at its first command. A file you edit by hand in `.aico/` is committed by the next command that changes the company, in a commit of its own.
+AICo commits as you, as git names you (`user.name` and `user.email`), and never pushes `aico/data`: publishing the company is yours to decide, since its tickets and its journal would become as public as your repository. Once you push it, with `git push origin aico/data`, a clone finds the company again: AICo checks the branch out at its first command. A file you edit by hand in `.aico/` is committed by the next command that changes the company, in a commit of its own.
 
 What stays on your machine lives in `.aico/.state/`, which git ignores: each run's whole conversation, the turn you prepare, and the lock that keeps two commands from changing the company at once.
 
-## Writing in threads
+## Tickets
 
-Positions talk through **threads**, like posts in a forum: a subject and messages. You write as a director, signed with your git identity (`user.name` and `user.email`): from the director's position, or from a position assigned temporarily to the directors when it is the only one of yours in the thread. `aico current-position set <position-id>` makes you write from one of your positions until `aico current-position clear`, and `--as-position <position-id>` chooses another one for a single message. A message asks nothing of anyone yet: no listener gives a task for it.
+Positions ask each other for work through **tickets**: a request from one position, the requester, to another, the assignee, numbered in sequence (#1, #2…), with the discussion between the two. Only the founder creates tickets, in the What now? task that always comes back at the end of your queue; a position held by an LLM asks you its questions.
 
-```bash
-aico message send <thread-id> -b "Why Hono?"
-aico message send <thread-id> -F question.md         # or -F - for stdin
-aico thread list                                      # with the positions that have a task pending there
-aico thread show <thread-id>                          # in Markdown
-aico thread show <thread-id> --json | jq -r .body     # one message per line
-```
-
-Whoever works a position is its default employee, unless the position is assigned temporarily: to another employee, or to the directors, the people working on the repository, so that no LLM does its tasks meanwhile.
+A ticket's state says who has the hand: open while the assignee works on it, waiting for the requester's answer to a question, to validate once delivered, to arbitrate by the founder once renounced, then closed, done, cancelled or failed. Each move is an act, made with a tool in a session: the assignee asks, delivers or renounces; the requester answers, validates or refuses the delivery, or cancels the ticket; the founder gives a renounced ticket back, hands a ticket over to another position, or closes it as failed. Each act gives a task to the position that now has the hand: Handle to a new assignee, Answer and Validate to the requester, Resume to the assignee. What a session writes outside its tools joins the discussion, passing the hand to no one.
 
 ```bash
-aico position interim employee backend-developer claude-junior   # another employee works it
-aico position interim directors backend-developer                 # the directors work it
-aico position end-interim backend-developer                       # back to its default employee
+aico ticket list                                      # number, state, requester → assignee, title
+aico ticket show 3                                    # its request and discussion, in Markdown
+aico ticket show 3 --json | jq -r .body               # one message per line
 ```
 
-The `set` and `clear` commands of `current-position` change your shell's environment, which only AICo's shell function can do, set up once. `aico shell init <bash|zsh> --install` adds the line evaluating it to `~/.bashrc` or `~/.zshrc`; without `--install`, the command prints the function, for you to place where you prefer. In an AICo project, the function also shows the selected position in your prompt: `(director)`, then `(director @graphics)`. A script sets `AICO_CURRENT_POSITION_ID` itself, and `AICO_DISABLE_PROMPT` leaves the prompt as it is.
+## Positions and their holders
+
+Each position has a single holder: an LLM employee, who works its tasks in `aico run`, or you, who work them yourself. A new position is yours until you give it to an employee; the founder's is always yours.
+
+```bash
+aico position assign backend-developer claude-senior   # Claude Senior holds it
+aico position unassign backend-developer               # you hold it again
+aico employee fire claude-senior --force               # its positions come back to you
+```
+
+With several positions of yours, `aico current-position set <position-id>` works from one of them until `aico current-position clear`. These two commands change your shell's environment, which only AICo's shell function can do, set up once: `aico shell init <bash|zsh> --install` adds the line evaluating it to `~/.bashrc` or `~/.zshrc`; without `--install`, the command prints the function, for you to place where you prefer. In an AICo project, the function also shows the selected position in your prompt: `(aico)`, then `(aico @graphics)`. A script sets `AICO_CURRENT_POSITION_ID` itself, and `AICO_DISABLE_PROMPT` leaves the prompt as it is.
 
 ```bash
 aico shell init bash --install         # once, then open a new terminal
-aico current-position set graphics     # the prompt shows (director @graphics)
-aico current-position clear            # (director)
+aico current-position set graphics     # the prompt shows (aico @graphics)
+aico current-position clear            # (aico)
 ```
 
 ## Running the company
 
-`aico run` runs the pending tasks of the positions LLM employees work, one at a time and oldest first, until none is ready; then it lists the tasks left waiting, for a vacant position or for the directors, who work theirs themselves (see [Working your tasks](#working-your-tasks)). An error of a provider's API stops it, and the next `aico run` takes the task up again. Only `aico run` calls LLMs: sending a message never does.
+`aico run` runs the pending tasks of the positions LLM employees hold, one at a time and oldest first, until none is ready; then it lists the tasks left waiting, such as yours (see [Working your tasks](#working-your-tasks)). Only `aico run` calls LLMs.
 
-Each run is a fresh conversation with the employee's model: who it is, the task's situation, as its type tells it, and the tools its type gives, with those that mark the task as done or failed. What a run does, such as the messages it sends, can give tasks in turn, which the same `aico run` runs.
+Each task is one session, a fresh conversation with the employee's model: who it is, the ticket's situation, the messages since its last session on the ticket, and the tools of its acts. The session ends at an act that passes the hand, or at a turn without any tool call, after which the position gets the ticket back in a task of its own. What a session does gives tasks in turn, which the same `aico run` runs.
 
-Everything that happens is recorded in the journal, `.aico/journal/`, one file per event; tasks live in `.aico/tasks/`. Each run's whole conversation stays on your machine, in `.aico/.state/runs/`, which git ignores.
+A task that fails, on an error of a provider's API or a refusal of its model for one, pauses the company, so that the next ones don't fail for the same reason: a failed task doesn't run again. Ctrl+C stops `aico run`, failing the task in progress; a second one quits at once, and the next `aico run` fails the task left running.
+
+Everything that happens is recorded in the journal, `.aico/journal/`, one file per event; tasks live in `.aico/tasks/`, and each run's whole conversation in `.aico/.state/runs/`.
 
 ```bash
 aico run                                              # runs what is ready, then lists what waits
 ```
 
+## The founder and the pause
+
+The company pauses itself at a failed task or a renouncement, and you can pause it at any time. During a pause, the sessions already running finish, and no task starts but the founder's: you analyse what went wrong, in "Analyse the failure" or "Analyse the renouncement", readjust what was missing with AICo's commands, such as a position's description or its employee, and arbitrate a renounced ticket, giving it back, handing it over or closing it. Relaunching the company gives the tickets whose task failed back to the position that has their hand.
+
+```bash
+aico company pause
+aico company show                                     # says since when the company is paused
+aico company relaunch
+```
+
 ## Working your tasks
 
-People work their tasks as LLM employees do: the same message, the same tools, turn by turn. As a director, you work the tasks of the director's position and of the positions assigned temporarily to the directors, only the selected position's when one is set.
+You work your tasks as LLM employees do: the same message, the same tools, turn by turn, from the positions you hold, only the selected one's when one is set.
 
-`aico task work` works them one after the other. It shows each task as a model gets it, its system prompt, its message and its tools, then asks what to do: call a tool, write a text, show, clear or send your turn. For a tool, it asks which one, then each of its inputs, a message's body in your editor (`$VISUAL` or `$EDITOR`). Sending the turn runs its calls and shows their results: `task_mark-as-done` or `task_mark-as-failed` ends the task, and a turn without any call gets the reminder a model gets. Once no task waits, the session waits for the next one, until Ctrl+C, or Ctrl+D as in a shell. What you prepared stays in your turn.
+`aico task work` works them one after the other. It shows each task as a model gets it, its system prompt, its message and its tools, then asks what to do: call a tool, write a text, show, clear or send your turn, or end your session. For a tool, it asks which one, then each of its inputs, a long text in your editor (`$VISUAL` or `$EDITOR`). Sending the turn writes its texts in the ticket's discussion, runs its calls and shows their results; your session ends, as a model's does, at an act that passes the hand or at a turn without any tool call, and ending it passes the hand to no one. Ctrl+C, or Ctrl+D as in a shell, leaves `task work`: a session left in the middle resumes later, and what you prepared stays in your turn.
 
 ```bash
 aico task work
@@ -104,12 +122,11 @@ The same steps are commands of their own, for a script or a turn prepared over t
 
 ```bash
 aico task next                                        # opens your next task, or the one in progress
-aico turn add tool message_send -i '{"body": "Friday works."}'
-aico turn add tool task_mark-as-done -i '{"summary": "Answered."}'
-aico turn add text -t "Checked the notes first."      # reaches no one, as a model's text
+aico turn add text -t "Checked the notes first."      # joins the ticket's discussion
+aico turn add tool ticket_deliver -i '{"body": "Hono, for Bun."}'
 aico turn show
 aico turn clear                                       # to prepare the turn again
-aico turn send                                        # runs its calls, then shows their results
+aico turn send                                        # writes its texts, runs its calls, then shows their results
 ```
 
 ## Connecting to LLM providers

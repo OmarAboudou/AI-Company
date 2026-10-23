@@ -26,9 +26,7 @@ describe("aico position update-id", () => {
         const show = runCli("position", "show", "api-dev").stdout
 
         expect(update.stdout).toBe('Position "developer" is now "api-dev".\n')
-        expect(show).toBe(
-            "# Dev\n\ncurrent employee: (vacant)\ndefault employee: (none)\n\nCode.\n",
-        )
+        expect(show).toBe("# Dev\n\nheld by: you\n\nCode.\n")
         expect(runCli("position", "show", "developer").exitCode).toBe(1)
     })
 

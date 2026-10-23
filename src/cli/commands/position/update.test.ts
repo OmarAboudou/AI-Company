@@ -20,9 +20,7 @@ describe("aico position update", () => {
         const show = runCli("position", "show", "developer").stdout
 
         expect(update.stdout).toBe('Updated position "developer".\n')
-        expect(show).toBe(
-            "# Lead\n\ncurrent employee: (vacant)\ndefault employee: (none)\n\nCode.\n",
-        )
+        expect(show).toBe("# Lead\n\nheld by: you\n\nCode.\n")
     })
 
     test("update -d changes the description and keeps the title", () => {

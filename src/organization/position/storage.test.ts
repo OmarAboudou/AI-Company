@@ -9,9 +9,7 @@ import {
     hasPosition,
     listPositions,
     loadPosition,
-    loadPositionState,
     savePosition,
-    savePositionState,
 } from "./storage.ts"
 
 let projectRoot: string
@@ -79,16 +77,13 @@ describe("loadPosition", () => {
         expect(loadedPosition).toEqual(developer)
     })
 
-    test("reads back the default employee", async () => {
-        const filledDeveloper = {
-            ...developer,
-            defaultEmployeeId: "claude-senior",
-        }
-        await savePosition(projectRoot, filledDeveloper)
+    test("reads back the employee holding the position", async () => {
+        const heldDeveloper = { ...developer, employeeId: "claude-senior" }
+        await savePosition(projectRoot, heldDeveloper)
 
         const loadedPosition = await loadPosition(projectRoot, developer.id)
 
-        expect(loadedPosition).toEqual(filledDeveloper)
+        expect(loadedPosition).toEqual(heldDeveloper)
     })
 
     test("rejects an invalid config.json", async () => {
@@ -170,63 +165,5 @@ describe("copyPositionFolder", () => {
             { ...developer, id: "api-developer" },
             developer,
         ])
-    })
-})
-
-function getStateFilePath(positionId: string): string {
-    return join(projectRoot, ".aico", "positions", positionId, "state.json")
-}
-
-describe("savePositionState", () => {
-    const interimState = {
-        temporaryAssignment: { kind: "employee", employeeId: "julie" },
-    } as const
-
-    test("writes the state in the position's folder, as state.json", async () => {
-        await savePositionState(projectRoot, developer.id, interimState)
-
-        const stateFile = Bun.file(getStateFilePath(developer.id))
-        expect(await stateFile.json()).toEqual(interimState)
-    })
-
-    test("removes the file of an empty state", async () => {
-        const stateFilePath = getStateFilePath(developer.id)
-        await savePositionState(projectRoot, developer.id, interimState)
-        const before = await Bun.file(stateFilePath).exists()
-
-        await savePositionState(projectRoot, developer.id, {})
-        const after = await Bun.file(stateFilePath).exists()
-
-        expect(before).toBe(true)
-        expect(after).toBe(false)
-    })
-})
-
-describe("loadPositionState", () => {
-    test("reads back what savePositionState wrote", async () => {
-        const directorsState = {
-            temporaryAssignment: { kind: "directors" },
-        } as const
-        await savePositionState(projectRoot, developer.id, directorsState)
-
-        const state = await loadPositionState(projectRoot, developer.id)
-
-        expect(state).toEqual(directorsState)
-    })
-
-    test("is empty when the position has no state", async () => {
-        expect(await loadPositionState(projectRoot, developer.id)).toEqual({})
-    })
-
-    test("rejects an invalid state file", async () => {
-        const stateFilePath = getStateFilePath(developer.id)
-        await Bun.write(
-            stateFilePath,
-            JSON.stringify({ temporaryAssignment: {} }),
-        )
-
-        const loading = loadPositionState(projectRoot, developer.id)
-
-        await expect(loading).rejects.toThrow(UserError)
     })
 })

@@ -1,6 +1,8 @@
 import { z } from "zod"
 import { IdSchema } from "../ids/id-schema.ts"
 import { messageSentEventType } from "../messaging/message/schema.ts"
+import { listMessages } from "../messaging/message/storage.ts"
+import { TicketNumberSchema } from "../messaging/ticket/schema.ts"
 import {
     defineListener,
     type ListenerEffect,
@@ -10,31 +12,32 @@ import { defineTaskType } from "./task-type/define-task-type.ts"
 import type { WorkCatalog } from "./work-catalog.ts"
 
 // The engine's tests run tasks of this type rather than of AICo's own, so
-// that they test the engine, whatever AICo's task types do.
+// that they test the engine, whatever AICo's task types do. Its task
+// becomes pointless once its ticket's discussion says "Stop.", which lets
+// a test stop it before it starts or between two steps.
 export const exampleTaskType = defineTaskType({
     type: "example",
-    paramsSchema: z.strictObject({
-        threadId: IdSchema,
-        doneSummary: z.string().optional(),
-    }),
+    paramsSchema: z.strictObject({ ticketNumber: TicketNumberSchema }),
     resultSchema: z.strictObject({ runId: IdSchema.optional() }),
-    async createSession({ threadId, doneSummary }) {
-        if (doneSummary !== undefined) {
-            return { kind: "done", summary: doneSummary, result: {} }
-        }
+    async createSession({ ticketNumber }) {
         return {
-            kind: "run",
-            userMessage: `Answer the last message of thread ${threadId}.`,
-            toolNames: ["message_send", "thread_show"],
+            userMessage: `Answer the last message of ticket #${ticketNumber}.`,
+            toolNames: ["ticket_deliver", "ticket_show"],
             boundToolInputs: {
-                message_send: { threadId },
-                thread_show: { threadId },
+                ticket_deliver: { ticketNumber },
+                ticket_show: { ticketNumber },
             },
             result: {},
         }
     },
     async getRunResult(_params, { runId }) {
         return { runId }
+    },
+    async getCancellationReason({ ticketNumber }, { projectRoot }) {
+        const messages = await listMessages(projectRoot, ticketNumber)
+        return messages.some(({ body }) => body === "Stop.")
+            ? `Ticket #${ticketNumber}'s discussion says Stop.`
+            : undefined
     },
 })
 
@@ -43,7 +46,7 @@ export function createExampleWorkCatalog(
 ): WorkCatalog {
     const exampleListener = defineListener({
         eventType: messageSentEventType,
-        getEffects: ({ threadId, positionId }) =>
+        getEffects: ({ ticketNumber, positionId }) =>
             askedPositionIds
                 .filter((askedPositionId) => askedPositionId !== positionId)
                 .map(
@@ -51,7 +54,7 @@ export function createExampleWorkCatalog(
                         kind: "create-task",
                         task: createUncreatedTask(exampleTaskType, {
                             positionId: askedPositionId,
-                            params: { threadId },
+                            params: { ticketNumber },
                         }),
                     }),
                 ),

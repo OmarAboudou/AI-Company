@@ -16,7 +16,7 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-const acme: Company = { name: "Acme", directorPositionId: "director" }
+const acme: Company = { name: "Acme", founderPositionId: "founder" }
 
 function getConfigPath() {
     return join(projectRoot, ".aico", "company", "config.json")
@@ -46,7 +46,7 @@ describe("saveCompany", () => {
 
         const configText = await Bun.file(getConfigPath()).text()
         const expectedConfigText =
-            '{\n    "name": "Acme",\n    "directorPositionId": "director"\n}\n'
+            '{\n    "name": "Acme",\n    "founderPositionId": "founder"\n}\n'
         expect(configText).toBe(expectedConfigText)
     })
 

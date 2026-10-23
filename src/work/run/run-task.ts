@@ -13,13 +13,14 @@ import { type Task, taskStartedEventType } from "../task/schema.ts"
 import type { TaskType } from "../task-type/define-task-type.ts"
 import type { TaskEnding } from "../tool/define-tool.ts"
 import { getToolDefinitions } from "../tool/get-tool-definitions.ts"
-import { beginTask } from "./begin-task.ts"
-import { buildSystemPrompt } from "./build-system-prompt.ts"
 import { endTask } from "./end-task.ts"
 import { getRunTools } from "./get-run-tools.ts"
+import { loadCancellationReason } from "./load-cancellation-reason.ts"
 import { runToolLoop } from "./run-tool-loop.ts"
 import type { RunProgress } from "./schema.ts"
-import { startRun } from "./start-run.ts"
+import { beginTask } from "./start/begin-task.ts"
+import { buildSystemPrompt } from "./start/build-system-prompt.ts"
+import { startRun } from "./start/start-run.ts"
 
 export type RunTaskResult = {
     taskEnding: TaskEnding
@@ -36,6 +37,7 @@ export async function runTask(
         taskTypes,
         operationName,
         onProgress,
+        signal,
     }: {
         task: Task
         position: Position
@@ -43,14 +45,15 @@ export async function runTask(
         taskTypes: Record<string, TaskType>
         operationName: string
         onProgress: (progress: RunProgress) => void
+        signal?: AbortSignal
     },
 ): Promise<RunTaskResult> {
     const { projectRoot } = journal
     const beginning = await runOperation(projectRoot, operationName, () =>
         beginTask(journal, { task, position, taskTypes }),
     )
-    if (beginning.kind === "done") {
-        return { taskEnding: { state: "done", summary: beginning.summary } }
+    if (beginning.kind === "ended") {
+        return { taskEnding: beginning.taskEnding }
     }
     const { taskDepth, session } = beginning
     const [{ provider, model, connection, apiKey }, company, project] =
@@ -60,20 +63,14 @@ export async function runTask(
             loadProject(projectRoot),
         ])
     const runId = createTimeOrderedId(readMonotonicTime())
-    await runOperation(projectRoot, operationName, () =>
-        recordEvent(journal, taskStartedEventType, {
-            depth: taskDepth,
-            taskId: task.id,
-            runId,
-            worker: { kind: "employee", employeeId: employee.id },
-            model: { providerId: provider.id, modelId: model.id },
-        }),
-    )
     const { toolNames, boundToolInputs, result: sessionResult } = session
     const tools = getRunTools(toolNames, boundToolInputs)
+    // Written before the task is recorded as started, so that a task found
+    // running has the transcript that tells whether its process still runs.
     const run = await startRun(projectRoot, {
         id: runId,
         apiId: model.apiId,
+        processId: process.pid,
         systemPrompt: buildSystemPrompt({
             company,
             project,
@@ -84,6 +81,15 @@ export async function runTask(
         userMessage: session.userMessage,
         session: { toolNames, boundToolInputs, result: sessionResult },
     })
+    await runOperation(projectRoot, operationName, () =>
+        recordEvent(journal, taskStartedEventType, {
+            depth: taskDepth,
+            taskId: task.id,
+            runId,
+            worker: { kind: "employee", employeeId: employee.id },
+            model: { providerId: provider.id, modelId: model.id },
+        }),
+    )
     const { taskEnding, usage } = await runToolLoop({
         run,
         ctx: {
@@ -98,8 +104,11 @@ export async function runTask(
         connection,
         apiKey,
         apiId: model.apiId,
+        signal,
         tools,
         onProgress,
+        loadCancellationReason: () =>
+            loadCancellationReason(journal, { task, position, taskTypes }),
     })
     await runOperation(projectRoot, operationName, () =>
         endTask(

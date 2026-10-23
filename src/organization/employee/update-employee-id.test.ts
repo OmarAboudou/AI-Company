@@ -2,15 +2,10 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { saveMessage } from "../../messaging/message/storage.ts"
-import { saveThread } from "../../messaging/thread/storage.ts"
+import { saveNewTicket } from "../../messaging/ticket/storage.ts"
 import { UserError } from "../../user-error.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
-import {
-    loadPosition,
-    loadPositionState,
-    savePosition,
-    savePositionState,
-} from "../position/storage.ts"
+import { loadPosition, savePosition } from "../position/storage.ts"
 import { hasEmployee, loadEmployee, saveEmployee } from "./storage.ts"
 import { updateEmployeeId } from "./update-employee-id.ts"
 
@@ -45,17 +40,21 @@ const omar = {
 
 async function archiveMessageBy(employeeId: string, sentAt: string) {
     const committer = { name: "Omar Aboudou", email: "omar@example.com" }
-    const director = { id: "director", title: "Director" }
-    const thread = { id: "2026-10-18-budget", subject: "Budget" }
-    await saveThread(projectRoot, {
-        ...thread,
+    const founder = { id: "founder", title: "Founder" }
+    const ticket = {
+        number: 1,
+        title: "Budget",
+        requester: founder,
+        assignee: founder,
+        committer,
         createdAt: "2026-10-18T14:00:00.000Z",
-        createdBy: { position: director, committer },
-    })
+        request: "How much?",
+    }
+    await saveNewTicket(projectRoot, ticket)
     await saveMessage(projectRoot, {
-        threadId: thread.id,
+        ticketNumber: ticket.number,
         id: "20261018-140100-000-0000",
-        position: director,
+        position: founder,
         employee: { id: employeeId, name: "Earlier" },
         committer,
         sentAt,
@@ -88,35 +87,23 @@ describe("updateEmployeeId", () => {
         expect(Math.max(...untilTimes)).toBeLessThanOrEqual(after)
     })
 
-    test("rewrites the positions it fills and its temporary assignments", async () => {
+    test("rewrites the positions it holds", async () => {
         const developer = { id: "dev", title: "Dev", description: "" }
         const tester = { id: "qa", title: "QA", description: "" }
-        const omarWorker = { kind: "employee", employeeId: "omar" } as const
         await Promise.all([
-            savePosition(projectRoot, {
-                ...developer,
-                defaultEmployeeId: "omar",
-            }),
+            savePosition(projectRoot, { ...developer, employeeId: "omar" }),
             savePosition(projectRoot, tester),
-            savePositionState(projectRoot, "qa", {
-                temporaryAssignment: omarWorker,
-            }),
         ])
 
         const renaming = await updateEmployeeId(projectRoot, "omar", "omar-a")
 
-        const [position, state] = await Promise.all([
+        const [position, otherPosition] = await Promise.all([
             loadPosition(projectRoot, "dev"),
-            loadPositionState(projectRoot, "qa"),
+            loadPosition(projectRoot, "qa"),
         ])
-        const renamedWorker = {
-            kind: "employee",
-            employeeId: "omar-a",
-        } as const
-        expect(position.defaultEmployeeId).toBe("omar-a")
-        expect(state.temporaryAssignment).toEqual(renamedWorker)
-        expect(renaming.filledPositionIds).toEqual(["dev"])
-        expect(renaming.temporarilyWorkedPositionIds).toEqual(["qa"])
+        expect(position.employeeId).toBe("omar-a")
+        expect(otherPosition.employeeId).toBeUndefined()
+        expect(renaming.heldPositionIds).toEqual(["dev"])
     })
 
     test("refuses an id another employee has", async () => {

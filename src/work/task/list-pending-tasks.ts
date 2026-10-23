@@ -7,9 +7,10 @@ import type {
     PositionAssignment,
 } from "../../organization/position/schema.ts"
 import { UserError } from "../../user-error.ts"
+import { getCompanyPause } from "../pause/get-company-pause.ts"
 import type { TaskType } from "../task-type/define-task-type.ts"
 import { getTaskPositionId } from "./get-task-position-id.ts"
-import { getTaskStates } from "./get-task-states.ts"
+import { getTaskStates, type TaskState } from "./get-task-states.ts"
 import { isPendingTask } from "./is-pending-task.ts"
 import type { Task } from "./schema.ts"
 import { listTasks } from "./storage.ts"
@@ -17,8 +18,9 @@ import { listTasks } from "./storage.ts"
 export type WaitingReason =
     | "unknown-type"
     | "deleted-position"
-    | "vacant-position"
-    | "worked-by-directors"
+    | "held-by-user"
+    | "running"
+    | "paused"
 
 export type PendingTask =
     | { kind: "ready"; task: Task; position: Position; employee: Employee }
@@ -26,6 +28,8 @@ export type PendingTask =
 
 function getPendingTask(
     task: Task,
+    taskState: TaskState | undefined,
+    isPaused: boolean,
     assignments: PositionAssignment[],
     employees: Employee[],
     taskTypes: Record<string, TaskType>,
@@ -42,17 +46,22 @@ function getPendingTask(
     if (assignment === undefined) {
         return { ...waitingTask, reason: "deleted-position" }
     }
-    const { position, currentWorker } = assignment
-    if (currentWorker === undefined) {
-        return { ...waitingTask, reason: "vacant-position" }
+    const { position, holder } = assignment
+    if (holder.kind === "user") {
+        return { ...waitingTask, reason: "held-by-user" }
     }
-    if (currentWorker.kind === "directors") {
-        return { ...waitingTask, reason: "worked-by-directors" }
+    // A task serves once: a model's session cut short fails its task
+    // rather than leaving it to another.
+    if (taskState === "running") {
+        return { ...waitingTask, reason: "running" }
     }
-    const employee = employees.find(({ id }) => id === currentWorker.employeeId)
+    if (isPaused) {
+        return { ...waitingTask, reason: "paused" }
+    }
+    const employee = employees.find(({ id }) => id === holder.employeeId)
     if (employee === undefined) {
         throw new UserError(
-            `Position "${position.id}" names employee "${currentWorker.employeeId}", who doesn't exist. Run \`aico position show ${position.id}\`.`,
+            `Position "${position.id}" names employee "${holder.employeeId}", who doesn't exist. Run \`aico position show ${position.id}\`.`,
         )
     }
     return { kind: "ready", task, position, employee }
@@ -69,7 +78,17 @@ export async function listPendingTasks(
         listEmployees(projectRoot),
     ])
     const taskStates = getTaskStates(tasks, journal.events)
+    const isPaused = getCompanyPause(journal.events) !== undefined
     return tasks
         .filter((task) => isPendingTask(task, taskStates))
-        .map((task) => getPendingTask(task, assignments, employees, taskTypes))
+        .map((task) =>
+            getPendingTask(
+                task,
+                taskStates.get(task.id),
+                isPaused,
+                assignments,
+                employees,
+                taskTypes,
+            ),
+        )
 }

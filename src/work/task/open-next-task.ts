@@ -1,15 +1,22 @@
+import { requireJournalEvent } from "../../journal/require-journal-event.ts"
+import type { Journal } from "../../journal/schema.ts"
 import { loadJournal } from "../../journal/storage.ts"
 import { requireCompany } from "../../organization/company/require-company.ts"
-import { getPositionsWorkedByDirectors } from "../../organization/human/get-positions-worked-by-directors.ts"
+import { getPositionsHeldByUser } from "../../organization/human/get-positions-held-by-user.ts"
 import { readCurrentPositionId } from "../../organization/human/read-current-position-id.ts"
 import { requirePositionsToWork } from "../../organization/human/require-positions-to-work.ts"
 import { listPositionAssignments } from "../../organization/position/list-position-assignments.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { dispatchEvents } from "../listener/dispatch-events.ts"
-import { beginTask } from "../run/begin-task.ts"
+import { getCompanyPause } from "../pause/get-company-pause.ts"
+import { endTask } from "../run/end-task.ts"
+import { loadCancellationReason } from "../run/load-cancellation-reason.ts"
 import { loadResumableRun } from "../run/load-resumable-run.ts"
 import type { Run } from "../run/schema.ts"
-import { startHumanRun } from "../run/start-human-run.ts"
+import { beginTask } from "../run/start/begin-task.ts"
+import { startHumanRun } from "../run/start/start-human-run.ts"
+import type { TaskType } from "../task-type/define-task-type.ts"
+import type { TaskEnding } from "../tool/define-tool.ts"
 import type { StagedTurn } from "../turn/schema.ts"
 import { loadStagedTurn } from "../turn/storage.ts"
 import { builtInWorkCatalog, type WorkCatalog } from "../work-catalog.ts"
@@ -27,9 +34,44 @@ export type OpenedTask = {
     isResumed: boolean
 }
 
+export type EndedTask = { task: Task; taskEnding: TaskEnding }
+
 export type OpenNextTaskResult = {
     openedTask: OpenedTask | undefined
-    doneTasks: { task: Task; summary: string }[]
+    endedTasks: EndedTask[]
+}
+
+type ResumableTask = {
+    task: Task
+    position: Position
+    run: Run
+    taskTypes: Record<string, TaskType>
+}
+
+async function endPointlessRun(
+    journal: Journal,
+    { task, position, run, taskTypes }: ResumableTask,
+): Promise<TaskEnding | undefined> {
+    const cancellationReason = await loadCancellationReason(journal, {
+        task,
+        position,
+        taskTypes,
+    })
+    if (cancellationReason === undefined) {
+        return undefined
+    }
+    const taskEnding: TaskEnding = {
+        state: "cancelled",
+        reason: cancellationReason,
+    }
+    const { depth } = requireJournalEvent(journal, task.causeEventId)
+    const sessionResult = run.session.result
+    await endTask(
+        journal,
+        { task, position, runId: run.id, depth, sessionResult, taskTypes },
+        taskEnding,
+    )
+    return taskEnding
 }
 
 export async function openNextTask(
@@ -43,20 +85,27 @@ export async function openNextTask(
         loadJournal(projectRoot),
     ])
     const positionsToWork = requirePositionsToWork(
-        getPositionsWorkedByDirectors(assignments).map(
-            ({ position }) => position,
-        ),
+        getPositionsHeldByUser(assignments).map(({ position }) => position),
         readCurrentPositionId(environment),
     )
     await dispatchEvents(journal, catalog)
     const tasks = await listTasks(projectRoot)
     const taskStates = getTaskStates(tasks, journal.events)
     const positions = assignments.map(({ position }) => position)
+    const founderPositionId = assignments.find(
+        ({ isFounderPosition }) => isFounderPosition,
+    )?.position.id
+    const isPaused = getCompanyPause(journal.events) !== undefined
+    const canStart = (task: Task) =>
+        !isPaused ||
+        taskStates.get(task.id) === "running" ||
+        getTaskPositionId(task, positions) === founderPositionId
     const tasksToWork = tasks
         .filter(
             (task) =>
                 isPendingTask(task, taskStates) &&
-                catalog.taskTypes[task.type] !== undefined,
+                catalog.taskTypes[task.type] !== undefined &&
+                canStart(task),
         )
         .map((task) => ({
             task,
@@ -69,12 +118,24 @@ export async function openNextTask(
                 Number(taskStates.get(second.task.id) === "running") -
                 Number(taskStates.get(first.task.id) === "running"),
         )
-    const doneTasks: OpenNextTaskResult["doneTasks"] = []
+    const endedTasks: EndedTask[] = []
     for (const { task, position } of tasksToWork) {
         if (position === undefined) {
             continue
         }
         const resumableRun = await loadResumableRun(journal, task)
+        const taskEnding =
+            resumableRun &&
+            (await endPointlessRun(journal, {
+                task,
+                position,
+                run: resumableRun,
+                taskTypes: catalog.taskTypes,
+            }))
+        if (taskEnding !== undefined) {
+            endedTasks.push({ task, taskEnding })
+            continue
+        }
         if (resumableRun !== undefined) {
             const openedTask = {
                 task,
@@ -83,15 +144,15 @@ export async function openNextTask(
                 stagedTurn: await loadStagedTurn(projectRoot, resumableRun.id),
                 isResumed: true,
             }
-            return { openedTask, doneTasks }
+            return { openedTask, endedTasks }
         }
         const beginning = await beginTask(journal, {
             task,
             position,
             taskTypes: catalog.taskTypes,
         })
-        if (beginning.kind === "done") {
-            doneTasks.push({ task, summary: beginning.summary })
+        if (beginning.kind === "ended") {
+            endedTasks.push({ task, taskEnding: beginning.taskEnding })
             continue
         }
         const { session } = beginning
@@ -103,7 +164,7 @@ export async function openNextTask(
             stagedTurn: { blocks: [] },
             isResumed: false,
         }
-        return { openedTask, doneTasks }
+        return { openedTask, endedTasks }
     }
-    return { openedTask: undefined, doneTasks }
+    return { openedTask: undefined, endedTasks }
 }

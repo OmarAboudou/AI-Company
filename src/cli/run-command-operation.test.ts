@@ -81,18 +81,9 @@ describe("a command that changes the company", () => {
                     "Claude S",
                 ),
                 runCommittedCli("position", "assign", "qa", "claude"),
-                runCommittedCli("position", "interim", "directors", "qa"),
-                runCommittedCli("position", "end-interim", "qa"),
                 runCommittedCli(
                     ...["employee", "hire", "llm", "julie"],
                     ...["-n", "Julie", "-p", "anthropic", "-m", "opus"],
-                ),
-                runCommittedCli(
-                    "position",
-                    "interim",
-                    "employee",
-                    "qa",
-                    "julie",
                 ),
                 runCommittedCli("employee", "update-id", "julie", "julia"),
                 runCommittedCli("employee", "replace", "claude", "julia"),
@@ -131,10 +122,7 @@ describe("a command that changes the company", () => {
                 "employee create llm claude",
                 "employee update claude",
                 "position assign qa claude",
-                "position assign-temporarily directors qa",
-                "position unassign-temporarily qa",
                 "employee create llm julie",
-                "position assign-temporarily employee qa julie",
                 "employee update-id julie julia",
                 "employee replace claude julia",
                 "position unassign qa",
@@ -160,35 +148,13 @@ describe("a command that changes the company", () => {
         walkTimeoutMs,
     )
 
-    test("commits a thread and its messages", () => {
-        runCli("init", "-n", "Acme")
-
-        const creation = runCommittedCli("thread", "create", "-s", "Stack")
-        const threadId = runCli("thread", "list").stdout.split(" ")[0] ?? ""
-        const sending = runCommittedCli(
-            "message",
-            "send",
-            threadId,
-            "-b",
-            "Hono?",
-        )
-
-        expect([creation, sending]).toEqual([
-            createExpectedCommit(creation.commandLine, "aico thread create"),
-            createExpectedCommit(
-                sending.commandLine,
-                `aico message send ${threadId}`,
-            ),
-        ])
-    })
-
     test("commits nothing when it changes nothing", () => {
         runCli("init", "-n", "Acme")
 
-        const opening = runCommittedCli("task", "next")
+        const updating = runCommittedCli("company", "update", "-n", "Acme")
 
-        expect(opening).toEqual(
-            createExpectedCommit(opening.commandLine, "aico init"),
+        expect(updating).toEqual(
+            createExpectedCommit(updating.commandLine, "aico init"),
         )
     })
 })

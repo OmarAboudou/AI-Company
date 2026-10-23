@@ -1,17 +1,14 @@
 import { UserError } from "../../user-error.ts"
 import { requireCompany } from "../company/require-company.ts"
-import { listPositionAssignments } from "../position/list-position-assignments.ts"
-import { savePosition, savePositionState } from "../position/storage.ts"
-import { getPositionsFilledBy } from "./get-positions-filled-by.ts"
-import { getPositionsWorkedTemporarilyBy } from "./get-positions-worked-temporarily-by.ts"
+import { listPositions, savePosition } from "../position/storage.ts"
+import { getPositionsHeldBy } from "./get-positions-held-by.ts"
 import { loadExistingEmployee } from "./load-existing-employee.ts"
 import type { Employee } from "./schema.ts"
 import { deleteEmployeeFolder } from "./storage.ts"
 
 export type DeleteEmployeeResult = {
     employee: Employee
-    vacatedPositionIds: string[]
-    endedTemporaryPositionIds: string[]
+    releasedPositionIds: string[]
 }
 
 export async function deleteEmployee(
@@ -20,49 +17,23 @@ export async function deleteEmployee(
     { shouldForce = false }: { shouldForce?: boolean } = {},
 ): Promise<DeleteEmployeeResult> {
     await requireCompany(projectRoot)
-    const [employee, assignments] = await Promise.all([
+    const [employee, positions] = await Promise.all([
         loadExistingEmployee(projectRoot, rawId),
-        listPositionAssignments(projectRoot),
+        listPositions(projectRoot),
     ])
-    const positions = assignments.map(({ position }) => position)
-    const filledPositions = getPositionsFilledBy(positions, employee.id)
-    const temporaryPositions = getPositionsWorkedTemporarilyBy(
-        assignments,
-        employee.id,
-    )
-    const vacatedPositionIds = filledPositions.map(({ id }) => id)
-    const endedTemporaryPositionIds = temporaryPositions.map(
-        ({ position }) => position.id,
-    )
-    const reasonMessages: string[] = []
-    const effectMessages: string[] = []
-    if (vacatedPositionIds.length > 0) {
-        reasonMessages.push(
-            `is the default employee of ${vacatedPositionIds.join(", ")}`,
-        )
-        effectMessages.push(`leave ${vacatedPositionIds.join(", ")} vacant`)
-    }
-    if (endedTemporaryPositionIds.length > 0) {
-        reasonMessages.push(
-            `is assigned temporarily to ${endedTemporaryPositionIds.join(", ")}`,
-        )
-        effectMessages.push("end these temporary assignments")
-    }
-    if (reasonMessages.length > 0 && !shouldForce) {
-        const actionMessages = ["delete it anyway", ...effectMessages]
+    const heldPositions = getPositionsHeldBy(positions, employee.id)
+    const releasedPositionIds = heldPositions.map(({ id }) => id)
+    if (releasedPositionIds.length > 0 && !shouldForce) {
+        const positionList = releasedPositionIds.join(", ")
         throw new UserError(
-            `Employee "${employee.id}" ${reasonMessages.join(" and ")}. Add --force to ${actionMessages.slice(0, -1).join(", ")} and ${actionMessages.at(-1)}.`,
+            `Employee "${employee.id}" holds ${positionList}. Add --force to delete it anyway and give ${positionList} back to the user.`,
         )
     }
-    await Promise.all([
-        ...filledPositions.map(({ defaultEmployeeId, ...position }) =>
+    await Promise.all(
+        heldPositions.map(({ employeeId, ...position }) =>
             savePosition(projectRoot, position),
         ),
-        ...temporaryPositions.map(
-            ({ position, state: { temporaryAssignment, ...state } }) =>
-                savePositionState(projectRoot, position.id, state),
-        ),
-    ])
+    )
     await deleteEmployeeFolder(projectRoot, employee.id)
-    return { employee, vacatedPositionIds, endedTemporaryPositionIds }
+    return { employee, releasedPositionIds }
 }

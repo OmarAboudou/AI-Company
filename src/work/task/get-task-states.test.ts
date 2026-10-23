@@ -7,7 +7,7 @@ const developerTask: Task = {
     id: "20261018-140323-000-77aa",
     askedAt: "2026-10-18T14:03:23.000Z",
     type: "example",
-    params: { threadId: "2026-10-18-choice-of-framework" },
+    params: { ticketNumber: 1 },
     positionId: "backend-developer",
     causeEventId: "20261018-140322-123-5d1e",
 }
@@ -35,13 +35,19 @@ const developerTaskEvents = {
     done: {
         id: "20261018-140351-000-0a03",
         type: "task-done",
-        summary: "Answered: Hono, for Bun.",
+        runId: "20261018-140324-000-1b2c",
+        hasPassedHand: true,
         result: {},
     },
     failed: {
         id: "20261018-140351-000-0a04",
         type: "task-failed",
-        reason: "The thread asks nothing.",
+        reason: "The ticket asks nothing.",
+    },
+    cancelled: {
+        id: "20261018-140351-000-0a05",
+        type: "task-cancelled",
+        reason: "Ticket #1 was closed.",
     },
 } as const
 
@@ -56,9 +62,9 @@ function getDeveloperTaskState(
 }
 
 describe("getTaskStates", () => {
-    test("is waiting for a task until it starts", () => {
-        expect(getDeveloperTaskState([])).toBe("waiting")
-        expect(getDeveloperTaskState(["created"])).toBe("waiting")
+    test("is queued for a task until it starts", () => {
+        expect(getDeveloperTaskState([])).toBe("queued")
+        expect(getDeveloperTaskState(["created"])).toBe("queued")
     })
 
     test("is running once the task starts", () => {
@@ -67,7 +73,7 @@ describe("getTaskStates", () => {
         expect(state).toBe("running")
     })
 
-    test("is done once marked as done", () => {
+    test("is done once its session ended", () => {
         const state = getDeveloperTaskState(["created", "started", "done"])
 
         expect(state).toBe("done")
@@ -77,6 +83,12 @@ describe("getTaskStates", () => {
         const state = getDeveloperTaskState(["created", "started", "failed"])
 
         expect(state).toBe("failed")
+    })
+
+    test("is cancelled once the task became pointless", () => {
+        const state = getDeveloperTaskState(["created", "cancelled"])
+
+        expect(state).toBe("cancelled")
     })
 
     test("follows each task's own events", () => {
@@ -91,7 +103,7 @@ describe("getTaskStates", () => {
             [testerTaskStarted],
         )
 
-        expect(taskStates.get(developerTask.id)).toBe("waiting")
+        expect(taskStates.get(developerTask.id)).toBe("queued")
         expect(taskStates.get(testerTask.id)).toBe("running")
     })
 })

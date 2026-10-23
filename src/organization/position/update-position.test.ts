@@ -57,10 +57,10 @@ describe("updatePosition", () => {
         expect(updatedPosition).toEqual(savedPosition)
     })
 
-    test("keeps the default employee and the id history", async () => {
+    test("keeps the employee holding it and the id history", async () => {
         const renamedDeveloper = {
             ...developer,
-            defaultEmployeeId: "omar",
+            employeeId: "omar",
             createdAt: "2026-10-18T14:00:00.000Z",
             formerIds: [{ id: "dev", until: "2026-10-19T09:00:00.000Z" }],
         }

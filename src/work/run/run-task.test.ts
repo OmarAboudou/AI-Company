@@ -1,48 +1,41 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
 import { getEventOfType } from "../../journal/get-event-of-type.ts"
-import { recordEvent } from "../../journal/record-event.ts"
 import type { EventType, JournalEvent } from "../../journal/schema.ts"
 import { listEvents, loadJournal } from "../../journal/storage.ts"
 import { useFakeAnthropicServer } from "../../llm/anthropic-messages/use-fake-anthropic-server.testing.ts"
-import { messageSentEventType } from "../../messaging/message/schema.ts"
-import { sendMessage } from "../../messaging/message/send-message.ts"
 import type { Employee } from "../../organization/employee/schema.ts"
 import { loadEmployee } from "../../organization/employee/storage.ts"
 import type { Position } from "../../organization/position/schema.ts"
 import { loadPosition } from "../../organization/position/storage.ts"
-import { UserError } from "../../user-error.ts"
 import { createCompanyWithLlmEmployee } from "../create-company-with-llm-employee.testing.ts"
-import {
-    createExampleWorkCatalog,
-    exampleTaskType,
-} from "../create-example-work-catalog.testing.ts"
-import { createTask } from "../task/create-task.ts"
+import { createExampleWorkCatalog } from "../create-example-work-catalog.testing.ts"
+import { sendExampleMessage } from "../send-example-message.testing.ts"
 import { getTaskStates } from "../task/get-task-states.ts"
 import {
     type Task,
+    taskCancelledEventType,
     taskDoneEventType,
     taskFailedEventType,
     taskStartedEventType,
 } from "../task/schema.ts"
-import { createUncreatedTask } from "../task-type/create-uncreated-task.ts"
 import { runTask } from "./run-task.ts"
+import { loadRun } from "./storage.ts"
 
 const fakeServer = useFakeAnthropicServer()
 const environment = { TEST_ANTHROPIC_KEY: "sk-test" }
 const exampleCatalog = createExampleWorkCatalog(["backend-developer"])
 let projectRoot: string
-let threadId: string
+let ticketNumber: number
 let task: Task
 let position: Position
 let employee: Employee
 
 async function askDeveloper(body: string) {
-    const sending = await sendMessage(
+    const sending = await sendExampleMessage(
         projectRoot,
-        environment,
-        threadId,
-        { body },
+        ticketNumber,
+        body,
         exampleCatalog,
     )
     const [exampleTask] = sending.createdTasks
@@ -57,7 +50,7 @@ beforeEach(async () => {
         fakeServer.getUrl(),
     )
     projectRoot = companyWithLlmEmployee.projectRoot
-    threadId = companyWithLlmEmployee.threadId
+    ticketNumber = companyWithLlmEmployee.ticketNumber
     task = await askDeveloper("Hono or Express?")
     position = await loadPosition(projectRoot, "backend-developer")
     employee = await loadEmployee(projectRoot, "claude")
@@ -89,14 +82,11 @@ async function findEvent<Content extends Omit<JournalEvent, "id">>(
     return events.map((event) => getEventOfType(event, eventType)).find(Boolean)
 }
 
-const markAsDoneCall = {
-    name: "task_mark-as-done",
-    input: { summary: "Answered: Hono, for Bun." },
-}
+const closingReply = { text: "Hono, for Bun." }
 
 describe("runTask", () => {
     test("records the run's start, by its employee with its model", async () => {
-        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
+        fakeServer.respondWith(closingReply)
 
         const { run } = await runFakeTask()
 
@@ -109,8 +99,17 @@ describe("runTask", () => {
         })
     })
 
+    test("keeps in the run's transcript the process that runs it", async () => {
+        fakeServer.respondWith(closingReply)
+
+        const { run } = await runFakeTask()
+
+        const { processId } = await loadRun(projectRoot, run?.runId ?? "")
+        expect(processId).toBe(process.pid)
+    })
+
     test("gives the runs' system prompt and the task's user message", async () => {
-        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
+        fakeServer.respondWith(closingReply)
 
         await runFakeTask()
 
@@ -121,46 +120,45 @@ describe("runTask", () => {
         expect(body?.messages[0]?.content).toMatchObject([
             {
                 type: "text",
-                text: `Answer the last message of thread ${threadId}.`,
+                text: `Answer the last message of ticket #${ticketNumber}.`,
             },
         ])
     })
 
-    test("gives the task type's tools, and those that end the task", async () => {
-        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
+    test("gives the task type's tools", async () => {
+        fakeServer.respondWith(closingReply)
 
         await runFakeTask()
 
         const tools = fakeServer.requests[0]?.body.tools ?? []
         expect(tools.map(({ name }) => name)).toEqual([
-            "message_send",
-            "task_mark-as-done",
-            "task_mark-as-failed",
-            "thread_show",
+            "ticket_deliver",
+            "ticket_show",
         ])
     })
 
-    test("fixes the thread of the tools its type fixes", async () => {
-        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
+    test("fixes the ticket of the tools its type fixes", async () => {
+        fakeServer.respondWith(closingReply)
 
         await runFakeTask()
 
         const tools = fakeServer.requests[0]?.body.tools ?? []
-        const sendingTool = tools.find(({ name }) => name === "message_send")
-        expect(sendingTool?.description).toStartWith(
-            "Send a message in this thread,",
+        const deliveringTool = tools.find(
+            ({ name }) => name === "ticket_deliver",
         )
-        expect(sendingTool?.input_schema.properties).toEqual({
+        expect(deliveringTool?.description).toStartWith("Deliver this ticket")
+        expect(deliveringTool?.input_schema.properties).toEqual({
             body: {
                 type: "string",
-                description: "The message, in Markdown.",
+                description:
+                    "What you did and how to check it, in Markdown: the requester reads it, without the rest of your work.",
                 contentMediaType: "text/markdown",
             },
         })
     })
 
     test("records the task done, with the tokens the run used", async () => {
-        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
+        fakeServer.respondWith(closingReply)
 
         const { run } = await runFakeTask()
 
@@ -168,7 +166,7 @@ describe("runTask", () => {
             depth: 1,
             taskId: task.id,
             runId: run?.runId,
-            summary: "Answered: Hono, for Bun.",
+            hasPassedHand: false,
             usage: {
                 inputTokens: 10,
                 outputTokens: 5,
@@ -181,7 +179,7 @@ describe("runTask", () => {
     })
 
     test("records as its result what the task's type makes of the run", async () => {
-        fakeServer.respondWith({ toolCalls: [markAsDoneCall] })
+        fakeServer.respondWith(closingReply)
 
         const { run } = await runFakeTask()
 
@@ -190,55 +188,43 @@ describe("runTask", () => {
         })
     })
 
-    test("records the task given up, with its reason", async () => {
-        const reason = "The thread asks for figures I don't have."
-        fakeServer.respondWith({
-            toolCalls: [{ name: "task_mark-as-failed", input: { reason } }],
-        })
+    test("records the task failed, with why", async () => {
+        fakeServer.respondWith({ text: "I can't.", stopReason: "refusal" })
 
         await runFakeTask()
 
+        const reason = "The model's provider declined to go on (refusal)."
         expect(await findEvent(taskFailedEventType)).toMatchObject({ reason })
     })
 
-    test("marks as done, without a run, a task its type finds done", async () => {
-        const journal = await loadJournal(projectRoot)
-        const questionSent = await recordEvent(journal, messageSentEventType, {
-            depth: 0,
-            threadId,
-            messageId: "20261018-140322-123-3f9a",
-            positionId: "director",
-        })
-        const summary = "Already answered."
-        const answeredTask = await createTask(
-            journal,
-            createUncreatedTask(exampleTaskType, {
-                positionId: "backend-developer",
-                params: { threadId, doneSummary: summary },
-            }),
-            questionSent,
+    test("cancels, without a run, a task that became pointless before it started", async () => {
+        await sendExampleMessage(
+            projectRoot,
+            ticketNumber,
+            "Stop.",
+            createExampleWorkCatalog(),
         )
 
-        const result = await runFakeTask(answeredTask)
+        const result = await runFakeTask()
 
-        expect(result).toEqual({ taskEnding: { state: "done", summary } })
+        const reason = `Ticket #${ticketNumber}'s discussion says Stop.`
+        expect(result).toEqual({ taskEnding: { state: "cancelled", reason } })
         expect(fakeServer.requests).toHaveLength(0)
-        const events = await listEvents(projectRoot)
-        const answeredTaskState = getTaskStates([answeredTask], events).get(
-            answeredTask.id,
-        )
-        expect(answeredTaskState).toBe("done")
+        expect(await findEvent(taskCancelledEventType)).toMatchObject({
+            depth: 1,
+            taskId: task.id,
+            reason,
+        })
     })
 
-    test("leaves the task running when the provider's API fails", async () => {
+    test("records the task failed when the provider's API fails", async () => {
         fakeServer.respondWith({ status: 401, error: "invalid x-api-key" })
 
-        const running = runFakeTask()
+        const { taskEnding } = await runFakeTask()
 
-        await expect(running).rejects.toThrow(UserError)
-        const events = await listEvents(projectRoot)
-        expect(events.at(-1)?.type).toBe("task-started")
-        expect(getTaskStates([task], events).get(task.id)).toBe("running")
+        const reason = expect.stringContaining("invalid x-api-key")
+        expect(taskEnding).toEqual({ state: "failed", reason })
+        expect(await findEvent(taskFailedEventType)).toMatchObject({ reason })
     })
 
     test("starts nothing without the provider's key", async () => {
@@ -262,7 +248,7 @@ describe("runTask", () => {
     })
 
     test("refuses a task whose type rejects its parameters", async () => {
-        const invalidTask = { ...task, params: { threadId: 42 } }
+        const invalidTask = { ...task, params: { ticketNumber: "1" } }
 
         const running = runFakeTask(invalidTask)
 

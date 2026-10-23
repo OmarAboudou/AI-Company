@@ -27,9 +27,9 @@ describe("isAuthorOf", () => {
         expect(isAuthorOf(claude, formerHolderMessage)).toBe(false)
     })
 
-    test("leaves out a message without employee, a director's", () => {
-        const directorMessage = { sentAt: "2026-10-18T15:00:00.000Z" }
+    test("leaves out a message without employee, a founder's", () => {
+        const founderMessage = { sentAt: "2026-10-18T15:00:00.000Z" }
 
-        expect(isAuthorOf(claude, directorMessage)).toBe(false)
+        expect(isAuthorOf(claude, founderMessage)).toBe(false)
     })
 })

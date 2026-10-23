@@ -48,6 +48,10 @@ const RunStartLineSchema = z.strictObject({
         description:
             "Id of the model on its provider's side, for a model's run. Absent for a person's.",
     }),
+    processId: z.int().positive().optional().meta({
+        description:
+            "Id of the process that runs a model's run, for a later aico run to tell whether it was cut short. Absent for a person's.",
+    }),
     systemPrompt: z.string(),
     tools: z.array(ToolDefinitionSchema),
     session: RunSessionSchema,
@@ -73,10 +77,10 @@ export type Run = {
     id: string
     conversation: Conversation
     session: RunSession
+    processId?: number
 }
 
 export type RunProgress =
     | { kind: "text"; text: string }
     | { kind: "tool-call"; name: string; input: unknown }
     | { kind: "tool-result"; name: string; text: string; isError: boolean }
-    | { kind: "reminder"; text: string }

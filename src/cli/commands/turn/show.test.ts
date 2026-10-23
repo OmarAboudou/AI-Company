@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, test } from "bun:test"
 import { addTurnText } from "../../../work/turn/add-turn-text.ts"
 import { addTurnTool } from "../../../work/turn/add-turn-tool.ts"
 import { useTemporaryProject } from "../../use-temporary-project.testing.ts"
-import { openDirectorsTask } from "./open-directors-task.testing.ts"
+import { openUserTask } from "./open-user-task.testing.ts"
 
 const { runCli, getProjectPath } = useTemporaryProject()
 
 beforeEach(async () => {
-    await openDirectorsTask(getProjectPath())
+    await openUserTask(getProjectPath())
 })
 
 describe("aico turn show", () => {
@@ -18,8 +18,8 @@ describe("aico turn show", () => {
             projectRoot,
             {},
             {
-                toolName: "message_send",
-                rawInput: '{"body": "Friday."}',
+                toolName: "ticket_ask",
+                rawInput: '{"body": "Which build?"}',
             },
         )
 
@@ -27,7 +27,7 @@ describe("aico turn show", () => {
 
         expect(show.exitCode).toBe(0)
         expect(show.stdout).toBe(
-            'Checking.\n→ message_send\n  body: "Friday."\n',
+            'Checking.\n→ ticket_ask\n  body: "Which build?"\n',
         )
     })
 

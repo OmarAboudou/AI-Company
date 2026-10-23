@@ -14,17 +14,12 @@ import { createReuseIdOption } from "./create-reuse-id-option.ts"
 function formatRenamedMessage({
     employee,
     renamedEmployee,
-    filledPositionIds,
-    temporarilyWorkedPositionIds,
+    heldPositionIds,
 }: UpdateEmployeeIdResult): string {
-    const updatedPositionIds = [
-        ...filledPositionIds,
-        ...temporarilyWorkedPositionIds.map((id) => `${id} (temporarily)`),
-    ]
     const renamedMessage = `Employee "${employee.id}" is now "${renamedEmployee.id}"`
-    return updatedPositionIds.length === 0
+    return heldPositionIds.length === 0
         ? `${renamedMessage}.`
-        : `${renamedMessage}; updated positions: ${updatedPositionIds.join(", ")}.`
+        : `${renamedMessage}; updated positions: ${heldPositionIds.join(", ")}.`
 }
 
 export function registerEmployeeUpdateIdCommand(
@@ -33,7 +28,7 @@ export function registerEmployeeUpdateIdCommand(
     employeeCommand
         .command("update-id")
         .description(
-            "Change the id of an employee and of the positions it fills.",
+            "Change the id of an employee, and the positions it holds name the new one.",
         )
         .argument(
             "<employee-id>",

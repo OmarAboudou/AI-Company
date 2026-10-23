@@ -1,6 +1,6 @@
 # Turn
 
-A person's turn in a run, prepared as git's index prepares a commit: texts and tool calls are added one by one, shown or cleared, then sent together. Sending applies the turn as a model's: its calls run in order, their results come back as a model gets them, and a tool that ends the task ends it.
+A person's turn in a run, prepared as git's index prepares a commit: texts and tool calls are added one by one, shown or cleared, then sent together. Sending applies the turn as a model's: its texts join the discussion of the task's ticket and its calls run, in their order, their results come back as a model gets them, and an act that passes the hand ends the session.
 
 ## Invariants
 
@@ -8,8 +8,9 @@ A person's turn in a run, prepared as git's index prepares a commit: texts and t
 - A tool call is checked against the tool's schema as soon as it is added.
 - The turn is emptied before its calls run: a crash among them can't send the same turn, and its messages, twice.
 - With runs in progress in several positions, the selected position says which one a turn goes to.
-- A turn without any tool call gets the same reminder as a model's, and a second one fails the task.
+- A turn without any tool call ends the session, as a model's does.
 
 ## Decisions
 
 - [#123](https://github.com/OmarAboudou/AI-Company/issues/123): people work tasks as LLM employees do, their turns built like git's index.
+- [#137](https://github.com/OmarAboudou/AI-Company/issues/137): a session ends at an act that passes the hand, or at a turn without any tool call.

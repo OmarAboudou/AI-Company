@@ -9,12 +9,7 @@ import { createTask } from "../../work/task/create-task.ts"
 import { createTemporaryCompany } from "../company/create-temporary-company.testing.ts"
 import { hasEmployee, saveEmployee } from "../employee/storage.ts"
 import { deletePosition } from "./delete-position.ts"
-import {
-    hasPosition,
-    loadPositionState,
-    savePosition,
-    savePositionState,
-} from "./storage.ts"
+import { hasPosition, savePosition } from "./storage.ts"
 
 let projectRoot: string
 
@@ -28,44 +23,41 @@ afterEach(async () => {
 
 const developer = { id: "developer", title: "Developer", description: "" }
 
-async function askPosition(positionId: string): Promise<string> {
-    const threadId = "2026-10-19-release"
+async function askPosition(positionId: string): Promise<number> {
+    const ticketNumber = 3
     const messageSentEvent = await recordEvent(
         await loadJournal(projectRoot),
         messageSentEventType,
         {
             depth: 0,
-            threadId,
+            ticketNumber,
             messageId: "20261019-100000-000-a1b2",
-            positionId: "director",
+            positionId: "founder",
         },
     )
-    const uncreatedTask = { type: "example", positionId, params: { threadId } }
+    const uncreatedTask = {
+        type: "example",
+        positionId,
+        params: { ticketNumber },
+    }
     await createTask(
         await loadJournal(projectRoot),
         uncreatedTask,
         messageSentEvent,
     )
-    return threadId
+    return ticketNumber
 }
 
 describe("deletePosition", () => {
-    test("deletes the position and its state", async () => {
-        const directors = {
-            temporaryAssignment: { kind: "directors" },
-        } as const
+    test("deletes the position", async () => {
         await savePosition(projectRoot, developer)
-        await savePositionState(projectRoot, "developer", directors)
-        const before = await loadPositionState(projectRoot, "developer")
 
         await deletePosition(projectRoot, "developer")
 
-        expect(before).toEqual(directors)
         expect(await hasPosition(projectRoot, "developer")).toBe(false)
-        expect(await loadPositionState(projectRoot, "developer")).toEqual({})
     })
 
-    test("keeps its default employee hired, and returns it", async () => {
+    test("keeps its employee hired, and returns it", async () => {
         const omar = {
             id: "omar",
             name: "Omar",
@@ -74,38 +66,40 @@ describe("deletePosition", () => {
             modelId: "opus",
         } as const
         await saveEmployee(projectRoot, omar)
-        const filledDeveloper = { ...developer, defaultEmployeeId: "omar" }
-        await savePosition(projectRoot, filledDeveloper)
+        const heldDeveloper = { ...developer, employeeId: "omar" }
+        await savePosition(projectRoot, heldDeveloper)
 
         const { position } = await deletePosition(projectRoot, "developer")
 
-        expect(position.defaultEmployeeId).toBe("omar")
+        expect(position.employeeId).toBe("omar")
         expect(await hasEmployee(projectRoot, "omar")).toBe(true)
     })
 
-    test("refuses the director's position", async () => {
-        const deletion = deletePosition(projectRoot, "director")
+    test("refuses the founder's position", async () => {
+        const deletion = deletePosition(projectRoot, "founder")
 
         await expect(deletion).rejects.toThrow(UserError)
-        await expect(deletion).rejects.toThrow("is the director's position")
-        expect(await hasPosition(projectRoot, "director")).toBe(true)
+        await expect(deletion).rejects.toThrow("is the founder's position")
+        expect(await hasPosition(projectRoot, "founder")).toBe(true)
     })
 
-    test("refuses a position with pending tasks, naming their threads", async () => {
+    test("refuses a position with pending tasks, naming their tickets", async () => {
         await savePosition(projectRoot, developer)
-        const threadId = await askPosition("developer")
+        const ticketNumber = await askPosition("developer")
 
         const deletion = deletePosition(projectRoot, "developer")
 
         await expect(deletion).rejects.toThrow(UserError)
-        await expect(deletion).rejects.toThrow(`in these threads: ${threadId}.`)
+        await expect(deletion).rejects.toThrow(
+            `on these tickets: #${ticketNumber}.`,
+        )
         await expect(deletion).rejects.toThrow("Add --force")
         expect(await hasPosition(projectRoot, "developer")).toBe(true)
     })
 
-    test("deletes a position with pending tasks if forced, and returns their threads", async () => {
+    test("deletes a position with pending tasks if forced, and returns their tickets", async () => {
         await savePosition(projectRoot, developer)
-        const threadId = await askPosition("developer")
+        const ticketNumber = await askPosition("developer")
 
         const forceOptions = { shouldForce: true }
 
@@ -115,7 +109,7 @@ describe("deletePosition", () => {
             forceOptions,
         )
 
-        expect(deletion.pendingThreadIds).toEqual([threadId])
+        expect(deletion.pendingTicketNumbers).toEqual([ticketNumber])
         expect(await hasPosition(projectRoot, "developer")).toBe(false)
     })
 
