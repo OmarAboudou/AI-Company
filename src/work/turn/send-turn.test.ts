@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { rm } from "node:fs/promises"
+import { join } from "node:path"
+import { runGit } from "../../git/run-git.ts"
 import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import type { EventType, JournalEvent } from "../../journal/schema.ts"
 import { listEvents } from "../../journal/storage.ts"
@@ -47,6 +49,22 @@ async function findLastEvent<Content extends Omit<JournalEvent, "id">>(
     return events
         .map((event) => getEventOfType(event, eventType))
         .findLast(Boolean)
+}
+
+function listLastCommits(count: number) {
+    const aicoFolderPath = join(projectRoot, ".aico")
+    return Array.from({ length: count }, (_, index) => {
+        const revision = `HEAD~${index}`
+        const logArgs = ["log", "-1", "--format=%s", revision]
+        const showArgs = ["show", "--format=", "--name-only", revision]
+        const files = (runGit(aicoFolderPath, showArgs) ?? "").split("\n")
+        return {
+            subject: runGit(aicoFolderPath, logArgs),
+            messageFileCount: files.filter((file) =>
+                file.endsWith("/message.json"),
+            ).length,
+        }
+    })
 }
 
 describe("sendTurn", () => {
@@ -113,6 +131,19 @@ describe("sendTurn", () => {
 
         const stagedTurn = await loadStagedTurn(projectRoot, openedTask.run.id)
         expect(stagedTurn).toEqual({ blocks: [] })
+    })
+
+    test("commits each tool call apart, named after it and its task", async () => {
+        await addToolCall("message_send", { body: "Friday." })
+        await addToolCall("message_send", { body: "Or Monday." })
+
+        await sendPersonTurn()
+
+        const subject = `message_send in task ${openedTask.task.id}`
+        expect(listLastCommits(2)).toEqual([
+            { subject, messageFileCount: 1 },
+            { subject, messageFileCount: 1 },
+        ])
     })
 
     test("goes on from the turns sent before, in a later call", async () => {
