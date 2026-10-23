@@ -2,6 +2,7 @@ import { getCurrentId } from "../../ids/get-current-id.ts"
 import type { IdHistory } from "../../ids/id-history-schema.ts"
 import { getEventOfType } from "../../journal/get-event-of-type.ts"
 import type { JournalEvent } from "../../journal/schema.ts"
+import { ticketHandedOverEventType } from "./act/schema.ts"
 import { type TicketAct, ticketActs } from "./act/ticket-acts.ts"
 import type { Ticket, TicketOutcome, TicketStatus } from "./schema.ts"
 
@@ -35,12 +36,25 @@ function getCreatedTicketState(
     }
 }
 
-function getStateAfterAct(state: TicketState, act: TicketAct): TicketState {
+function getStateAfterAct(
+    state: TicketState,
+    act: TicketAct,
+    event: JournalEvent,
+    positions: readonly IdHistory[],
+): TicketState {
     const { outcome, ...stateBeforeAct } = state
+    const handedOverEvent = getEventOfType(event, ticketHandedOverEventType)
     return {
         ...stateBeforeAct,
         status: act.toStatus,
         ...(act.outcome !== undefined && { outcome: act.outcome }),
+        ...(handedOverEvent !== undefined && {
+            assigneePositionId: getCurrentId(
+                positions,
+                handedOverEvent.assigneePositionId,
+                handedOverEvent.occurredAt,
+            ),
+        }),
     }
 }
 
@@ -62,7 +76,7 @@ export function getTicketStates(
         if (act !== undefined && actEvent !== undefined && state) {
             ticketStates.set(
                 actEvent.ticketNumber,
-                getStateAfterAct(state, act),
+                getStateAfterAct(state, act, event, positions),
             )
         }
     }

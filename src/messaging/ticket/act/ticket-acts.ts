@@ -8,6 +8,7 @@ import {
     ticketCancelledEventType,
     ticketDeliveredEventType,
     ticketFailedEventType,
+    ticketHandedOverEventType,
 } from "./schema.ts"
 
 export type TicketAct = {
@@ -64,6 +65,13 @@ export const ticketActs = {
         toStatus: "closed",
         outcome: "cancelled",
     },
+    "hand-over": {
+        eventType: ticketHandedOverEventType,
+        actorRole: "director",
+        action: "hand over",
+        fromStatuses: ["open", "waiting", "to-validate"],
+        toStatus: "open",
+    },
     close: {
         eventType: ticketFailedEventType,
         actorRole: "director",
@@ -75,3 +83,7 @@ export const ticketActs = {
 } satisfies Record<string, TicketAct>
 
 export type TicketActName = keyof typeof ticketActs
+
+// Handing a ticket over also names its new assignee: handOverTicket makes
+// that act, and actOnTicket the others, which carry their message alone.
+export type MessageActName = Exclude<TicketActName, "hand-over">

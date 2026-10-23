@@ -1,3 +1,4 @@
+import { IdSchema } from "../../../ids/id-schema.ts"
 import { defineMessageEventType } from "../../message/schema.ts"
 
 export const questionAskedEventType = defineMessageEventType({
@@ -34,6 +35,18 @@ export const ticketFailedEventType = defineMessageEventType({
     type: "ticket-failed",
     description:
         "The director closed the ticket, failed, saying why: its request won't be met.",
+})
+
+export const ticketHandedOverEventType = defineMessageEventType({
+    type: "ticket-handed-over",
+    description:
+        "The director handed the ticket over to another position, saying why: its new assignee has the hand.",
+    fields: {
+        assigneePositionId: IdSchema.meta({
+            description:
+                "Id of the ticket's new assignee, as the position was called then.",
+        }),
+    },
 })
 
 export const ticketCancelledEventType = defineMessageEventType({

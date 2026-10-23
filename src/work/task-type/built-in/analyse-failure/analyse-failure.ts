@@ -8,7 +8,14 @@ import { companyRelaunchedEventType } from "../../../pause/schema.ts"
 import { getTaskPositionId } from "../../../task/get-task-position-id.ts"
 import { TaskIdSchema, taskFailedEventType } from "../../../task/schema.ts"
 import { listTasks } from "../../../task/storage.ts"
+import type { BuiltInToolName } from "../../../tool/built-in/built-in.ts"
 import { type BoundToolInputs, defineTaskType } from "../../define-task-type.ts"
+
+const ticketToolNames: BuiltInToolName[] = [
+    "ticket_hand-over",
+    "ticket_close",
+    "ticket_show",
+]
 
 const instructions =
     "The company is paused since. Find out what went wrong, and readjust what was missing with AICo's commands: the position's title or description, its employee, the model or the provider it runs on. Then relaunch the company with `aico company relaunch`: the position that has the ticket's hand gets its task again."
@@ -48,17 +55,15 @@ export const analyseFailureTaskType = defineTaskType({
         if (typeof ticketNumber === "number") {
             const ticket = await loadTicket(projectRoot, ticketNumber)
             lines.push(
-                `It worked on ticket #${ticket.number}, "${ticket.title}": ticket_show reads its discussion, and ticket_close closes it as failed, should its request not be met.`,
+                `It worked on ticket #${ticket.number}, "${ticket.title}": ticket_show reads its discussion; ticket_hand-over hands the ticket to another position, and ticket_close closes it as failed, should its request not be met.`,
             )
-            boundToolInputs.ticket_close = { ticketNumber }
-            boundToolInputs.ticket_show = { ticketNumber }
+            for (const toolName of ticketToolNames) {
+                boundToolInputs[toolName] = { ticketNumber }
+            }
         }
         return {
             userMessage: [...lines, "", instructions].join("\n"),
-            toolNames:
-                typeof ticketNumber === "number"
-                    ? ["ticket_close", "ticket_show"]
-                    : [],
+            toolNames: typeof ticketNumber === "number" ? ticketToolNames : [],
             boundToolInputs,
             result: {},
         }

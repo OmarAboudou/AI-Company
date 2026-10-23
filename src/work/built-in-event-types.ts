@@ -7,6 +7,7 @@ import {
     ticketCancelledEventType,
     ticketDeliveredEventType,
     ticketFailedEventType,
+    ticketHandedOverEventType,
 } from "../messaging/ticket/act/schema.ts"
 import { ticketCreatedEventType } from "../messaging/ticket/schema.ts"
 import { eventsDispatchedEventType } from "./listener/schema.ts"
@@ -30,6 +31,7 @@ export const builtInEventTypes = [
     deliveryValidatedEventType,
     deliveryRefusedEventType,
     ticketCancelledEventType,
+    ticketHandedOverEventType,
     ticketFailedEventType,
     messageSentEventType,
     taskCreatedEventType,

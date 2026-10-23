@@ -4,7 +4,7 @@ import { recordEvent } from "../../../journal/record-event.ts"
 import { requireJournalEvent } from "../../../journal/require-journal-event.ts"
 import { loadJournal } from "../../../journal/storage.ts"
 import { actOnTicket } from "../../../messaging/ticket/act/act-on-ticket.ts"
-import type { TicketActName } from "../../../messaging/ticket/act/ticket-acts.ts"
+import type { MessageActName } from "../../../messaging/ticket/act/ticket-acts.ts"
 import { createExampleTicket } from "../../../messaging/ticket/create-example-ticket.testing.ts"
 import { createTemporaryCompany } from "../../../organization/company/create-temporary-company.testing.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
@@ -46,7 +46,7 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-async function act(actName: TicketActName, body: string) {
+async function act(actName: MessageActName, body: string) {
     const author =
         actName === "ask" || actName === "deliver"
             ? authors.developer

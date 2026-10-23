@@ -11,7 +11,7 @@ import { createExampleTicket } from "../create-example-ticket.testing.ts"
 import { getTicketStates } from "../get-ticket-states.ts"
 import { loadTicket } from "../storage.ts"
 import { actOnTicket } from "./act-on-ticket.ts"
-import type { TicketActName } from "./ticket-acts.ts"
+import type { MessageActName } from "./ticket-acts.ts"
 
 const committer = { name: "Test User", email: "test@example.com" }
 const director: Author = {
@@ -43,7 +43,7 @@ afterEach(async () => {
     await rm(projectRoot, { recursive: true, force: true })
 })
 
-async function act(actName: TicketActName, author: Author, body = "Noted.") {
+async function act(actName: MessageActName, author: Author, body = "Noted.") {
     const journal = await loadJournal(projectRoot)
     return actOnTicket(
         journal,

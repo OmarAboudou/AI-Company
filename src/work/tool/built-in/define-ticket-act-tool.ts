@@ -1,13 +1,29 @@
 import { z } from "zod"
+import type { Message } from "../../../messaging/message/schema.ts"
 import { listMessages } from "../../../messaging/message/storage.ts"
 import { actOnTicket } from "../../../messaging/ticket/act/act-on-ticket.ts"
-import type { TicketActName } from "../../../messaging/ticket/act/ticket-acts.ts"
+import type { MessageActName } from "../../../messaging/ticket/act/ticket-acts.ts"
 import { TicketNumberSchema } from "../../../messaging/ticket/schema.ts"
-import { defineTool } from "../define-tool.ts"
+import { defineTool, type ToolResult } from "../define-tool.ts"
 import { readCallAuthor } from "../read-call-author.ts"
 
+export async function buildActResult(
+    projectRoot: string,
+    message: Message,
+    doneText: string,
+): Promise<ToolResult> {
+    const { ticketNumber } = message
+    const ticketMessages = await listMessages(projectRoot, ticketNumber)
+    const messageNumber =
+        ticketMessages.findIndex(({ id }) => id === message.id) + 1
+    return {
+        text: `${doneText}, as message #${messageNumber} of ticket #${ticketNumber}.`,
+        hasPassedHand: true,
+    }
+}
+
 export type TicketActToolDefinition = {
-    actName: TicketActName
+    actName: MessageActName
     buildDescription(ticket: string): string
     bodyDescription: string
     doneText: string
@@ -41,16 +57,7 @@ export function defineTicketActTool({
                 { ticketNumber, body },
                 { depth: ctx.depth, runId: ctx.runId },
             )
-            const ticketMessages = await listMessages(
-                ctx.projectRoot,
-                ticketNumber,
-            )
-            const messageNumber =
-                ticketMessages.findIndex(({ id }) => id === message.id) + 1
-            return {
-                text: `${doneText}, as message #${messageNumber} of ticket #${ticketNumber}.`,
-                hasPassedHand: true,
-            }
+            return buildActResult(ctx.projectRoot, message, doneText)
         },
     })
 }

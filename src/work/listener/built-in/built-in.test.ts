@@ -4,7 +4,8 @@ import { recordEvent } from "../../../journal/record-event.ts"
 import { loadJournal } from "../../../journal/storage.ts"
 import type { Author } from "../../../messaging/message/schema.ts"
 import { actOnTicket } from "../../../messaging/ticket/act/act-on-ticket.ts"
-import type { TicketActName } from "../../../messaging/ticket/act/ticket-acts.ts"
+import { handOverTicket } from "../../../messaging/ticket/act/hand-over-ticket.ts"
+import type { MessageActName } from "../../../messaging/ticket/act/ticket-acts.ts"
 import { createExampleTicket } from "../../../messaging/ticket/create-example-ticket.testing.ts"
 import { createTemporaryCompany } from "../../../organization/company/create-temporary-company.testing.ts"
 import { createPosition } from "../../../organization/position/create-position.ts"
@@ -114,7 +115,7 @@ async function relaunch() {
 }
 
 // Each act happens in a session of its position, the task it was given.
-async function act(actName: TicketActName, author: Author) {
+async function act(actName: MessageActName, author: Author) {
     await startQueuedTaskOf(author.position.id)
     const journal = await loadJournal(projectRoot)
     await actOnTicket(
@@ -255,5 +256,27 @@ describe("AICo's listeners", () => {
         const { createdTasks } = await relaunch()
 
         expect(createdTasks).toEqual([])
+    })
+
+    test("give the new assignee Handle once the ticket is handed over", async () => {
+        await createDeveloperTicket()
+        await createPosition(projectRoot, "designer", {
+            title: "Designer",
+            description: "",
+        })
+
+        await handOverTicket(
+            await loadJournal(projectRoot),
+            director,
+            {
+                ticketNumber: 1,
+                body: "The designer knows.",
+                rawAssigneePositionId: "designer",
+            },
+            { depth: 0 },
+        )
+        const { createdTasks } = await dispatch()
+
+        expect(getTaskSummaries(createdTasks)).toEqual(["handle @designer"])
     })
 })

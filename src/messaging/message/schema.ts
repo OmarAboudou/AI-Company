@@ -56,14 +56,23 @@ const messageEventFields = {
     }),
 }
 
-export function defineMessageEventType<Type extends string>({
+export function defineMessageEventType<
+    Type extends string,
+    ActFields extends z.ZodRawShape = Record<never, never>,
+>({
     type,
     description,
+    fields,
 }: {
     type: Type
     description: string
+    fields?: ActFields
 }) {
-    return defineEventType({ type, description, fields: messageEventFields })
+    return defineEventType({
+        type,
+        description,
+        fields: { ...messageEventFields, ...(fields as ActFields) },
+    })
 }
 
 export type MessageEventType = ReturnType<typeof defineMessageEventType<string>>

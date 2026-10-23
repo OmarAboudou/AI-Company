@@ -44,12 +44,14 @@ function formatStatusReason({
     }
 }
 
+export type RequireTicketActResult = { ticket: Ticket; state: TicketState }
+
 export async function requireTicketAct(
     journal: Journal,
     act: TicketAct,
     author: Author,
     ticketNumber: number,
-): Promise<Ticket> {
+): Promise<RequireTicketActResult> {
     const { projectRoot } = journal
     const [ticket, positions, { directorPositionId }] = await Promise.all([
         loadExistingTicket(projectRoot, ticketNumber),
@@ -73,5 +75,5 @@ export async function requireTicketAct(
             `You can't ${act.action} ticket #${ticket.number} now: ${formatStatusReason(state)}.`,
         )
     }
-    return ticket
+    return { ticket, state }
 }

@@ -19,7 +19,13 @@ export async function sendUnsentMessage(
         depth,
         runId,
         eventType = messageSentEventType,
-    }: { depth: number; runId?: string; eventType?: MessageEventType },
+        eventFields,
+    }: {
+        depth: number
+        runId?: string
+        eventType?: MessageEventType
+        eventFields?: object
+    },
 ): Promise<Message> {
     const { projectRoot } = journal
     const ticketMessages = await listMessages(projectRoot, ticketNumber)
@@ -39,6 +45,7 @@ export async function sendUnsentMessage(
         messageId: message.id,
         positionId: message.position.id,
         ...(runId !== undefined && { runId }),
+        ...eventFields,
     })
     await saveMessage(projectRoot, message)
     return message

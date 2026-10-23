@@ -5,6 +5,7 @@ import { ticketCancelTool } from "./ticket/cancel.ts"
 import { ticketCloseTool } from "./ticket/close.ts"
 import { ticketCreateTool } from "./ticket/create.ts"
 import { ticketDeliverTool } from "./ticket/deliver.ts"
+import { ticketHandOverTool } from "./ticket/hand-over.ts"
 import { ticketRefuseTool } from "./ticket/refuse.ts"
 import { ticketShowTool } from "./ticket/show.ts"
 import { ticketValidateTool } from "./ticket/validate.ts"
@@ -16,6 +17,7 @@ export const builtInTools = {
     ticket_close: ticketCloseTool,
     ticket_create: ticketCreateTool,
     ticket_deliver: ticketDeliverTool,
+    "ticket_hand-over": ticketHandOverTool,
     ticket_refuse: ticketRefuseTool,
     ticket_show: ticketShowTool,
     ticket_validate: ticketValidateTool,
